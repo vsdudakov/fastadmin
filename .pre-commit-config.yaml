@@ -1,0 +1,31 @@
+default_language_version:
+  python: python3.10
+fail_fast: true
+repos:
+  - repo: local
+    hooks:
+      - id: build
+        name: Build
+        entry: bash -c 'make -C src build'
+        language: system
+        types: [python, javascript]
+        pass_filenames: false
+      - id: fix
+        name: Fix
+        entry: bash -c 'make -C src fix'
+        language: system
+        types: [python, javascript]
+        pass_filenames: false
+      - id: lint
+        name: Lint
+        entry: bash -c 'make -C src lint'
+        language: system
+        types: [python, javascript]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: detect-private-key

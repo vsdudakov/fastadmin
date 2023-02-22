@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "fatsapi-admin"
+version = "0.1.0"
+description = ""
+authors = ["Seva D <vsdudakov@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/vsdudakov/fastapi-admin"
+repository = "https://github.com/vsdudakov/fastapi-admin"
+keywords = ["fastapi", "admin"]
+classifiers = [
+    "Environment :: Console",
+    "Framework :: Fastapi",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance",
+]
+include = [
+    "LICENSE",
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.92.0"
+jinja2 = "^3.1.2"
+environs = "^9.5.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.1"
+isort = "^5.12.0"
+black = "^23.1.0"
+flake8 = "^6.0.0"
+flake8-black = "^0.3.6"
+pytest-cov = "^4.0.0"
+pytest-mock = "^3.10.0"
+uvicorn = "^0.20.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
