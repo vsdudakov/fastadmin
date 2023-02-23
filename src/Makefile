@@ -30,8 +30,8 @@ kill:
 	kill -9 $$(lsof -t -i:8090)
 	kill -9 $$(lsof -t -i:3030)
 
-.PHONY: copy-frontend
-copy-frontend:
+.PHONY: collectstatic
+collectstatic:
 	rm -rf ./static/js
 	rm -rf ./static/css
 	cp -rf ./frontend/build/static/js/ ./static/js/
@@ -44,4 +44,4 @@ copy-frontend:
 .PHONY: build
 build:
 	make -C frontend build
-	make copy-frontend
+	make collectstatic

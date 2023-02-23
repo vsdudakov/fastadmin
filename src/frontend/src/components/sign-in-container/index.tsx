@@ -1,6 +1,9 @@
 import { Col, Row } from 'antd';
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+
+import { SignInUserContext } from 'providers/SignInUserProvider';
+import { useNavigate } from 'react-router-dom';
 
 interface ISignInContainer {
   title: string;
@@ -8,6 +11,15 @@ interface ISignInContainer {
 }
 
 export const SignInContainer: React.FC<ISignInContainer> = ({ title, children }) => {
+  const { signedIn } = useContext(SignInUserContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (signedIn) {
+      navigate('/');
+    }
+  }, [navigate, signedIn]);
+
   return (
     <div style={{ height: '100vh' }}>
       <Helmet defaultTitle={title}>

@@ -20,7 +20,7 @@ import { getTitleFromFieldName } from 'helpers/title';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { deleteFetcher, getFetcher, postFetcher } from 'fetchers/fetchers';
 import { FilterColumn } from './filter-column';
-import { transformFilters } from 'helpers/filters';
+import { transformDataToServer } from 'helpers/transform';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
@@ -42,56 +42,64 @@ export const List: React.FC = () => {
   );
 
   const columns = useMemo(() => {
-    return (modelConfiguration || { fields: [] }).fields.map((field: IModelField) => {
-      return {
-        title: getTitleFromFieldName(field.name),
-        dataIndex: field.name,
-        key: field.name,
-        sorter: field.list_configuration?.sorter,
-        filterIcon: !!field?.list_configuration?.widget_type ? (
-          !!filters[field.name] ? (
-            <FilterFilled />
-          ) : (
-            <FilterOutlined />
-          )
-        ) : undefined,
-        filterDropdown: !!field?.list_configuration?.widget_type
-          ? ({ confirm, clearFilters }: any) => {
-              const onReset = () => {
-                delete filters[field.name];
-                setFilters({ ...filters });
-                setPage(DEFAULT_PAGE);
-                setPageSize(DEFAULT_PAGE_SIZE);
-                clearFilters();
-                confirm();
-              };
-              const onFilter = (value: any) => {
-                filters[field.name] = value;
-                setFilters({ ...filters });
-                setPage(DEFAULT_PAGE);
-                setPageSize(DEFAULT_PAGE_SIZE);
-                confirm();
-              };
-              return (
-                <FilterColumn
-                  widgetType={field?.list_configuration?.widget_type as EFieldWidgetType}
-                  widgetProps={field?.list_configuration?.widget_props}
-                  value={filters[field.name]}
-                  onFilter={onFilter}
-                  onReset={onReset}
-                />
-              );
-            }
-          : undefined,
-      };
-    });
+    return (modelConfiguration || { fields: [] }).fields
+      .filter((field: IModelField) => !!field.list_configuration)
+      .sort(
+        (a: IModelField, b: IModelField) =>
+          (a?.list_configuration?.col || 0) - (b?.list_configuration?.col || 0)
+      )
+      .map((field: IModelField) => {
+        const filterCondition =
+          field.list_configuration?.filter_condition || `${field.name}__icontains`;
+        return {
+          title: getTitleFromFieldName(field.name),
+          dataIndex: field.name,
+          key: field.name,
+          sorter: field.list_configuration?.sorter,
+          filterIcon: !!field.list_configuration?.widget_type ? (
+            filters[filterCondition] !== undefined ? (
+              <FilterFilled style={{ color: 'red' }} />
+            ) : (
+              <FilterOutlined />
+            )
+          ) : undefined,
+          filterDropdown: !!field.list_configuration?.widget_type
+            ? ({ confirm, clearFilters }: any) => {
+                const onReset = () => {
+                  delete filters[filterCondition];
+                  setFilters({ ...filters });
+                  setPage(DEFAULT_PAGE);
+                  setPageSize(DEFAULT_PAGE_SIZE);
+                  clearFilters();
+                  confirm();
+                };
+                const onFilter = (value: any) => {
+                  filters[filterCondition] = value;
+                  setFilters({ ...filters });
+                  setPage(DEFAULT_PAGE);
+                  setPageSize(DEFAULT_PAGE_SIZE);
+                  confirm();
+                };
+                return (
+                  <FilterColumn
+                    widgetType={field.list_configuration?.widget_type as EFieldWidgetType}
+                    widgetProps={field.list_configuration?.widget_props}
+                    value={filters[filterCondition]}
+                    onFilter={onFilter}
+                    onReset={onReset}
+                  />
+                );
+              }
+            : undefined,
+        };
+      });
   }, [modelConfiguration, filters]);
 
   const queryString = querystring.stringify({
     sort_by: sortBy,
     offset: (page - 1) * pageSize,
     limit: pageSize,
-    ...transformFilters(filters),
+    ...transformDataToServer(filters),
   });
 
   const { data, isLoading } = useQuery([`/list/${model}`, queryString], () =>

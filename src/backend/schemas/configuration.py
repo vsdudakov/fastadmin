@@ -8,9 +8,11 @@ class WidgetType(str, Enum):
     InputNumber = "InputNumber"
     Select = "Select"
     AsyncSelect = "AsyncSelect"
+    Switch = "Switch"
     Checkbox = "Checkbox"
     TimePicker = "TimePicker"
     DatePicker = "DatePicker"
+    DateTimePicker = "DateTimePicker"
     RangePicker = "RangePicker"
     RadioGroup = "RadioGroup"
     CheckboxGroup = "CheckboxGroup"
@@ -25,20 +27,28 @@ class ModelPermission(str, Enum):
 
 
 class ListConfigurationFieldSchema(BaseModel):
-    sorter: bool
+    sorter: bool | None
     width: int | None
     widget_type: WidgetType
     widget_props: dict | None
+    filter_condition: str | None
+    col: int | None
 
 
 class AddConfigurationFieldSchema(BaseModel):
     widget_type: WidgetType
     widget_props: dict | None
+    required: bool | None
+    row: int | None
+    col: int | None
 
 
 class ChangeConfigurationFieldSchema(BaseModel):
     widget_type: WidgetType
     widget_props: dict | None
+    required: bool | None
+    row: int | None
+    col: int | None
 
 
 class ModelFieldSchema(BaseModel):

@@ -1,6 +1,6 @@
 import logging
+from datetime import datetime
 from io import StringIO
-from typing import Any
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import Response, StreamingResponse
@@ -8,6 +8,7 @@ from fastapi.responses import Response, StreamingResponse
 from backend.depends import get_session_id, validate_session_id
 from backend.schemas.api import ExportSchema, SignInInputSchema
 from backend.schemas.configuration import (
+    AddConfigurationFieldSchema,
     ChangeConfigurationFieldSchema,
     ConfigurationSchema,
     ListConfigurationFieldSchema,
@@ -63,7 +64,7 @@ async def list(
 ):
     filters = {k: v for k, v in request.query_params._dict.items() if k not in ["sort_by", "offset", "limit"]}
     logger.info("List %s", model)
-    objs = [{"id": 1, "username": "test"}]
+    objs = [{"id": 1, "username": "test", "created_at": datetime.utcnow()}, {"id": 2, "username": "test2"}]
     return {
         "total": 10,
         "results": objs,
@@ -79,7 +80,7 @@ async def get(
     _: str = Depends(validate_session_id),
 ):
     logger.info("Get %s: %s", model, id)
-    return {"id": 1, "username": "test"}
+    return {"id": 1, "username": "test", "created_at": datetime.utcnow(), "is_active": False}
 
 
 @router.post("/add/{model}")
@@ -172,12 +173,91 @@ async def configuration(
                         name="username",
                         list_configuration=ListConfigurationFieldSchema(
                             sorter=True,
-                            widget_type=WidgetType.RangePicker,
+                            widget_type=WidgetType.Input,
+                        ),
+                        add_configuration=AddConfigurationFieldSchema(
+                            widget_type=WidgetType.Input, required=True, col=1, row=1
                         ),
                         change_configuration=ChangeConfigurationFieldSchema(
                             widget_type=WidgetType.Input,
+                            col=1,
+                            row=1,
                         ),
-                    )
+                    ),
+                    ModelFieldSchema(
+                        name="created_at",
+                        list_configuration=ListConfigurationFieldSchema(
+                            sorter=True,
+                            widget_type=WidgetType.RangePicker,
+                        ),
+                        add_configuration=AddConfigurationFieldSchema(
+                            widget_type=WidgetType.DateTimePicker, required=True, col=1, row=2
+                        ),
+                        change_configuration=ChangeConfigurationFieldSchema(
+                            widget_type=WidgetType.DateTimePicker,
+                            col=1,
+                            row=2,
+                        ),
+                    ),
+                    ModelFieldSchema(
+                        name="user",
+                        list_configuration=ListConfigurationFieldSchema(
+                            widget_type=WidgetType.AsyncSelect,
+                            widget_props={
+                                "mode": "multiple",
+                                "parentModel": "User",
+                                "idField": "id",
+                                "labelField": "username",
+                            },
+                            filter_condition="user_id__in",
+                        ),
+                        add_configuration=AddConfigurationFieldSchema(
+                            widget_type=WidgetType.AsyncSelect,
+                            widget_props={
+                                "parentModel": "User",
+                                "idField": "id",
+                                "labelField": "username",
+                            },
+                            required=True,
+                            col=2,
+                            row=1,
+                        ),
+                        change_configuration=ChangeConfigurationFieldSchema(
+                            widget_type=WidgetType.AsyncSelect,
+                            widget_props={
+                                "parentModel": "User",
+                                "idField": "id",
+                                "labelField": "username",
+                            },
+                            col=2,
+                            row=1,
+                        ),
+                    ),
+                    ModelFieldSchema(
+                        name="is_active",
+                        list_configuration=ListConfigurationFieldSchema(
+                            sorter=True,
+                            widget_type=WidgetType.RadioGroup,
+                            widget_props={
+                                "options": [
+                                    {"label": "Yes", "value": True},
+                                    {"label": "No", "value": False},
+                                ],
+                            },
+                            filter_condition="is_active",
+                        ),
+                        add_configuration=AddConfigurationFieldSchema(
+                            widget_type=WidgetType.Switch,
+                            required=True,
+                            col=2,
+                            row=2,
+                        ),
+                        change_configuration=ChangeConfigurationFieldSchema(
+                            widget_type=WidgetType.Switch,
+                            col=2,
+                            row=2,
+                        ),
+                    ),
                 ],
             ),
         ],

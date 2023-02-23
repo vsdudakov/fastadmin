@@ -42,7 +42,7 @@ export const FilterColumn = ({
   };
 
   return (
-    <Row>
+    <Row style={{ width: 400 }}>
       <Col xs={24} style={{ padding: 10 }}>
         <FilterWidget
           value={filterValue}

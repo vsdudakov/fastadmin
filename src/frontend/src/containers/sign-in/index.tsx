@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Col, Form, Image, Input, Row } from 'antd';
-import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 
 import { SignInContainer } from 'components/sign-in-container';
@@ -12,7 +11,6 @@ import { setFormErrors } from 'helpers/forms';
 
 export const SignIn: React.FC = () => {
   const [form] = Form.useForm();
-  const navigate = useNavigate();
   const { configuration } = useContext(ConfigurationContext);
   const { signedInUserRefetch } = useContext(SignInUserContext);
   const { t: _t } = useTranslation('SignIn');
@@ -20,9 +18,8 @@ export const SignIn: React.FC = () => {
   const { mutate: mutateSignIn, isLoading: loadingSignIn } = useMutation(
     (payload: any) => postFetcher('/sign-in', payload),
     {
-      onSuccess: (response) => {
+      onSuccess: () => {
         signedInUserRefetch();
-        navigate('/');
       },
       onError: (error) => {
         setFormErrors(form, error);

@@ -1,6 +1,6 @@
 import { Col, Image, Layout, Menu, Row, theme, Card, Typography } from 'antd';
 import { UserOutlined, BarsOutlined } from '@ant-design/icons';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
@@ -32,17 +32,22 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
   const isMobile = useIsMobile();
   const { model } = useParams();
   const { configuration } = useContext(ConfigurationContext);
-  const { signedInUser, signedInUserRefetch } = useContext(SignInUserContext);
+  const { signedInUser, signedInUserRefetch, signedIn } = useContext(SignInUserContext);
   const { t: _t } = useTranslation('CrudContainer');
 
   const {
     token: { colorBgContainer, colorPrimary },
   } = theme.useToken();
 
+  useEffect(() => {
+    if (!signedIn) {
+      navigate('/sign-in');
+    }
+  }, [navigate, signedIn]);
+
   const { mutate: mutateSignOut } = useMutation(() => postFetcher('/sign-out', {}), {
     onSuccess: () => {
       signedInUserRefetch();
-      navigate('/sign-in');
     },
   });
 

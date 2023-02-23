@@ -3,9 +3,11 @@ export enum EFieldWidgetType {
   InputNumber = 'InputNumber',
   Select = 'Select',
   AsyncSelect = 'AsyncSelect',
+  Switch = 'Switch',
   Checkbox = 'Checkbox',
   TimePicker = 'TimePicker',
   DatePicker = 'DatePicker',
+  DateTimePicker = 'DateTimePicker',
   RangePicker = 'RangePicker',
   RadioGroup = 'RadioGroup',
   CheckboxGroup = 'CheckboxGroup',
@@ -24,23 +26,24 @@ export interface IListConfigurationField {
   width?: number;
   widget_type?: EFieldWidgetType;
   widget_props?: any;
-}
-
-export interface IAddConfigurationField {
-  sorter?: boolean;
-  width?: number;
-  widget_type?: EFieldWidgetType;
-  widget_props?: any;
+  filter_condition?: string;
+  col?: number;
 }
 
 export interface IAddConfigurationField {
   widget_type?: EFieldWidgetType;
   widget_props?: any;
+  required?: boolean;
+  row?: number;
+  col?: number;
 }
 
 export interface IChangeConfigurationField {
   widget_type?: EFieldWidgetType;
   widget_props?: any;
+  required?: boolean;
+  row?: number;
+  col?: number;
 }
 
 export interface IModelField {

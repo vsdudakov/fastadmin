@@ -1,21 +1,24 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { Breadcrumb, Button, Col, Empty, Form, message, Popconfirm, Row, Space } from 'antd';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SaveOutlined, SaveFilled, DeleteOutlined } from '@ant-design/icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { CrudContainer } from 'components/crud-container';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
 import {
+  EFieldWidgetType,
   EModelPermission,
   IChangeConfigurationField,
   IModel,
   IModelField,
 } from 'interfaces/configuration';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { deleteFetcher, getFetcher, patchFetcher } from 'fetchers/fetchers';
 import { setFormErrors } from 'helpers/forms';
 import { getWidgetCls } from 'helpers/widgets';
+import { getTitleFromFieldName } from 'helpers/title';
+import { transformDataToServer, transformDataFromServer } from 'helpers/transform';
 
 export const Change: React.FC = () => {
   const [form] = Form.useForm();
@@ -34,7 +37,7 @@ export const Change: React.FC = () => {
     () => getFetcher(`/retrieve/${model}/${id}`),
     {
       onSuccess: (data) => {
-        form.setFieldsValue(data);
+        form.setFieldsValue(transformDataFromServer(data));
       },
     }
   );
@@ -69,16 +72,64 @@ export const Change: React.FC = () => {
   });
 
   const onFinish = (payload: any) => {
-    mutate(payload);
+    mutate(transformDataToServer(payload));
   };
 
-  const getWidget = (changeConfiguration: IChangeConfigurationField) => {
-    if (!changeConfiguration.widget_type) {
-      return null;
-    }
-    const [Widget, widgetProps]: any = getWidgetCls(changeConfiguration.widget_type, _t);
-    return <Widget {...(widgetProps || {})} {...(changeConfiguration.widget_props || {})} />;
-  };
+  const getWidget = useCallback(
+    (changeConfiguration: IChangeConfigurationField) => {
+      if (!changeConfiguration.widget_type) {
+        return null;
+      }
+      const [Widget, widgetProps]: any = getWidgetCls(changeConfiguration.widget_type, _t);
+      return <Widget {...(widgetProps || {})} {...(changeConfiguration.widget_props || {})} />;
+    },
+    [_t]
+  );
+
+  const formItems = useCallback(
+    (col: number) => {
+      const fields = (modelConfiguration || { fields: [] }).fields;
+      return fields
+        .filter((field: IModelField) => !!field.change_configuration?.widget_type)
+        .filter(
+          (field: IModelField) =>
+            field.change_configuration?.col === col ||
+            (col === 1 && !field.change_configuration?.col)
+        )
+        .sort(
+          (a: IModelField, b: IModelField) =>
+            (a?.change_configuration?.row || 0) - (b?.change_configuration?.row || 0)
+        )
+        .map((field: IModelField) => (
+          <Form.Item
+            key={field.name}
+            name={field.name}
+            label={getTitleFromFieldName(field.name)}
+            rules={
+              field.change_configuration?.required
+                ? [
+                    {
+                      required: true,
+                    },
+                  ]
+                : []
+            }
+            valuePropName={
+              [
+                EFieldWidgetType.Checkbox,
+                EFieldWidgetType.Switch,
+                EFieldWidgetType.CheckboxGroup,
+              ].includes(field.add_configuration?.widget_type as EFieldWidgetType)
+                ? 'checked'
+                : undefined
+            }
+          >
+            {getWidget(field.change_configuration as IChangeConfigurationField)}
+          </Form.Item>
+        ));
+    },
+    [getWidget, modelConfiguration]
+  );
 
   return (
     <CrudContainer
@@ -96,14 +147,18 @@ export const Change: React.FC = () => {
       }
     >
       {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Change) ? (
-        <Form form={form} onFinish={onFinish}>
-          {modelConfiguration.fields
-            .filter((field: IModelField) => !!field.change_configuration?.widget_type)
-            .map((field: IModelField) => (
-              <Form.Item key={field.name} name={field.name}>
-                {getWidget(field.change_configuration as IChangeConfigurationField)}
-              </Form.Item>
-            ))}
+        <Form layout="vertical" form={form} onFinish={onFinish}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} xl={8}>
+              {formItems(1)}
+            </Col>
+            <Col xs={24} xl={8}>
+              {formItems(2)}
+            </Col>
+            <Col xs={24} xl={8}>
+              {formItems(3)}
+            </Col>
+          </Row>
           <Row justify="space-between">
             <Col>
               <Space>
