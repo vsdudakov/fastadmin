@@ -25,7 +25,7 @@ async def shutdown():
 
 admin_app.mount(
     f"/{settings.ADMIN_PREFIX}/static",
-    StaticFiles(directory="frontend/static"),
+    StaticFiles(directory="static"),
     name="static",
 )
 admin_app.include_router(api_router, prefix=f"/{settings.ADMIN_PREFIX}")

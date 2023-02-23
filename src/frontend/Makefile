@@ -22,12 +22,7 @@ lint:
 .PHONY: build
 build:
 	yarn run build
-	mv ./build/static/js/main*.js ./build/static/js/main.min.js
-	mv ./build/static/css/main*.css ./build/static/css/main.min.css
-	rm -rf ./static/js
-	rm -rf ./static/css
-	cp -rf build/static/js/ static/js/
-	cp -rf build/static/css/ static/css/
+
 
 .PHONY: fix
 fix:

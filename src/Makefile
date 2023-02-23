@@ -30,6 +30,18 @@ kill:
 	kill -9 $$(lsof -t -i:8090)
 	kill -9 $$(lsof -t -i:3030)
 
+.PHONY: copy-frontend
+copy-frontend:
+	rm -rf ./static/js
+	rm -rf ./static/css
+	cp -rf ./frontend/build/static/js/ ./static/js/
+	cp -rf ./frontend/build/static/css/ ./static/css/
+	mv static/js/main*.js.map static/js/main.min.js.map
+	mv static/js/main*.js static/js/main.min.js
+	mv static/css/main*.css.map static/css/main.min.css.map
+	mv static/css/main*.css static/css/main.min.css
+
 .PHONY: build
 build:
 	make -C frontend build
+	make copy-frontend
