@@ -1,0 +1,73 @@
+import React, { useEffect, useState } from 'react';
+import { Row, Space, Button, Input, Radio, Col } from 'antd';
+import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
+
+import { EFieldWidgetType } from 'interfaces/configuration';
+import { useTranslation } from 'react-i18next';
+import { getWidgetCls } from 'helpers/widgets';
+
+interface IFilterColumn {
+  widgetType: EFieldWidgetType;
+  widgetProps?: any;
+  value?: any;
+  onFilter(value: any): void;
+  onReset(): void;
+}
+
+export const FilterColumn = ({
+  widgetType,
+  widgetProps,
+  value,
+  onFilter,
+  onReset,
+}: IFilterColumn) => {
+  const { t: _t } = useTranslation('List');
+  const [filterValue, setFilterValue] = useState<any | undefined>();
+  const [FilterWidget, defaultProps]: any = getWidgetCls(widgetType, _t);
+
+  useEffect(() => {
+    setFilterValue(value);
+  }, [value]);
+
+  const onFilterButton = () => {
+    onFilter(filterValue);
+  };
+
+  const onChangeWidget = (widgetValue: any) => {
+    if (FilterWidget === Input || FilterWidget === Radio.Group) {
+      setFilterValue(widgetValue.target.value);
+    } else {
+      setFilterValue(widgetValue);
+    }
+  };
+
+  return (
+    <Row>
+      <Col xs={24} style={{ padding: 10 }}>
+        <FilterWidget
+          value={filterValue}
+          size="middle"
+          onChange={onChangeWidget}
+          placeholder={_t('Filter By')}
+          {...(defaultProps || {})}
+          {...(widgetProps || {})}
+        />
+      </Col>
+      <Col xs={24} style={{ padding: 10 }}>
+        <Space align="end">
+          <Button onClick={onReset} size="small">
+            {_t('Reset')}
+          </Button>
+          <Button
+            type="primary"
+            onClick={onFilterButton}
+            icon={FilterWidget === Input ? <SearchOutlined /> : <FilterOutlined />}
+            size="small"
+          >
+            {_t('Filter')}
+          </Button>
+        </Space>
+      </Col>
+    </Row>
+  );
+};

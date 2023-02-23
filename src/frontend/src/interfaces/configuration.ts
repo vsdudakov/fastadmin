@@ -2,22 +2,57 @@ export enum EFieldWidgetType {
   Input = 'Input',
   InputNumber = 'InputNumber',
   Select = 'Select',
-  MultipleSelect = 'MultipleSelect',
+  AsyncSelect = 'AsyncSelect',
   Checkbox = 'Checkbox',
   TimePicker = 'TimePicker',
   DatePicker = 'DatePicker',
+  RangePicker = 'RangePicker',
   RadioGroup = 'RadioGroup',
   CheckboxGroup = 'CheckboxGroup',
   Upload = 'Upload',
 }
 
+export enum EModelPermission {
+  Add = 'Add',
+  Change = 'Change',
+  Delete = 'Delete',
+  Export = 'Export',
+}
+
+export interface IListConfigurationField {
+  sorter?: boolean;
+  width?: number;
+  widget_type?: EFieldWidgetType;
+  widget_props?: any;
+}
+
+export interface IAddConfigurationField {
+  sorter?: boolean;
+  width?: number;
+  widget_type?: EFieldWidgetType;
+  widget_props?: any;
+}
+
+export interface IAddConfigurationField {
+  widget_type?: EFieldWidgetType;
+  widget_props?: any;
+}
+
+export interface IChangeConfigurationField {
+  widget_type?: EFieldWidgetType;
+  widget_props?: any;
+}
+
 export interface IModelField {
   name: string;
-  widget_type: EFieldWidgetType;
+  list_configuration?: IListConfigurationField;
+  add_configuration?: IAddConfigurationField;
+  change_configuration?: IChangeConfigurationField;
 }
 
 export interface IModel {
   name: string;
+  permissions: EModelPermission[];
   fields: IModelField[];
 }
 

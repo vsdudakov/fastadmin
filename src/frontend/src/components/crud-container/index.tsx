@@ -1,27 +1,36 @@
-import { Col, Image, Layout, Menu, Row, theme } from 'antd';
+import { Col, Image, Layout, Menu, Row, theme, Card, Typography } from 'antd';
 import { UserOutlined, BarsOutlined } from '@ant-design/icons';
-import { ConfigurationContext } from 'providers/ConfigurationProvider';
-import { SignInUserContext } from 'providers/SignInUserProvider';
 import React, { useContext } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
-import { postFetcher } from 'fetchers/fetchers';
 import { useMutation } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+
+import { ConfigurationContext } from 'providers/ConfigurationProvider';
+import { SignInUserContext } from 'providers/SignInUserProvider';
+import { postFetcher } from 'fetchers/fetchers';
 import { IModel } from 'interfaces/configuration';
 import { useIsMobile } from 'hooks/useIsMobile';
 
-const { Header, Content, Sider } = Layout;
+const { Header, Sider } = Layout;
+const { Title } = Typography;
 
 interface ICrudContainer {
   title: string;
   breadcrumbs?: JSX.Element | JSX.Element[];
+  actions?: JSX.Element | JSX.Element[];
   children: JSX.Element | JSX.Element[];
 }
 
-export const CrudContainer: React.FC<ICrudContainer> = ({ title, breadcrumbs, children }) => {
+export const CrudContainer: React.FC<ICrudContainer> = ({
+  title,
+  breadcrumbs,
+  actions,
+  children,
+}) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { model } = useParams();
   const { configuration } = useContext(ConfigurationContext);
   const { signedInUser, signedInUserRefetch } = useContext(SignInUserContext);
   const { t: _t } = useTranslation('CrudContainer');
@@ -84,6 +93,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({ title, breadcrumbs, ch
                 style={{ background: colorPrimary, color: colorBgContainer }}
                 theme="light"
                 mode="horizontal"
+                defaultSelectedKeys={[model || 'dashboard']}
                 items={[
                   {
                     key: signedInUser?.id || 'key',
@@ -97,7 +107,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({ title, breadcrumbs, ch
             <Col>
               <Link to="/">
                 <Image
-                  src={configuration.site_header_logo}
+                  src={(window as any).SERVER_FOMAIN + configuration.site_header_logo}
                   preview={false}
                   height={32}
                   alt={configuration.site_name}
@@ -143,7 +153,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({ title, breadcrumbs, ch
               <Menu
                 mode="inline"
                 theme="light"
-                defaultSelectedKeys={['dashboard']}
+                defaultSelectedKeys={[model || 'dashboard']}
                 style={{
                   borderRight: 0,
                   marginTop: 50,
@@ -155,15 +165,21 @@ export const CrudContainer: React.FC<ICrudContainer> = ({ title, breadcrumbs, ch
           )}
           <Layout style={{ padding: 16 }}>
             {breadcrumbs}
-            <Content
-              style={{
-                padding: 24,
-                marginTop: 16,
-                background: colorBgContainer,
-              }}
+            <Card
+              title={
+                <Row justify="space-between">
+                  <Col>
+                    <Title style={{ margin: 0, marginTop: 5 }} level={5}>
+                      {title}
+                    </Title>
+                  </Col>
+                  <Col>{actions}</Col>
+                </Row>
+              }
+              style={{ marginTop: 16 }}
             >
               {children}
-            </Content>
+            </Card>
           </Layout>
         </Layout>
       </Layout>

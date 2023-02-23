@@ -7,22 +7,50 @@ class WidgetType(str, Enum):
     Input = "Input"
     InputNumber = "InputNumber"
     Select = "Select"
-    MultipleSelect = "MultipleSelect"
+    AsyncSelect = "AsyncSelect"
     Checkbox = "Checkbox"
     TimePicker = "TimePicker"
     DatePicker = "DatePicker"
+    RangePicker = "RangePicker"
     RadioGroup = "RadioGroup"
     CheckboxGroup = "CheckboxGroup"
     Upload = "Upload"
 
 
+class ModelPermission(str, Enum):
+    Add = "Add"
+    Change = "Change"
+    Delete = "Delete"
+    Export = "Export"
+
+
+class ListConfigurationFieldSchema(BaseModel):
+    sorter: bool
+    width: int | None
+    widget_type: WidgetType
+    widget_props: dict | None
+
+
+class AddConfigurationFieldSchema(BaseModel):
+    widget_type: WidgetType
+    widget_props: dict | None
+
+
+class ChangeConfigurationFieldSchema(BaseModel):
+    widget_type: WidgetType
+    widget_props: dict | None
+
+
 class ModelFieldSchema(BaseModel):
     name: str
-    widget_type: WidgetType
+    list_configuration: ListConfigurationFieldSchema | None
+    add_configuration: AddConfigurationFieldSchema | None
+    change_configuration: ChangeConfigurationFieldSchema | None
 
 
 class ModelSchema(BaseModel):
     name: str
+    permissions: list[ModelPermission]
     fields: list[ModelFieldSchema]
 
 

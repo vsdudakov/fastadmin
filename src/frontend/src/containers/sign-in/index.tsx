@@ -40,7 +40,7 @@ export const SignIn: React.FC = () => {
         <Row justify="center">
           <Col>
             <Image
-              src={configuration.site_sign_in_logo}
+              src={(window as any).SERVER_FOMAIN + configuration.site_sign_in_logo}
               height={100}
               alt={configuration.site_name}
               preview={false}

@@ -27,7 +27,7 @@ export const App: React.FC = () => {
     >
       <Helmet titleTemplate="FastAPI Admin | %s" defaultTitle={_t('FastAPI Admin') as string}>
         <meta name="description" content={_t('FastAPI Admin') as string} />
-        <link rel="icon" href={configuration.site_favicon}></link>
+        <link rel="icon" href={(window as any).SERVER_FOMAIN + configuration.site_favicon}></link>
       </Helmet>
       <Routes>
         <Route path="/sign-in" element={<SignIn />} />

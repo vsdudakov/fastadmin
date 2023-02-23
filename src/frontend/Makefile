@@ -24,8 +24,10 @@ build:
 	yarn run build
 	mv ./build/static/js/main*.js ./build/static/js/main.min.js
 	mv ./build/static/css/main*.css ./build/static/css/main.min.css
-	cp -rf build/static/ static/
-	rm ./static/js/*.txt
+	rm -rf ./static/js
+	rm -rf ./static/css
+	cp -rf build/static/js/ static/js/
+	cp -rf build/static/css/ static/css/
 
 .PHONY: fix
 fix:

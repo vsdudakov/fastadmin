@@ -16,13 +16,15 @@ class Settings:
     ADMIN_SITE_NAME = env.str("ADMIN_SITE_NAME", "API Administration")
     ADMIN_SITE_SIGN_IN_LOGO = env.str(
         "ADMIN_SITE_SIGN_IN_LOGO",
-        "https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png",
+        "/admin/static/images/sign-in-logo.png",
     )
     ADMIN_SITE_HEADER_LOGO = env.str(
-        "ADMIN_SITE_HEADER_LOGO", "https://fastapi.tiangolo.com/img/icon-white.svg"
+        "ADMIN_SITE_HEADER_LOGO",
+        "/admin/static/images/header-logo.svg",
     )
     ADMIN_SITE_FAVICON = env.str(
-        "ADMIN_SITE_FAVICON", "https://fastapi.tiangolo.com/img/favicon.png"
+        "ADMIN_SITE_FAVICON",
+        "/admin/static/images/favicon.png",
     )
     ADMIN_PRIMARY_COLOR = env.str("ADMIN_PRIMARY_COLOR", "#009485")
 

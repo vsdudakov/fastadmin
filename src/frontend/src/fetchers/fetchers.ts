@@ -20,7 +20,7 @@ export const postFetcher = async (url: string, payload: any): Promise<any> => {
 };
 
 export const patchFetcher = async (url: string, payload: any): Promise<any> => {
-  const response = await instance.put(url, payload);
+  const response = await instance.patch(url, payload);
   return response.data;
 };
 

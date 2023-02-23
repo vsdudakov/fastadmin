@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Breadcrumb } from 'antd';
+import { Breadcrumb, Empty } from 'antd';
 import { Link } from 'react-router-dom';
 
 import { CrudContainer } from 'components/crud-container';
@@ -18,7 +18,7 @@ export const Index: React.FC = () => {
         </Breadcrumb>
       }
     >
-      <div></div>
+      <Empty />
     </CrudContainer>
   );
 };
