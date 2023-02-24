@@ -7,8 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 
 from fastapi_admin.api.depends import get_user_id, get_user_id_or_none
-from fastapi_admin.api.schemas.api import ExportSchema, SignInInputSchema
-from fastapi_admin.api.schemas.configuration import (
+from fastapi_admin.models.base import BaseModelAdmin
+from fastapi_admin.models.helpers import get_admin_model, get_admin_models
+from fastapi_admin.schemas.api import ExportSchema, SignInInputSchema
+from fastapi_admin.schemas.configuration import (
     AddConfigurationFieldSchema,
     ChangeConfigurationFieldSchema,
     ConfigurationSchema,
@@ -17,7 +19,6 @@ from fastapi_admin.api.schemas.configuration import (
     ModelPermission,
     ModelSchema,
 )
-from fastapi_admin.models import ModelAdmin, get_admin_model, get_admin_models
 from fastapi_admin.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -221,7 +222,7 @@ async def configuration(
     models = get_admin_models()
     models_schemas = []
     for model_cls in models:
-        admin_obj: ModelAdmin = models[model_cls](model_cls)
+        admin_obj: BaseModelAdmin = models[model_cls](model_cls)
 
         fields = await admin_obj.get_fields()
         fields_schema = []
@@ -290,6 +291,7 @@ async def configuration(
                 list_per_page=admin_obj.list_per_page,
                 save_on_top=admin_obj.save_on_top,
                 search_help_text=admin_obj.search_help_text,
+                with_search=len(admin_obj.search_fields) > 0,
             ),
         )
 

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from fastapi_admin.api.api import router as api_router
-from fastapi_admin.models import ModelAdmin
+from fastapi_admin.models.base import BaseModelAdmin
 from fastapi_admin.settings import settings
 from fastapi_admin.views import router as views_router
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 admin_app = FastAPI(
     openapi_url=False,
 )
-admin_models: dict[Any, type[ModelAdmin]] = {}
+admin_models: dict[Any, type[BaseModelAdmin]] = {}
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 admin_app.mount(

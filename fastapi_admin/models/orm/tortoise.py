@@ -1,0 +1,237 @@
+import asyncio
+from typing import Any, Sequence
+
+from fastapi_admin.models.base import BaseModelAdmin
+from fastapi_admin.schemas.configuration import WidgetType
+
+
+class TortoiseModelAdmin(BaseModelAdmin):
+    def _get_model_fields(self) -> list[str]:
+        fields = [f for f in self.model_cls._meta.fields_db_projection.keys()]
+        for m2m_field in self.model_cls._meta.m2m_fields:
+            fields.append(m2m_field)
+        return fields
+
+    async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
+        for key, value in payload.items():
+            setattr(obj, key, value)
+        await obj.save(update_fields=payload.keys() if not add else None)
+
+    async def delete_model(self, obj: Any) -> None:
+        await obj.delete()
+
+    async def get_obj(self, id: str) -> Any | None:
+        return await self.model_cls.filter(id=id).first()
+
+    async def get_list(
+        self,
+        offset: int | None = None,
+        limit: int | None = None,
+        search: str | None = None,
+        sort_by: str | None = None,
+        filters: dict | None = None,
+    ) -> tuple[list[Any], int]:
+        qs = self.model_cls.all()
+
+        if filters:
+            for key, value in filters.items():
+                qs = qs.filter(**{key: value})
+
+        if search:
+            if self.search_fields:
+                ids = await asyncio.gather(
+                    *(qs.filter(**{f + "__icontains": search}).values_list("id", flat=True) for f in self.search_fields)
+                )
+                ids = [item for sublist in ids for item in sublist]
+                qs = qs.filter(id__in=ids)
+
+        if sort_by:
+            qs = qs.order_by(sort_by)
+        else:
+            if self.ordering:
+                qs = qs.order_by(*self.ordering)
+
+        total = await qs.count()
+
+        if offset is not None and limit is not None:
+            qs = qs.offset(offset)
+            qs = qs.limit(limit)
+
+        if self.list_select_related:
+            qs = qs.select_related(*self.list_select_related)
+
+        return await qs, total
+
+    async def get_fields(self) -> Sequence[str]:
+        fields = await super().get_fields()
+        model_fields = self._get_model_fields()
+        if not fields:
+            if self.exclude:
+                return (f for f in model_fields if f not in self.exclude)
+            return model_fields
+        return (f for f in fields if f in model_fields)
+
+    async def get_list_display(self) -> Sequence[str]:
+        fields_map = self.model_cls._meta.fields_map
+        list_display = await super().get_list_display()
+        model_fields = self._get_model_fields()
+        if not list_display:
+            return (f for f in model_fields if getattr(fields_map[f], "index", True))
+        return (f for f in list_display if f in model_fields)
+
+    async def get_hidden_fields(self) -> Sequence[str]:
+        fields_map = self.model_cls._meta.fields_map
+        hidden_fields = await super().get_hidden_fields()
+        model_fields = self._get_model_fields()
+        if not hidden_fields:
+            return (
+                f
+                for f in model_fields
+                if (
+                    getattr(fields_map[f], "_generated", False)
+                    or getattr(fields_map[f], "index", False)
+                    or getattr(fields_map[f], "auto_now", False)
+                    or getattr(fields_map[f], "auto_now_add", False)
+                )
+                and f not in self.readonly_fields
+            )
+        return (f for f in hidden_fields if f in model_fields)
+
+    async def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
+        field_obj = self.model_cls._meta.fields_map[field]
+        field_obj = field_obj.reference if field_obj.reference else field_obj
+        widget_props = {
+            "required": not field_obj.null and not field_obj.default,
+            "disabled": field in self.readonly_fields,
+        }
+        field_class = field_obj.__class__.__name__
+        if field_class == "CharField":
+            return WidgetType.Input, widget_props
+        if field_class == "TextField":
+            return WidgetType.TextArea, widget_props
+        if field_class == "BooleanField":
+            return WidgetType.Switch, {**widget_props, "required": False}
+        if field_class == "ArrayField":
+            return WidgetType.Select, {
+                **widget_props,
+                "mode": "tags",
+            }
+        if field_class == "IntField":
+            return WidgetType.InputNumber, widget_props
+        if field_class == "FloatField":
+            return WidgetType.InputNumber, widget_props
+        if field_class == "DecimalField":
+            return WidgetType.InputNumber, widget_props
+        if field_class == "DateField":
+            return WidgetType.DatePicker, widget_props
+        if field_class == "DatetimeField":
+            return WidgetType.DateTimePicker, widget_props
+        if field_class == "TimeField":
+            return WidgetType.TimePicker, widget_props
+        if field_class == "ForeignKeyFieldInstance":
+            if field in self.raw_id_fields:
+                return WidgetType.Input, widget_props
+            return WidgetType.AsyncSelect, {
+                **widget_props,
+                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
+                "idField": "id",
+                "labelField": "username",
+            }
+        if field_class == "ManyToManyFieldInstance":
+            if field in self.raw_id_fields:
+                return WidgetType.Input, widget_props
+            return WidgetType.AsyncSelect, {
+                **widget_props,
+                "required": False,
+                "mode": "multiple",
+                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
+                "idField": "id",
+                "labelField": "username",
+            }
+        if field_class == "OneToOneFieldInstance":
+            if field in self.raw_id_fields:
+                return WidgetType.Input, widget_props
+            return WidgetType.AsyncSelect, {
+                **widget_props,
+                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
+                "idField": "id",
+                "labelField": "username",
+            }
+        if field_class == "CharEnumFieldInstance":
+            return WidgetType.RadioGroup if field in self.radio_fields else WidgetType.Select, {
+                **widget_props,
+                "options": [{"label": k, "value": k} for k in field_obj.enum_type],
+            }
+        return WidgetType.Input, widget_props
+
+    async def get_filter_widget(self, field: str) -> tuple[WidgetType, dict]:
+        field_obj = self.model_cls._meta.fields_map[field]
+        field_obj = field_obj.reference if field_obj.reference else field_obj
+        widget_props = {}
+        field_class = field_obj.__class__.__name__
+        if field_class == "CharField":
+            return WidgetType.Input, widget_props
+        if field_class == "TextField":
+            return WidgetType.Input, widget_props
+        if field_class == "BooleanField":
+            return WidgetType.RadioGroup, {
+                **widget_props,
+                "options": [
+                    {"label": "Yes", "value": True},
+                    {"label": "No", "value": False},
+                ],
+            }
+        if field_class == "ArrayField":
+            return WidgetType.Select, {
+                **widget_props,
+                "mode": "tags",
+            }
+        if field_class == "IntField":
+            return WidgetType.InputNumber, widget_props
+        if field_class == "FloatField":
+            return WidgetType.InputNumber, widget_props
+        if field_class == "DecimalField":
+            return WidgetType.InputNumber, widget_props
+        if field_class == "DateField":
+            return WidgetType.RangePicker, widget_props
+        if field_class == "DatetimeField":
+            return WidgetType.RangePicker, widget_props
+        if field_class == "TimeField":
+            return WidgetType.RangePicker, widget_props
+        if field_class == "ForeignKeyFieldInstance":
+            if field in self.raw_id_fields:
+                return WidgetType.Input, widget_props
+            return WidgetType.AsyncSelect, {
+                **widget_props,
+                "mode": "multiple",
+                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
+                "idField": "id",
+                "labelField": "id",  # TODO: labelField
+            }
+        if field_class == "ManyToManyFieldInstance":
+            if field in self.raw_id_fields:
+                return WidgetType.Input, widget_props
+            return WidgetType.AsyncSelect, {
+                **widget_props,
+                "mode": "multiple",
+                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
+                "idField": "id",
+                "labelField": "id",  # TODO: labelField
+            }
+        if field_class == "OneToOneFieldInstance":
+            if field in self.raw_id_fields:
+                return WidgetType.Input, widget_props
+            return WidgetType.AsyncSelect, {
+                **widget_props,
+                "mode": "multiple",
+                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
+                "idField": "id",
+                "labelField": "id",  # TODO: labelField
+            }
+        if field_class == "CharEnumFieldInstance":
+            return WidgetType.Select, {
+                **widget_props,
+                "mode": "multiple",
+                "options": [{"label": k, "value": k} for k in field_obj.enum_type],
+            }
+        return WidgetType.Input, widget_props

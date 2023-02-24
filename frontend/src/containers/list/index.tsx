@@ -195,14 +195,16 @@ export const List: React.FC = () => {
       }
       actions={
         <Row style={{ marginTop: 10, marginBottom: 10 }} gutter={[8, 8]}>
-          <Col>
-            <Input.Search
-              placeholder={modelConfiguration?.search_help_text || (_t('Search By') as string)}
-              allowClear
-              onSearch={setSearch}
-              style={{ width: 200 }}
-            />
-          </Col>
+          {modelConfiguration?.with_search && (
+            <Col>
+              <Input.Search
+                placeholder={modelConfiguration?.search_help_text || (_t('Search By') as string)}
+                allowClear
+                onSearch={setSearch}
+                style={{ width: 300 }}
+              />
+            </Col>
+          )}
           {modelConfiguration?.permissions?.includes(EModelPermission.Export) && (
             <Col>
               <Button loading={isLoadingExport} onClick={() => mutateExport()}>

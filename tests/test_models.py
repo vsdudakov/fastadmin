@@ -1,7 +1,7 @@
 from enum import Enum
 
-from fastapi_admin.decorators import register
-from fastapi_admin.models import TortoiseModelAdmin
+from fastapi_admin.models.decorators import register
+from fastapi_admin.models.orm.tortoise import TortoiseModelAdmin
 from tortoise import Model, fields
 
 

@@ -1,3 +1,5 @@
-from .decorators import register
-from .main import admin_app
-from .models import ModelAdmin, TortoiseModelAdmin, register_admin_model
+from fastapi_admin.main import admin_app
+from fastapi_admin.models.base import ModelAdmin
+from fastapi_admin.models.decorators import register
+from fastapi_admin.models.orm.tortoise import TortoiseModelAdmin
+from fastapi_admin.schemas.configuration import WidgetType

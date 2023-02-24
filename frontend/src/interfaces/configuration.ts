@@ -58,6 +58,7 @@ export interface IModel {
   list_per_page?: number;
   save_on_top?: boolean;
   search_help_text?: string;
+  with_search?: boolean;
 }
 
 export interface IConfiguration {

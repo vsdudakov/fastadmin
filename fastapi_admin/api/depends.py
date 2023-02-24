@@ -4,7 +4,7 @@ import jwt
 from fastapi import Request, status
 from fastapi.exceptions import HTTPException
 
-from fastapi_admin.models import get_admin_model
+from fastapi_admin.models.helpers import get_admin_model
 from fastapi_admin.settings import settings
 
 
