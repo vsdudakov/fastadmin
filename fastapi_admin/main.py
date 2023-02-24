@@ -20,7 +20,7 @@ admin_models: dict[Any, type[ModelAdmin]] = {}
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 admin_app.mount(
-    f"/{settings.ADMIN_PREFIX}/static",
+    "/static",
     StaticFiles(directory=os.path.join(current_dir, "static")),
     name="static",
 )

@@ -1,10 +1,12 @@
 import logging
+from datetime import datetime, timedelta
 from io import StringIO
 
+import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 
-from fastapi_admin.api.depends import get_session_id, get_user_id
+from fastapi_admin.api.depends import get_user_id, get_user_id_or_none
 from fastapi_admin.api.schemas.api import ExportSchema, SignInInputSchema
 from fastapi_admin.api.schemas.configuration import (
     AddConfigurationFieldSchema,
@@ -38,12 +40,22 @@ async def sign_in(
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="User not found.")
     user = users[0]
 
-    if not hasattr(user, "check_password") or not user.check_password(payload.password):
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED, detail="Invalid password. User model must have check_password method."
-        )
+    if not hasattr(user, "check_password"):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="User model must have check_password method.")
 
-    session_id = user.id
+    if not user.check_password(payload.password):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials.")
+
+    now = datetime.utcnow()
+    session_expired_at = now + timedelta(seconds=settings.ADMIN_SESSION_EXPIRED_AT)
+    session_id = jwt.encode(
+        {
+            "user_id": str(user.id),
+            "session_expired_at": session_expired_at.isoformat(),
+        },
+        settings.ADMIN_SECRET_KEY,
+        algorithm="HS256",
+    )
     response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
     return None
 
@@ -197,9 +209,9 @@ async def delete(
 @router.get("/configuration")
 async def configuration(
     request: Request,
-    session_id: str | None = Depends(get_session_id),
+    user_id: str | None = Depends(get_user_id_or_none),
 ):
-    if not session_id:
+    if not user_id:
         return ConfigurationSchema(
             site_name=settings.ADMIN_SITE_NAME,
             site_sign_in_logo=settings.ADMIN_SITE_SIGN_IN_LOGO,
