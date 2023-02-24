@@ -17,6 +17,6 @@ async def get_user_id(request: Request) -> str:
     if not admin_model:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Admin model for user is not registered.")
     id = session_id
-    if not await admin_model.get_obj(request, id):
+    if not await admin_model.get_obj(id):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="User not found.")
     return id

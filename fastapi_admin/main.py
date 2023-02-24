@@ -27,21 +27,17 @@ admin_app.mount(
 admin_app.include_router(api_router)
 admin_app.include_router(views_router)
 
-
+app = FastAPI()
+app.mount(f"/{settings.ADMIN_PREFIX}", admin_app)
 # CORS
 origins = [
     "http://localhost:3030",
     "http://127.0.0.1:3030",
 ]
-
-admin_app.add_middleware(
+app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-app = FastAPI()
-app.mount(f"/{settings.ADMIN_PREFIX}", admin_app)
