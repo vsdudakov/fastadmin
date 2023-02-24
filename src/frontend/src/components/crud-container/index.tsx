@@ -174,7 +174,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
               title={
                 <Row justify="space-between">
                   <Col>
-                    <Title style={{ margin: 0, marginTop: 5 }} level={5}>
+                    <Title style={{ margin: 0, marginTop: 15 }} level={5}>
                       {title}
                     </Title>
                   </Col>

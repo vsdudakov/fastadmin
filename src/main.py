@@ -1,16 +1,19 @@
 import logging
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from backend.api import router as api_router
+from api.api import router as api_router
+from models import ModelAdmin
 from settings import settings
 from views import router as views_router
 
 logger = logging.getLogger(__name__)
 
 admin_app = FastAPI()
+admin_models: dict[Any, type[ModelAdmin]] = {}
 
 
 @admin_app.on_event("startup")
@@ -45,3 +48,6 @@ admin_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+from test_models import *

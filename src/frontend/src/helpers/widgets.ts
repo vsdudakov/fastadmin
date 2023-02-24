@@ -17,7 +17,14 @@ export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any) => {
     case EFieldWidgetType.Input:
       return [Input, {}];
     case EFieldWidgetType.InputNumber:
-      return [InputNumber, {}];
+      return [
+        InputNumber,
+        {
+          style: { width: '100%' },
+        },
+      ];
+    case EFieldWidgetType.TextArea:
+      return [Input.TextArea, {}];
     case EFieldWidgetType.Select:
       return [
         Select,

@@ -1,7 +1,18 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Breadcrumb, Button, Empty, message, Popconfirm, Space, Table } from 'antd';
+import {
+  Breadcrumb,
+  Button,
+  Col,
+  Empty,
+  Input,
+  message,
+  Popconfirm,
+  Row,
+  Space,
+  Tooltip,
+} from 'antd';
 import querystring from 'querystring';
 import {
   DownloadOutlined,
@@ -21,6 +32,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { deleteFetcher, getFetcher, postFetcher } from 'fetchers/fetchers';
 import { FilterColumn } from './filter-column';
 import { transformDataToServer } from 'helpers/transform';
+import { TableOrCards } from 'components/table-or-cards';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
@@ -33,6 +45,7 @@ export const List: React.FC = () => {
   const { model } = useParams();
 
   const [filters, setFilters] = useState<any>({});
+  const [search, setSearch] = useState<string | undefined>();
   const [page, setPage] = useState<number>(DEFAULT_PAGE);
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [sortBy, setSortBy] = useState<string | undefined>();
@@ -41,13 +54,15 @@ export const List: React.FC = () => {
     (item: IModel) => item.name === model
   );
 
+  useEffect(() => {
+    if (modelConfiguration?.list_per_page) {
+      setPageSize(modelConfiguration?.list_per_page);
+    }
+  }, [modelConfiguration?.list_per_page]);
+
   const columns = useMemo(() => {
     return (modelConfiguration || { fields: [] }).fields
       .filter((field: IModelField) => !!field.list_configuration)
-      .sort(
-        (a: IModelField, b: IModelField) =>
-          (a?.list_configuration?.col || 0) - (b?.list_configuration?.col || 0)
-      )
       .map((field: IModelField) => {
         const filterCondition =
           field.list_configuration?.filter_condition || `${field.name}__icontains`;
@@ -56,14 +71,18 @@ export const List: React.FC = () => {
           dataIndex: field.name,
           key: field.name,
           sorter: field.list_configuration?.sorter,
-          filterIcon: !!field.list_configuration?.widget_type ? (
+          filterIcon: !!field.list_configuration?.filter_widget_type ? (
             filters[filterCondition] !== undefined ? (
-              <FilterFilled style={{ color: 'red' }} />
+              <Tooltip title={_t('Click to reset this filter')}>
+                <FilterFilled style={{ color: 'red' }} />
+              </Tooltip>
             ) : (
-              <FilterOutlined />
+              <Tooltip title={_t('Click to filter')}>
+                <FilterOutlined />
+              </Tooltip>
             )
           ) : undefined,
-          filterDropdown: !!field.list_configuration?.widget_type
+          filterDropdown: !!field.list_configuration?.filter_widget_type
             ? ({ confirm, clearFilters }: any) => {
                 const onReset = () => {
                   delete filters[filterCondition];
@@ -82,8 +101,8 @@ export const List: React.FC = () => {
                 };
                 return (
                   <FilterColumn
-                    widgetType={field.list_configuration?.widget_type as EFieldWidgetType}
-                    widgetProps={field.list_configuration?.widget_props}
+                    widgetType={field.list_configuration?.filter_widget_type as EFieldWidgetType}
+                    widgetProps={field.list_configuration?.filter_widget_props}
                     value={filters[filterCondition]}
                     onFilter={onFilter}
                     onReset={onReset}
@@ -91,11 +110,22 @@ export const List: React.FC = () => {
                 );
               }
             : undefined,
+          render: (value: any, record: any) => {
+            if (field?.list_configuration?.is_link) {
+              return (
+                <Link to={`/change/${model}/${record.id}`}>
+                  {value || field.list_configuration?.empty_value_display || '-'}
+                </Link>
+              );
+            }
+            return value || field.list_configuration?.empty_value_display || '-';
+          },
         };
       });
-  }, [modelConfiguration, filters]);
+  }, [modelConfiguration, filters, _t, model]);
 
   const queryString = querystring.stringify({
+    search: search,
     sort_by: sortBy,
     offset: (page - 1) * pageSize,
     limit: pageSize,
@@ -106,8 +136,14 @@ export const List: React.FC = () => {
     getFetcher(`/list/${model}?${queryString}`)
   );
 
+  const exportQueryString = querystring.stringify({
+    search: search,
+    sort_by: sortBy,
+    ...transformDataToServer(filters),
+  });
+
   const { mutate: mutateExport, isLoading: isLoadingExport } = useMutation(
-    () => postFetcher(`/export/${model}`, {}),
+    () => postFetcher(`/export/${model}?${exportQueryString}`, {}),
     {
       onSuccess: (data) => {
         fileDownload(data, `${model}.csv`);
@@ -157,22 +193,34 @@ export const List: React.FC = () => {
         </Breadcrumb>
       }
       actions={
-        <Space>
+        <Row style={{ marginTop: 10, marginBottom: 10 }} gutter={[8, 8]}>
+          <Col>
+            <Input.Search
+              placeholder={modelConfiguration?.search_help_text || (_t('Search By') as string)}
+              allowClear
+              onSearch={setSearch}
+              style={{ width: 200 }}
+            />
+          </Col>
           {modelConfiguration?.permissions?.includes(EModelPermission.Export) && (
-            <Button loading={isLoadingExport} onClick={() => mutateExport()}>
-              <DownloadOutlined /> {_t('Export CSV')}
-            </Button>
+            <Col>
+              <Button loading={isLoadingExport} onClick={() => mutateExport()}>
+                <DownloadOutlined /> {_t('Export CSV')}
+              </Button>
+            </Col>
           )}
           {modelConfiguration?.permissions?.includes(EModelPermission.Add) && (
-            <Button onClick={() => navigate(`/add/${model}`)}>
-              <PlusCircleOutlined /> {_t('Add')}
-            </Button>
+            <Col>
+              <Button onClick={() => navigate(`/add/${model}`)}>
+                <PlusCircleOutlined /> {_t('Add')}
+              </Button>
+            </Col>
           )}
-        </Space>
+        </Row>
       }
     >
       {modelConfiguration ? (
-        <Table
+        <TableOrCards
           loading={isLoading}
           columns={[
             ...columns,

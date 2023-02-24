@@ -12,6 +12,8 @@ env.read_env(os.path.join(BASE_DIR, ENV_FILE))
 
 class Settings:
     ADMIN_PREFIX = env.str("ADMIN_PREFIX", "admin")
+    ADMIN_USER_MODEL = env.str("ADMIN_USER_MODEL", "User")
+    ADMIN_USER_MODEL_USERNAME_FIELD = env.str("ADMIN_USER_MODEL_USERNAME_FIELD", "username")
     ADMIN_SESSION_ID_KEY = env.str("ADMIN_SESSION_ID_KEY", "admin_session_id")
     ADMIN_SITE_NAME = env.str("ADMIN_SITE_NAME", "API Administration")
     ADMIN_SITE_SIGN_IN_LOGO = env.str(

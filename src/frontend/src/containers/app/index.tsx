@@ -22,6 +22,7 @@ export const App: React.FC = () => {
       theme={{
         token: {
           colorPrimary: configuration.primary_color,
+          colorLink: configuration.primary_color,
         },
       }}
     >

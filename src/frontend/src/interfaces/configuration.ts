@@ -1,6 +1,7 @@
 export enum EFieldWidgetType {
   Input = 'Input',
   InputNumber = 'InputNumber',
+  TextArea = 'TextArea',
   Select = 'Select',
   AsyncSelect = 'AsyncSelect',
   Switch = 'Switch',
@@ -24,26 +25,23 @@ export enum EModelPermission {
 export interface IListConfigurationField {
   sorter?: boolean;
   width?: number;
-  widget_type?: EFieldWidgetType;
-  widget_props?: any;
+  is_link?: boolean;
+  empty_value_display: string;
+  filter_widget_type?: EFieldWidgetType;
+  filter_widget_props?: any;
   filter_condition?: string;
-  col?: number;
 }
 
 export interface IAddConfigurationField {
-  widget_type?: EFieldWidgetType;
-  widget_props?: any;
+  form_widget_type?: EFieldWidgetType;
+  form_widget_props?: any;
   required?: boolean;
-  row?: number;
-  col?: number;
 }
 
 export interface IChangeConfigurationField {
-  widget_type?: EFieldWidgetType;
-  widget_props?: any;
+  form_widget_type?: EFieldWidgetType;
+  form_widget_props?: any;
   required?: boolean;
-  row?: number;
-  col?: number;
 }
 
 export interface IModelField {
@@ -57,6 +55,9 @@ export interface IModel {
   name: string;
   permissions: EModelPermission[];
   fields: IModelField[];
+  list_per_page?: number;
+  save_on_top?: boolean;
+  search_help_text?: string;
 }
 
 export interface IConfiguration {
