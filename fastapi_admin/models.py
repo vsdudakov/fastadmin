@@ -182,8 +182,11 @@ class ModelAdmin:
 
 
 class TortoiseModelAdmin(ModelAdmin):
-    def _get_model_fields(self) -> dict[str, Any]:
-        return self.model_cls._meta.fields_map
+    def _get_model_fields(self) -> list[str]:
+        fields = [f for f in self.model_cls._meta.fields_db_projection.keys()]
+        for m2m_field in self.model_cls._meta.m2m_fields:
+            fields.append(m2m_field)
+        return fields
 
     async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
         for key, value in payload.items():
@@ -248,13 +251,15 @@ class TortoiseModelAdmin(ModelAdmin):
         return (f for f in fields if f in model_fields)
 
     async def get_list_display(self) -> Sequence[str]:
+        fields_map = self.model_cls._meta.fields_map
         list_display = await super().get_list_display()
         model_fields = self._get_model_fields()
         if not list_display:
-            return (f for f in model_fields if getattr(model_fields[f], "index", False))
+            return (f for f in model_fields if getattr(fields_map[f], "index", True))
         return (f for f in list_display if f in model_fields)
 
     async def get_hidden_fields(self) -> Sequence[str]:
+        fields_map = self.model_cls._meta.fields_map
         hidden_fields = await super().get_hidden_fields()
         model_fields = self._get_model_fields()
         if not hidden_fields:
@@ -262,11 +267,10 @@ class TortoiseModelAdmin(ModelAdmin):
                 f
                 for f in model_fields
                 if (
-                    model_fields[f].__class__.__name__ == "BackwardFKRelation"
-                    or getattr(model_fields[f], "index", False)
-                    or getattr(model_fields[f], "auto_now", False)
-                    or getattr(model_fields[f], "auto_now_add", False)
-                    or getattr(model_fields[f], "_generated", False)
+                    getattr(fields_map[f], "_generated", False)
+                    or getattr(fields_map[f], "index", False)
+                    or getattr(fields_map[f], "auto_now", False)
+                    or getattr(fields_map[f], "auto_now_add", False)
                 )
                 and f not in self.readonly_fields
             )
@@ -274,12 +278,12 @@ class TortoiseModelAdmin(ModelAdmin):
 
     async def get_form_widget(self, field: str) -> tuple[WidgetType, WidgetType]:
         field_obj = self.model_cls._meta.fields_map[field]
+        field_obj = field_obj.reference if field_obj.reference else field_obj
         widget_props = {
             "required": not field_obj.null and not field_obj.default,
             "disabled": field in self.readonly_fields,
         }
         field_class = field_obj.__class__.__name__
-
         if field_class == "CharField":
             return WidgetType.Input, widget_props
         if field_class == "TextField":
@@ -341,6 +345,7 @@ class TortoiseModelAdmin(ModelAdmin):
 
     async def get_filter_widget(self, field: str) -> tuple[WidgetType, WidgetType]:
         field_obj = self.model_cls._meta.fields_map[field]
+        field_obj = field_obj.reference if field_obj.reference else field_obj
         widget_props = {}
         field_class = field_obj.__class__.__name__
         if field_class == "CharField":

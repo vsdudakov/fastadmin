@@ -26,7 +26,7 @@ export const SignInContainer: React.FC<ISignInContainer> = ({ title, children })
         <meta name="description" content={title} />
       </Helmet>
       <Row justify="center" align="middle" style={{ height: '100%' }}>
-        <Col xs={24} xl={6}>
+        <Col xs={24} xl={8}>
           {children}
         </Col>
       </Row>
