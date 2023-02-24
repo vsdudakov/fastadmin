@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "fatsapi-admin"
+name = "fastapi-admin"
 version = "0.1.0"
 description = ""
 authors = ["Seva D <vsdudakov@gmail.com>"]
@@ -18,6 +18,9 @@ classifiers = [
 ]
 include = [
     "LICENSE",
+]
+packages = [
+    { include = "fastapi-admin" },
 ]
 
 [tool.poetry.dependencies]

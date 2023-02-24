@@ -13,13 +13,13 @@ dev:
 fix:
 	poetry run black .
 	poetry run isort .
-	make -C frontend fix
+	make -C ../frontend fix
 
 .PHONY: lint
 lint:
 	poetry run flake8 --show-source .
 	poetry run isort --check-only . --diff
-	make -C frontend lint
+	make -C ../frontend lint
 
 .PHONY: test
 test:
@@ -34,8 +34,8 @@ kill:
 collectstatic:
 	rm -rf ./static/js
 	rm -rf ./static/css
-	cp -rf ./frontend/build/static/js/ ./static/js/
-	cp -rf ./frontend/build/static/css/ ./static/css/
+	cp -rf ../frontend/build/static/js/ ./static/js/
+	cp -rf ../frontend/build/static/css/ ./static/css/
 	mv static/js/main*.js.map static/js/main.min.js.map
 	mv static/js/main*.js static/js/main.min.js
 	mv static/css/main*.css.map static/css/main.min.css.map
@@ -43,5 +43,5 @@ collectstatic:
 
 .PHONY: build
 build:
-	make -C frontend build
+	make -C ../frontend build
 	make collectstatic
