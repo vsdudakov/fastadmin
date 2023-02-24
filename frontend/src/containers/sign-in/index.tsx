@@ -8,6 +8,7 @@ import { ConfigurationContext } from 'providers/ConfigurationProvider';
 import { SignInUserContext } from 'providers/SignInUserProvider';
 import { postFetcher } from 'fetchers/fetchers';
 import { setFormErrors } from 'helpers/forms';
+import { getTitleFromFieldName } from 'helpers/title';
 
 export const SignIn: React.FC = () => {
   const [form] = Form.useForm();
@@ -51,7 +52,11 @@ export const SignIn: React.FC = () => {
           autoComplete="off"
           layout="vertical"
         >
-          <Form.Item label="Username" name="username" rules={[{ required: true }]}>
+          <Form.Item
+            label={getTitleFromFieldName(configuration?.username_field || 'username')}
+            name="username"
+            rules={[{ required: true }]}
+          >
             <Input />
           </Form.Item>
 

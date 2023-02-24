@@ -71,4 +71,5 @@ class ConfigurationSchema(BaseModel):
     site_header_logo: str
     site_favicon: str
     primary_color: str
+    username_field: str
     models: list[ModelSchema]

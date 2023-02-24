@@ -65,6 +65,7 @@ export interface IConfiguration {
   site_sign_in_logo?: string;
   site_header_logo?: string;
   site_favicon?: string;
+  username_field: string;
   models: IModel[];
   primary_color?: string;
 }

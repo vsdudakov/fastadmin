@@ -15,6 +15,7 @@ interface IConfigurationProvider {
 
 const defaultConfiguration = {
   site_name: 'API Administration',
+  username_field: 'username',
   models: [],
 };
 
