@@ -1,7 +1,12 @@
 import asyncio
+import csv
+from io import BytesIO, StringIO
 from typing import Any, Sequence
 
+from fastapi import HTTPException, status
+
 from fastapi_admin.models.base import BaseModelAdmin
+from fastapi_admin.schemas.api import ExportFormat
 from fastapi_admin.schemas.configuration import WidgetType
 
 
@@ -33,12 +38,22 @@ class TortoiseModelAdmin(BaseModelAdmin):
     ) -> tuple[list[Any], int]:
         qs = self.model_cls.all()
 
+        fields = self._get_model_fields()
+
         if filters:
-            for key, value in filters.items():
-                qs = qs.filter(**{key: value})
+            for filter_condition, value in filters.items():
+                field = filter_condition.lsplit("__", 1)[0]
+                if field not in fields:
+                    raise HTTPException(
+                        status.HTTP_400_BAD_REQUEST, detail=f"Filter by {filter_condition} is not allowed"
+                    )
+                qs = qs.filter(**{filter_condition: value})
 
         if search:
             if self.search_fields:
+                for field in self.search_fields:
+                    if field not in fields:
+                        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Search by {field} is not allowed")
                 ids = await asyncio.gather(
                     *(qs.filter(**{f + "__icontains": search}).values_list("id", flat=True) for f in self.search_fields)
                 )
@@ -46,9 +61,13 @@ class TortoiseModelAdmin(BaseModelAdmin):
                 qs = qs.filter(id__in=ids)
 
         if sort_by:
+            if sort_by.strip("-") not in fields:
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Sort by {sort_by} is not allowed")
             qs = qs.order_by(sort_by)
         else:
             if self.ordering:
+                if self.ordering.strip("-") not in fields:
+                    raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Sort by {self.ordering} is not allowed")
                 qs = qs.order_by(*self.ordering)
 
         total = await qs.count()
@@ -58,9 +77,37 @@ class TortoiseModelAdmin(BaseModelAdmin):
             qs = qs.limit(limit)
 
         if self.list_select_related:
+            for field in self.list_select_related:
+                if field not in fields:
+                    raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Select related by {field} is not allowed")
             qs = qs.select_related(*self.list_select_related)
 
         return await qs, total
+
+    async def get_export(
+        self,
+        format: ExportFormat,
+        offset: int | None = None,
+        limit: int | None = None,
+        search: str | None = None,
+        sort_by: str | None = None,
+        filters: dict | None = None,
+    ) -> StringIO | BytesIO | None:
+        objs, _ = await self.get_list(offset=offset, limit=limit, search=search, sort_by=sort_by, filters=filters)
+        fields = self._get_model_fields()
+        hidden_fields = await self.get_hidden_fields()
+        m2m_fields = self.model_cls._meta.m2m_fields
+        fieldnames = [f for f in fields if f not in hidden_fields and f not in m2m_fields]
+        if format == ExportFormat.CSV:
+            output = StringIO()
+            writer = csv.DictWriter(output, fieldnames=fieldnames)
+            writer.writeheader()
+            for obj in objs:
+                obj_dict = {fieldname: getattr(obj, fieldname, None) for fieldname in fieldnames}
+                writer.writerow(obj_dict)
+            output.seek(0)
+            return output
+        return None
 
     async def get_fields(self) -> Sequence[str]:
         fields = await super().get_fields()

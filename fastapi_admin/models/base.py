@@ -1,5 +1,7 @@
+from io import BytesIO, StringIO
 from typing import Any, Sequence
 
+from fastapi_admin.schemas.api import ExportFormat
 from fastapi_admin.schemas.configuration import WidgetType
 
 
@@ -148,6 +150,17 @@ class BaseModelAdmin:
         sort_by: str | None = None,
         filters: dict | None = None,
     ) -> tuple[list[Any], int]:
+        raise NotImplementedError
+
+    async def get_export(
+        self,
+        format: ExportFormat,
+        offset: int | None = None,
+        limit: int | None = None,
+        search: str | None = None,
+        sort_by: str | None = None,
+        filters: dict | None = None,
+    ) -> StringIO | BytesIO | None:
         raise NotImplementedError
 
     async def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:

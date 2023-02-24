@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timedelta
-from io import StringIO
 
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -171,16 +170,18 @@ async def export(
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
 
     filters = {k: v for k, v in request.query_params._dict.items() if k not in ("search", "sort_by")}
-    objs, _ = await admin_model.get_list(
+    file_name = f"{model}.{payload.format.lower()}"
+    headers = {"Content-Disposition": f'attachment; filename="{file_name}"'}
+    stream = await admin_model.get_export(
+        payload.format,
         search=search,
         sort_by=sort_by,
         filters=filters,
+        offset=payload.offset,
+        limit=payload.limit,
     )
-    file_name = f"{model}.csv"
-    csv = "test,test\n1,2"
-    headers = {"Content-Disposition": f'attachment; filename="{file_name}"'}
     return StreamingResponse(
-        StringIO(csv),
+        stream,
         headers=headers,
         media_type="text/csv",
     )

@@ -14,3 +14,5 @@ class SignInInputSchema(BaseModel):
 
 class ExportSchema(BaseModel):
     format: ExportFormat | None
+    limit: int | None
+    offset: int | None

@@ -61,6 +61,13 @@ export const List: React.FC = () => {
     }
   }, [modelConfiguration?.list_per_page]);
 
+  useEffect(() => {
+    if (model) {
+      setPage(DEFAULT_PAGE);
+      setSortBy(undefined);
+    }
+  }, [model]);
+
   const columns = useMemo(() => {
     return (modelConfiguration || { fields: [] }).fields
       .filter((field: IModelField) => !!field.list_configuration)
@@ -144,7 +151,12 @@ export const List: React.FC = () => {
   });
 
   const { mutate: mutateExport, isLoading: isLoadingExport } = useMutation(
-    () => postFetcher(`/export/${model}?${exportQueryString}`, {}),
+    () =>
+      postFetcher(`/export/${model}?${exportQueryString}`, {
+        format: 'CSV',
+        offset: 0,
+        limit: 1000,
+      }),
     {
       onSuccess: (data) => {
         fileDownload(data, `${model}.csv`);
