@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 import jwt
 from fastapi import Request, status
