@@ -31,7 +31,10 @@ async def get_user_id_or_none(request: Request) -> str | None:
 
     user_id = token_payload.get("user_id")
 
-    return await admin_model.get_obj(user_id)
+    if not await admin_model.get_obj(user_id):
+        return None
+
+    return user_id
 
 
 async def get_user_id(request: Request) -> str:
