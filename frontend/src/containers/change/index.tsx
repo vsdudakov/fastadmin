@@ -9,7 +9,7 @@ import { CrudContainer } from 'components/crud-container';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
 import { EModelPermission, IModel } from 'interfaces/configuration';
 import { deleteFetcher, getFetcher, patchFetcher } from 'fetchers/fetchers';
-import { setFormErrors } from 'helpers/forms';
+import { handleError } from 'helpers/forms';
 import { transformDataToServer, transformDataFromServer } from 'helpers/transform';
 import { FormContainer } from 'components/form-container';
 
@@ -48,7 +48,7 @@ export const Change: React.FC = () => {
         }
       },
       onError: (error: Error) => {
-        setFormErrors(form, error);
+        handleError(error, form);
       },
     }
   );

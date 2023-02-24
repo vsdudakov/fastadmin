@@ -17,8 +17,8 @@ export const AsyncSelect = ({ parentModel, idField, labelField, ...props }: IAsy
   const [search, setSearch] = useState<string | undefined>();
 
   const queryString = querystring.stringify({
-    start: 0,
-    end: 20,
+    offset: 0,
+    limit: 20,
     search,
   });
 

@@ -98,6 +98,8 @@ class ModelAdmin:
     # Any fields in this option (which should be a list or tuple) will display its data as-is and non-editable.
     readonly_fields: Sequence[str] = ()
 
+    hidden_fields: Sequence[str] = ()
+
     # Not supported setting
     # save_as
 
@@ -129,10 +131,10 @@ class ModelAdmin:
     def __init__(self, model_cls: Any):
         self.model_cls = model_cls
 
-    async def save_model(self, obj: Any, payload: dict) -> None:
+    async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
         raise NotImplementedError
 
-    async def delete_model(self, id: Any) -> None:
+    async def delete_model(self, obj: Any) -> None:
         raise NotImplementedError
 
     async def get_obj(self, id: str) -> Any | None:
@@ -154,8 +156,8 @@ class ModelAdmin:
     async def get_filter_widget(self, field: str) -> tuple[WidgetType, WidgetType]:
         raise NotImplementedError
 
-    async def get_readonly_fields(self) -> Sequence[str]:
-        return self.readonly_fields
+    async def get_hidden_fields(self) -> Sequence[str]:
+        return self.hidden_fields
 
     async def get_list_display(self) -> Sequence[str]:
         return self.list_display
@@ -183,13 +185,10 @@ class TortoiseModelAdmin(ModelAdmin):
     def _get_model_fields(self) -> dict[str, Any]:
         return self.model_cls._meta.fields_map
 
-    def _gte_model_field_pk(self) -> str:
-        return self.model_cls._meta.pk_attr
-
-    async def save_model(self, obj: Any, payload: dict) -> None:
+    async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
         for key, value in payload.items():
             setattr(obj, key, value)
-        await obj.save(update_fields=payload.keys())
+        await obj.save(update_fields=payload.keys() if not add else None)
 
     async def delete_model(self, obj: Any) -> None:
         await obj.delete()
@@ -241,7 +240,7 @@ class TortoiseModelAdmin(ModelAdmin):
 
     async def get_fields(self) -> Sequence[str]:
         fields = await super().get_fields()
-        model_fields = self._get_model_fields().keys()
+        model_fields = self._get_model_fields()
         if not fields:
             if self.exclude:
                 return (f for f in model_fields if f not in self.exclude)
@@ -250,30 +249,48 @@ class TortoiseModelAdmin(ModelAdmin):
 
     async def get_list_display(self) -> Sequence[str]:
         list_display = await super().get_list_display()
-        model_fields = self._get_model_fields().keys()
-        model_pk_field = self._gte_model_field_pk()
+        model_fields = self._get_model_fields()
         if not list_display:
-            return (model_pk_field,)
+            return (f for f in model_fields if getattr(model_fields[f], "index", False))
         return (f for f in list_display if f in model_fields)
 
-    async def get_readonly_fields(self) -> Sequence[str]:
-        readonly_fields = await super().get_readonly_fields()
-        model_fields = self._get_model_fields().keys()
-        model_pk_field = self._gte_model_field_pk()
-        if not readonly_fields:
-            return (model_pk_field,)
-        return (f for f in readonly_fields if f in model_fields)
+    async def get_hidden_fields(self) -> Sequence[str]:
+        hidden_fields = await super().get_hidden_fields()
+        model_fields = self._get_model_fields()
+        if not hidden_fields:
+            return (
+                f
+                for f in model_fields
+                if (
+                    model_fields[f].__class__.__name__ == "BackwardFKRelation"
+                    or getattr(model_fields[f], "index", False)
+                    or getattr(model_fields[f], "auto_now", False)
+                    or getattr(model_fields[f], "auto_now_add", False)
+                    or getattr(model_fields[f], "_generated", False)
+                )
+                and f not in self.readonly_fields
+            )
+        return (f for f in hidden_fields if f in model_fields)
 
     async def get_form_widget(self, field: str) -> tuple[WidgetType, WidgetType]:
         field_obj = self.model_cls._meta.fields_map[field]
-        widget_props = {"required": not field_obj.null}
+        widget_props = {
+            "required": not field_obj.null and not field_obj.default,
+            "disabled": field in self.readonly_fields,
+        }
         field_class = field_obj.__class__.__name__
+
         if field_class == "CharField":
             return WidgetType.Input, widget_props
         if field_class == "TextField":
             return WidgetType.TextArea, widget_props
         if field_class == "BooleanField":
-            return WidgetType.Switch, {}
+            return WidgetType.Switch, {**widget_props, "required": False}
+        if field_class == "ArrayField":
+            return WidgetType.Select, {
+                **widget_props,
+                "mode": "tags",
+            }
         if field_class == "IntField":
             return WidgetType.InputNumber, widget_props
         if field_class == "FloatField":
@@ -300,6 +317,8 @@ class TortoiseModelAdmin(ModelAdmin):
                 return WidgetType.Input, widget_props
             return WidgetType.AsyncSelect, {
                 **widget_props,
+                "required": False,
+                "mode": "multiple",
                 "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
                 "idField": "id",
                 "labelField": "username",
@@ -330,10 +349,16 @@ class TortoiseModelAdmin(ModelAdmin):
             return WidgetType.Input, widget_props
         if field_class == "BooleanField":
             return WidgetType.RadioGroup, {
+                **widget_props,
                 "options": [
                     {"label": "Yes", "value": True},
                     {"label": "No", "value": False},
                 ],
+            }
+        if field_class == "ArrayField":
+            return WidgetType.Select, {
+                **widget_props,
+                "mode": "tags",
             }
         if field_class == "IntField":
             return WidgetType.InputNumber, widget_props
@@ -351,31 +376,35 @@ class TortoiseModelAdmin(ModelAdmin):
             if field in self.raw_id_fields:
                 return WidgetType.Input, widget_props
             return WidgetType.AsyncSelect, {
+                **widget_props,
                 "mode": "multiple",
                 "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
                 "idField": "id",
-                "labelField": "username",
+                "labelField": "id",  # TODO: labelField
             }
         if field_class == "ManyToManyFieldInstance":
             if field in self.raw_id_fields:
                 return WidgetType.Input, widget_props
             return WidgetType.AsyncSelect, {
+                **widget_props,
                 "mode": "multiple",
                 "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
                 "idField": "id",
-                "labelField": "username",
+                "labelField": "id",  # TODO: labelField
             }
         if field_class == "OneToOneFieldInstance":
             if field in self.raw_id_fields:
                 return WidgetType.Input, widget_props
             return WidgetType.AsyncSelect, {
+                **widget_props,
                 "mode": "multiple",
                 "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
                 "idField": "id",
-                "labelField": "username",
+                "labelField": "id",  # TODO: labelField
             }
         if field_class == "CharEnumFieldInstance":
             return WidgetType.Select, {
+                **widget_props,
                 "mode": "multiple",
                 "options": [{"label": k, "value": k} for k in field_obj.enum_type],
             }

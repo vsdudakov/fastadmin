@@ -26,7 +26,6 @@ router = APIRouter(prefix="/api")
 
 @router.post("/sign-in")
 async def sign_in(
-    request: Request,
     response: Response,
     payload: SignInInputSchema,
 ):
@@ -86,7 +85,6 @@ async def me(
 @router.get("/list/{model}")
 async def list(
     request: Request,
-    response: Response,
     model: str,
     search: str | None = None,
     sort_by: str = "-created_at",
@@ -114,7 +112,6 @@ async def list(
 
 @router.get("/retrieve/{model}/{id}")
 async def get(
-    request: Request,
     model: str,
     id: str,
     _: str = Depends(get_user_id),
@@ -138,7 +135,7 @@ async def add(
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
     obj = admin_model.model_cls()
-    await admin_model.save_model(obj, payload.dict())
+    await admin_model.save_model(obj, payload, add=True)
     return obj
 
 
@@ -155,7 +152,7 @@ async def change(
     obj = await admin_model.get_obj(id)
     if not obj:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found.")
-    await admin_model.save_model(obj, payload.dict())
+    await admin_model.save_model(obj, payload)
     return obj
 
 
@@ -190,25 +187,24 @@ async def export(
 
 @router.delete("/delete/{model}/{id}")
 async def delete(
-    request: Request,
-    response: Response,
     model: str,
     id: str,
-    _: str = Depends(get_user_id),
+    user_id: str = Depends(get_user_id),
 ):
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
+    if user_id == id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="You cannot delete yourself.")
     user = await admin_model.get_obj(id)
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found.")
-    await admin_model.delete_obj(user)
+    await admin_model.delete_model(user)
     return user
 
 
 @router.get("/configuration")
 async def configuration(
-    request: Request,
     user_id: str | None = Depends(get_user_id_or_none),
 ):
     if not user_id:
@@ -231,7 +227,7 @@ async def configuration(
         fields_schema = []
         for field_name in fields:
             form_widget_type, form_widget_props = await admin_obj.get_form_widget(field_name)
-            readonly_fields = await admin_obj.get_readonly_fields()
+            hidden_fields = await admin_obj.get_hidden_fields()
 
             list_display = await admin_obj.get_list_display()
             list_configuration = None
@@ -252,7 +248,7 @@ async def configuration(
                 )
 
             add_configuration = None
-            if field_name not in readonly_fields:
+            if field_name not in hidden_fields:
                 add_configuration = AddConfigurationFieldSchema(
                     form_widget_type=form_widget_type,
                     form_widget_props=form_widget_props,
@@ -260,7 +256,7 @@ async def configuration(
                 )
 
             change_configuration = None
-            if field_name not in readonly_fields:
+            if field_name not in hidden_fields:
                 change_configuration = ChangeConfigurationFieldSchema(
                     form_widget_type=form_widget_type,
                     form_widget_props=form_widget_props,

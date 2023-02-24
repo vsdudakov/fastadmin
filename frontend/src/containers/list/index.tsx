@@ -33,6 +33,7 @@ import { deleteFetcher, getFetcher, postFetcher } from 'fetchers/fetchers';
 import { FilterColumn } from './filter-column';
 import { transformDataToServer } from 'helpers/transform';
 import { TableOrCards } from 'components/table-or-cards';
+import { handleError } from 'helpers/forms';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
@@ -165,8 +166,8 @@ export const List: React.FC = () => {
         setPageSize(DEFAULT_PAGE_SIZE);
         setFilters({});
       },
-      onError: () => {
-        message.error(_t('Server error'));
+      onError: (error) => {
+        handleError(error);
       },
     }
   );

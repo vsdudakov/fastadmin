@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import type { FormInstance } from 'rc-field-form';
 
-export const setFormErrors = (form: FormInstance, error: any) => {
+export const handleError = (error: any, form?: FormInstance) => {
   const errors = error?.response?.data?.detail || error?.response?.data?.description;
   if (!Array.isArray(errors)) {
     if (typeof errors === 'string' || errors instanceof String) {
@@ -20,6 +20,11 @@ export const setFormErrors = (form: FormInstance, error: any) => {
       continue;
     }
     errorsData[field] = [item?.msg];
+  }
+
+  if (!form) {
+    message.error('Server error');
+    return;
   }
 
   const errorsFields: any = [];
