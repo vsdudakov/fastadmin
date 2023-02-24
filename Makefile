@@ -40,6 +40,7 @@ collectstatic:
 	mv fastapi_admin/static/js/main*.js fastapi_admin/static/js/main.min.js
 	mv fastapi_admin/static/css/main*.css.map fastapi_admin/static/css/main.min.css.map
 	mv fastapi_admin/static/css/main*.css fastapi_admin/static/css/main.min.css
+	rm fastapi_admin/static/js/*.txt
 
 .PHONY: build
 build:

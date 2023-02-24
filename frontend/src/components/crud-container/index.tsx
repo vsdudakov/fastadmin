@@ -1,4 +1,4 @@
-import { Col, Image, Layout, Menu, Row, theme, Card, Typography } from 'antd';
+import { Col, Image, Layout, Menu, Row, theme, Card, Typography, Space } from 'antd';
 import { UserOutlined, BarsOutlined } from '@ant-design/icons';
 import React, { useContext, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -92,63 +92,72 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
       </Helmet>
       <Layout style={{ height: '100vh' }}>
         <Header style={{ background: colorPrimary, paddingInline: 20 }}>
-          <Row>
-            {isMobile && (
-              <Menu
-                style={{ background: colorPrimary, color: colorBgContainer }}
-                theme="light"
-                mode="horizontal"
-                defaultSelectedKeys={[model || 'dashboard']}
-                items={[
-                  {
-                    key: signedInUser?.id || 'key',
-                    icon: <BarsOutlined />,
-                    children: items,
-                  },
-                ]}
-                onClick={onClickSideBarMenuItem}
-              />
-            )}
+          <Row justify="space-between">
             <Col>
-              <Link to="/">
-                <Image
-                  src={(window as any).SERVER_FOMAIN + configuration.site_header_logo}
-                  preview={false}
-                  height={32}
-                  alt={configuration.site_name}
-                />
-              </Link>
-            </Col>
-            {!isMobile && (
-              <Col>
-                <Link to="/">
-                  <span style={{ color: colorBgContainer, fontSize: 20, marginLeft: 10 }}>
-                    {configuration.site_name}
-                  </span>
-                </Link>
-              </Col>
-            )}
-            <Col style={{ margin: 'auto' }}></Col>
-            <Col>
-              <Menu
-                style={{ background: colorPrimary, width: '100%', color: colorBgContainer }}
-                theme="light"
-                mode="horizontal"
-                items={[
-                  {
-                    key: signedInUser?.id || 'key',
-                    icon: <UserOutlined />,
-                    label: !isMobile ? signedInUser?.username : undefined,
-                    children: [
+              <Space>
+                {isMobile && (
+                  <Menu
+                    style={{ background: colorPrimary }}
+                    theme="light"
+                    mode="horizontal"
+                    defaultSelectedKeys={[model || 'dashboard']}
+                    items={[
                       {
-                        key: 'sign-out',
-                        label: _t('Sign Out'),
+                        key: signedInUser?.id || 'key',
+                        icon: <BarsOutlined style={{ color: colorBgContainer }} />,
+                        children: items,
                       },
-                    ],
-                  },
-                ]}
-                onClick={onClickRightMenuItem}
-              />
+                    ]}
+                    onClick={onClickSideBarMenuItem}
+                  />
+                )}
+
+                <Link to="/">
+                  <Image
+                    src={(window as any).SERVER_FOMAIN + configuration.site_header_logo}
+                    preview={false}
+                    height={32}
+                    alt={configuration.site_name}
+                    style={{ marginTop: -2 }}
+                  />
+                </Link>
+
+                {!isMobile && (
+                  <Link to="/">
+                    <span style={{ color: colorBgContainer, fontSize: 18, marginLeft: 10 }}>
+                      {configuration.site_name}
+                    </span>
+                  </Link>
+                )}
+              </Space>
+            </Col>
+            <Col>
+              <Space>
+                {!isMobile && (
+                  <span style={{ color: colorBgContainer, marginRight: 5 }}>
+                    {(signedInUser || ({} as any))[configuration.username_field]}
+                  </span>
+                )}
+
+                <Menu
+                  style={{ background: colorPrimary }}
+                  theme="light"
+                  mode="horizontal"
+                  items={[
+                    {
+                      key: signedInUser?.id || 'key',
+                      icon: <UserOutlined style={{ color: colorBgContainer }} />,
+                      children: [
+                        {
+                          key: 'sign-out',
+                          label: _t('Sign Out'),
+                        },
+                      ],
+                    },
+                  ]}
+                  onClick={onClickRightMenuItem}
+                />
+              </Space>
             </Col>
           </Row>
         </Header>
