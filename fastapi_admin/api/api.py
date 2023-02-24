@@ -206,6 +206,7 @@ async def configuration(
             site_header_logo=settings.ADMIN_SITE_HEADER_LOGO,
             site_favicon=settings.ADMIN_SITE_FAVICON,
             primary_color=settings.ADMIN_PRIMARY_COLOR,
+            username_field=settings.ADMIN_USER_MODEL_USERNAME_FIELD,
             models=[],
         )
 
