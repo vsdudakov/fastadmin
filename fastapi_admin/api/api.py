@@ -35,7 +35,7 @@ async def sign_in(
     if not admin_model:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=f"{model} model is not registered.")
 
-    users = await admin_model.get_list(filters={settings.ADMIN_USER_MODEL_USERNAME_FIELD: payload.username})
+    users, _ = await admin_model.get_list(filters={settings.ADMIN_USER_MODEL_USERNAME_FIELD: payload.username})
     if not users:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="User not found.")
     user = users[0]
