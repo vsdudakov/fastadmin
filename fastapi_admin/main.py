@@ -5,10 +5,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from api.api import router as api_router
-from models import ModelAdmin
-from settings import settings
-from views import router as views_router
+from fastapi_admin.api.api import router as api_router
+from fastapi_admin.models import ModelAdmin
+from fastapi_admin.settings import settings
+from fastapi_admin.views import router as views_router
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ async def shutdown():
 
 admin_app.mount(
     f"/{settings.ADMIN_PREFIX}/static",
-    StaticFiles(directory="static"),
+    StaticFiles(directory="fastapi_admin/static"),
     name="static",
 )
 admin_app.include_router(api_router, prefix=f"/{settings.ADMIN_PREFIX}")
@@ -48,6 +48,3 @@ admin_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-from test_models import *

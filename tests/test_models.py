@@ -1,9 +1,8 @@
 from enum import Enum
 
+from fastapi_admin.decorators import register
+from fastapi_admin.models import TortoiseModelAdmin
 from tortoise import Model, fields
-
-from decorators import register
-from models import TortoiseModelAdmin
 
 
 class ModelPermission(str, Enum):

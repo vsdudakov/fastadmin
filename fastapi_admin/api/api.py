@@ -4,9 +4,9 @@ from io import StringIO
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 
-from api.depends import get_session_id, get_user_id
-from api.schemas.api import ExportSchema, SignInInputSchema
-from api.schemas.configuration import (
+from fastapi_admin.api.depends import get_session_id, get_user_id
+from fastapi_admin.api.schemas.api import ExportSchema, SignInInputSchema
+from fastapi_admin.api.schemas.configuration import (
     AddConfigurationFieldSchema,
     ChangeConfigurationFieldSchema,
     ConfigurationSchema,
@@ -15,8 +15,8 @@ from api.schemas.configuration import (
     ModelPermission,
     ModelSchema,
 )
-from models import ModelAdmin, get_admin_model, get_admin_models
-from settings import settings
+from fastapi_admin.models import ModelAdmin, get_admin_model, get_admin_models
+from fastapi_admin.settings import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api")

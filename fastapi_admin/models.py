@@ -1,7 +1,6 @@
 from typing import Any, Sequence
 
-from api.schemas.configuration import WidgetType
-from settings import settings
+from fastapi_admin.api.schemas.configuration import WidgetType
 
 
 class ModelAdmin:
@@ -384,20 +383,20 @@ class TortoiseModelAdmin(ModelAdmin):
 
 
 def register_admin_model(admin_model_class: type[ModelAdmin], model_classes: list[Any]):
-    from main import admin_models
+    from fastapi_admin.main import admin_models
 
     for model_class in model_classes:
         admin_models[model_class] = admin_model_class
 
 
 def get_admin_models() -> dict[Any, type[ModelAdmin]]:
-    from main import admin_models
+    from fastapi_admin.main import admin_models
 
     return admin_models
 
 
 def get_admin_model(model_name: str) -> ModelAdmin | None:
-    from main import admin_models
+    from fastapi_admin.main import admin_models
 
     for model, admin_model in admin_models.items():
         if model.__name__ == model_name:

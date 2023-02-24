@@ -1,8 +1,8 @@
 from fastapi import Request, status
 from fastapi.exceptions import HTTPException
 
-from models import get_admin_model
-from settings import settings
+from fastapi_admin.models import get_admin_model
+from fastapi_admin.settings import settings
 
 
 async def get_session_id(request: Request) -> str | None:
