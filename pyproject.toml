@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "fastapi-admin"
+name = "fastapi_admin"
 version = "0.1.0"
 description = ""
 authors = ["Seva D <vsdudakov@gmail.com>"]
@@ -20,7 +20,7 @@ include = [
     "LICENSE",
 ]
 packages = [
-    { include = "fastapi-admin" },
+    { include = "fastapi_admin" },
 ]
 
 [tool.poetry.dependencies]
