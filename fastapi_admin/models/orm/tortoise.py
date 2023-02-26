@@ -42,7 +42,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
 
         if filters:
             for filter_condition, value in filters.items():
-                field = filter_condition.lsplit("__", 1)[0]
+                field = filter_condition.split("__", 1)[0]
                 if field not in fields:
                     raise HTTPException(
                         status.HTTP_400_BAD_REQUEST, detail=f"Filter by {filter_condition} is not allowed"
@@ -119,8 +119,8 @@ class TortoiseModelAdmin(BaseModelAdmin):
         return (f for f in fields if f in model_fields)
 
     async def get_list_display(self) -> Sequence[str]:
-        fields_map = self.model_cls._meta.fields_map
         list_display = await super().get_list_display()
+        fields_map = self.model_cls._meta.fields_map
         model_fields = self._get_model_fields()
         if not list_display:
             return (f for f in model_fields if getattr(fields_map[f], "index", True))
@@ -187,13 +187,22 @@ class TortoiseModelAdmin(BaseModelAdmin):
         if field_class == "ManyToManyFieldInstance":
             if field in self.raw_id_fields:
                 return WidgetType.Input, widget_props
+            if field in self.filter_vertical or field in self.filter_horizontal:
+                return WidgetType.AsyncTransfer, {
+                    **widget_props,
+                    "required": False,
+                    "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
+                    "idField": "id",
+                    "labelField": "id",  # TODO: labelField
+                    "layout": "vertical" if field in self.filter_vertical else "horizontal",
+                }
             return WidgetType.AsyncSelect, {
                 **widget_props,
                 "required": False,
                 "mode": "multiple",
                 "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
                 "idField": "id",
-                "labelField": "username",
+                "labelField": "id",  # TODO: labelField
             }
         if field_class == "OneToOneFieldInstance":
             if field in self.raw_id_fields:
@@ -202,7 +211,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
                 **widget_props,
                 "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
                 "idField": "id",
-                "labelField": "username",
+                "labelField": "id",  # TODO: labelField
             }
         if field_class == "CharEnumFieldInstance":
             return WidgetType.RadioGroup if field in self.radio_fields else WidgetType.Select, {
@@ -258,6 +267,16 @@ class TortoiseModelAdmin(BaseModelAdmin):
         if field_class == "ManyToManyFieldInstance":
             if field in self.raw_id_fields:
                 return WidgetType.Input, widget_props
+            if field in self.filter_vertical or field in self.filter_horizontal:
+                return WidgetType.AsyncTransfer, {
+                    **widget_props,
+                    "required": False,
+                    "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
+                    "idField": "id",
+                    "labelField": "id",  # TODO: labelField
+                    "layout": "vertical" if field in self.filter_vertical else "horizontal",
+                }
+
             return WidgetType.AsyncSelect, {
                 **widget_props,
                 "mode": "multiple",

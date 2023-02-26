@@ -13,7 +13,12 @@ export interface IAsyncSelect {
   labelField: string;
 }
 
-export const AsyncSelect = ({ parentModel, idField, labelField, ...props }: IAsyncSelect) => {
+export const AsyncSelect: React.FC<IAsyncSelect> = ({
+  parentModel,
+  idField,
+  labelField,
+  ...props
+}) => {
   const [search, setSearch] = useState<string | undefined>();
 
   const queryString = querystring.stringify({
@@ -28,7 +33,7 @@ export const AsyncSelect = ({ parentModel, idField, labelField, ...props }: IAsy
 
   const onFilter = (input: string, option: any) => {
     return (
-      ((option?.children as any) || '').toLowerCase().indexOf(input.toLowerCase()) >= 0 ||
+      ((option?.key as any) || '').toLowerCase().indexOf(input.toLowerCase()) >= 0 ||
       ((option?.value as any) || '').toLowerCase().indexOf(input.toLowerCase()) >= 0
     );
   };

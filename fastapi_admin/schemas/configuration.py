@@ -9,6 +9,7 @@ class WidgetType(str, Enum):
     TextArea = "TextArea"
     Select = "Select"
     AsyncSelect = "AsyncSelect"
+    AsyncTransfer = "AsyncTransfer"
     Switch = "Switch"
     Checkbox = "Checkbox"
     TimePicker = "TimePicker"
@@ -64,6 +65,7 @@ class ModelSchema(BaseModel):
     save_on_top: bool | None
     search_help_text: str | None
     with_search: bool | None
+    preserve_filters: bool | None
 
 
 class ConfigurationSchema(BaseModel):

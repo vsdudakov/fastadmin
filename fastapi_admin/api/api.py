@@ -228,7 +228,6 @@ async def configuration(
         fields = await admin_obj.get_fields()
         fields_schema = []
         for field_name in fields:
-            form_widget_type, form_widget_props = await admin_obj.get_form_widget(field_name)
             hidden_fields = await admin_obj.get_hidden_fields()
 
             list_display = await admin_obj.get_list_display()
@@ -248,6 +247,7 @@ async def configuration(
                     filter_widget_type=filter_widget_type,
                     filter_widget_props=filter_widget_props,
                 )
+            form_widget_type, form_widget_props = await admin_obj.get_form_widget(field_name)
 
             add_configuration = None
             if field_name not in hidden_fields:
@@ -293,6 +293,7 @@ async def configuration(
                 save_on_top=admin_obj.save_on_top,
                 search_help_text=admin_obj.search_help_text,
                 with_search=len(admin_obj.search_fields) > 0,
+                preserve_filters=admin_obj.preserve_filters,
             ),
         )
 

@@ -10,6 +10,7 @@ import {
   Upload,
 } from 'antd';
 import { AsyncSelect } from 'components/async-select';
+import { AsyncTransfer } from 'components/async-transfer';
 import { EFieldWidgetType } from 'interfaces/configuration';
 
 export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any) => {
@@ -37,10 +38,10 @@ export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any) => {
         AsyncSelect,
         {
           style: { width: '100%' },
-          idField: 'id',
-          labelField: 'id',
         },
       ];
+    case EFieldWidgetType.AsyncTransfer:
+      return [AsyncTransfer, {}];
     case EFieldWidgetType.Switch:
       return [Switch, {}];
     case EFieldWidgetType.Checkbox:

@@ -36,11 +36,14 @@ class BaseModelAdmin:
     # fieldsets is a list of two-tuples, in which each two-tuple represents a <fieldset> on the admin form page. (A <fieldset> is a “section” of the form.)
     fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
 
-    # Not supported setting
-    # filter_horizontal
+    # By default, a ManyToManyField is displayed in the admin site with a <select multiple>.
+    # However, multiple-select boxes can be difficult to use when selecting many items.
+    # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.
+    # The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.
+    filter_horizontal: Sequence[str] = ()
 
-    # Not supported setting
-    # filter_vertical
+    # Same as filter_horizontal, but uses a vertical display of the filter interface with the box of unselected options appearing above the box of selected options.
+    filter_vertical: Sequence[str] = ()
 
     # Not supported setting
     # form
@@ -78,11 +81,15 @@ class BaseModelAdmin:
     # Not supported setting
     # paginator
 
-    # Not supported setting
-    # prepopulated_fields
+    # When set, the given fields will use a bit of JavaScript to populate from the fields assigned.
+    # The main use for this functionality is to automatically generate the value for SlugField fields from one or more other fields.
+    # The generated value is produced by concatenating the values of the source fields, and then by transforming that result into a valid slug
+    # (e.g. substituting dashes for spaces and lowercasing ASCII letters).
+    prepopulated_fields: dict[str, Sequence[str]] = {}
 
-    # Not supported setting
-    # preserve_filters
+    # By default, applied filters are preserved on the list view after creating, editing, or deleting an object.
+    # You can have filters cleared by setting this attribute to False.
+    preserve_filters: bool = True
 
     # By default, FastAPI admin uses a select-box interface (<select>) for fields that are ForeignKey or have choices set.
     # If a field is present in radio_fields, FastAPI admin will use a radio-button interface instead.

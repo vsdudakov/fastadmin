@@ -176,7 +176,10 @@ export const List: React.FC = () => {
         queryClient.invalidateQueries([`/list/${model}`]);
         setPage(DEFAULT_PAGE);
         setPageSize(DEFAULT_PAGE_SIZE);
-        setFilters({});
+        if (!modelConfiguration?.preserve_filters) {
+          setFilters({});
+          setSearch(undefined);
+        }
       },
       onError: (error) => {
         handleError(error);

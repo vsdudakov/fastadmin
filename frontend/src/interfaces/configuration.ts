@@ -4,6 +4,7 @@ export enum EFieldWidgetType {
   TextArea = 'TextArea',
   Select = 'Select',
   AsyncSelect = 'AsyncSelect',
+  AsyncTransfer = 'AsyncTransfer',
   Switch = 'Switch',
   Checkbox = 'Checkbox',
   TimePicker = 'TimePicker',
@@ -59,6 +60,7 @@ export interface IModel {
   save_on_top?: boolean;
   search_help_text?: string;
   with_search?: boolean;
+  preserve_filters?: boolean;
 }
 
 export interface IConfiguration {
