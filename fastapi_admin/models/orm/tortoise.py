@@ -150,6 +150,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
         widget_props = {
             "required": not field_obj.null and not field_obj.default,
             "disabled": field in self.readonly_fields,
+            "readonly": field in self.readonly_fields,
         }
         field_class = field_obj.__class__.__name__
         if field_class == "CharField":
