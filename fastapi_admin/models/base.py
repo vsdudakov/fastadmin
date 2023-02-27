@@ -108,9 +108,6 @@ class BaseModelAdmin:
     # Any fields in this option (which should be a list or tuple) will display its data as-is and non-editable.
     readonly_fields: Sequence[str] = ()
 
-    # There are fields which will be hidden from form and list views.
-    hidden_fields: Sequence[str] = ()
-
     # Normally, objects have three save options: “Save”, “Save and continue editing”, and “Save and add another”.
     # If save_as is True, “Save and add another” will be replaced
     # by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.
@@ -177,14 +174,14 @@ class BaseModelAdmin:
     ) -> StringIO | BytesIO | None:
         raise NotImplementedError
 
+    def get_form_hidden_fields(self) -> Sequence[str]:
+        return ()
+
     def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
         raise NotImplementedError
 
     def get_filter_widget(self, field: str) -> tuple[WidgetType, dict]:
         raise NotImplementedError
-
-    def get_hidden_fields(self) -> Sequence[str]:
-        return self.hidden_fields
 
     def get_list_display(self) -> Sequence[str]:
         return self.list_display

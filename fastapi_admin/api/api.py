@@ -228,8 +228,6 @@ async def configuration(
         fields = admin_obj.get_fields()
         fields_schema = []
         for field_name in fields:
-            hidden_fields = admin_obj.get_hidden_fields()
-
             list_display = admin_obj.get_list_display()
             list_configuration = None
             filter_widget_type = None
@@ -247,10 +245,12 @@ async def configuration(
                     filter_widget_type=filter_widget_type,
                     filter_widget_props=filter_widget_props,
                 )
-            form_widget_type, form_widget_props = admin_obj.get_form_widget(field_name)
+
+            form_hidden_fields = admin_obj.get_form_hidden_fields()
 
             add_configuration = None
-            if field_name not in hidden_fields:
+            if field_name not in form_hidden_fields:
+                form_widget_type, form_widget_props = admin_obj.get_form_widget(field_name)
                 add_configuration = AddConfigurationFieldSchema(
                     form_widget_type=form_widget_type,
                     form_widget_props=form_widget_props,
@@ -258,7 +258,8 @@ async def configuration(
                 )
 
             change_configuration = None
-            if field_name not in hidden_fields:
+            if field_name not in form_hidden_fields:
+                form_widget_type, form_widget_props = admin_obj.get_form_widget(field_name)
                 change_configuration = ChangeConfigurationFieldSchema(
                     form_widget_type=form_widget_type,
                     form_widget_props=form_widget_props,

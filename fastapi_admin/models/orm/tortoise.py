@@ -126,11 +126,11 @@ class TortoiseModelAdmin(BaseModelAdmin):
             return (f for f in model_fields if getattr(fields_map[f], "index", True))
         return (f for f in list_display if f in model_fields)
 
-    def get_hidden_fields(self) -> Sequence[str]:
+    def get_form_hidden_fields(self) -> Sequence[str]:
         fields_map = self.model_cls._meta.fields_map
-        hidden_fields = super().get_hidden_fields()
+        form_hidden_fields = super().get_form_hidden_fields()
         model_fields = self._get_model_fields()
-        if not hidden_fields:
+        if not form_hidden_fields:
             return (
                 f
                 for f in model_fields
@@ -142,7 +142,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
                 )
                 and f not in self.readonly_fields
             )
-        return (f for f in hidden_fields if f in model_fields)
+        return (f for f in form_hidden_fields if f in model_fields)
 
     def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
         field_obj = self.model_cls._meta.fields_map[field]
