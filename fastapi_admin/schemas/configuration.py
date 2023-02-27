@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Sequence
 
 from pydantic import BaseModel
 
@@ -59,13 +60,18 @@ class ModelFieldSchema(BaseModel):
 
 class ModelSchema(BaseModel):
     name: str
-    permissions: list[ModelPermission]
-    fields: list[ModelFieldSchema]
+    permissions: Sequence[ModelPermission]
+    fields: Sequence[ModelFieldSchema]
     list_per_page: int | None
     save_on_top: bool | None
+    save_as: bool | None
+    save_as_continue: bool | None
+    view_on_site: str | None
     search_help_text: str | None
-    with_search: bool | None
+    search_fields: Sequence[str] | None
     preserve_filters: bool | None
+    list_max_show_all: int | None
+    show_full_result_count: bool | None
 
 
 class ConfigurationSchema(BaseModel):
@@ -75,4 +81,4 @@ class ConfigurationSchema(BaseModel):
     site_favicon: str
     primary_color: str
     username_field: str
-    models: list[ModelSchema]
+    models: Sequence[ModelSchema]

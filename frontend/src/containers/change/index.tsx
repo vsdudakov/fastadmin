@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CrudContainer } from 'components/crud-container';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
 import { EModelPermission, IModel } from 'interfaces/configuration';
-import { deleteFetcher, getFetcher, patchFetcher } from 'fetchers/fetchers';
+import { deleteFetcher, getFetcher, patchFetcher, postFetcher } from 'fetchers/fetchers';
 import { handleError } from 'helpers/forms';
 import { transformDataToServer, transformDataFromServer } from 'helpers/transform';
 import { FormContainer } from 'components/form-container';
@@ -37,11 +37,28 @@ export const Change: React.FC = () => {
     }
   );
 
+  const { mutate: mutateAdd, isLoading: isLoadingAdd } = useMutation(
+    (payload: any) => postFetcher(`/add/${model}`, payload),
+    {
+      onSuccess: () => {
+        message.success(_t('Succesfully added'));
+        queryClient.invalidateQueries([`/list/${model}`]);
+        const next = form.getFieldValue('next');
+        if (next) {
+          navigate(next);
+        }
+      },
+      onError: (error: Error) => {
+        handleError(error, form);
+      },
+    }
+  );
+
   const { mutate, isLoading } = useMutation(
     (payload: any) => patchFetcher(`/change/${model}/${id}`, payload),
     {
       onSuccess: () => {
-        message.success(_t('Succesfully updated'));
+        message.success(_t('Succesfully changed'));
         queryClient.invalidateQueries([`/retrieve/${model}/${id}`]);
         queryClient.invalidateQueries([`/list/${model}`]);
         const next = form.getFieldValue('next');
@@ -67,6 +84,11 @@ export const Change: React.FC = () => {
   });
 
   const onFinish = (payload: any) => {
+    const save_as_new = form.getFieldValue('save_as_new');
+    if (save_as_new) {
+      mutateAdd(transformDataToServer(payload));
+      return;
+    }
     mutate(transformDataToServer(payload));
   };
 
@@ -84,6 +106,7 @@ export const Change: React.FC = () => {
           <Breadcrumb.Item>{id}</Breadcrumb.Item>
         </Breadcrumb>
       }
+      isLoading={isLoadingInitialValues}
     >
       {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Change) ? (
         <Row gutter={[16, 16]}>
@@ -101,9 +124,9 @@ export const Change: React.FC = () => {
                 </Col>
                 <Col>
                   <Space>
-                    {!isMobile && (
+                    {!isMobile && !modelConfiguration?.save_as_continue && (
                       <Button
-                        loading={isLoading || isLoadingInitialValues}
+                        loading={isLoading || isLoadingAdd}
                         onClick={() => {
                           form.submit();
                         }}
@@ -114,20 +137,28 @@ export const Change: React.FC = () => {
                     )}
                     {!isMobile && (
                       <Button
-                        loading={isLoading || isLoadingInitialValues}
+                        loading={isLoading || isLoadingAdd}
                         onClick={() => {
                           form.setFieldValue('next', `/add/${model}`);
+                          if (modelConfiguration?.save_as) {
+                            form.setFieldValue('save_as_new', true);
+                          }
                           form.submit();
                         }}
                         type="default"
                       >
-                        <SaveFilled /> {_t('Save and add another')}
+                        <SaveFilled />{' '}
+                        {modelConfiguration?.save_as
+                          ? _t('Save as new')
+                          : _t('Save and add another')}
                       </Button>
                     )}
                     <Button
-                      loading={isLoading || isLoadingInitialValues}
+                      loading={isLoading || isLoadingAdd}
                       onClick={() => {
-                        form.setFieldValue('next', `/list/${model}`);
+                        if (!modelConfiguration?.save_as_continue) {
+                          form.setFieldValue('next', `/list/${model}`);
+                        }
                         form.submit();
                       }}
                       type="primary"

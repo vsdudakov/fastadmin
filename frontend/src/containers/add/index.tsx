@@ -28,8 +28,8 @@ export const Add: React.FC = () => {
   const { mutate, isLoading } = useMutation(
     (payload: any) => postFetcher(`/add/${model}`, payload),
     {
-      onSuccess: (data, payload) => {
-        message.success(_t('Succesfully created'));
+      onSuccess: () => {
+        message.success(_t('Succesfully added'));
         queryClient.invalidateQueries([`/list/${model}`]);
         navigate(`/list/${model}`);
       },

@@ -86,7 +86,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
 
     async def get_export(
         self,
-        format: ExportFormat,
+        export_format: ExportFormat,
         offset: int | None = None,
         limit: int | None = None,
         search: str | None = None,
@@ -98,7 +98,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
         hidden_fields = await self.get_hidden_fields()
         m2m_fields = self.model_cls._meta.m2m_fields
         fieldnames = [f for f in fields if f not in hidden_fields and f not in m2m_fields]
-        if format == ExportFormat.CSV:
+        if export_format == ExportFormat.CSV:
             output = StringIO()
             writer = csv.DictWriter(output, fieldnames=fieldnames)
             writer.writeheader()
@@ -109,8 +109,8 @@ class TortoiseModelAdmin(BaseModelAdmin):
             return output
         return None
 
-    async def get_fields(self) -> Sequence[str]:
-        fields = await super().get_fields()
+    def get_fields(self) -> Sequence[str]:
+        fields = super().get_fields()
         model_fields = self._get_model_fields()
         if not fields:
             if self.exclude:
@@ -118,17 +118,17 @@ class TortoiseModelAdmin(BaseModelAdmin):
             return model_fields
         return (f for f in fields if f in model_fields)
 
-    async def get_list_display(self) -> Sequence[str]:
-        list_display = await super().get_list_display()
+    def get_list_display(self) -> Sequence[str]:
+        list_display = super().get_list_display()
         fields_map = self.model_cls._meta.fields_map
         model_fields = self._get_model_fields()
         if not list_display:
             return (f for f in model_fields if getattr(fields_map[f], "index", True))
         return (f for f in list_display if f in model_fields)
 
-    async def get_hidden_fields(self) -> Sequence[str]:
+    def get_hidden_fields(self) -> Sequence[str]:
         fields_map = self.model_cls._meta.fields_map
-        hidden_fields = await super().get_hidden_fields()
+        hidden_fields = super().get_hidden_fields()
         model_fields = self._get_model_fields()
         if not hidden_fields:
             return (
@@ -144,7 +144,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
             )
         return (f for f in hidden_fields if f in model_fields)
 
-    async def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
+    def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
         field_obj = self.model_cls._meta.fields_map[field]
         field_obj = field_obj.reference if field_obj.reference else field_obj
         widget_props = {
@@ -220,7 +220,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
             }
         return WidgetType.Input, widget_props
 
-    async def get_filter_widget(self, field: str) -> tuple[WidgetType, dict]:
+    def get_filter_widget(self, field: str) -> tuple[WidgetType, dict]:
         field_obj = self.model_cls._meta.fields_map[field]
         field_obj = field_obj.reference if field_obj.reference else field_obj
         widget_props = {}

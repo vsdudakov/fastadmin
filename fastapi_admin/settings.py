@@ -1,7 +1,9 @@
+import os
+
 from dotenv import load_dotenv
 from pydantic import BaseSettings
 
-load_dotenv()
+load_dotenv(os.getenv("ADMIN_ENV_FILE") or ".env")
 
 
 class Settings(BaseSettings):

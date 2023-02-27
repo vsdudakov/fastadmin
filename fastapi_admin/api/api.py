@@ -225,18 +225,18 @@ async def configuration(
     for model_cls in models:
         admin_obj: BaseModelAdmin = models[model_cls](model_cls)
 
-        fields = await admin_obj.get_fields()
+        fields = admin_obj.get_fields()
         fields_schema = []
         for field_name in fields:
-            hidden_fields = await admin_obj.get_hidden_fields()
+            hidden_fields = admin_obj.get_hidden_fields()
 
-            list_display = await admin_obj.get_list_display()
+            list_display = admin_obj.get_list_display()
             list_configuration = None
             filter_widget_type = None
             filter_widget_props = None
             if field_name in list_display:
                 if field_name in admin_obj.list_filter:
-                    filter_widget_type, filter_widget_props = await admin_obj.get_filter_widget(field_name)
+                    filter_widget_type, filter_widget_props = admin_obj.get_filter_widget(field_name)
                 sorter = True
                 if admin_obj.sortable_by and field_name not in admin_obj.sortable_by:
                     sorter = False
@@ -247,7 +247,7 @@ async def configuration(
                     filter_widget_type=filter_widget_type,
                     filter_widget_props=filter_widget_props,
                 )
-            form_widget_type, form_widget_props = await admin_obj.get_form_widget(field_name)
+            form_widget_type, form_widget_props = admin_obj.get_form_widget(field_name)
 
             add_configuration = None
             if field_name not in hidden_fields:
@@ -275,13 +275,13 @@ async def configuration(
             )
 
         permissions = []
-        if await admin_obj.has_add_permission():
+        if admin_obj.has_add_permission():
             permissions.append(ModelPermission.Add)
-        if await admin_obj.has_change_permission():
+        if admin_obj.has_change_permission():
             permissions.append(ModelPermission.Change)
-        if await admin_obj.has_delete_permission():
+        if admin_obj.has_delete_permission():
             permissions.append(ModelPermission.Delete)
-        if await admin_obj.has_export_permission():
+        if admin_obj.has_export_permission():
             permissions.append(ModelPermission.Export)
 
         models_schemas.append(
@@ -291,9 +291,14 @@ async def configuration(
                 fields=fields_schema,
                 list_per_page=admin_obj.list_per_page,
                 save_on_top=admin_obj.save_on_top,
+                save_as=admin_obj.save_as,
+                save_as_continue=admin_obj.save_as_continue,
+                view_on_site=admin_obj.view_on_site,
                 search_help_text=admin_obj.search_help_text,
-                with_search=len(admin_obj.search_fields) > 0,
+                search_fields=admin_obj.search_fields,
                 preserve_filters=admin_obj.preserve_filters,
+                list_max_show_all=admin_obj.list_max_show_all,
+                show_full_result_count=admin_obj.show_full_result_count,
             ),
         )
 

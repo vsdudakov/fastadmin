@@ -1,5 +1,5 @@
-import { Col, Image, Layout, Menu, Row, theme, Card, Typography, Space } from 'antd';
-import { UserOutlined, BarsOutlined } from '@ant-design/icons';
+import { Col, Image, Layout, Menu, Row, theme, Card, Typography, Space, Skeleton } from 'antd';
+import { UserOutlined, BarsOutlined, LinkOutlined } from '@ant-design/icons';
 import React, { useContext, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
@@ -18,14 +18,18 @@ const { Title } = Typography;
 interface ICrudContainer {
   title: string;
   breadcrumbs?: JSX.Element | JSX.Element[];
+  viewOnSite?: string;
   actions?: JSX.Element | JSX.Element[];
+  isLoading?: boolean;
   children: JSX.Element | JSX.Element[];
 }
 
 export const CrudContainer: React.FC<ICrudContainer> = ({
   title,
   breadcrumbs,
+  viewOnSite,
   actions,
+  isLoading,
   children,
 }) => {
   const navigate = useNavigate();
@@ -178,7 +182,16 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
             </Sider>
           )}
           <Layout style={{ padding: 16 }}>
-            {breadcrumbs}
+            <Row justify="space-between">
+              <Col>{breadcrumbs}</Col>
+              {viewOnSite && (
+                <Col>
+                  <a href={viewOnSite} target="_blank" rel="noreferrer">
+                    <LinkOutlined /> {_t('View on site')}
+                  </a>
+                </Col>
+              )}
+            </Row>
             <Card
               title={
                 <Row justify="space-between">
@@ -192,7 +205,9 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
               }
               style={{ marginTop: 16 }}
             >
-              {children}
+              <Skeleton loading={isLoading} active>
+                {children}
+              </Skeleton>
             </Card>
           </Layout>
         </Layout>

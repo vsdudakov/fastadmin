@@ -58,9 +58,14 @@ export interface IModel {
   fields: IModelField[];
   list_per_page?: number;
   save_on_top?: boolean;
+  save_as?: boolean;
+  save_as_continue?: boolean;
+  view_on_site?: string;
   search_help_text?: string;
-  with_search?: boolean;
+  search_fields?: string[];
   preserve_filters?: boolean;
+  list_max_show_all?: number;
+  show_full_result_count?: boolean;
 }
 
 export interface IConfiguration {

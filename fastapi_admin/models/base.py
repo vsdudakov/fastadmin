@@ -64,8 +64,9 @@ class BaseModelAdmin:
     # Set list_filter to activate filters in the tabel columns of the list page of the admin.
     list_filter: Sequence[str] = ()
 
-    # Not supported setting
-    # list_max_show_all
+    # Set list_max_show_all to control how many items can appear on a “Show all” admin change list page.
+    # The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.
+    list_max_show_all: int = 200
 
     # Set list_per_page to control how many items appear on each paginated admin list page. By default, this is set to 10.
     list_per_page = 10
@@ -85,7 +86,7 @@ class BaseModelAdmin:
     # The main use for this functionality is to automatically generate the value for SlugField fields from one or more other fields.
     # The generated value is produced by concatenating the values of the source fields, and then by transforming that result into a valid slug
     # (e.g. substituting dashes for spaces and lowercasing ASCII letters).
-    prepopulated_fields: dict[str, Sequence[str]] = {}
+    # prepopulated_fields: dict[str, Sequence[str]] = {}
 
     # By default, applied filters are preserved on the list view after creating, editing, or deleting an object.
     # You can have filters cleared by setting this attribute to False.
@@ -95,7 +96,7 @@ class BaseModelAdmin:
     # If a field is present in radio_fields, FastAPI admin will use a radio-button interface instead.
     radio_fields: Sequence[str] = ()
 
-    # Not supported setting
+    # Not supported setting (all fk, m2m uses select js widget as default)
     # autocomplete_fields
 
     # By default, FastAPI admin uses a select-box interface (<select>) for fields that are ForeignKey.
@@ -107,13 +108,17 @@ class BaseModelAdmin:
     # Any fields in this option (which should be a list or tuple) will display its data as-is and non-editable.
     readonly_fields: Sequence[str] = ()
 
+    # There are fields which will be hidden from form and list views.
     hidden_fields: Sequence[str] = ()
 
-    # Not supported setting
-    # save_as
+    # Normally, objects have three save options: “Save”, “Save and continue editing”, and “Save and add another”.
+    # If save_as is True, “Save and add another” will be replaced
+    # by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.
+    save_as: bool = False
 
-    # Not supported setting
-    # save_as_continue
+    # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.
+    # If you set save_as_continue=False, the redirect will be to the changelist view.
+    save_as_continue: bool = False
 
     # Normally, the save buttons appear only at the bottom of the forms.
     # If you set save_on_top, the buttons will appear both on the top and the bottom.
@@ -126,16 +131,18 @@ class BaseModelAdmin:
     # Set search_help_text to specify a descriptive text for the search box which will be displayed below it.
     search_help_text: str = ""
 
-    # Not supported setting
-    # show_full_result_count
+    # Set show_full_result_count to control whether the full count of objects should be displayed on a filtered admin page (e.g. 99 results (103 total)).
+    # If this option is set to False, a text like 99 results (Show all) is displayed instead.
+    show_full_result_count: bool = False
 
     # By default, the list page allows sorting by all model fields
     # If you want to disable sorting for some columns, set sortable_by to a collection (e.g. list, tuple, or set) of the subset of list_display that you want to be sortable.
     # An empty collection disables sorting for all columns.
     sortable_by: Sequence[str] = ()
 
-    # Not supported setting
-    # view_on_site
+    # Set view_on_site to control whether or not to display the “View on site” link.
+    # This link should bring you to a URL where you can display the saved object.
+    view_on_site: str | None = None
 
     def __init__(self, model_cls: Any):
         self.model_cls = model_cls
@@ -170,34 +177,34 @@ class BaseModelAdmin:
     ) -> StringIO | BytesIO | None:
         raise NotImplementedError
 
-    async def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
+    def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
         raise NotImplementedError
 
-    async def get_filter_widget(self, field: str) -> tuple[WidgetType, dict]:
+    def get_filter_widget(self, field: str) -> tuple[WidgetType, dict]:
         raise NotImplementedError
 
-    async def get_hidden_fields(self) -> Sequence[str]:
+    def get_hidden_fields(self) -> Sequence[str]:
         return self.hidden_fields
 
-    async def get_list_display(self) -> Sequence[str]:
+    def get_list_display(self) -> Sequence[str]:
         return self.list_display
 
-    async def get_fields(self) -> Sequence[str]:
+    def get_fields(self) -> Sequence[str]:
         return self.fields
 
-    async def get_fieldsets(self) -> Sequence[str]:
+    def get_fieldsets(self) -> Sequence[str]:
         return self.fieldsets
 
-    async def has_add_permission(self) -> bool:
+    def has_add_permission(self) -> bool:
         return True
 
-    async def has_change_permission(self) -> bool:
+    def has_change_permission(self) -> bool:
         return True
 
-    async def has_delete_permission(self) -> bool:
+    def has_delete_permission(self) -> bool:
         return True
 
-    async def has_export_permission(self) -> bool:
+    def has_export_permission(self) -> bool:
         return True
 
 

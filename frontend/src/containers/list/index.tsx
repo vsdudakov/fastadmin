@@ -208,9 +208,10 @@ export const List: React.FC = () => {
           <Breadcrumb.Item>{model}</Breadcrumb.Item>
         </Breadcrumb>
       }
+      viewOnSite={modelConfiguration?.view_on_site}
       actions={
         <Row style={{ marginTop: 10, marginBottom: 10 }} gutter={[8, 8]}>
-          {modelConfiguration?.with_search && (
+          {modelConfiguration?.search_fields && (
             <Col>
               <Input.Search
                 placeholder={modelConfiguration?.search_help_text || (_t('Search By') as string)}

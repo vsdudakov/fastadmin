@@ -23,6 +23,8 @@ export const App: React.FC = () => {
         token: {
           colorPrimary: configuration.primary_color,
           colorLink: configuration.primary_color,
+          colorLinkActive: configuration.primary_color,
+          colorLinkHover: configuration.primary_color,
         },
       }}
     >
