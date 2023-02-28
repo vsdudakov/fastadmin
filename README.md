@@ -92,7 +92,7 @@ from tortoise.models import Model
 
 class User(Model):
     username = fields.CharField(max_length=255, unique=True)
-    password_hash = fields.CharField(max_length=255)
+    hash_password = fields.CharField(max_length=255)
 
     ...
 
@@ -114,7 +114,7 @@ from fastadmin import TortoiseModelAdmin, register
 
 class User(Model):
     username = fields.CharField(max_length=255, unique=True)
-    hash_password = fields.CharField(max_length=255)
+    password_hash = fields.CharField(max_length=255)
 
     ...
 
@@ -136,7 +136,66 @@ uvicorn ...
 
 Go to http://localhost:8000/admin
 
+## Configuration
+
+You can find all env variables to configure FastAdmin [here](https://github.com/vsdudakov/fastadmin/blob/main/fastadmin/settings.py)
+
+You can find all parameters and methods to configure your ModelAdmin classes [here](https://github.com/vsdudakov/fastadmin/blob/main/fastadmin/models/base.py)
+
+Example:
+
+```
+@register(User)
+class UserAdmin(TortoiseModelAdmin):
+    exclude = ("password_hash",)
+    list_display = ("id", "username")
+
+    def has_delete_permission(self) -> bool:
+        return False
+```
+
+## Other ORMs or own implementation
+
+We are going to support SQLAlchemy and Pony ORM soon...
+
+If you have smth else (your own implementation of ORM and so on) you may overload ModelAdmin class and implement the following interfaces
+
+```
+from fastadmin import ModelAdmin, register
+
+class MyModelAdmin(ModelAdmin):
+    async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
+        raise NotImplementedError
+
+    async def delete_model(self, obj: Any) -> None:
+        raise NotImplementedError
+
+    async def get_obj(self, id: str) -> Any | None:
+        raise NotImplementedError
+
+    async def get_list(
+        self,
+        offset: int | None = None,
+        limit: int | None = None,
+        search: str | None = None,
+        sort_by: str | None = None,
+        filters: dict | None = None,
+    ) -> tuple[list[Any], int]:
+        raise NotImplementedError
+
+    async def get_export(
+        self,
+        format: ExportFormat | None,
+        offset: int | None = None,
+        limit: int | None = None,
+        search: str | None = None,
+        sort_by: str | None = None,
+        filters: dict | None = None,
+    ) -> StringIO | BytesIO | None:
+        raise NotImplementedError
+```
+
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE.txt file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE) file for details.
