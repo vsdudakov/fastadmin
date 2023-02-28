@@ -135,3 +135,8 @@ uvicorn ...
 ```
 
 Go to http://localhost:8000/admin
+
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE.txt file for details.
