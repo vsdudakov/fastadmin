@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from io import BytesIO, StringIO
-from typing import Any, Sequence
+from typing import Any
 
 from fastadmin.schemas.api import ExportFormat
 from fastadmin.schemas.configuration import WidgetType
@@ -21,7 +22,7 @@ class BaseModelAdmin:
     # Not supported setting
     # date_hierarchy
 
-    # This attribute overrides the default display value for record’s fields that are empty (None, empty string, etc.). The default value is - (a dash).
+    # This attribute overrides the default display value for record’s fields that are empty (None, empty string, etc.). The default value is - (a dash).  # noqa: E501
     empty_value_display: str = "-"
 
     # This attribute, if given, should be a list of field names to exclude from the form.
@@ -33,16 +34,16 @@ class BaseModelAdmin:
     fields: Sequence[str] = ()
 
     # Set fieldsets to control the layout of admin “add” and “change” pages.
-    # fieldsets is a list of two-tuples, in which each two-tuple represents a <fieldset> on the admin form page. (A <fieldset> is a “section” of the form.)
+    # fieldsets is a list of two-tuples, in which each two-tuple represents a <fieldset> on the admin form page. (A <fieldset> is a “section” of the form.)  # noqa: E501
     fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
 
     # By default, a ManyToManyField is displayed in the admin site with a <select multiple>.
     # However, multiple-select boxes can be difficult to use when selecting many items.
-    # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.
-    # The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.
+    # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.  # noqa: E501
+    # The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.  # noqa: E501
     filter_horizontal: Sequence[str] = ()
 
-    # Same as filter_horizontal, but uses a vertical display of the filter interface with the box of unselected options appearing above the box of selected options.
+    # Same as filter_horizontal, but uses a vertical display of the filter interface with the box of unselected options appearing above the box of selected options.  # noqa: E501
     filter_vertical: Sequence[str] = ()
 
     # Not supported setting
@@ -55,23 +56,23 @@ class BaseModelAdmin:
     # formfield_overrides
 
     # Set list_display to control which fields are displayed on the list page of the admin.
-    # If you don’t set list_display, the admin site will display a single column that displays the __str__() representation of each object
+    # If you don’t set list_display, the admin site will display a single column that displays the __str__() representation of each object  # noqa: E501
     list_display: Sequence[str] = ()
 
-    # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.
+    # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.  # noqa: E501
     list_display_links: Sequence[str] = ()
 
     # Set list_filter to activate filters in the tabel columns of the list page of the admin.
     list_filter: Sequence[str] = ()
 
     # Set list_max_show_all to control how many items can appear on a “Show all” admin change list page.
-    # The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.
+    # The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.  # noqa: E501
     list_max_show_all: int = 200
 
-    # Set list_per_page to control how many items appear on each paginated admin list page. By default, this is set to 10.
+    # Set list_per_page to control how many items appear on each paginated admin list page. By default, this is set to 10.  # noqa: E501
     list_per_page = 10
 
-    # Set list_select_related to tell ORM to use select_related() in retrieving the list of objects on the admin list page.
+    # Set list_select_related to tell ORM to use select_related() in retrieving the list of objects on the admin list page.  # noqa: E501
     # This can save you a bunch of database queries.
     list_select_related: Sequence[str] = ()
 
@@ -83,8 +84,10 @@ class BaseModelAdmin:
     # paginator
 
     # When set, the given fields will use a bit of JavaScript to populate from the fields assigned.
-    # The main use for this functionality is to automatically generate the value for SlugField fields from one or more other fields.
-    # The generated value is produced by concatenating the values of the source fields, and then by transforming that result into a valid slug
+    # The main use for this functionality is
+    # to automatically generate the value for SlugField fields from one or more other fields.
+    # The generated value is produced by concatenating the values of the source fields,
+    # and then by transforming that result into a valid slug
     # (e.g. substituting dashes for spaces and lowercasing ASCII letters).
     # prepopulated_fields: dict[str, Sequence[str]] = {}
 
@@ -92,7 +95,7 @@ class BaseModelAdmin:
     # You can have filters cleared by setting this attribute to False.
     preserve_filters: bool = True
 
-    # By default, FastAPI admin uses a select-box interface (<select>) for fields that are ForeignKey or have choices set.
+    # By default, FastAPI admin uses a select-box interface (<select>) for fields that are ForeignKey or have choices set.  # noqa: E501
     # If a field is present in radio_fields, FastAPI admin will use a radio-button interface instead.
     radio_fields: Sequence[str] = ()
 
@@ -100,8 +103,8 @@ class BaseModelAdmin:
     # autocomplete_fields
 
     # By default, FastAPI admin uses a select-box interface (<select>) for fields that are ForeignKey.
-    # Sometimes you don’t want to incur the overhead of having to select all the related instances to display in the drop-down.
-    # raw_id_fields is a list of fields you would like to change into an Input widget for either a ForeignKey or ManyToManyField.
+    # Sometimes you don’t want to incur the overhead of having to select all the related instances to display in the drop-down.  # noqa: E501
+    # raw_id_fields is a list of fields you would like to change into an Input widget for either a ForeignKey or ManyToManyField.  # noqa: E501
     raw_id_fields: Sequence[str] = ()
 
     # By default the admin shows all fields as editable.
@@ -113,7 +116,7 @@ class BaseModelAdmin:
     # by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.
     save_as: bool = False
 
-    # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.
+    # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.  # noqa: E501
     # If you set save_as_continue=False, the redirect will be to the changelist view.
     save_as_continue: bool = False
 
@@ -122,18 +125,20 @@ class BaseModelAdmin:
     save_on_top: bool = False
 
     # Set search_fields to enable a search box on the admin list page.
-    # This should be set to a list of field names that will be searched whenever somebody submits a search query in that text box.
+    # This should be set to a list of field names that will be searched whenever somebody submits a search query in that text box.  # noqa: E501
     search_fields: Sequence[str] = ()
 
     # Set search_help_text to specify a descriptive text for the search box which will be displayed below it.
     search_help_text: str = ""
 
-    # Set show_full_result_count to control whether the full count of objects should be displayed on a filtered admin page (e.g. 99 results (103 total)).
+    # Set show_full_result_count to control whether the full count of objects should be displayed
+    # on a filtered admin page (e.g. 99 results (103 total)).
     # If this option is set to False, a text like 99 results (Show all) is displayed instead.
     show_full_result_count: bool = False
 
     # By default, the list page allows sorting by all model fields
-    # If you want to disable sorting for some columns, set sortable_by to a collection (e.g. list, tuple, or set) of the subset of list_display that you want to be sortable.
+    # If you want to disable sorting for some columns, set sortable_by to a collection (e.g. list, tuple, or set)
+    # of the subset of list_display that you want to be sortable.
     # An empty collection disables sorting for all columns.
     sortable_by: Sequence[str] = ()
 
@@ -165,7 +170,7 @@ class BaseModelAdmin:
 
     async def get_export(
         self,
-        format: ExportFormat,
+        format: ExportFormat | None,
         offset: int | None = None,
         limit: int | None = None,
         search: str | None = None,
@@ -189,7 +194,7 @@ class BaseModelAdmin:
     def get_fields(self) -> Sequence[str]:
         return self.fields
 
-    def get_fieldsets(self) -> Sequence[str]:
+    def get_fieldsets(self) -> Sequence[tuple[str | None, dict[str, Sequence[str]]]]:
         return self.fieldsets
 
     def has_add_permission(self) -> bool:

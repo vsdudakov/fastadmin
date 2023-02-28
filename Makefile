@@ -11,19 +11,23 @@ dev:
 
 .PHONY: fix
 fix:
-	poetry run black fastadmin
-	poetry run isort fastadmin
+	poetry run pyupgrade --exit-zero-even-if-changed --py39-plus fastadmin/**/*.py
+	poetry run isort --settings-path pyproject.toml fastadmin
+	poetry run black --config pyproject.toml fastadmin
 	make -C frontend fix
 
 .PHONY: lint
 lint:
-	poetry run flake8 --show-source fastadmin
-	poetry run isort --check-only fastadmin --diff
+	poetry run isort --diff --check-only --settings-path pyproject.toml fastadmin
+	poetry run black --diff --check --config pyproject.toml fastadmin
+	poetry run flake8 --show-source --config .flake8 fastadmin
+	poetry run mypy --show-error-code --install-types --non-interactive --namespace-packages --show-traceback --config-file pyproject.toml fastadmin
 	make -C frontend lint
 
 .PHONY: test
 test:
-	poetry run pytest --cov=fastadmin --cov-report=term --cov-report=xml -s fastadmin/tests
+	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term --cov-report=xml --cov-fail-under=40 -s tests
+	make -C frontend test
 
 .PHONY: kill
 kill:
@@ -41,6 +45,11 @@ collectstatic:
 	mv fastadmin/static/css/main*.css.map fastadmin/static/css/main.min.css.map
 	mv fastadmin/static/css/main*.css fastadmin/static/css/main.min.css
 	rm fastadmin/static/js/*.txt
+
+.PHONY: install
+install:
+	poetry install
+	make -C frontend install
 
 .PHONY: build
 build:

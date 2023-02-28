@@ -170,7 +170,7 @@ async def export(
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
 
     filters = {k: v for k, v in request.query_params._dict.items() if k not in ("search", "sort_by")}
-    file_name = f"{model}.{payload.format.lower()}"
+    file_name = f"{model}.{(payload.format or 'csv').lower()}"
     headers = {"Content-Disposition": f'attachment; filename="{file_name}"'}
     stream = await admin_model.get_export(
         payload.format,
@@ -181,7 +181,7 @@ async def export(
         limit=payload.limit,
     )
     return StreamingResponse(
-        stream,
+        stream,  # type: ignore
         headers=headers,
         media_type="text/csv",
     )

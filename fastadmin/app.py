@@ -12,7 +12,7 @@ from fastadmin.views import router as views_router
 logger = logging.getLogger(__name__)
 
 admin_app = FastAPI(
-    openapi_url=False,
+    openapi_url=None,
 )
 admin_models: dict[Any, type[BaseModelAdmin]] = {}
 

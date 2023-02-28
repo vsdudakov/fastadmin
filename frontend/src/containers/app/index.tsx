@@ -8,7 +8,6 @@ import { ConfigProvider } from 'antd';
 import { List } from 'containers/list';
 import { Add } from 'containers/add';
 import { Change } from 'containers/change';
-import { History } from 'containers/history';
 import { SignIn } from 'containers/sign-in';
 import { Index } from 'containers/index';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
@@ -38,7 +37,6 @@ export const App: React.FC = () => {
         <Route path="/list/:model" element={<List />} />
         <Route path="/add/:model" element={<Add />} />
         <Route path="/change/:model/:id" element={<Change />} />
-        <Route path="/history/:model/:id" element={<History />} />
       </Routes>
     </ConfigProvider>
   );
