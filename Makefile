@@ -7,7 +7,7 @@ clean:
 
 .PHONY: dev
 dev:
-	poetry run uvicorn fastadmin.dev:app --reload --host=0.0.0.0 --port=8090
+	poetry run uvicorn dev:app --reload --host=0.0.0.0 --port=8090
 
 .PHONY: fix
 fix:

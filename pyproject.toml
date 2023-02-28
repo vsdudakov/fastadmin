@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastadmin"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Seva D <vsdudakov@gmail.com>"]
 license = "MIT"

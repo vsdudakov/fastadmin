@@ -1,6 +1,18 @@
-import { Col, Image, Layout, Menu, Row, theme, Card, Typography, Space, Skeleton } from 'antd';
+import React, { useContext, useEffect, useState } from 'react';
+import {
+  Col,
+  Image,
+  Layout,
+  Menu,
+  Row,
+  theme,
+  Card,
+  Typography,
+  Space,
+  Skeleton,
+  Input,
+} from 'antd';
 import { UserOutlined, BarsOutlined, LinkOutlined } from '@ant-design/icons';
-import React, { useContext, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
@@ -34,6 +46,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
 }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [search, setSearch] = useState<string | undefined>();
   const { model } = useParams();
   const { configuration } = useContext(ConfigurationContext);
   const { signedInUser, signedInUserRefetch, signedIn } = useContext(SignInUserContext);
@@ -81,12 +94,21 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
       key: 'dashboard',
       label: _t('Dashboard'),
     },
-    ...configuration.models.map((model: IModel) => {
-      return {
-        key: model.name,
-        label: model.name,
-      };
-    }),
+    {
+      key: 'divider',
+      type: 'divider',
+    },
+    ...configuration.models
+      .filter(
+        (model: IModel) =>
+          !search || model.name.toLocaleLowerCase().includes(search?.toLocaleLowerCase())
+      )
+      .map((model: IModel) => {
+        return {
+          key: model.name,
+          label: model.name,
+        };
+      }),
   ];
 
   return (
@@ -167,14 +189,20 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
         </Header>
         <Layout>
           {!isMobile && (
-            <Sider style={{ background: colorBgContainer }}>
+            <Sider style={{ background: colorBgContainer, height: '100%' }}>
+              <Input.Search
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{ padding: 10, paddingTop: 15 }}
+              />
               <Menu
                 mode="inline"
                 theme="light"
                 defaultSelectedKeys={[model || 'dashboard']}
                 style={{
                   borderRight: 0,
-                  marginTop: 50,
+                  height: 'calc(100% - 70px)',
+                  overflowY: 'scroll',
                 }}
                 items={items}
                 onClick={onClickSideBarMenuItem}
