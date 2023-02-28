@@ -167,7 +167,7 @@ We are going to support SQLAlchemy and Pony ORM soon...
 If you have smth else (your own implementation of ORM and so on) you may overload ModelAdmin class and implement the following interfaces
 
 ```
-from fastadmin import ModelAdmin, register
+from fastadmin import ModelAdmin, register, WidgetType
 
 class MyModelAdmin(ModelAdmin):
     async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
@@ -199,6 +199,13 @@ class MyModelAdmin(ModelAdmin):
         filters: dict | None = None,
     ) -> StringIO | BytesIO | None:
         raise NotImplementedError
+
+    def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
+        raise NotImplementedError
+
+    def get_filter_widget(self, field: str) -> tuple[WidgetType, dict]:
+        raise NotImplementedError
+
 ```
 
 
