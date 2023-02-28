@@ -164,7 +164,7 @@ class UserAdmin(TortoiseModelAdmin):
 
 We are going to support SQLAlchemy and Pony ORM soon...
 
-If you have smth else (your own implementation of ORM and so on) you may overload ModelAdmin class and implement the following interfaces
+If you have smth else (your own implementation of ORM and so on) you will may overload ModelAdmin class and implement the following interfaces
 
 ```
 from fastadmin import ModelAdmin, register, WidgetType
