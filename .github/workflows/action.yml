@@ -28,6 +28,8 @@ jobs:
         run: make test
       - name: Run Build
         run: make -C frontend build
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
 
   cd:
     runs-on: ubuntu-latest
