@@ -92,7 +92,7 @@ from tortoise.models import Model
 
 class User(Model):
     username = fields.CharField(max_length=255, unique=True)
-    hash_password = fields.CharField(max_length=255)
+    password_hash = fields.CharField(max_length=255)
 
     ...
 
