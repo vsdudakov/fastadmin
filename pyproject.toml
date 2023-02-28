@@ -10,11 +10,11 @@ repository = "https://github.com/vsdudakov/fastapi-admin"
 keywords = ["fastapi", "admin"]
 classifiers = [
     "Environment :: Console",
-    "Framework :: Fastapi",
+    "Framework :: FastAPI",
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Documentation",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Widget Sets",
 ]
 include = [
     "LICENSE",
