@@ -5,11 +5,11 @@ import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 
-from fastapi_admin.api.depends import get_user_id, get_user_id_or_none
-from fastapi_admin.models.base import BaseModelAdmin
-from fastapi_admin.models.helpers import get_admin_model, get_admin_models
-from fastapi_admin.schemas.api import ExportSchema, SignInInputSchema
-from fastapi_admin.schemas.configuration import (
+from fastadmin.api.depends import get_user_id, get_user_id_or_none
+from fastadmin.models.base import BaseModelAdmin
+from fastadmin.models.helpers import get_admin_model, get_admin_models
+from fastadmin.schemas.api import ExportSchema, SignInInputSchema
+from fastadmin.schemas.configuration import (
     AddConfigurationFieldSchema,
     ChangeConfigurationFieldSchema,
     ConfigurationSchema,
@@ -18,7 +18,7 @@ from fastapi_admin.schemas.configuration import (
     ModelPermission,
     ModelSchema,
 )
-from fastapi_admin.settings import settings
+from fastadmin.settings import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api")

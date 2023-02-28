@@ -5,7 +5,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from fastapi_admin.settings import settings
+from fastadmin.settings import settings
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger(__name__)

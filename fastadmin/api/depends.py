@@ -4,8 +4,8 @@ import jwt
 from fastapi import Request, status
 from fastapi.exceptions import HTTPException
 
-from fastapi_admin.models.helpers import get_admin_model
-from fastapi_admin.settings import settings
+from fastadmin.models.helpers import get_admin_model
+from fastadmin.settings import settings
 
 
 async def get_user_id_or_none(request: Request) -> str | None:

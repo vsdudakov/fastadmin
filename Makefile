@@ -7,23 +7,23 @@ clean:
 
 .PHONY: dev
 dev:
-	poetry run uvicorn fastapi_admin.dev:app --reload --host=0.0.0.0 --port=8090
+	poetry run uvicorn fastadmin.dev:app --reload --host=0.0.0.0 --port=8090
 
 .PHONY: fix
 fix:
-	poetry run black fastapi_admin
-	poetry run isort fastapi_admin
+	poetry run black fastadmin
+	poetry run isort fastadmin
 	make -C frontend fix
 
 .PHONY: lint
 lint:
-	poetry run flake8 --show-source fastapi_admin
-	poetry run isort --check-only fastapi_admin --diff
+	poetry run flake8 --show-source fastadmin
+	poetry run isort --check-only fastadmin --diff
 	make -C frontend lint
 
 .PHONY: test
 test:
-	poetry run pytest --cov=fastapi_admin --cov-report=term --cov-report=xml -s fastapi_admin/tests
+	poetry run pytest --cov=fastadmin --cov-report=term --cov-report=xml -s fastadmin/tests
 
 .PHONY: kill
 kill:
@@ -32,15 +32,15 @@ kill:
 
 .PHONY: collectstatic
 collectstatic:
-	rm -rf ./fastapi_admin/static/js
-	rm -rf ./fastapi_admin/static/css
-	cp -rf ./frontend/build/static/js/ ./fastapi_admin/static/js/
-	cp -rf ./frontend/build/static/css/ ./fastapi_admin/static/css/
-	mv fastapi_admin/static/js/main*.js.map fastapi_admin/static/js/main.min.js.map
-	mv fastapi_admin/static/js/main*.js fastapi_admin/static/js/main.min.js
-	mv fastapi_admin/static/css/main*.css.map fastapi_admin/static/css/main.min.css.map
-	mv fastapi_admin/static/css/main*.css fastapi_admin/static/css/main.min.css
-	rm fastapi_admin/static/js/*.txt
+	rm -rf ./fastadmin/static/js
+	rm -rf ./fastadmin/static/css
+	cp -rf ./frontend/build/static/js/ ./fastadmin/static/js/
+	cp -rf ./frontend/build/static/css/ ./fastadmin/static/css/
+	mv fastadmin/static/js/main*.js.map fastadmin/static/js/main.min.js.map
+	mv fastadmin/static/js/main*.js fastadmin/static/js/main.min.js
+	mv fastadmin/static/css/main*.css.map fastadmin/static/css/main.min.css.map
+	mv fastadmin/static/css/main*.css fastadmin/static/css/main.min.css
+	rm fastadmin/static/js/*.txt
 
 .PHONY: build
 build:

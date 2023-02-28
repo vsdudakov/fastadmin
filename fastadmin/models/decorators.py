@@ -1,6 +1,6 @@
 def register(*models):
-    from fastapi_admin.models.base import BaseModelAdmin
-    from fastapi_admin.models.helpers import register_admin_model
+    from fastadmin.models.base import BaseModelAdmin
+    from fastadmin.models.helpers import register_admin_model
 
     def wrapper(admin_class):
         if not models:

@@ -1,8 +1,8 @@
 from io import BytesIO, StringIO
 from typing import Any, Sequence
 
-from fastapi_admin.schemas.api import ExportFormat
-from fastapi_admin.schemas.configuration import WidgetType
+from fastadmin.schemas.api import ExportFormat
+from fastadmin.schemas.configuration import WidgetType
 
 
 class BaseModelAdmin:

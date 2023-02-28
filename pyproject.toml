@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "fastapi_admin"
+name = "fastadmin"
 version = "0.1.0"
 description = ""
 authors = ["Seva D <vsdudakov@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/vsdudakov/fastapi-admin"
-repository = "https://github.com/vsdudakov/fastapi-admin"
+homepage = "https://github.com/vsdudakov/fastadmin"
+repository = "https://github.com/vsdudakov/fastadmin"
 keywords = ["fastapi", "admin"]
 classifiers = [
     "Environment :: Console",
@@ -20,7 +20,7 @@ include = [
     "LICENSE",
 ]
 packages = [
-    { include = "fastapi_admin" },
+    { include = "fastadmin" },
 ]
 
 [tool.poetry.dependencies]

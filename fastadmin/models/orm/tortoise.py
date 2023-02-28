@@ -5,9 +5,9 @@ from typing import Any, Sequence
 
 from fastapi import HTTPException, status
 
-from fastapi_admin.models.base import BaseModelAdmin
-from fastapi_admin.schemas.api import ExportFormat
-from fastapi_admin.schemas.configuration import WidgetType
+from fastadmin.models.base import BaseModelAdmin
+from fastadmin.schemas.api import ExportFormat
+from fastadmin.schemas.configuration import WidgetType
 
 
 class TortoiseModelAdmin(BaseModelAdmin):

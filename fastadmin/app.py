@@ -5,9 +5,9 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from fastapi_admin.api.api import router as api_router
-from fastapi_admin.models.base import BaseModelAdmin
-from fastapi_admin.views import router as views_router
+from fastadmin.api.api import router as api_router
+from fastadmin.models.base import BaseModelAdmin
+from fastadmin.views import router as views_router
 
 logger = logging.getLogger(__name__)
 
