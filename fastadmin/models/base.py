@@ -149,6 +149,10 @@ class BaseModelAdmin:
     def __init__(self, model_cls: Any):
         self.model_cls = model_cls
 
+    async def authenticate(self, username: str, password: str) -> Any | None:
+        # Implement this method for ModelAdmin with registered model - ADMIN_USER_MODEL
+        raise NotImplementedError
+
     async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
         raise NotImplementedError
 

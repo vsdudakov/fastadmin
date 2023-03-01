@@ -86,11 +86,11 @@ export ADMIN_SECRET_KEY = secret_key
 - ADMIN_USER_MODEL_USERNAME_FIELD - an username field (unique field from your user table) for authentication (could be email, or phone)
 - ADMIN_SECRET_KEY - a secret key (generate a strong secret key and provide here)
 
-#### Implement admin_authenticate class method
+#### Register ORM models
 
-Add admin_authenticate class method to your User model (we need it for authentication):
+Implement an authenticate method for ModelAdmin with registered model ADMIN_USER_MODEL
 
-Example for Tortoise ORM:
+Example (for Tortoise ORM):
 
 ```
 import bcrypt
@@ -105,37 +105,30 @@ class User(Model):
 
     ...
 
-    @classmethod
-    async def admin_authenticate(cls, username: str, password: str) -> Any | None:
-        user = await cls.filter(username=username, is_superuser=True).first()
+
+
+class Group(Model):
+    name = fields.CharField(max_length=255)
+    ...
+
+
+@register(User)
+class UserAdmin(TortoiseModelAdmin):
+    async def authenticate(self, username: str, password: str) -> User | None:
+        user = await User.filter(username=username, is_superuser=True).first()
         if not user:
             return None
         if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
             return None
         return user
 
-```
 
-#### Register your ORM models
-
-For Tortoise ORM (we support only Tortoise ORM for now):
-
-```
-from tortoise.models import Model
-
-from fastadmin import TortoiseModelAdmin, register
-
-
-class User(Model):
-    ...
-
-
-@register(User)
-class UserAdmin(TortoiseModelAdmin):
+@register(Group)
+class GroupAdmin(TortoiseModelAdmin):
     pass
 ```
 
-#### Enjoy
+#### Run your project
 
 Run your project (see https://fastapi.tiangolo.com/tutorial/first-steps/):
 
@@ -161,6 +154,8 @@ class UserAdmin(TortoiseModelAdmin):
 
     def has_delete_permission(self) -> bool:
         return False
+
+    ...
 ```
 
 ## Other ORMs or own implementation

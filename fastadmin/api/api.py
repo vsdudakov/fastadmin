@@ -34,12 +34,7 @@ async def sign_in(
     if not admin_model:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=f"{model} model is not registered.")
 
-    if not hasattr(admin_model.model_cls, "admin_authenticate"):
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED, detail="User model must have an admin_authenticate class method."
-        )
-
-    user = await admin_model.model_cls.admin_authenticate(payload.username, payload.password)
+    user = await admin_model.authenticate(payload.username, payload.password)
     if not user:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials.")
 
