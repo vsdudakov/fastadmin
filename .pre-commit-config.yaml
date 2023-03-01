@@ -6,19 +6,19 @@ repos:
     hooks:
       - id: build
         name: Build
-        entry: bash -c 'make -C src build'
+        entry: bash -c 'make build'
         language: system
         types: [python, javascript]
         pass_filenames: false
       - id: fix
         name: Fix
-        entry: bash -c 'make -C src fix'
+        entry: bash -c 'make fix'
         language: system
         types: [python, javascript]
         pass_filenames: false
       - id: lint
         name: Lint
-        entry: bash -c 'make -C src lint'
+        entry: bash -c 'make lint'
         language: system
         types: [python, javascript]
 
