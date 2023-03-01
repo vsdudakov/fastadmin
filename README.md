@@ -95,6 +95,7 @@ Example (for Tortoise ORM):
 ```
 import bcrypt
 from tortoise.models import Model
+from fastadmin import TortoiseModelAdmin, register
 
 
 class User(Model):
