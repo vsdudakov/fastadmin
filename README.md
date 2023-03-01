@@ -156,7 +156,7 @@ Example:
 ```
 @register(User)
 class UserAdmin(TortoiseModelAdmin):
-    exclude = ("password_hash",)
+    exclude = ("hash_password",)
     list_display = ("id", "username")
 
     def has_delete_permission(self) -> bool:
