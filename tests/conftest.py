@@ -22,4 +22,3 @@ async def fastapi_app() -> AsyncGenerator:
 async def client(fastapi_app) -> AsyncGenerator:
     async with TestClient(app=fastapi_app, base_url="http://test") as client:
         yield client
-
