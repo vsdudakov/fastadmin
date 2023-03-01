@@ -110,7 +110,7 @@ class User(Model):
         user = await cls.filter(username=username, is_superuser=True).first()
         if not user:
             return None
-        if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
+        if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
             return None
         return user
 
