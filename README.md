@@ -200,6 +200,9 @@ class MyModelAdmin(ModelAdmin):
     ) -> StringIO | BytesIO | None:
         raise NotImplementedError
 
+    def get_model_fields(self) -> list[str]:
+        raise NotImplementedError
+
     def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
         raise NotImplementedError
 

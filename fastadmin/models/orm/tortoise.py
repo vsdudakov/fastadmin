@@ -11,12 +11,6 @@ from fastadmin.schemas.configuration import WidgetType
 
 
 class TortoiseModelAdmin(BaseModelAdmin):
-    def _get_model_fields(self) -> list[str]:
-        fields = [f for f in self.model_cls._meta.fields_db_projection.keys()]
-        for m2m_field in self.model_cls._meta.m2m_fields:
-            fields.append(m2m_field)
-        return fields
-
     async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
         for key, value in payload.items():
             setattr(obj, key, value)
@@ -38,7 +32,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
     ) -> tuple[list[Any], int]:
         qs = self.model_cls.all()
 
-        fields = self._get_model_fields()
+        fields = self.get_model_fields()
 
         if filters:
             for filter_condition, value in filters.items():
@@ -94,7 +88,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
         filters: dict | None = None,
     ) -> StringIO | BytesIO | None:
         objs, _ = await self.get_list(offset=offset, limit=limit, search=search, sort_by=sort_by, filters=filters)
-        fields = self._get_model_fields()
+        fields = self.get_model_fields()
         hidden_fields = await self.get_hidden_fields()
         m2m_fields = self.model_cls._meta.m2m_fields
         fieldnames = [f for f in fields if f not in hidden_fields and f not in m2m_fields]
@@ -108,6 +102,12 @@ class TortoiseModelAdmin(BaseModelAdmin):
             output.seek(0)
             return output
         return None
+
+    def get_model_fields(self) -> list[str]:
+        fields = [f for f in self.model_cls._meta.fields_db_projection.keys()]
+        for m2m_field in self.model_cls._meta.m2m_fields:
+            fields.append(m2m_field)
+        return fields
 
     def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
         field_obj = self.model_cls._meta.fields_map[field]
@@ -188,7 +188,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
 
     def get_fields(self) -> Sequence[str]:
         fields = super().get_fields()
-        model_fields = self._get_model_fields()
+        model_fields = self.get_model_fields()
         if not fields:
             if self.exclude:
                 return [f for f in model_fields if f not in self.exclude]
@@ -198,7 +198,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
     def get_list_display(self) -> Sequence[str]:
         list_display = super().get_list_display()
         fields_map = self.model_cls._meta.fields_map
-        model_fields = self._get_model_fields()
+        model_fields = self.get_model_fields()
         if not list_display:
             return [f for f in model_fields if getattr(fields_map[f], "index", True)]
         return [f for f in list_display if f in model_fields]
@@ -206,7 +206,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
     def get_form_hidden_fields(self) -> Sequence[str]:
         fields_map = self.model_cls._meta.fields_map
         form_hidden_fields = super().get_form_hidden_fields()
-        model_fields = self._get_model_fields()
+        model_fields = self.get_model_fields()
         if not form_hidden_fields:
             return [
                 f
