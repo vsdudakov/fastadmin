@@ -166,7 +166,7 @@ If you have smth else (your own implementation of ORM and so on) you will may ov
 
 ```
 from typing import Any
-from fastadmin import ModelAdmin, register, WidgetType
+from fastadmin import ModelAdmin, register, WidgetType, ExportFormat
 
 class MyModelAdmin(ModelAdmin):
     async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
