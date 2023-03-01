@@ -1,4 +1,4 @@
-## Admin App for FastAPI
+## Admin Dashboard App for FastAPI
 
 [![Build Status](https://github.com/vsdudakov/fastadmin/workflows/CI/badge.svg?branch=main)](https://github.com/vsdudakov/fastadmin/workflows/CI/badge.svg?branch=main)
 [![Coverage](https://badgen.net/codecov/c/github/vsdudakov/fastadmin)](https://app.codecov.io/gh/vsdudakov/fastadmin)
