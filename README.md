@@ -94,7 +94,6 @@ Example (for Tortoise ORM):
 
 ```
 import bcrypt
-from typing import Any
 from tortoise.models import Model
 
 
@@ -165,6 +164,7 @@ We are going to support SQLAlchemy and Pony ORM soon...
 If you have smth else (your own implementation of ORM and so on) you will may overload ModelAdmin class and implement the following interfaces
 
 ```
+from typing import Any
 from fastadmin import ModelAdmin, register, WidgetType
 
 class MyModelAdmin(ModelAdmin):
