@@ -179,14 +179,92 @@ class BaseModelAdmin:
     ) -> StringIO | BytesIO | None:
         raise NotImplementedError
 
-    def get_form_hidden_fields(self) -> Sequence[str]:
-        return ()
-
     def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
         raise NotImplementedError
 
     def get_filter_widget(self, field: str) -> tuple[WidgetType, dict]:
-        raise NotImplementedError
+        form_widget_type, form_widget_props = self.get_form_widget(field)
+        if form_widget_type == WidgetType.Input:
+            return WidgetType.Input, {
+                **form_widget_props,
+                "required": False,
+            }
+        if form_widget_type == WidgetType.InputNumber:
+            return WidgetType.InputNumber, {
+                **form_widget_props,
+                "required": False,
+            }
+        if form_widget_type == WidgetType.TextArea:
+            return WidgetType.Input, {
+                **form_widget_props,
+                "required": False,
+            }
+        if form_widget_type == WidgetType.Select:
+            mode_tags = form_widget_props.get("mode") == "tags"
+            return WidgetType.Select, {
+                **form_widget_props,
+                "mode": "tags" if mode_tags else "multiple",
+                "required": False,
+            }
+        if form_widget_type == WidgetType.AsyncSelect:
+            return WidgetType.AsyncSelect, {
+                **form_widget_props,
+                "mode": "multiple",
+                "required": False,
+            }
+        if form_widget_type == WidgetType.AsyncTransfer:
+            return WidgetType.AsyncTransfer, {
+                **form_widget_props,
+                "required": False,
+            }
+        if form_widget_type == WidgetType.Switch:
+            return WidgetType.RadioGroup, {
+                **form_widget_props,
+                "required": False,
+                "options": [
+                    {"label": "Yes", "value": True},
+                    {"label": "No", "value": False},
+                ],
+            }
+        if form_widget_type == WidgetType.Checkbox:
+            return WidgetType.RadioGroup, {
+                **form_widget_props,
+                "required": False,
+                "options": [
+                    {"label": "Yes", "value": True},
+                    {"label": "No", "value": False},
+                ],
+            }
+        if form_widget_type == WidgetType.TimePicker:
+            return WidgetType.RangePicker, {
+                **form_widget_props,
+                "required": False,
+            }
+        if form_widget_type == WidgetType.DatePicker:
+            return WidgetType.RangePicker, {
+                **form_widget_props,
+                "required": False,
+            }
+        if form_widget_type == WidgetType.DateTimePicker:
+            return WidgetType.RangePicker, {
+                **form_widget_props,
+                "required": False,
+            }
+        if form_widget_type == WidgetType.RangePicker:
+            pass
+        if form_widget_type == WidgetType.RadioGroup:
+            pass
+        if form_widget_type == WidgetType.CheckboxGroup:
+            pass
+        if form_widget_type == WidgetType.Upload:
+            pass
+        return WidgetType.Input, {
+            **form_widget_props,
+            "required": False,
+        }
+
+    def get_form_hidden_fields(self) -> Sequence[str]:
+        return ()
 
     def get_list_display(self) -> Sequence[str]:
         return self.list_display

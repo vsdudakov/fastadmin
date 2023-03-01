@@ -6,14 +6,14 @@
 [![PyPi](https://badgen.net/pypi/v/fastadmin)](https://pypi.org/project/fastadmin/)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 
-
 ## Screenshots
+
 ![SignIn View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/images/signin.png)
 ![List View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/images/list.png)
 ![Change View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/images/change.png)
 
-
 ## Introduction
+
 FastAdmin is an easy-to-use Admin App for FastAPI inspired by Django Admin.
 
 FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin pages easiest way.
@@ -22,7 +22,6 @@ Note
 
 FastAdmin supports only Tortoise ORM (SQLAlchemy, Pony ORM and others are in plans).
 
-
 ## Why was FastAdmin built?
 
 FastAPI is gaining huge popularity as an asyncio, minimalistic API framework, but there is no simple and clear system for administration your data.
@@ -30,7 +29,6 @@ FastAPI is gaining huge popularity as an asyncio, minimalistic API framework, bu
 Hence we started FastAdmin.
 
 FastAdmin is designed to be minimalistic, functional, yet familiar, to ease the migration of developers wishing to switch to FastAPI from Django.
-
 
 ## Getting Started
 
@@ -77,6 +75,7 @@ app.mount("/admin", admin_app)
 Setup the following env variables to configure FastAdmin (add to .env or export them like on example):
 
 Example:
+
 ```
 export ADMIN_USER_MODEL = User
 export ADMIN_USER_MODEL_USERNAME_FIELD = username
@@ -87,23 +86,33 @@ export ADMIN_SECRET_KEY = secret_key
 - ADMIN_USER_MODEL_USERNAME_FIELD - an username field (unique field from your user table) for authentication (could be email, or phone)
 - ADMIN_SECRET_KEY - a secret key (generate a strong secret key and provide here)
 
-#### Implement check_password method
+#### Implement admin_authenticate class method
 
-Add check_password method to your User model (we need it for authentication):
+Add admin_authenticate class method to your User model (we need it for authentication):
 
 Example for Tortoise ORM:
+
 ```
 import bcrypt
+from typing import Any
 from tortoise.models import Model
+
 
 class User(Model):
     username = fields.CharField(max_length=255, unique=True)
     hash_password = fields.CharField(max_length=255)
+    is_superuser = fields.BooleanField(default=False)
 
     ...
 
-    def check_password(self, password: str) -> bool:
-        return bcrypt.checkpw(password.encode(), self.password_hash.encode())
+    @classmethod
+    async def admin_authenticate(cls, username: str, password: str) -> Any | None:
+        user = await cls.filter(username=username, is_superuser=True).first()
+        if not user:
+            return None
+        if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
+            return None
+        return user
 
 ```
 
@@ -112,20 +121,13 @@ class User(Model):
 For Tortoise ORM (we support only Tortoise ORM for now):
 
 ```
-import bcrypt
 from tortoise.models import Model
 
 from fastadmin import TortoiseModelAdmin, register
 
 
 class User(Model):
-    username = fields.CharField(max_length=255, unique=True)
-    password_hash = fields.CharField(max_length=255)
-
     ...
-
-    def check_password(self, password: str) -> bool:
-        return bcrypt.checkpw(password.encode(), self.password_hash.encode())
 
 
 @register(User)
@@ -136,6 +138,7 @@ class UserAdmin(TortoiseModelAdmin):
 #### Enjoy
 
 Run your project (see https://fastapi.tiangolo.com/tutorial/first-steps/):
+
 ```
 uvicorn ...
 ```
@@ -203,11 +206,7 @@ class MyModelAdmin(ModelAdmin):
     def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
         raise NotImplementedError
 
-    def get_filter_widget(self, field: str) -> tuple[WidgetType, dict]:
-        raise NotImplementedError
-
 ```
-
 
 ## License
 

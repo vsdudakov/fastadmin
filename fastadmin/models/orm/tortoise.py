@@ -109,41 +109,6 @@ class TortoiseModelAdmin(BaseModelAdmin):
             return output
         return None
 
-    def get_fields(self) -> Sequence[str]:
-        fields = super().get_fields()
-        model_fields = self._get_model_fields()
-        if not fields:
-            if self.exclude:
-                return [f for f in model_fields if f not in self.exclude]
-            return model_fields
-        return [f for f in fields if f in model_fields]
-
-    def get_list_display(self) -> Sequence[str]:
-        list_display = super().get_list_display()
-        fields_map = self.model_cls._meta.fields_map
-        model_fields = self._get_model_fields()
-        if not list_display:
-            return [f for f in model_fields if getattr(fields_map[f], "index", True)]
-        return [f for f in list_display if f in model_fields]
-
-    def get_form_hidden_fields(self) -> Sequence[str]:
-        fields_map = self.model_cls._meta.fields_map
-        form_hidden_fields = super().get_form_hidden_fields()
-        model_fields = self._get_model_fields()
-        if not form_hidden_fields:
-            return [
-                f
-                for f in model_fields
-                if (
-                    getattr(fields_map[f], "_generated", False)
-                    or getattr(fields_map[f], "index", False)
-                    or getattr(fields_map[f], "auto_now", False)
-                    or getattr(fields_map[f], "auto_now_add", False)
-                )
-                and f not in self.readonly_fields
-            ]
-        return [f for f in form_hidden_fields if f in model_fields]
-
     def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
         field_obj = self.model_cls._meta.fields_map[field]
         field_obj = field_obj.reference if field_obj.reference else field_obj
@@ -221,84 +186,37 @@ class TortoiseModelAdmin(BaseModelAdmin):
             }
         return WidgetType.Input, widget_props
 
-    def get_filter_widget(self, field: str) -> tuple[WidgetType, dict]:
-        field_obj = self.model_cls._meta.fields_map[field]
-        field_obj = field_obj.reference if field_obj.reference else field_obj
-        widget_props = {}
-        field_class = field_obj.__class__.__name__
-        if field_class == "CharField":
-            return WidgetType.Input, widget_props
-        if field_class == "TextField":
-            return WidgetType.Input, widget_props
-        if field_class == "BooleanField":
-            return WidgetType.RadioGroup, {
-                **widget_props,
-                "options": [
-                    {"label": "Yes", "value": True},
-                    {"label": "No", "value": False},
-                ],
-            }
-        if field_class == "ArrayField":
-            return WidgetType.Select, {
-                **widget_props,
-                "mode": "tags",
-            }
-        if field_class == "IntField":
-            return WidgetType.InputNumber, widget_props
-        if field_class == "FloatField":
-            return WidgetType.InputNumber, widget_props
-        if field_class == "DecimalField":
-            return WidgetType.InputNumber, widget_props
-        if field_class == "DateField":
-            return WidgetType.RangePicker, widget_props
-        if field_class == "DatetimeField":
-            return WidgetType.RangePicker, widget_props
-        if field_class == "TimeField":
-            return WidgetType.RangePicker, widget_props
-        if field_class == "ForeignKeyFieldInstance":
-            if field in self.raw_id_fields:
-                return WidgetType.Input, widget_props
-            return WidgetType.AsyncSelect, {
-                **widget_props,
-                "mode": "multiple",
-                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
-                "idField": "id",
-                "labelField": "id",  # TODO: labelField
-            }
-        if field_class == "ManyToManyFieldInstance":
-            if field in self.raw_id_fields:
-                return WidgetType.Input, widget_props
-            if field in self.filter_vertical or field in self.filter_horizontal:
-                return WidgetType.AsyncTransfer, {
-                    **widget_props,
-                    "required": False,
-                    "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
-                    "idField": "id",
-                    "labelField": "id",  # TODO: labelField
-                    "layout": "vertical" if field in self.filter_vertical else "horizontal",
-                }
+    def get_fields(self) -> Sequence[str]:
+        fields = super().get_fields()
+        model_fields = self._get_model_fields()
+        if not fields:
+            if self.exclude:
+                return [f for f in model_fields if f not in self.exclude]
+            return model_fields
+        return [f for f in fields if f in model_fields]
 
-            return WidgetType.AsyncSelect, {
-                **widget_props,
-                "mode": "multiple",
-                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
-                "idField": "id",
-                "labelField": "id",  # TODO: labelField
-            }
-        if field_class == "OneToOneFieldInstance":
-            if field in self.raw_id_fields:
-                return WidgetType.Input, widget_props
-            return WidgetType.AsyncSelect, {
-                **widget_props,
-                "mode": "multiple",
-                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
-                "idField": "id",
-                "labelField": "id",  # TODO: labelField
-            }
-        if field_class == "CharEnumFieldInstance":
-            return WidgetType.Select, {
-                **widget_props,
-                "mode": "multiple",
-                "options": [{"label": k, "value": k} for k in field_obj.enum_type],
-            }
-        return WidgetType.Input, widget_props
+    def get_list_display(self) -> Sequence[str]:
+        list_display = super().get_list_display()
+        fields_map = self.model_cls._meta.fields_map
+        model_fields = self._get_model_fields()
+        if not list_display:
+            return [f for f in model_fields if getattr(fields_map[f], "index", True)]
+        return [f for f in list_display if f in model_fields]
+
+    def get_form_hidden_fields(self) -> Sequence[str]:
+        fields_map = self.model_cls._meta.fields_map
+        form_hidden_fields = super().get_form_hidden_fields()
+        model_fields = self._get_model_fields()
+        if not form_hidden_fields:
+            return [
+                f
+                for f in model_fields
+                if (
+                    getattr(fields_map[f], "_generated", False)
+                    or getattr(fields_map[f], "index", False)
+                    or getattr(fields_map[f], "auto_now", False)
+                    or getattr(fields_map[f], "auto_now_add", False)
+                )
+                and f not in self.readonly_fields
+            ]
+        return [f for f in form_hidden_fields if f in model_fields]
