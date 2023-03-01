@@ -166,6 +166,7 @@ If you have smth else (your own implementation of ORM and so on) you will may ov
 
 ```
 from typing import Any
+from io import BytesIO, StringIO
 from fastadmin import ModelAdmin, register, WidgetType, ExportFormat
 
 class MyModelAdmin(ModelAdmin):
