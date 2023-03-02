@@ -166,17 +166,34 @@ If you have smth else (your own implementation of ORM and so on) you will may ov
 
 ```
 from typing import Any
-from io import BytesIO, StringIO
-from fastadmin import ModelAdmin, register, WidgetType, ExportFormat
+from collections import OrderedDict
+from fastadmin import ModelAdmin
 
 class MyModelAdmin(ModelAdmin):
     async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
+        """This method is used to save orm/db model object.
+
+        :params obj: an orm/db model object.
+        :params payload: a payload from request.
+        :params add: a flag for add or update object.
+        :return: None.
+        """
         raise NotImplementedError
 
     async def delete_model(self, obj: Any) -> None:
+        """This method is used to delete orm/db model object.
+
+        :params obj: an orm/db model object.
+        :return: None.
+        """
         raise NotImplementedError
 
     async def get_obj(self, id: str) -> Any | None:
+        """This method is used to get orm/db model object by id.
+
+        :params id: an id of object.
+        :return: An object or None.
+        """
         raise NotImplementedError
 
     async def get_list(
@@ -187,23 +204,32 @@ class MyModelAdmin(ModelAdmin):
         sort_by: str | None = None,
         filters: dict | None = None,
     ) -> tuple[list[Any], int]:
+        """This method is used to get list of orm/db model objects.
+
+        :params offset: an offset for pagination.
+        :params limit: a limit for pagination.
+        :params search: a search query.
+        :params sort_by: a sort by field name.
+        :params filters: a dict of filters.
+        :return: A tuple of list of objects and total count.
+        """
         raise NotImplementedError
 
-    async def get_export(
-        self,
-        format: ExportFormat | None,
-        offset: int | None = None,
-        limit: int | None = None,
-        search: str | None = None,
-        sort_by: str | None = None,
-        filters: dict | None = None,
-    ) -> StringIO | BytesIO | None:
+    def get_model_fields(self) -> OrderedDict[str, dict]:
+        """This method is used to get all orm/db model fields
+        with saving ordering (non relations, fk, o2o, m2m).
+
+        :return: An OrderedDict of model fields.
+        """
         raise NotImplementedError
 
-    def get_model_fields(self) -> list[str]:
-        raise NotImplementedError
+    def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
+        """This method is used to get form item widget
+        for field from orm/db model.
 
-    def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
+        :params field_name: a model field name.
+        :return: A tuple of widget type and widget props.
+        """
         raise NotImplementedError
 
 ```

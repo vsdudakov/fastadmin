@@ -212,6 +212,23 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
+    def get_model_fields(self) -> OrderedDict[str, dict]:
+        """This method is used to get all orm/db model fields
+        with saving ordering (non relations, fk, o2o, m2m).
+
+        :return: An OrderedDict of model fields.
+        """
+        raise NotImplementedError
+
+    def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
+        """This method is used to get form item widget
+        for field from orm/db model.
+
+        :params field_name: a model field name.
+        :return: A tuple of widget type and widget props.
+        """
+        raise NotImplementedError
+
     async def get_export(
         self,
         export_format: ExportFormat | None,
@@ -244,23 +261,6 @@ class BaseModelAdmin:
             output.seek(0)
             return output
         return None
-
-    def get_model_fields(self) -> OrderedDict[str, dict]:
-        """This method is used to get all orm/db model fields
-        with saving ordering (non relations, fk, o2o, m2m).
-
-        :return: An OrderedDict of model fields.
-        """
-        raise NotImplementedError
-
-    def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
-        """This method is used to get form item widget
-        for field from orm/db model.
-
-        :params field_name: a model field name.
-        :return: A tuple of widget type and widget props.
-        """
-        raise NotImplementedError
 
     def get_filter_widget(self, field_name: str) -> tuple[WidgetType, dict]:
         """This method is used to get filter widget for tabel columns
