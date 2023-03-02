@@ -151,7 +151,7 @@ async def get(
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
     obj = await admin_model.get_obj(id)
     if not obj:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found.")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} not found.")
     return obj
 
 
@@ -170,8 +170,9 @@ async def add(
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
-    obj = admin_model.model_cls()
-    await admin_model.save_model(obj, payload, add=True)
+    obj = await admin_model.save_model(None, payload)
+    if not obj:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} not found.")
     return obj
 
 
@@ -192,10 +193,9 @@ async def change(
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
-    obj = await admin_model.get_obj(id)
+    obj = await admin_model.save_model(id, payload)
     if not obj:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found.")
-    await admin_model.save_model(obj, payload)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} not found.")
     return obj
 
 

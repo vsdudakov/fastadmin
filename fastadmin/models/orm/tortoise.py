@@ -5,22 +5,53 @@ from typing import Any
 from fastapi import HTTPException, status
 
 from fastadmin.models.base import BaseModelAdmin
+from fastadmin.models.helpers import get_admin_model
 from fastadmin.schemas.configuration import WidgetType
 from fastadmin.settings import settings
 
 
 class TortoiseModelAdmin(BaseModelAdmin):
-    async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
+    async def save_model(self, id: str | None, payload: dict) -> Any | None:
         """This method is used to save orm/db model object.
 
-        :params obj: an orm/db model object.
+        :params id: an id of object.
         :params payload: a payload from request.
-        :params add: a flag for add or update object.
-        :return: None.
+        :return: A saved object or None.
         """
+        fields = self.get_model_fields()
+        m2m_fields = [f for f, v in fields.items() if v.get("is_m2m", False)]
+
+        if id:
+            obj = await self.model_cls.filter(id=id).first()
+            if not obj:
+                return None
+        else:
+            obj = self.model_cls()
+
+        update_fields = []
         for key, value in payload.items():
-            setattr(obj, key, value)
-        await obj.save(update_fields=payload.keys() if not add else None)
+            if key not in m2m_fields:
+                setattr(obj, key, value)
+                update_fields.append(key)
+
+        await obj.save(update_fields=update_fields if id else None)
+
+        for key, values in payload.items():
+            if key in m2m_fields:
+                m2m_rel = getattr(obj, key, None)
+                if m2m_rel is None:
+                    continue
+                remote_model = m2m_rel.remote_model
+                await m2m_rel.clear()
+                remote_model_objs = []
+                for id in values:
+                    remote_model_obj = remote_model()
+                    setattr(remote_model_obj, remote_model._meta.pk_attr, id)
+                    setattr(remote_model_obj, "_saved_in_db", True)
+                    remote_model_objs.append(remote_model_obj)
+                if remote_model_objs:
+                    await m2m_rel.add(*remote_model_objs)
+        return obj
 
     async def delete_model(self, obj: Any) -> None:
         """This method is used to delete orm/db model object.
@@ -36,7 +67,20 @@ class TortoiseModelAdmin(BaseModelAdmin):
         :params id: an id of object.
         :return: An object or None.
         """
-        return await self.model_cls.filter(id=id).first()
+        fields = self.get_model_fields()
+        m2m_fields = [f for f, v in fields.items() if v.get("is_m2m", False)]
+        obj = await self.model_cls.filter(id=id).first()
+        if not obj:
+            return obj
+        obj_dict = {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
+        for field in m2m_fields:
+            m2m_rel = getattr(obj, field, None)
+            if m2m_rel is None:
+                continue
+            remote_model = m2m_rel.remote_model
+            remote_ids = await m2m_rel.all().values_list(remote_model._meta.pk_attr, flat=True)
+            obj_dict[field] = remote_ids
+        return obj_dict
 
     async def get_list(
         self,
@@ -126,8 +170,19 @@ class TortoiseModelAdmin(BaseModelAdmin):
             parent_model_label = None
             parent_model = getattr(field, "model_name", "").rsplit(".", 1)[-1] or None
             if parent_model:
+                parent_admin_model = get_admin_model(parent_model)
                 parent_model_id = "id"
                 parent_model_label = "id"
+                if parent_admin_model:
+                    parent_model_id = parent_admin_model.model_cls._meta.pk_attr
+                    parent_model_label = parent_admin_model.model_cls._meta.pk_attr
+                    parent_fields = parent_admin_model.model_cls._meta.fields_db_projection.keys()
+                    if "name" in parent_fields:
+                        parent_model_label = "name"
+                    elif "title" in parent_fields:
+                        parent_model_label = "title"
+                    elif "email" in parent_fields:
+                        parent_model_label = "email"
 
             form_hidden = (
                 getattr(field, "_generated", False)
@@ -208,7 +263,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
                     "format": settings.ADMIN_TIME_FORMAT,
                 }
             case "ForeignKeyFieldInstance":
-                if field in self.raw_id_fields:
+                if field_name in self.raw_id_fields:
                     return WidgetType.Input, widget_props
                 return WidgetType.AsyncSelect, {
                     **widget_props,
@@ -217,9 +272,9 @@ class TortoiseModelAdmin(BaseModelAdmin):
                     "labelField": field.get("parent_model_label") or "id",
                 }
             case "ManyToManyFieldInstance":
-                if field in self.raw_id_fields:
+                if field_name in self.raw_id_fields:
                     return WidgetType.Input, widget_props
-                if field in self.filter_vertical or field in self.filter_horizontal:
+                if field_name in self.filter_vertical or field_name in self.filter_horizontal:
                     return WidgetType.AsyncTransfer, {
                         **widget_props,
                         "required": False,
@@ -237,7 +292,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
                     "labelField": field.get("parent_model_label") or "id",
                 }
             case "OneToOneFieldInstance":
-                if field in self.raw_id_fields:
+                if field_name in self.raw_id_fields:
                     return WidgetType.Input, widget_props
                 return WidgetType.AsyncSelect, {
                     **widget_props,
@@ -246,7 +301,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
                     "labelField": field.get("parent_model_label") or "id",
                 }
             case "CharEnumFieldInstance":
-                if field in self.radio_fields:
+                if field_name in self.radio_fields:
                     return WidgetType.RadioGroup, {
                         **widget_props,
                         "options": [{"label": k, "value": k} for k in field.get("enum_type") or []],
