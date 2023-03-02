@@ -167,13 +167,12 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
+    async def save_model(self, id: str | None, payload: dict) -> Any | None:
         """This method is used to save orm/db model object.
 
-        :params obj: an orm/db model object.
+        :params id: an id of object.
         :params payload: a payload from request.
-        :params add: a flag for add or update object.
-        :return: None.
+        :return: A saved object or None.
         """
         raise NotImplementedError
 
