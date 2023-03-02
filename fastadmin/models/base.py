@@ -1,12 +1,17 @@
+import csv
+from collections import OrderedDict
 from collections.abc import Sequence
 from io import BytesIO, StringIO
 from typing import Any
 
 from fastadmin.schemas.api import ExportFormat
 from fastadmin.schemas.configuration import WidgetType
+from fastadmin.settings import settings
 
 
 class BaseModelAdmin:
+    """Base class for model admin"""
+
     # Not supported setting
     # actions
 
@@ -147,19 +152,45 @@ class BaseModelAdmin:
     view_on_site: str | None = None
 
     def __init__(self, model_cls: Any):
+        """This method is used to initialize admin class.
+
+        :params model_cls: an orm/db model class.
+        """
         self.model_cls = model_cls
 
     async def authenticate(self, username: str, password: str) -> Any | None:
-        # Implement this method for ModelAdmin with registered model - ADMIN_USER_MODEL
+        """This method is used to implement authentication for settings.ADMIN_USER_MODEL orm/db model.
+
+        :params username: a value for user model settings.ADMIN_USER_MODEL_USERNAME_FIELD field.
+        :params password: a password.
+        :return: An user orm/db model object or None (if not authenticated).
+        """
         raise NotImplementedError
 
     async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
+        """This method is used to save orm/db model object.
+
+        :params obj: an orm/db model object.
+        :params payload: a payload from request.
+        :params add: a flag for add or update object.
+        :return: None.
+        """
         raise NotImplementedError
 
     async def delete_model(self, obj: Any) -> None:
+        """This method is used to delete orm/db model object.
+
+        :params obj: an orm/db model object.
+        :return: None.
+        """
         raise NotImplementedError
 
     async def get_obj(self, id: str) -> Any | None:
+        """This method is used to get orm/db model object by id.
+
+        :params id: an id of object.
+        :return: An object or None.
+        """
         raise NotImplementedError
 
     async def get_list(
@@ -170,130 +201,224 @@ class BaseModelAdmin:
         sort_by: str | None = None,
         filters: dict | None = None,
     ) -> tuple[list[Any], int]:
+        """This method is used to get list of orm/db model objects.
+
+        :params offset: an offset for pagination.
+        :params limit: a limit for pagination.
+        :params search: a search query.
+        :params sort_by: a sort by field name.
+        :params filters: a dict of filters.
+        :return: A tuple of list of objects and total count.
+        """
         raise NotImplementedError
 
     async def get_export(
         self,
-        format: ExportFormat | None,
+        export_format: ExportFormat | None,
         offset: int | None = None,
         limit: int | None = None,
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
     ) -> StringIO | BytesIO | None:
+        """This method is used to get export data (str or bytes stream).
+
+        :params export_format: a n export format (CSV at default).
+        :params offset: an offset for pagination.
+        :params limit: a limit for pagination.
+        :params search: a search query.
+        :params sort_by: a sort by field name.
+        :params filters: a dict of filters.
+        :return: A StringIO or BytesIO object.
+        """
+        objs, _ = await self.get_list(offset=offset, limit=limit, search=search, sort_by=sort_by, filters=filters)
+        model_fields = self.get_model_fields()
+        export_fields = [f for f, v in model_fields.items() if not v.get("is_m2m") and not v.get("form_hidden")]
+        if not export_format or export_format == ExportFormat.CSV:
+            output = StringIO()
+            writer = csv.DictWriter(output, fieldnames=export_fields)
+            writer.writeheader()
+            for obj in objs:
+                obj_dict = {fieldname: getattr(obj, fieldname, None) for fieldname in export_fields}
+                writer.writerow(obj_dict)
+            output.seek(0)
+            return output
+        return None
+
+    def get_model_fields(self) -> OrderedDict[str, dict]:
+        """This method is used to get all orm/db model fields
+        with saving ordering (non relations, fk, o2o, m2m).
+
+        :return: An OrderedDict of model fields.
+        """
         raise NotImplementedError
 
-    def get_model_fields(self) -> list[str]:
+    def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
+        """This method is used to get form item widget
+        for field from orm/db model.
+
+        :params field_name: a model field name.
+        :return: A tuple of widget type and widget props.
+        """
         raise NotImplementedError
 
-    def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
-        raise NotImplementedError
+    def get_filter_widget(self, field_name: str) -> tuple[WidgetType, dict]:
+        """This method is used to get filter widget for tabel columns
+        for field from orm/db model from list_filter parameter.
 
-    def get_filter_widget(self, field: str) -> tuple[WidgetType, dict]:
-        form_widget_type, form_widget_props = self.get_form_widget(field)
-        if form_widget_type == WidgetType.Input:
-            return WidgetType.Input, {
-                **form_widget_props,
-                "required": False,
-            }
-        if form_widget_type == WidgetType.InputNumber:
-            return WidgetType.InputNumber, {
-                **form_widget_props,
-                "required": False,
-            }
-        if form_widget_type == WidgetType.TextArea:
-            return WidgetType.Input, {
-                **form_widget_props,
-                "required": False,
-            }
-        if form_widget_type == WidgetType.Select:
-            mode_tags = form_widget_props.get("mode") == "tags"
-            return WidgetType.Select, {
-                **form_widget_props,
-                "mode": "tags" if mode_tags else "multiple",
-                "required": False,
-            }
-        if form_widget_type == WidgetType.AsyncSelect:
-            return WidgetType.AsyncSelect, {
-                **form_widget_props,
-                "mode": "multiple",
-                "required": False,
-            }
-        if form_widget_type == WidgetType.AsyncTransfer:
-            return WidgetType.AsyncTransfer, {
-                **form_widget_props,
-                "required": False,
-            }
-        if form_widget_type == WidgetType.Switch:
-            return WidgetType.RadioGroup, {
-                **form_widget_props,
-                "required": False,
-                "options": [
-                    {"label": "Yes", "value": True},
-                    {"label": "No", "value": False},
-                ],
-            }
-        if form_widget_type == WidgetType.Checkbox:
-            return WidgetType.RadioGroup, {
-                **form_widget_props,
-                "required": False,
-                "options": [
-                    {"label": "Yes", "value": True},
-                    {"label": "No", "value": False},
-                ],
-            }
-        if form_widget_type == WidgetType.TimePicker:
-            return WidgetType.RangePicker, {
-                **form_widget_props,
-                "required": False,
-            }
-        if form_widget_type == WidgetType.DatePicker:
-            return WidgetType.RangePicker, {
-                **form_widget_props,
-                "required": False,
-            }
-        if form_widget_type == WidgetType.DateTimePicker:
-            return WidgetType.RangePicker, {
-                **form_widget_props,
-                "required": False,
-            }
-        if form_widget_type == WidgetType.RangePicker:
-            pass
-        if form_widget_type == WidgetType.RadioGroup:
-            pass
-        if form_widget_type == WidgetType.CheckboxGroup:
-            pass
-        if form_widget_type == WidgetType.Upload:
-            pass
-        return WidgetType.Input, {
-            **form_widget_props,
-            "required": False,
-        }
-
-    def get_form_hidden_fields(self) -> Sequence[str]:
-        return ()
+        :params field_name: a model field name.
+        :return: A tuple of widget type and widget props.
+        """
+        form_widget_type, form_widget_props = self.get_form_widget(field_name)
+        match form_widget_type:
+            case WidgetType.Input:
+                return WidgetType.Input, {
+                    **form_widget_props,
+                    "required": False,
+                }
+            case WidgetType.InputNumber:
+                return WidgetType.InputNumber, {
+                    **form_widget_props,
+                    "required": False,
+                }
+            case WidgetType.TextArea:
+                return WidgetType.Input, {
+                    **form_widget_props,
+                    "required": False,
+                }
+            case WidgetType.Select:
+                mode_tags = form_widget_props.get("mode") == "tags"
+                return WidgetType.Select, {
+                    **form_widget_props,
+                    "mode": "tags" if mode_tags else "multiple",
+                    "required": False,
+                }
+            case WidgetType.AsyncSelect:
+                return WidgetType.AsyncSelect, {
+                    **form_widget_props,
+                    "mode": "multiple",
+                    "required": False,
+                }
+            case WidgetType.AsyncTransfer:
+                return WidgetType.AsyncTransfer, {
+                    **form_widget_props,
+                    "required": False,
+                }
+            case WidgetType.Switch:
+                return WidgetType.RadioGroup, {
+                    **form_widget_props,
+                    "required": False,
+                    "options": [
+                        {"label": "Yes", "value": True},
+                        {"label": "No", "value": False},
+                    ],
+                }
+            case WidgetType.Checkbox:
+                return WidgetType.RadioGroup, {
+                    **form_widget_props,
+                    "required": False,
+                    "options": [
+                        {"label": "Yes", "value": True},
+                        {"label": "No", "value": False},
+                    ],
+                }
+            case WidgetType.TimePicker:
+                return WidgetType.RangePicker, {
+                    **form_widget_props,
+                    "required": False,
+                    "format": settings.ADMIN_TIME_FORMAT,
+                    "showTime": True,
+                }
+            case WidgetType.DatePicker:
+                return WidgetType.RangePicker, {
+                    **form_widget_props,
+                    "required": False,
+                    "format": settings.ADMIN_DATE_FORMAT,
+                }
+            case WidgetType.DateTimePicker:
+                return WidgetType.RangePicker, {
+                    **form_widget_props,
+                    "required": False,
+                    "format": settings.ADMIN_DATETIME_FORMAT,
+                    "showTime": True,
+                }
+            case WidgetType.RadioGroup:
+                return WidgetType.CheckboxGroup, {
+                    **form_widget_props,
+                    "required": False,
+                }
+            case WidgetType.CheckboxGroup:
+                return WidgetType.CheckboxGroup, {
+                    **form_widget_props,
+                    "required": False,
+                }
+            # case WidgetType.RangePicker:
+            # case WidgetType.Upload:
+            case _:
+                return WidgetType.Input, {
+                    **form_widget_props,
+                    "required": False,
+                }
 
     def get_list_display(self) -> Sequence[str]:
-        return self.list_display
+        """This method is used to get list of fields for display on table view.
+
+        :return: A list of model field names.
+        """
+        list_display = self.list_display
+        model_fields = self.get_model_fields()
+        if not list_display:
+            return [f for f in self.get_fields() if model_fields[f].get("is_pk")]
+        return [f for f in list_display if f in model_fields]
 
     def get_fields(self) -> Sequence[str]:
-        return self.fields
+        """This method is used to get list of fields for display on form view.
+
+        :return: A list of model field names.
+        """
+        fields = self.fields
+        model_fields = self.get_model_fields()
+        if not fields:
+            return [f for f in model_fields if not self.exclude or f not in self.exclude]
+        return [f for f in fields if f in model_fields]
 
     def get_fieldsets(self) -> Sequence[tuple[str | None, dict[str, Sequence[str]]]]:
+        """This method is used to get fieldsets data for form view.
+
+        :return: A list of fieldsets data.
+        """
         return self.fieldsets
 
     def has_add_permission(self) -> bool:
+        """This method is used to check if user has permission to add new model instance.
+
+        :return: A boolean value.
+        """
         return True
 
     def has_change_permission(self) -> bool:
+        """This method is used to check if user has permission to change model instance.
+
+        :return: A boolean value.
+        """
         return True
 
     def has_delete_permission(self) -> bool:
+        """This method is used to check if user has permission to delete model instance.
+
+        :return: A boolean value.
+        """
         return True
 
     def has_export_permission(self) -> bool:
+        """This method is used to check if user has permission to export model instance.
+
+        :return: A boolean value.
+        """
         return True
 
 
 class ModelAdmin(BaseModelAdmin):
+    """This class is used to create admin model class."""
+
     pass

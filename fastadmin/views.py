@@ -15,4 +15,9 @@ templates = Jinja2Templates(directory=os.path.join(current_dir, "templates"))
 
 @router.get("/", response_class=HTMLResponse)
 async def index(request: Request):
+    """This method is used to render index page.
+
+    :params request: a request object.
+    :return: A response object.
+    """
     return templates.TemplateResponse("index.html", {"request": request, "settings": settings})

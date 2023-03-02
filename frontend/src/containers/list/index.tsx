@@ -11,6 +11,7 @@ import {
   Popconfirm,
   Row,
   Space,
+  Switch,
   Tooltip,
 } from 'antd';
 import querystring from 'querystring';
@@ -31,7 +32,7 @@ import { getTitleFromFieldName } from 'helpers/title';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { deleteFetcher, getFetcher, postFetcher } from 'fetchers/fetchers';
 import { FilterColumn } from './filter-column';
-import { transformDataToServer } from 'helpers/transform';
+import { transformColumnValueFromServer, transformFiltersToServer } from 'helpers/transform';
 import { TableOrCards } from 'components/table-or-cards';
 import { handleError } from 'helpers/forms';
 
@@ -51,6 +52,7 @@ export const List: React.FC = () => {
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [sortBy, setSortBy] = useState<string | undefined>();
 
+  const dateTimeFormat = configuration?.datetime_format;
   const modelConfiguration: IModel | undefined = configuration.models.find(
     (item: IModel) => item.name === model
   );
@@ -68,19 +70,22 @@ export const List: React.FC = () => {
     }
   }, [model]);
 
+  const fields = (modelConfiguration || { fields: [] }).fields;
   const columns = useMemo(() => {
-    return (modelConfiguration || { fields: [] }).fields
+    return fields
       .filter((field: IModelField) => !!field.list_configuration)
+      .sort(
+        (a: IModelField, b: IModelField) =>
+          (a.list_configuration?.index || 0) - (b.list_configuration?.index || 0)
+      )
       .map((field: IModelField) => {
-        const filterCondition =
-          field.list_configuration?.filter_condition || `${field.name}__icontains`;
         return {
           title: getTitleFromFieldName(field.name),
           dataIndex: field.name,
           key: field.name,
           sorter: field.list_configuration?.sorter,
           filterIcon: !!field.list_configuration?.filter_widget_type ? (
-            filters[filterCondition] !== undefined ? (
+            filters[field.name] !== undefined ? (
               <Tooltip title={_t('Click to reset this filter')}>
                 <FilterFilled style={{ color: 'red' }} />
               </Tooltip>
@@ -93,7 +98,7 @@ export const List: React.FC = () => {
           filterDropdown: !!field.list_configuration?.filter_widget_type
             ? ({ confirm, clearFilters }: any) => {
                 const onReset = () => {
-                  delete filters[filterCondition];
+                  delete filters[field.name];
                   setFilters({ ...filters });
                   setPage(DEFAULT_PAGE);
                   setPageSize(DEFAULT_PAGE_SIZE);
@@ -101,7 +106,7 @@ export const List: React.FC = () => {
                   confirm();
                 };
                 const onFilter = (value: any) => {
-                  filters[filterCondition] = value;
+                  filters[field.name] = value;
                   setFilters({ ...filters });
                   setPage(DEFAULT_PAGE);
                   setPageSize(DEFAULT_PAGE_SIZE);
@@ -111,7 +116,7 @@ export const List: React.FC = () => {
                   <FilterColumn
                     widgetType={field.list_configuration?.filter_widget_type as EFieldWidgetType}
                     widgetProps={field.list_configuration?.filter_widget_props}
-                    value={filters[filterCondition]}
+                    value={filters[field.name]}
                     onFilter={onFilter}
                     onReset={onReset}
                   />
@@ -119,25 +124,27 @@ export const List: React.FC = () => {
               }
             : undefined,
           render: (value: any, record: any) => {
+            const transformedValue = transformColumnValueFromServer(
+              value,
+              field.list_configuration?.empty_value_display,
+              dateTimeFormat,
+              (value: boolean) => <Switch checked={value} size="small" />
+            );
             if (field?.list_configuration?.is_link) {
-              return (
-                <Link to={`/change/${model}/${record.id}`}>
-                  {value || field.list_configuration?.empty_value_display || '-'}
-                </Link>
-              );
+              return <Link to={`/change/${model}/${record.id}`}>{transformedValue}</Link>;
             }
-            return value || field.list_configuration?.empty_value_display || '-';
+            return transformedValue;
           },
         };
       });
-  }, [modelConfiguration, filters, _t, model]);
+  }, [model, fields, filters, dateTimeFormat, _t]);
 
   const queryString = querystring.stringify({
     search: search,
     sort_by: sortBy,
     offset: (page - 1) * pageSize,
     limit: pageSize,
-    ...transformDataToServer(filters),
+    ...transformFiltersToServer(filters),
   });
 
   const { data, isLoading } = useQuery([`/list/${model}`, queryString], () =>
@@ -147,7 +154,7 @@ export const List: React.FC = () => {
   const exportQueryString = querystring.stringify({
     search: search,
     sort_by: sortBy,
-    ...transformDataToServer(filters),
+    ...transformFiltersToServer(filters),
   });
 
   const { mutate: mutateExport, isLoading: isLoadingExport } = useMutation(
@@ -211,7 +218,7 @@ export const List: React.FC = () => {
       viewOnSite={modelConfiguration?.view_on_site}
       actions={
         <Row style={{ marginTop: 10, marginBottom: 10 }} gutter={[8, 8]}>
-          {modelConfiguration?.search_fields && (
+          {(modelConfiguration?.search_fields || []).length > 0 && (
             <Col>
               <Input.Search
                 placeholder={modelConfiguration?.search_help_text || (_t('Search By') as string)}
@@ -278,6 +285,7 @@ export const List: React.FC = () => {
             total: data?.total,
             showSizeChanger: true,
           }}
+          scroll={{ x: 1000 }}
         />
       ) : (
         <Empty description={_t('No permissions for model')} />

@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 
 from fastadmin.api.depends import get_user_id, get_user_id_or_none
+from fastadmin.api.helpers import sanitize
 from fastadmin.models.base import BaseModelAdmin
 from fastadmin.models.helpers import get_admin_model, get_admin_models
 from fastadmin.schemas.api import ExportSchema, SignInInputSchema
@@ -29,6 +30,12 @@ async def sign_in(
     response: Response,
     payload: SignInInputSchema,
 ):
+    """This method is used to sign in.
+
+    :params response: a response object.
+    :params payload: a payload object.
+    :return: None.
+    """
     model = settings.ADMIN_USER_MODEL
     admin_model = get_admin_model(model)
     if not admin_model:
@@ -57,6 +64,11 @@ async def sign_out(
     response: Response,
     _: str = Depends(get_user_id),
 ):
+    """This method is used to sign out.
+
+    :params response: a response object.
+    :return: None.
+    """
     response.delete_cookie(settings.ADMIN_SESSION_ID_KEY)
     return None
 
@@ -65,6 +77,11 @@ async def sign_out(
 async def me(
     user_id: str = Depends(get_user_id),
 ):
+    """This method is used to get current user.
+
+    :params user_id: a user id.
+    :return: A user object.
+    """
     model = settings.ADMIN_USER_MODEL
     admin_model = get_admin_model(model)
     if not admin_model:
@@ -85,11 +102,25 @@ async def list(
     limit: int | None = 10,
     _: str = Depends(get_user_id),
 ):
+    """This method is used to get a list of objects.
+
+    :params request: a request object.
+    :params model: a name of model.
+    :params search: a search string.
+    :params sort_by: a sort by string.
+    :params offset: an offset.
+    :params limit: a limit.
+    :return: A list of objects.
+    """
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
 
-    filters = {k: v for k, v in request.query_params._dict.items() if k not in ("search", "sort_by", "offset", "limit")}
+    filters = {
+        k: sanitize(v)
+        for k, v in request.query_params._dict.items()
+        if k not in ("search", "sort_by", "offset", "limit")
+    }
     objs, total = await admin_model.get_list(
         offset=offset,
         limit=limit,
@@ -109,6 +140,12 @@ async def get(
     id: str,
     _: str = Depends(get_user_id),
 ):
+    """This method is used to get an object.
+
+    :params model: a name of model.
+    :params id: an id of object.
+    :return: An object.
+    """
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
@@ -124,6 +161,12 @@ async def add(
     payload: dict,
     _: str = Depends(get_user_id),
 ):
+    """This method is used to add an object.
+
+    :params model: a name of model.
+    :params payload: a payload object.
+    :return: An object.
+    """
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
@@ -139,6 +182,13 @@ async def change(
     payload: dict,
     _: str = Depends(get_user_id),
 ):
+    """This method is used to change an object.
+
+    :params model: a name of model.
+    :params id: an id of object.
+    :params payload: a payload object.
+    :return: An object.
+    """
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
@@ -158,6 +208,15 @@ async def export(
     sort_by: str = "-created_at",
     _: str = Depends(get_user_id),
 ):
+    """This method is used to export a list of objects.
+
+    :params request: a request object.
+    :params model: a name of model.
+    :params payload: a payload object.
+    :params search: a search string.
+    :params sort_by: a sort by string.
+    :return: A list of objects.
+    """
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
@@ -186,6 +245,12 @@ async def delete(
     id: str,
     user_id: str = Depends(get_user_id),
 ):
+    """This method is used to delete an object.
+
+    :params model: a name of model.
+    :params id: an id of object.
+    :return: An object.
+    """
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
@@ -202,6 +267,11 @@ async def delete(
 async def configuration(
     user_id: str | None = Depends(get_user_id_or_none),
 ):
+    """This method is used to get a configuration.
+
+    :params user_id: an id of user.
+    :return: A configuration.
+    """
     if not user_id:
         return ConfigurationSchema(
             site_name=settings.ADMIN_SITE_NAME,
@@ -210,6 +280,8 @@ async def configuration(
             site_favicon=settings.ADMIN_SITE_FAVICON,
             primary_color=settings.ADMIN_PRIMARY_COLOR,
             username_field=settings.ADMIN_USER_MODEL_USERNAME_FIELD,
+            date_format=settings.ADMIN_DATE_FORMAT,
+            datetime_format=settings.ADMIN_DATETIME_FORMAT,
             models=[],
         )
 
@@ -218,20 +290,23 @@ async def configuration(
     for model_cls in models:
         admin_obj: BaseModelAdmin = models[model_cls](model_cls)
 
-        fields = admin_obj.get_fields()
+        model_fields = admin_obj.get_model_fields()
+
         fields_schema = []
-        for field_name in fields:
+        for field_name, field in model_fields.items():
             list_display = admin_obj.get_list_display()
+            column_index = list_display.index(field_name) if field_name in list_display else None
             list_configuration = None
             filter_widget_type = None
             filter_widget_props = None
-            if field_name in list_display:
+            if column_index is not None:
                 if field_name in admin_obj.list_filter:
                     filter_widget_type, filter_widget_props = admin_obj.get_filter_widget(field_name)
                 sorter = True
                 if admin_obj.sortable_by and field_name not in admin_obj.sortable_by:
                     sorter = False
                 list_configuration = ListConfigurationFieldSchema(
+                    index=column_index,
                     sorter=sorter,
                     is_link=field_name in admin_obj.list_display_links,
                     empty_value_display=admin_obj.empty_value_display,
@@ -239,25 +314,25 @@ async def configuration(
                     filter_widget_props=filter_widget_props,
                 )
 
-            form_hidden_fields = admin_obj.get_form_hidden_fields()
-
             add_configuration = None
-            if field_name not in form_hidden_fields:
-                form_widget_type, form_widget_props = admin_obj.get_form_widget(field_name)
-                add_configuration = AddConfigurationFieldSchema(
-                    form_widget_type=form_widget_type,
-                    form_widget_props=form_widget_props,
-                    required=form_widget_props.get("required", False),
-                )
-
             change_configuration = None
-            if field_name not in form_hidden_fields:
-                form_widget_type, form_widget_props = admin_obj.get_form_widget(field_name)
-                change_configuration = ChangeConfigurationFieldSchema(
-                    form_widget_type=form_widget_type,
-                    form_widget_props=form_widget_props,
-                    required=form_widget_props.get("required", False),
-                )
+            if not field.get("form_hidden"):
+                fields = admin_obj.get_fields()
+                form_index = fields.index(field_name) if field_name in fields else None
+                if form_index is not None:
+                    form_widget_type, form_widget_props = admin_obj.get_form_widget(field_name)
+                    add_configuration = AddConfigurationFieldSchema(
+                        index=form_index,
+                        form_widget_type=form_widget_type,
+                        form_widget_props=form_widget_props,
+                        required=form_widget_props.get("required", False),
+                    )
+                    change_configuration = ChangeConfigurationFieldSchema(
+                        index=form_index,
+                        form_widget_type=form_widget_type,
+                        form_widget_props=form_widget_props,
+                        required=form_widget_props.get("required", False),
+                    )
 
             fields_schema.append(
                 ModelFieldSchema(
@@ -303,5 +378,7 @@ async def configuration(
         site_favicon=settings.ADMIN_SITE_FAVICON,
         primary_color=settings.ADMIN_PRIMARY_COLOR,
         username_field=settings.ADMIN_USER_MODEL_USERNAME_FIELD,
+        date_format=settings.ADMIN_DATE_FORMAT,
+        datetime_format=settings.ADMIN_DATETIME_FORMAT,
         models=models_schemas,
     )

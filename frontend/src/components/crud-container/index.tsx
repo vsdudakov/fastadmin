@@ -12,7 +12,7 @@ import {
   Skeleton,
   Input,
 } from 'antd';
-import { UserOutlined, BarsOutlined, LinkOutlined } from '@ant-design/icons';
+import { UserOutlined, BarsOutlined, LinkOutlined, SearchOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
@@ -190,11 +190,14 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
         <Layout>
           {!isMobile && (
             <Sider style={{ background: colorBgContainer, height: '100%' }}>
-              <Input.Search
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{ padding: 10, paddingTop: 15 }}
-              />
+              <div style={{ padding: 10 }}>
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={_t('Search By Menu') as string}
+                  prefix={<SearchOutlined />}
+                />
+              </div>
               <Menu
                 mode="inline"
                 theme="light"

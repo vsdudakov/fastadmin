@@ -1,0 +1,17 @@
+import React from 'react';
+import { render } from '@testing-library/react';
+import { QueryClient } from '@tanstack/react-query';
+
+import { Providers } from 'providers';
+import { SignInContainer } from 'components/sign-in-container';
+
+test('Renders SignInContainer', () => {
+  const queryClient = new QueryClient();
+  render(
+    <Providers client={queryClient}>
+      <SignInContainer title="test">
+        <div />
+      </SignInContainer>
+    </Providers>
+  );
+});

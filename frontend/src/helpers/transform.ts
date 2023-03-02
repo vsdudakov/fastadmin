@@ -1,24 +1,24 @@
 import dayjs from 'dayjs';
 
-const isDayJs = (v: any): boolean => {
+export const isDayJs = (v: any): boolean => {
   return dayjs.isDayjs(v);
 };
 
-const isIsoDate = (v: any): boolean => {
+export const isIsoDate = (v: any): boolean => {
   const date = dayjs(v);
   return date.isValid();
 };
 
-const isNumeric = (v: any): boolean => {
+export const isNumeric = (v: any): boolean => {
   return !isNaN(parseFloat(v)) && isFinite(v);
 };
 
-const isArray = (v: any): boolean => {
+export const isArray = (v: any): boolean => {
   return Array.isArray(v);
 };
 
-const isBoolean = (v: any): boolean => {
-  return v === 'true' || v === 'false' || typeof v == 'boolean';
+export const isBoolean = (v: any): boolean => {
+  return v === 'true' || v === 'false' || typeof v == 'boolean' || !!v === v;
 };
 
 export const transformValueToServer = (value: any): any => {
@@ -33,6 +33,28 @@ export const transformValueToServer = (value: any): any => {
 
 export const transformDataToServer = (data: any) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k, transformValueToServer(v)]));
+};
+
+export const transformFiltersToServer = (data: any) => {
+  const filters = transformDataToServer(data);
+  const filtersData: Record<string, string> = {};
+  Object.entries(filters).forEach(([k, v]) => {
+    if (isArray(v) && v.length === 2 && v.every(isIsoDate)) {
+      filtersData[`${k}__gte`] = v[0];
+      filtersData[`${k}__lte`] = v[1];
+      return;
+    }
+    if (isArray(v)) {
+      filtersData[`${k}__in`] = v;
+      return;
+    }
+    if (isIsoDate(v) || isNumeric(v) || isBoolean(v)) {
+      filtersData[k] = v;
+      return;
+    }
+    filtersData[`${k}__icontains`] = v;
+  });
+  return filtersData;
 };
 
 export const transformValueFromServer = (value: any): any => {
@@ -53,4 +75,22 @@ export const transformValueFromServer = (value: any): any => {
 
 export const transformDataFromServer = (data: any) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k, transformValueFromServer(v)]));
+};
+
+export const transformColumnValueFromServer = (
+  value: any,
+  emptyValue?: string,
+  dateTimeFormat?: string,
+  booleanWidget?: any
+) => {
+  if (isBoolean(value)) {
+    if (booleanWidget) {
+      return booleanWidget(value);
+    }
+    return value ? 'v' : 'x';
+  }
+  if (isIsoDate(value) && dateTimeFormat) {
+    return dayjs(value).format(dateTimeFormat);
+  }
+  return value || emptyValue || '-';
 };

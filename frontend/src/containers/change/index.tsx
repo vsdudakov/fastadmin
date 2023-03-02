@@ -111,7 +111,7 @@ export const Change: React.FC = () => {
       {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Change) ? (
         <Row gutter={[16, 16]}>
           <Col xs={24} xl={14}>
-            <FormContainer form={form} onFinish={onFinish}>
+            <FormContainer form={form} onFinish={onFinish} mode="change">
               <Row gutter={[8, 8]} justify="space-between">
                 <Col>
                   <Space>

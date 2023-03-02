@@ -1,25 +1,41 @@
 import asyncio
-import csv
-from io import BytesIO, StringIO
-from typing import Any, Sequence
+from collections import OrderedDict
+from typing import Any
 
 from fastapi import HTTPException, status
 
 from fastadmin.models.base import BaseModelAdmin
-from fastadmin.schemas.api import ExportFormat
 from fastadmin.schemas.configuration import WidgetType
+from fastadmin.settings import settings
 
 
 class TortoiseModelAdmin(BaseModelAdmin):
     async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
+        """This method is used to save orm/db model object.
+
+        :params obj: an orm/db model object.
+        :params payload: a payload from request.
+        :params add: a flag for add or update object.
+        :return: None.
+        """
         for key, value in payload.items():
             setattr(obj, key, value)
         await obj.save(update_fields=payload.keys() if not add else None)
 
     async def delete_model(self, obj: Any) -> None:
+        """This method is used to delete orm/db model object.
+
+        :params obj: an orm/db model object.
+        :return: None.
+        """
         await obj.delete()
 
     async def get_obj(self, id: str) -> Any | None:
+        """This method is used to get orm/db model object by id.
+
+        :params id: an id of object.
+        :return: An object or None.
+        """
         return await self.model_cls.filter(id=id).first()
 
     async def get_list(
@@ -30,6 +46,15 @@ class TortoiseModelAdmin(BaseModelAdmin):
         sort_by: str | None = None,
         filters: dict | None = None,
     ) -> tuple[list[Any], int]:
+        """This method is used to get list of orm/db model objects.
+
+        :params offset: an offset for pagination.
+        :params limit: a limit for pagination.
+        :params search: a search query.
+        :params sort_by: a sort by field name.
+        :params filters: a dict of filters.
+        :return: A tuple of list of objects and total count.
+        """
         qs = self.model_cls.all()
 
         fields = self.get_model_fields()
@@ -78,145 +103,156 @@ class TortoiseModelAdmin(BaseModelAdmin):
 
         return await qs, total
 
-    async def get_export(
-        self,
-        export_format: ExportFormat | None,
-        offset: int | None = None,
-        limit: int | None = None,
-        search: str | None = None,
-        sort_by: str | None = None,
-        filters: dict | None = None,
-    ) -> StringIO | BytesIO | None:
-        objs, _ = await self.get_list(offset=offset, limit=limit, search=search, sort_by=sort_by, filters=filters)
-        fields = self.get_model_fields()
-        hidden_fields = await self.get_hidden_fields()
-        m2m_fields = self.model_cls._meta.m2m_fields
-        fieldnames = [f for f in fields if f not in hidden_fields and f not in m2m_fields]
-        if not export_format or export_format == ExportFormat.CSV:
-            output = StringIO()
-            writer = csv.DictWriter(output, fieldnames=fieldnames)
-            writer.writeheader()
-            for obj in objs:
-                obj_dict = {fieldname: getattr(obj, fieldname, None) for fieldname in fieldnames}
-                writer.writerow(obj_dict)
-            output.seek(0)
-            return output
-        return None
+    def get_model_fields(self) -> OrderedDict[str, dict]:
+        """This method is used to get all orm/db model fields
+        with saving ordering (non relations, fk, o2o, m2m).
 
-    def get_model_fields(self) -> list[str]:
-        fields = [f for f in self.model_cls._meta.fields_db_projection.keys()]
-        for m2m_field in self.model_cls._meta.m2m_fields:
-            fields.append(m2m_field)
+        :return: An OrderedDict of model fields.
+        """
+        if hasattr(self, "_model_fields"):
+            return self._model_fields
+
+        protection_fields = self.model_cls._meta.fields_db_projection.keys()
+        fk_fields = self.model_cls._meta.fk_fields
+        o2o_fields = self.model_cls._meta.o2o_fields
+        m2m_fields = self.model_cls._meta.m2m_fields
+
+        fields = OrderedDict()
+        for field_name, field in self.model_cls._meta.fields_map.items():
+            if field_name not in protection_fields and field_name not in m2m_fields:
+                continue
+            field = getattr(field, "reference", None) or field
+            parent_model_id = None
+            parent_model_label = None
+            parent_model = getattr(field, "model_name", "").rsplit(".", 1)[-1] or None
+            if parent_model:
+                parent_model_id = "id"
+                parent_model_label = "id"
+
+            form_hidden = (
+                getattr(field, "_generated", False)
+                or getattr(field, "index", False)
+                or getattr(field, "auto_now", False)
+                or getattr(field, "auto_now_add", False)
+            )
+
+            fields[field_name] = {
+                "is_pk": getattr(field, "index", False),
+                "is_m2m": field_name in m2m_fields,
+                "is_fk": field_name in fk_fields,
+                "is_o2o": field_name in o2o_fields,
+                "orm_class_name": field.__class__.__name__,
+                "parent_model": parent_model,
+                "parent_model_id": parent_model_id,
+                "parent_model_label": parent_model_label,
+                "enum_type": getattr(field, "enum_type", None),
+                "required": not getattr(field, "null", False)
+                and not getattr(field, "default", False)
+                and field_name not in m2m_fields,
+                "form_hidden": form_hidden,
+            }
+
+        setattr(self, "_model_fields", fields)
         return fields
 
-    def get_form_widget(self, field: str) -> tuple[WidgetType, dict]:
-        field_obj = self.model_cls._meta.fields_map[field]
-        field_obj = field_obj.reference if field_obj.reference else field_obj
+    def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
+        """This method is used to get form item widget
+        for field from orm/db model.
+
+        :params field_name: a model field name.
+        :return: A tuple of widget type and widget props.
+        """
+        fields = self.get_model_fields()
+        field = fields.get(field_name)
+        if not field:
+            raise Exception("Invalid field name %s" % field_name)
         widget_props = {
-            "required": not field_obj.null and not field_obj.default,
-            "disabled": field in self.readonly_fields,
-            "readonly": field in self.readonly_fields,
+            "required": field.get("required") or False,
+            "disabled": field_name in self.readonly_fields,
+            "readonly": field_name in self.readonly_fields,
         }
-        field_class = field_obj.__class__.__name__
-        if field_class == "CharField":
-            return WidgetType.Input, widget_props
-        if field_class == "TextField":
-            return WidgetType.TextArea, widget_props
-        if field_class == "BooleanField":
-            return WidgetType.Switch, {**widget_props, "required": False}
-        if field_class == "ArrayField":
-            return WidgetType.Select, {
-                **widget_props,
-                "mode": "tags",
-            }
-        if field_class == "IntField":
-            return WidgetType.InputNumber, widget_props
-        if field_class == "FloatField":
-            return WidgetType.InputNumber, widget_props
-        if field_class == "DecimalField":
-            return WidgetType.InputNumber, widget_props
-        if field_class == "DateField":
-            return WidgetType.DatePicker, widget_props
-        if field_class == "DatetimeField":
-            return WidgetType.DateTimePicker, widget_props
-        if field_class == "TimeField":
-            return WidgetType.TimePicker, widget_props
-        if field_class == "ForeignKeyFieldInstance":
-            if field in self.raw_id_fields:
+        match field.get("orm_class_name"):
+            case "CharField":
                 return WidgetType.Input, widget_props
-            return WidgetType.AsyncSelect, {
-                **widget_props,
-                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
-                "idField": "id",
-                "labelField": "username",
-            }
-        if field_class == "ManyToManyFieldInstance":
-            if field in self.raw_id_fields:
-                return WidgetType.Input, widget_props
-            if field in self.filter_vertical or field in self.filter_horizontal:
-                return WidgetType.AsyncTransfer, {
+            case "TextField":
+                return WidgetType.TextArea, widget_props
+            case "BooleanField":
+                return WidgetType.Switch, {
                     **widget_props,
                     "required": False,
-                    "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
-                    "idField": "id",
-                    "labelField": "id",  # TODO: labelField
-                    "layout": "vertical" if field in self.filter_vertical else "horizontal",
                 }
-            return WidgetType.AsyncSelect, {
-                **widget_props,
-                "required": False,
-                "mode": "multiple",
-                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
-                "idField": "id",
-                "labelField": "id",  # TODO: labelField
-            }
-        if field_class == "OneToOneFieldInstance":
-            if field in self.raw_id_fields:
-                return WidgetType.Input, widget_props
-            return WidgetType.AsyncSelect, {
-                **widget_props,
-                "parentModel": field_obj.model_name.rsplit(".", 1)[-1],
-                "idField": "id",
-                "labelField": "id",  # TODO: labelField
-            }
-        if field_class == "CharEnumFieldInstance":
-            return WidgetType.RadioGroup if field in self.radio_fields else WidgetType.Select, {
-                **widget_props,
-                "options": [{"label": k, "value": k} for k in field_obj.enum_type],
-            }
+            case "ArrayField":
+                return WidgetType.Select, {
+                    **widget_props,
+                    "mode": "tags",
+                }
+            case "IntField":
+                return WidgetType.InputNumber, widget_props
+            case "FloatField":
+                return WidgetType.InputNumber, widget_props
+            case "DecimalField":
+                return WidgetType.InputNumber, widget_props
+            case "DateField":
+                return WidgetType.DatePicker, {
+                    **widget_props,
+                    "format": settings.ADMIN_DATE_FORMAT,
+                }
+            case "DatetimeField":
+                return WidgetType.DateTimePicker, {
+                    **widget_props,
+                    "format": settings.ADMIN_DATETIME_FORMAT,
+                }
+            case "TimeField":
+                return WidgetType.TimePicker, {
+                    **widget_props,
+                    "format": settings.ADMIN_TIME_FORMAT,
+                }
+            case "ForeignKeyFieldInstance":
+                if field in self.raw_id_fields:
+                    return WidgetType.Input, widget_props
+                return WidgetType.AsyncSelect, {
+                    **widget_props,
+                    "parentModel": field.get("parent_model"),
+                    "idField": field.get("parent_model_id") or "id",
+                    "labelField": field.get("parent_model_label") or "id",
+                }
+            case "ManyToManyFieldInstance":
+                if field in self.raw_id_fields:
+                    return WidgetType.Input, widget_props
+                if field in self.filter_vertical or field in self.filter_horizontal:
+                    return WidgetType.AsyncTransfer, {
+                        **widget_props,
+                        "required": False,
+                        "parentModel": field.get("parent_model"),
+                        "idField": field.get("parent_model_id") or "id",
+                        "labelField": field.get("parent_model_label") or "id",
+                        "layout": "vertical" if field in self.filter_vertical else "horizontal",
+                    }
+                return WidgetType.AsyncSelect, {
+                    **widget_props,
+                    "required": False,
+                    "mode": "multiple",
+                    "parentModel": field.get("parent_model"),
+                    "idField": field.get("parent_model_id") or "id",
+                    "labelField": field.get("parent_model_label") or "id",
+                }
+            case "OneToOneFieldInstance":
+                if field in self.raw_id_fields:
+                    return WidgetType.Input, widget_props
+                return WidgetType.AsyncSelect, {
+                    **widget_props,
+                    "parentModel": field.get("parent_model"),
+                    "idField": field.get("parent_model_id") or "id",
+                    "labelField": field.get("parent_model_label") or "id",
+                }
+            case "CharEnumFieldInstance":
+                if field in self.radio_fields:
+                    return WidgetType.RadioGroup, {
+                        **widget_props,
+                        "options": [{"label": k, "value": k} for k in field.get("enum_type") or []],
+                    }
+                return WidgetType.Select, {
+                    **widget_props,
+                    "options": [{"label": k, "value": k} for k in field.get("enum_type") or []],
+                }
         return WidgetType.Input, widget_props
-
-    def get_fields(self) -> Sequence[str]:
-        fields = super().get_fields()
-        model_fields = self.get_model_fields()
-        if not fields:
-            if self.exclude:
-                return [f for f in model_fields if f not in self.exclude]
-            return model_fields
-        return [f for f in fields if f in model_fields]
-
-    def get_list_display(self) -> Sequence[str]:
-        list_display = super().get_list_display()
-        fields_map = self.model_cls._meta.fields_map
-        model_fields = self.get_model_fields()
-        if not list_display:
-            return [f for f in model_fields if getattr(fields_map[f], "index", True)]
-        return [f for f in list_display if f in model_fields]
-
-    def get_form_hidden_fields(self) -> Sequence[str]:
-        fields_map = self.model_cls._meta.fields_map
-        form_hidden_fields = super().get_form_hidden_fields()
-        model_fields = self.get_model_fields()
-        if not form_hidden_fields:
-            return [
-                f
-                for f in model_fields
-                if (
-                    getattr(fields_map[f], "_generated", False)
-                    or getattr(fields_map[f], "index", False)
-                    or getattr(fields_map[f], "auto_now", False)
-                    or getattr(fields_map[f], "auto_now_add", False)
-                )
-                and f not in self.readonly_fields
-            ]
-        return [f for f in form_hidden_fields if f in model_fields]

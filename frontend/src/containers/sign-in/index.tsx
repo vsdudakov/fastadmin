@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Col, Form, Image, Input, Row } from 'antd';
+import { Button, Card, Col, Form, Image, Input, Row, Space, theme } from 'antd';
 import { useMutation } from '@tanstack/react-query';
 
 import { SignInContainer } from 'components/sign-in-container';
@@ -12,6 +12,9 @@ import { getTitleFromFieldName } from 'helpers/title';
 
 export const SignIn: React.FC = () => {
   const [form] = Form.useForm();
+  const {
+    token: { colorPrimary },
+  } = theme.useToken();
   const { configuration } = useContext(ConfigurationContext);
   const { signedInUserRefetch } = useContext(SignInUserContext);
   const { t: _t } = useTranslation('SignIn');
@@ -37,12 +40,17 @@ export const SignIn: React.FC = () => {
       <Card>
         <Row justify="center">
           <Col>
-            <Image
-              src={(window as any).SERVER_FOMAIN + configuration.site_sign_in_logo}
-              height={100}
-              alt={configuration.site_name}
-              preview={false}
-            />
+            <Space style={{ marginBottom: 20 }}>
+              <Image
+                src={(window as any).SERVER_FOMAIN + configuration.site_sign_in_logo}
+                height={80}
+                alt={configuration.site_name}
+                preview={false}
+              />
+              <span style={{ color: colorPrimary, fontSize: 36, fontWeight: 600 }}>
+                {configuration.site_name}
+              </span>
+            </Space>
           </Col>
         </Row>
 

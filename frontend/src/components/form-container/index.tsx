@@ -17,9 +17,10 @@ interface IFormContainer {
   form: any;
   onFinish: (payload: any) => void;
   children: JSX.Element | JSX.Element[];
+  mode: 'add' | 'change';
 }
 
-export const FormContainer: React.FC<IFormContainer> = ({ form, onFinish, children }) => {
+export const FormContainer: React.FC<IFormContainer> = ({ form, onFinish, children, mode }) => {
   const { configuration } = useContext(ConfigurationContext);
   const { t: _t } = useTranslation('FormContainer');
   const { model } = useParams();
@@ -39,17 +40,28 @@ export const FormContainer: React.FC<IFormContainer> = ({ form, onFinish, childr
     [_t]
   );
 
+  const getConf = useCallback(
+    (field: IModelField) => {
+      if (mode === 'change') {
+        return field?.change_configuration || {};
+      }
+      return field?.add_configuration || {};
+    },
+    [mode]
+  );
+
   const formItems = useCallback(() => {
     const fields = (modelConfiguration || { fields: [] }).fields;
     return fields
-      .filter((field: IModelField) => !!field.add_configuration?.form_widget_type)
+      .filter((field: IModelField) => !!getConf(field).form_widget_type)
+      .sort((a: IModelField, b: IModelField) => (getConf(a).index || 0) - (getConf(b).index || 0))
       .map((field: IModelField) => (
         <Form.Item
           key={field.name}
           name={field.name}
           label={getTitleFromFieldName(field.name)}
           rules={
-            field.add_configuration?.required
+            getConf(field).required
               ? [
                   {
                     required: true,
@@ -62,15 +74,15 @@ export const FormContainer: React.FC<IFormContainer> = ({ form, onFinish, childr
               EFieldWidgetType.Checkbox,
               EFieldWidgetType.Switch,
               EFieldWidgetType.CheckboxGroup,
-            ].includes(field.add_configuration?.form_widget_type as EFieldWidgetType)
+            ].includes(getConf(field).form_widget_type as EFieldWidgetType)
               ? 'checked'
               : undefined
           }
         >
-          {getWidget(field.add_configuration as IAddConfigurationField)}
+          {getWidget(getConf(field))}
         </Form.Item>
       ));
-  }, [getWidget, modelConfiguration]);
+  }, [getConf, getWidget, modelConfiguration]);
 
   return (
     <Form layout="vertical" form={form} onFinish={onFinish}>

@@ -24,22 +24,24 @@ export enum EModelPermission {
 }
 
 export interface IListConfigurationField {
+  index?: number;
   sorter?: boolean;
   width?: number;
   is_link?: boolean;
   empty_value_display: string;
   filter_widget_type?: EFieldWidgetType;
   filter_widget_props?: any;
-  filter_condition?: string;
 }
 
 export interface IAddConfigurationField {
+  index?: number;
   form_widget_type?: EFieldWidgetType;
   form_widget_props?: any;
   required?: boolean;
 }
 
 export interface IChangeConfigurationField {
+  index?: number;
   form_widget_type?: EFieldWidgetType;
   form_widget_props?: any;
   required?: boolean;
@@ -73,7 +75,9 @@ export interface IConfiguration {
   site_sign_in_logo?: string;
   site_header_logo?: string;
   site_favicon?: string;
-  username_field: string;
-  models: IModel[];
   primary_color?: string;
+  username_field: string;
+  date_format?: string;
+  datetime_format?: string;
+  models: IModel[];
 }

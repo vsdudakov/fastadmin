@@ -9,6 +9,11 @@ from fastadmin.settings import settings
 
 
 async def get_user_id_or_none(request: Request) -> str | None:
+    """This method is used to get user id from request or None.
+
+    :params request: a request object.
+    :return: A user id or None.
+    """
     admin_model = get_admin_model(settings.ADMIN_USER_MODEL)
     if not admin_model:
         return None
@@ -38,6 +43,11 @@ async def get_user_id_or_none(request: Request) -> str | None:
 
 
 async def get_user_id(request: Request) -> str:
+    """This method is used to get user id from request.
+
+    :params request: a request object.
+    :return: A user id.
+    """
     user_id = await get_user_id_or_none(request)
     if not user_id:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED)
