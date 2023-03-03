@@ -158,16 +158,16 @@ class BaseModelAdmin:
         """
         self.model_cls = model_cls
 
-    async def authenticate(self, username: str, password: str) -> Any | None:
+    async def authenticate(self, username: str, password: str) -> str | None:
         """This method is used to implement authentication for settings.ADMIN_USER_MODEL orm/db model.
 
         :params username: a value for user model settings.ADMIN_USER_MODEL_USERNAME_FIELD field.
         :params password: a password.
-        :return: An user orm/db model object or None (if not authenticated).
+        :return: An user id or None.
         """
         raise NotImplementedError
 
-    async def save_model(self, id: str | None, payload: dict) -> Any | None:
+    async def save_model(self, id: str | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
         :params id: an id of object.
@@ -176,15 +176,15 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def delete_model(self, obj: Any) -> None:
+    async def delete_model(self, id: str) -> None:
         """This method is used to delete orm/db model object.
 
-        :params obj: an orm/db model object.
+        :params id: an id of object.
         :return: None.
         """
         raise NotImplementedError
 
-    async def get_obj(self, id: str) -> Any | None:
+    async def get_obj(self, id: str) -> dict | None:
         """This method is used to get orm/db model object by id.
 
         :params id: an id of object.
@@ -199,7 +199,7 @@ class BaseModelAdmin:
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
-    ) -> tuple[list[Any], int]:
+    ) -> tuple[list[dict], int]:
         """This method is used to get list of orm/db model objects.
 
         :params offset: an offset for pagination.

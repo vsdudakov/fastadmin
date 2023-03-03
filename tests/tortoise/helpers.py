@@ -5,7 +5,10 @@ from fastadmin import TortoiseModelAdmin
 async def sign_in(client, user):
     class UserAdmin(TortoiseModelAdmin):
         async def authenticate(self, username, password):
-            return await user.__class__.filter(username=username, password=password).first()
+            obj = await user.__class__.filter(username=username, password=password).first()
+            if not obj:
+                return None
+            return obj.id
 
     register_admin_model(UserAdmin, [user.__class__])
 

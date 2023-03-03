@@ -10,8 +10,26 @@ from fastadmin.schemas.configuration import WidgetType
 from fastadmin.settings import settings
 
 
+async def obj_to_dict(obj: Any, with_m2m: bool = True) -> dict:
+    """Converts object to dict.
+
+    :params obj: an object.
+    :return: A dict.
+    """
+    obj_dict = {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
+    if with_m2m:
+        for field in obj.__class__._meta.m2m_fields:
+            m2m_rel = getattr(obj, field, None)
+            if m2m_rel is None:
+                continue
+            remote_model = m2m_rel.remote_model
+            remote_ids = await m2m_rel.all().values_list(remote_model._meta.pk_attr, flat=True)
+            obj_dict[field] = remote_ids
+    return obj_dict
+
+
 class TortoiseModelAdmin(BaseModelAdmin):
-    async def save_model(self, id: str | None, payload: dict) -> Any | None:
+    async def save_model(self, id: str | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
         :params id: an id of object.
@@ -51,36 +69,26 @@ class TortoiseModelAdmin(BaseModelAdmin):
                     remote_model_objs.append(remote_model_obj)
                 if remote_model_objs:
                     await m2m_rel.add(*remote_model_objs)
-        return obj
+        return await obj_to_dict(obj)
 
-    async def delete_model(self, obj: Any) -> None:
+    async def delete_model(self, id: str) -> None:
         """This method is used to delete orm/db model object.
 
-        :params obj: an orm/db model object.
+        :params id: an id of object.
         :return: None.
         """
-        await obj.delete()
+        await self.model_cls.filter(id=id).delete()
 
-    async def get_obj(self, id: str) -> Any | None:
+    async def get_obj(self, id: str) -> dict | None:
         """This method is used to get orm/db model object by id.
 
         :params id: an id of object.
         :return: An object or None.
         """
-        fields = self.get_model_fields()
-        m2m_fields = [f for f, v in fields.items() if v.get("is_m2m", False)]
         obj = await self.model_cls.filter(id=id).first()
         if not obj:
-            return obj
-        obj_dict = {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
-        for field in m2m_fields:
-            m2m_rel = getattr(obj, field, None)
-            if m2m_rel is None:
-                continue
-            remote_model = m2m_rel.remote_model
-            remote_ids = await m2m_rel.all().values_list(remote_model._meta.pk_attr, flat=True)
-            obj_dict[field] = remote_ids
-        return obj_dict
+            return None
+        return await obj_to_dict(obj)
 
     async def get_list(
         self,
@@ -89,7 +97,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
-    ) -> tuple[list[Any], int]:
+    ) -> tuple[list[dict], int]:
         """This method is used to get list of orm/db model objects.
 
         :params offset: an offset for pagination.
@@ -145,7 +153,9 @@ class TortoiseModelAdmin(BaseModelAdmin):
                     raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Select related by {field} is not allowed")
             qs = qs.select_related(*self.list_select_related)
 
-        return await qs, total
+        results = await asyncio.gather(*(obj_to_dict(obj, with_m2m=False) for obj in await qs))
+
+        return results, total
 
     def get_model_fields(self) -> OrderedDict[str, dict]:
         """This method is used to get all orm/db model fields

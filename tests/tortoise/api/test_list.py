@@ -3,7 +3,7 @@ from fastadmin import TortoiseModelAdmin, register
 from tests.tortoise.helpers import sign_in
 
 
-async def test_configuration(user, event, client):
+async def test_list(user, event, client):
 
     @register(event.__class__)
     class EventAdmin(TortoiseModelAdmin):

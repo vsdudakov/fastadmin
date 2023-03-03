@@ -41,15 +41,15 @@ async def sign_in(
     if not admin_model:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=f"{model} model is not registered.")
 
-    user = await admin_model.authenticate(payload.username, payload.password)
-    if not user:
+    user_id = await admin_model.authenticate(payload.username, payload.password)
+    if not user_id:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials.")
 
     now = datetime.utcnow()
     session_expired_at = now + timedelta(seconds=settings.ADMIN_SESSION_EXPIRED_AT)
     session_id = jwt.encode(
         {
-            "user_id": str(user.id),
+            "user_id": str(user_id),
             "session_expired_at": session_expired_at.isoformat(),
         },
         settings.ADMIN_SECRET_KEY,
@@ -249,18 +249,15 @@ async def delete(
 
     :params model: a name of model.
     :params id: an id of object.
-    :return: An object.
+    :return: An id of object.
     """
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
     if user_id == id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail="You cannot delete yourself.")
-    user = await admin_model.get_obj(id)
-    if not user:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found.")
-    await admin_model.delete_model(user)
-    return user
+    await admin_model.delete_model(id)
+    return id
 
 
 @router.get("/configuration")

@@ -25,6 +25,13 @@ async def user():
 
 
 @pytest.fixture
+async def user_2():
+    user = await User.create(username='Test User 2', password='password')
+    yield user
+    await user.delete()
+
+
+@pytest.fixture
 async def tournament():
     tournament = await Tournament.create(name='Test Tournament')
     yield tournament
