@@ -20,7 +20,6 @@ jobs:
           cache-dependency-path: 'frontend/yarn.lock'
       - name: Install Dependencies
         run: |
-          poetry config virtualenvs.create false
           make install
       - name: Run Lint
         run: make lint
