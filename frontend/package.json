@@ -62,6 +62,14 @@
   "jest": {
     "moduleNameMapper": {
       "axios": "axios/dist/node/axios.cjs"
-    }
+    },
+    "collectCoverageFrom": [
+      "<rootDir>/src/components/**/*.{ts,tsx}",
+      "<rootDir>/src/containers/**/*.{ts,tsx}",
+      "<rootDir>/src/providers/**/*.{ts,tsx}",
+      "<rootDir>/src/hooks/**/*.{ts,tsx}",
+      "<rootDir>/src/helpers/**/*.{ts,tsx}",
+      "<rootDir>/src/fetchers/**/*.{ts,tsx}"
+    ]
   }
 }

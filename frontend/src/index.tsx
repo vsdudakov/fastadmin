@@ -5,7 +5,7 @@ import { QueryClient } from '@tanstack/react-query';
 import enUS from 'antd/es/locale/en_US';
 
 import { App } from 'containers/app';
-import { Providers } from 'providers';
+import { InternalProviders, ExternalProviders } from 'providers';
 
 import reportWebVitals from './reportWebVitals';
 import './index.css';
@@ -19,9 +19,11 @@ i18next.init({
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <Providers client={queryClient} locale={enUS} i18n={i18next}>
-      <App />
-    </Providers>
+    <ExternalProviders client={queryClient} locale={enUS} i18n={i18next}>
+      <InternalProviders>
+        <App />
+      </InternalProviders>
+    </ExternalProviders>
   </React.StrictMode>
 );
 

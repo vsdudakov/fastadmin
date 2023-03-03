@@ -2,13 +2,13 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { QueryClient } from '@tanstack/react-query';
 
-import { Providers } from 'providers';
+import { TestProviders } from 'providers';
 import { AsyncTransfer } from 'components/async-transfer';
 
 test('Renders AsyncTransfer', () => {
   const queryClient = new QueryClient();
   render(
-    <Providers client={queryClient}>
+    <TestProviders client={queryClient}>
       <AsyncTransfer
         idField="id"
         labelField="id"
@@ -16,6 +16,6 @@ test('Renders AsyncTransfer', () => {
         onChange={(data: any) => {}}
         value={undefined}
       />
-    </Providers>
+    </TestProviders>
   );
 });
