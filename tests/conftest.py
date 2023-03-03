@@ -4,7 +4,6 @@ from typing import AsyncGenerator
 import pytest
 from httpx import AsyncClient as TestClient
 
-from fastadmin.settings import settings
 from fastadmin.app import admin_app
 
 

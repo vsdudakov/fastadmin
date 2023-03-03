@@ -43,6 +43,9 @@ mypy = "^1.0.1"
 pyupgrade = "^3.3.1"
 httpx = "^0.23.3"
 pytest-asyncio = "^0.20.3"
+tortoise-orm = "^0.19.3"
+sqlalchemy = "^2.0.4"
+pony = "^0.7.16"
 
 [build-system]
 requires = ["poetry-core"]
