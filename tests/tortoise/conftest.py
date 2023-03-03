@@ -18,15 +18,15 @@ async def tortoise_db():
 
 
 @pytest.fixture
-async def user():
-    user = await User.create(username='Test User', password='password')
+async def superuser():
+    user = await User.create(username='Test User', password='password', is_superuser=True)
     yield user
     await user.delete()
 
 
 @pytest.fixture
-async def user_2():
-    user = await User.create(username='Test User 2', password='password')
+async def user():
+    user = await User.create(username='Test User', password='password')
     yield user
     await user.delete()
 

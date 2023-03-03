@@ -1,16 +1,15 @@
-from fastadmin.models.helpers import register_admin_model
-from fastadmin import TortoiseModelAdmin
+from fastadmin import TortoiseModelAdmin, register
 
 
 async def sign_in(client, user):
+
+    @register(user.__class__)
     class UserAdmin(TortoiseModelAdmin):
         async def authenticate(self, username, password):
-            obj = await user.__class__.filter(username=username, password=password).first()
+            obj = await user.__class__.filter(username=username, password=password, is_superuser=True).first()
             if not obj:
                 return None
             return obj.id
-
-    register_admin_model(UserAdmin, [user.__class__])
 
     r = await client.post(
         "/api/sign-in",

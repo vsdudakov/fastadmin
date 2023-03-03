@@ -31,6 +31,7 @@ class Event(BaseModel):
 class User(BaseModel):
     username = fields.CharField(max_length=255)
     password = fields.CharField(max_length=255)
+    is_superuser = fields.BooleanField(default=False)
 
     def __str__(self):
         return self.username

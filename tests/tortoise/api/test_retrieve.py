@@ -1,15 +1,16 @@
 from fastadmin import TortoiseModelAdmin, register
 
 from tests.tortoise.helpers import sign_in
+from fastadmin.models.helpers import unregister_admin_model
 
 
-async def test_retrieve(user, event, client):
+async def test_retrieve(superuser, user, event, client):
 
     @register(event.__class__)
     class EventAdmin(TortoiseModelAdmin):
         pass
 
-    await sign_in(client, user)
+    await sign_in(client, superuser)
     r = await client.get(
         f"/api/retrieve/{event.__class__.__name__}/{event.id}",
     )
@@ -22,3 +23,19 @@ async def test_retrieve(user, event, client):
     assert item["updated_at"] == event.updated_at.isoformat()
     assert "participants" in item
     assert item["participants"][0] == user.id
+
+
+async def test_retrieve_401(superuser, tournament, event, client):
+    r = await client.get(
+        f"/api/retrieve/{event.__class__.__name__}/{event.id}",
+    )
+    assert r.status_code == 401
+
+
+async def test_retrieve_404(superuser, event, client):
+    unregister_admin_model([event.__class__])
+    await sign_in(client, superuser)
+    r = await client.get(
+        f"/api/retrieve/{event.__class__.__name__}/{event.id}",
+    )
+    assert r.status_code == 404
