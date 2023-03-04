@@ -17,7 +17,8 @@ async def tortoise_create_objects():
     superuser = await models.User.create(username="Test SuperUser", password="password", is_superuser=True)
     user = await models.User.create(username="Test User", password="password")
     tournament = await models.Tournament.create(name="Test Tournament")
-    event = await models.Event.create(name="Test Event", tournament=tournament)
+    base_event = await models.BaseEvent.create()
+    event = await models.Event.create(base=base_event, name="Test Event", tournament=tournament)
     await event.participants.add(user)
     return {
         "superuser": superuser,
@@ -33,4 +34,5 @@ async def tortoise_create_objects():
 async def tortoise_delete_objects():
     await models.User.all().delete()
     await models.Tournament.all().delete()
+    await models.BaseEvent.all().delete()
     await models.Event.all().delete()

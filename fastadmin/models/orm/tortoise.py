@@ -20,9 +20,7 @@ async def obj_to_dict(obj: Any, with_m2m: bool = True) -> dict:
     obj_dict = {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
     if with_m2m:
         for field in obj.__class__._meta.m2m_fields:
-            m2m_rel = getattr(obj, field, None)
-            if m2m_rel is None:
-                continue
+            m2m_rel = getattr(obj, field)
             remote_model = m2m_rel.remote_model
             remote_ids = await m2m_rel.all().values_list(remote_model._meta.pk_attr, flat=True)
             obj_dict[field] = remote_ids
@@ -57,9 +55,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
 
         for key, values in payload.items():
             if key in m2m_fields:
-                m2m_rel = getattr(obj, key, None)
-                if m2m_rel is None:
-                    continue
+                m2m_rel = getattr(obj, key)
                 remote_model = m2m_rel.remote_model
                 await m2m_rel.clear()
                 remote_model_objs = []
@@ -117,7 +113,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
                 field = filter_condition.split("__", 1)[0]
                 if field not in fields:
                     raise HTTPException(
-                        status.HTTP_400_BAD_REQUEST, detail=f"Filter by {filter_condition} is not allowed"
+                        status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Filter by {filter_condition} is not allowed"
                     )
                 qs = qs.filter(**{filter_condition: value})
 
@@ -125,7 +121,9 @@ class TortoiseModelAdmin(BaseModelAdmin):
             if self.search_fields:
                 for field in self.search_fields:
                     if field not in fields:
-                        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Search by {field} is not allowed")
+                        raise HTTPException(
+                            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Search by {field} is not allowed"
+                        )
                 ids = await asyncio.gather(
                     *(qs.filter(**{f + "__icontains": search}).values_list("id", flat=True) for f in self.search_fields)
                 )
@@ -134,12 +132,15 @@ class TortoiseModelAdmin(BaseModelAdmin):
 
         if sort_by:
             if sort_by.strip("-") not in fields:
-                raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Sort by {sort_by} is not allowed")
+                raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Sort by {sort_by} is not allowed")
             qs = qs.order_by(sort_by)
         else:
             if self.ordering:
-                if self.ordering.strip("-") not in fields:
-                    raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Sort by {self.ordering} is not allowed")
+                for sort_by in self.ordering:
+                    if sort_by.strip("-") not in fields:
+                        raise HTTPException(
+                            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Sort by {sort_by} is not allowed"
+                        )
                 qs = qs.order_by(*self.ordering)
 
         total = await qs.count()
@@ -151,8 +152,10 @@ class TortoiseModelAdmin(BaseModelAdmin):
         if self.list_select_related:
             for field in self.list_select_related:
                 if field not in fields:
-                    raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Select related by {field} is not allowed")
-            qs = qs.select_related(*self.list_select_related)
+                    raise HTTPException(
+                        status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Select related by {field} is not allowed"
+                    )
+            qs = qs.select_related(*(f.replace("_id", "") for f in self.list_select_related))
 
         results = await asyncio.gather(*(obj_to_dict(obj, with_m2m=False) for obj in await qs))
 
@@ -186,14 +189,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
                 parent_model_label = "id"
                 if parent_admin_model:
                     parent_model_id = parent_admin_model.model_cls._meta.pk_attr
-                    parent_model_label = parent_admin_model.model_cls._meta.pk_attr
-                    parent_fields = parent_admin_model.model_cls._meta.fields_db_projection.keys()
-                    if "name" in parent_fields:
-                        parent_model_label = "name"
-                    elif "title" in parent_fields:
-                        parent_model_label = "title"
-                    elif "email" in parent_fields:
-                        parent_model_label = "email"
+                    parent_model_label = parent_admin_model.repr_field or parent_model_id
 
             form_hidden = (
                 getattr(field, "_generated", False)
@@ -231,7 +227,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
         fields = self.get_model_fields()
         field = fields.get(field_name)
         if not field:
-            raise Exception("Invalid field name %s" % field_name)
+            raise ValueError("Invalid field name %s" % field_name)
         widget_props = {
             "required": field.get("required") or False,
             "disabled": field_name in self.readonly_fields,

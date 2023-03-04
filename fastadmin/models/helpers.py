@@ -48,7 +48,7 @@ def get_admin_model(model_name: str) -> BaseModelAdmin | None:
     """
     from fastadmin.app import admin_models
 
-    for model, admin_model in admin_models.items():
+    for model, admin_model_class in admin_models.items():
         if model.__name__ == model_name:
-            return admin_model(model)
+            return admin_model_class(model)
     return None

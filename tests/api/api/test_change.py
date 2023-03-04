@@ -48,6 +48,7 @@ async def test_change_404_admin_class_found(objects, client):
     superuser = objects["superuser"]
     event = objects["event"]
     admin_user_cls = objects["admin_user_cls"]
+    unregister_admin_model([event.__class__])
     await sign_in(client, superuser, admin_user_cls)
     r = await client.patch(
         f"/api/change/{event.__class__.__name__}/{event.id}",

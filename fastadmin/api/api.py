@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Any, List
+from typing import Any
 from uuid import UUID
 
 import jwt
@@ -94,11 +94,11 @@ async def list(
     request: Request,
     model: str,
     search: str | None = None,
-    sort_by: str = "-created_at",
+    sort_by: str = None,
     offset: int | None = 0,
     limit: int | None = 10,
     _: UUID | int = Depends(get_user_id),
-) -> dict[str, int | List[Any]]:
+):
     """This method is used to get a list of objects.
 
     :params request: a request object.
@@ -199,7 +199,7 @@ async def export(
     model: str,
     payload: ExportSchema,
     search: str | None = None,
-    sort_by: str = "-created_at",
+    sort_by: str = None,
     _: UUID | int = Depends(get_user_id),
 ):
     """This method is used to export a list of objects.
@@ -285,12 +285,13 @@ async def configuration(
 
         fields_schema = []
         for field_name, field in model_fields.items():
+            is_m2m = model_fields.get(field_name, {}).get("is_m2m")
             list_display = admin_obj.get_list_display()
             column_index = list_display.index(field_name) if field_name in list_display else None
             list_configuration = None
             filter_widget_type = None
             filter_widget_props = None
-            if column_index is not None:
+            if column_index is not None and not is_m2m:
                 if field_name in admin_obj.list_filter:
                     filter_widget_type, filter_widget_props = admin_obj.get_filter_widget(field_name)
                 sorter = True

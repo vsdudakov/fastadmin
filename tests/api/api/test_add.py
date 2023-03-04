@@ -51,6 +51,7 @@ async def test_add_404(objects, client):
     tournament = objects["tournament"]
     event = objects["event"]
     admin_user_cls = objects["admin_user_cls"]
+    unregister_admin_model([event.__class__])
     await sign_in(client, superuser, admin_user_cls)
     r = await client.post(
         f"/api/add/{event.__class__.__name__}",

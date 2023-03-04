@@ -39,7 +39,6 @@ async def client(fastapi_app) -> AsyncGenerator:
 
 
 @pytest.fixture(
-    scope="module",
     params=[
         "tortoise",
     ],
