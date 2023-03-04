@@ -114,13 +114,13 @@ class Group(Model):
 
 @register(User)
 class UserAdmin(TortoiseModelAdmin):
-    async def authenticate(self, username: str, password: str) -> User | None:
+    async def authenticate(self, username: str, password: str) -> UUID | int | None:
         user = await User.filter(username=username, is_superuser=True).first()
         if not user:
             return None
         if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
             return None
-        return user
+        return user.id
 
 
 @register(Group)

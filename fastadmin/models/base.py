@@ -162,7 +162,7 @@ class BaseModelAdmin:
         """
         self.model_cls = model_cls
 
-    async def authenticate(self, username: str, password: str) -> str | None:
+    async def authenticate(self, username: str, password: str) -> UUID | int | None:
         """This method is used to implement authentication for settings.ADMIN_USER_MODEL orm/db model.
 
         :params username: a value for user model settings.ADMIN_USER_MODEL_USERNAME_FIELD field.
