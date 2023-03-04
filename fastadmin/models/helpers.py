@@ -26,7 +26,8 @@ def unregister_admin_model(model_classes: list[Any]):
     from fastadmin.app import admin_models
 
     for model_class in model_classes:
-        del admin_models[model_class]
+        if model_class in admin_models:
+            del admin_models[model_class]
 
 
 def get_admin_models() -> dict[Any, type[BaseModelAdmin]]:

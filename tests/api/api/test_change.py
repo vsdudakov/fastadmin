@@ -1,16 +1,14 @@
-from fastadmin import TortoiseModelAdmin, register
-
-from tests.api.tortoise.helpers import sign_in
-from fastadmin.models.helpers import unregister_admin_model
+from tests.api.helpers import sign_in, sign_out
+from fastadmin.models.helpers import unregister_admin_model, register_admin_model
 
 
-async def test_change(superuser, event, client):
-
-    @register(event.__class__)
-    class EventAdmin(TortoiseModelAdmin):
-        pass
-
-    await sign_in(client, superuser)
+async def test_change(objects, client):
+    superuser = objects["superuser"]
+    event = objects["event"]
+    admin_user_cls = objects["admin_user_cls"]
+    admin_event_cls = objects["admin_event_cls"]
+    await sign_in(client, superuser, admin_user_cls)
+    register_admin_model(admin_event_cls, [event.__class__])
     r = await client.patch(
         f"/api/change/{event.__class__.__name__}/{event.id}",
         json={
@@ -29,8 +27,13 @@ async def test_change(superuser, event, client):
     assert item["updated_at"] == event.updated_at.isoformat()
     assert item["participants"] == [superuser.id]
 
+    unregister_admin_model([event.__class__])
+    await sign_out(client, superuser)
 
-async def test_change_401(superuser, tournament, event, client):
+
+async def test_change_401(objects, client):
+    superuser = objects["superuser"]
+    event = objects["event"]
     r = await client.patch(
         f"/api/change/{event.__class__.__name__}/{event.id}",
         json={
@@ -41,9 +44,11 @@ async def test_change_401(superuser, tournament, event, client):
     assert r.status_code == 401
 
 
-async def test_change_404(superuser, event, client):
-    unregister_admin_model([event.__class__])
-    await sign_in(client, superuser)
+async def test_change_404(objects, client):
+    superuser = objects["superuser"]
+    event = objects["event"]
+    admin_user_cls = objects["admin_user_cls"]
+    await sign_in(client, superuser, admin_user_cls)
     r = await client.patch(
         f"/api/change/{event.__class__.__name__}/{event.id}",
         json={
@@ -52,3 +57,4 @@ async def test_change_404(superuser, event, client):
         }
     )
     assert r.status_code == 404
+    await sign_out(client, superuser)

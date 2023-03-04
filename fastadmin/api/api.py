@@ -84,12 +84,7 @@ async def me(
     """
     model = settings.ADMIN_USER_MODEL
     admin_model = get_admin_model(model)
-    if not admin_model:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
-    user = await admin_model.get_obj(user_id)
-    if not user:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found.")
-    return user
+    return await admin_model.get_obj(user_id)
 
 
 @router.get("/list/{model}")

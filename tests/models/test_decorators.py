@@ -2,7 +2,18 @@ import pytest
 
 from fastadmin import register, ModelAdmin
 
+
 async def test_register():
+    class Model:
+        pass
+
+    class MyModelAdmin(ModelAdmin):
+        pass
+
+    assert register(Model)(MyModelAdmin)
+
+
+async def test_register_error():
     class Model:
         pass
 

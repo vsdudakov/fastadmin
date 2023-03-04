@@ -11,6 +11,15 @@ class BaseModel(Model):
         abstract = True
 
 
+class User(BaseModel):
+    username = fields.CharField(max_length=255)
+    password = fields.CharField(max_length=255)
+    is_superuser = fields.BooleanField(default=False)
+
+    def __str__(self):
+        return self.username
+
+
 class Tournament(BaseModel):
     name = fields.CharField(max_length=255)
 
@@ -26,12 +35,3 @@ class Event(BaseModel):
 
     def __str__(self):
         return self.name
-
-
-class User(BaseModel):
-    username = fields.CharField(max_length=255)
-    password = fields.CharField(max_length=255)
-    is_superuser = fields.BooleanField(default=False)
-
-    def __str__(self):
-        return self.username
