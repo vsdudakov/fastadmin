@@ -167,7 +167,7 @@ If you have smth else (your own implementation of ORM and so on) you will may ov
 ```
 from typing import Any
 from collections import OrderedDict
-from fastadmin import ModelAdmin
+from fastadmin import ModelAdmin, WidgetType
 
 class MyModelAdmin(ModelAdmin):
     async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
