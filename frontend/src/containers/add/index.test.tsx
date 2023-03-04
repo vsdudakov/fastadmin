@@ -3,7 +3,6 @@ import { QueryClient } from '@tanstack/react-query';
 
 import { TestProviders } from 'providers';
 
-
 import { Add } from 'containers/add';
 
 test('Renders Add', () => {

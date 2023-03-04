@@ -84,12 +84,33 @@ export const Change: React.FC = () => {
   });
 
   const onFinish = (payload: any) => {
-    const save_as_new = form.getFieldValue('save_as_new');
-    if (save_as_new) {
+    const saveAsNew = form.getFieldValue('save_as_new');
+    if (saveAsNew) {
       mutateAdd(transformDataToServer(payload));
       return;
     }
     mutate(transformDataToServer(payload));
+  };
+
+  const onConfirmDelete = () => mutateDelete();
+
+  const onSaveAndContinueEditing = () => {
+    form.submit();
+  };
+
+  const onSaveAndAddAnother = () => {
+    form.setFieldValue('next', `/add/${model}`);
+    if (modelConfiguration?.save_as) {
+      form.setFieldValue('save_as_new', true);
+    }
+    form.submit();
+  };
+
+  const onSave = () => {
+    if (!modelConfiguration?.save_as_continue) {
+      form.setFieldValue('next', `/list/${model}`);
+    }
+    form.submit();
   };
 
   return (
@@ -115,8 +136,8 @@ export const Change: React.FC = () => {
               <Row gutter={[8, 8]} justify="space-between">
                 <Col>
                   <Space>
-                    <Popconfirm title={_t('Are you sure?')} onConfirm={() => mutateDelete()}>
-                      <Button danger>
+                    <Popconfirm title={_t('Are you sure?')} onConfirm={onConfirmDelete}>
+                      <Button danger={true}>
                         <DeleteOutlined /> {_t('Delete')}
                       </Button>
                     </Popconfirm>
@@ -127,9 +148,7 @@ export const Change: React.FC = () => {
                     {!isMobile && !modelConfiguration?.save_as_continue && (
                       <Button
                         loading={isLoading || isLoadingAdd}
-                        onClick={() => {
-                          form.submit();
-                        }}
+                        onClick={onSaveAndContinueEditing}
                         type="default"
                       >
                         <SaveFilled /> {_t('Save and continue editing')}
@@ -138,13 +157,7 @@ export const Change: React.FC = () => {
                     {!isMobile && (
                       <Button
                         loading={isLoading || isLoadingAdd}
-                        onClick={() => {
-                          form.setFieldValue('next', `/add/${model}`);
-                          if (modelConfiguration?.save_as) {
-                            form.setFieldValue('save_as_new', true);
-                          }
-                          form.submit();
-                        }}
+                        onClick={onSaveAndAddAnother}
                         type="default"
                       >
                         <SaveFilled />{' '}
@@ -153,16 +166,7 @@ export const Change: React.FC = () => {
                           : _t('Save and add another')}
                       </Button>
                     )}
-                    <Button
-                      loading={isLoading || isLoadingAdd}
-                      onClick={() => {
-                        if (!modelConfiguration?.save_as_continue) {
-                          form.setFieldValue('next', `/list/${model}`);
-                        }
-                        form.submit();
-                      }}
-                      type="primary"
-                    >
+                    <Button loading={isLoading || isLoadingAdd} onClick={onSave} type="primary">
                       <SaveOutlined /> {_t('Save')}
                     </Button>
                   </Space>

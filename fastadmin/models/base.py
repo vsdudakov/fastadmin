@@ -3,6 +3,7 @@ from collections import OrderedDict
 from collections.abc import Sequence
 from io import BytesIO, StringIO
 from typing import Any
+from uuid import UUID
 
 from fastadmin.schemas.api import ExportFormat
 from fastadmin.schemas.configuration import WidgetType
@@ -167,7 +168,7 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def save_model(self, id: str | None, payload: dict) -> dict | None:
+    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
         :params id: an id of object.
@@ -176,7 +177,7 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def delete_model(self, id: str) -> None:
+    async def delete_model(self, id: UUID | int) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.
@@ -184,7 +185,7 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def get_obj(self, id: str) -> dict | None:
+    async def get_obj(self, id: UUID | int) -> dict | None:
         """This method is used to get orm/db model object by id.
 
         :params id: an id of object.

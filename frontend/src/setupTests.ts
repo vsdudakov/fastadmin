@@ -4,7 +4,7 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
-global.matchMedia = global.matchMedia || function () {
+const matchMedia = () => {
   return {
     matches: false,
     onchange: null,
@@ -15,3 +15,5 @@ global.matchMedia = global.matchMedia || function () {
     dispatchEvent: jest.fn(),
   };
 };
+
+global.matchMedia = global.matchMedia || matchMedia;

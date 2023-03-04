@@ -128,7 +128,7 @@ export const List: React.FC = () => {
               value,
               field.list_configuration?.empty_value_display,
               dateTimeFormat,
-              (value: boolean) => <Switch checked={value} size="small" />
+              (v: boolean) => <Switch checked={v} size="small" />
             );
             if (field?.list_configuration?.is_link) {
               return <Link to={`/change/${model}/${record.id}`}>{transformedValue}</Link>;
@@ -140,7 +140,7 @@ export const List: React.FC = () => {
   }, [model, fields, filters, dateTimeFormat, _t]);
 
   const queryString = querystring.stringify({
-    search: search,
+    search,
     sort_by: sortBy,
     offset: (page - 1) * pageSize,
     limit: pageSize,
@@ -152,7 +152,7 @@ export const List: React.FC = () => {
   );
 
   const exportQueryString = querystring.stringify({
-    search: search,
+    search,
     sort_by: sortBy,
     ...transformFiltersToServer(filters),
   });
@@ -165,8 +165,8 @@ export const List: React.FC = () => {
         limit: 1000,
       }),
     {
-      onSuccess: (data) => {
-        fileDownload(data, `${model}.csv`);
+      onSuccess: (d) => {
+        fileDownload(d, `${model}.csv`);
         message.success(_t('Successfully exported'));
       },
       onError: () => {
@@ -204,6 +204,9 @@ export const List: React.FC = () => {
     setSortBy(sorter.order === 'ascend' ? sorter.field : `-${sorter.field}`);
   };
 
+  const onExport = () => mutateExport();
+  const onAdd = () => navigate(`/add/${model}`);
+
   return (
     <CrudContainer
       title={modelConfiguration?.name || model || ''}
@@ -222,7 +225,7 @@ export const List: React.FC = () => {
             <Col>
               <Input.Search
                 placeholder={modelConfiguration?.search_help_text || (_t('Search By') as string)}
-                allowClear
+                allowClear={true}
                 onSearch={setSearch}
                 style={{ width: 300 }}
               />
@@ -230,14 +233,14 @@ export const List: React.FC = () => {
           )}
           {modelConfiguration?.permissions?.includes(EModelPermission.Export) && (
             <Col>
-              <Button loading={isLoadingExport} onClick={() => mutateExport()}>
+              <Button loading={isLoadingExport} onClick={onExport}>
                 <DownloadOutlined /> {_t('Export CSV')}
               </Button>
             </Col>
           )}
           {modelConfiguration?.permissions?.includes(EModelPermission.Add) && (
             <Col>
-              <Button onClick={() => navigate(`/add/${model}`)}>
+              <Button onClick={onAdd}>
                 <PlusCircleOutlined /> {_t('Add')}
               </Button>
             </Col>
@@ -257,17 +260,19 @@ export const List: React.FC = () => {
               width: 100,
               fixed: 'right',
               render: (id: string) => {
+                const onDelete = () => mutateDelete(id);
+                const onChange = () => navigate(`/change/${model}/${id}`);
                 return (
                   <Space>
                     {modelConfiguration.permissions.includes(EModelPermission.Delete) && (
-                      <Popconfirm title={_t('Are you sure?')} onConfirm={() => mutateDelete(id)}>
-                        <Button size="small" danger>
+                      <Popconfirm title={_t('Are you sure?')} onConfirm={onDelete}>
+                        <Button size="small" danger={true}>
                           <DeleteOutlined />
                         </Button>
                       </Popconfirm>
                     )}
                     {modelConfiguration.permissions.includes(EModelPermission.Change) && (
-                      <Button size="small" onClick={() => navigate(`/change/${model}/${id}`)}>
+                      <Button size="small" onClick={onChange}>
                         <EditOutlined />
                       </Button>
                     )}

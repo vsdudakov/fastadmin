@@ -1,15 +1,15 @@
 import asyncio
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pytest
 from httpx import AsyncClient as TestClient
 
 from fastadmin.app import admin_app
 from tests.tortoise.helpers import (
-    tortoise_init_db_connection,
     tortoise_close_db_connection,
     tortoise_create_objects,
     tortoise_delete_objects,
+    tortoise_init_db_connection,
 )
 
 
@@ -38,7 +38,12 @@ async def client(fastapi_app) -> AsyncGenerator:
         yield client
 
 
-@pytest.fixture(scope="module", params=["tortoise",])
+@pytest.fixture(
+    scope="module",
+    params=[
+        "tortoise",
+    ],
+)
 async def objects(request):
     match request.param:
         case "tortoise":

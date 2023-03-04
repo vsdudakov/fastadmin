@@ -1,5 +1,5 @@
+from fastadmin.models.helpers import register_admin_model, unregister_admin_model
 from tests.api.helpers import sign_in, sign_out
-from fastadmin.models.helpers import unregister_admin_model, register_admin_model
 
 
 async def test_sign_in_401_invalid_password(objects, client):
@@ -11,7 +11,7 @@ async def test_sign_in_401_invalid_password(objects, client):
         json={
             "username": superuser.username,
             "password": "invalid",
-        }
+        },
     )
     assert r.status_code == 401
     unregister_admin_model([superuser.__class__])
@@ -24,7 +24,7 @@ async def test_sign_in_401(objects, client):
         json={
             "username": superuser.username,
             "password": superuser.password,
-        }
+        },
     )
     assert r.status_code == 401
 

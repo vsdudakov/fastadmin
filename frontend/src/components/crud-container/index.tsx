@@ -100,16 +100,17 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
     },
     ...configuration.models
       .filter(
-        (model: IModel) =>
-          !search || model.name.toLocaleLowerCase().includes(search?.toLocaleLowerCase())
+        (m: IModel) => !search || m.name.toLocaleLowerCase().includes(search?.toLocaleLowerCase())
       )
-      .map((model: IModel) => {
+      .map((m: IModel) => {
         return {
-          key: model.name,
-          label: model.name,
+          key: m.name,
+          label: m.name,
         };
       }),
   ];
+
+  const onSearch = (e: any) => setSearch(e.target.value);
 
   return (
     <>
@@ -193,7 +194,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
               <div style={{ padding: 10 }}>
                 <Input
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={onSearch}
                   placeholder={_t('Search By Menu') as string}
                   prefix={<SearchOutlined />}
                 />
@@ -236,7 +237,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
               }
               style={{ marginTop: 16 }}
             >
-              <Skeleton loading={isLoading} active>
+              <Skeleton loading={isLoading} active={true}>
                 {children}
               </Skeleton>
             </Card>

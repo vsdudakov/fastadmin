@@ -46,9 +46,9 @@ export const AsyncTransfer: React.FC<IAsyncTransfer> = ({
     );
   };
 
-  const onSearch = (direction: TransferDirection, value: string) => {
+  const onSearch = (direction: TransferDirection, v: string) => {
     if (direction === 'left') {
-      setSearch(value);
+      setSearch(v);
     }
   };
 
@@ -56,13 +56,15 @@ export const AsyncTransfer: React.FC<IAsyncTransfer> = ({
     return { key: item[idField], title: item[labelField] };
   });
 
+  const render = (item: any) => item.title;
+
   return (
     <Transfer
       dataSource={dataSource}
       showSearch={true}
       filterOption={onFilter}
       onSearch={debounce(onSearch, 500)}
-      render={(item) => item.title}
+      render={render}
       onChange={onChange}
       targetKeys={value}
       listStyle={

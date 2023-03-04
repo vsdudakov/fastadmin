@@ -11,16 +11,16 @@ dev:
 
 .PHONY: fix
 fix:
-	poetry run pyupgrade --exit-zero-even-if-changed --py39-plus fastadmin/**/*.py
-	poetry run isort --settings-path pyproject.toml fastadmin
-	poetry run black --config pyproject.toml fastadmin
+	poetry run pyupgrade --exit-zero-even-if-changed --py39-plus fastadmin/**/*.py tests/**/*.py
+	poetry run isort --settings-path pyproject.toml fastadmin tests
+	poetry run black --config pyproject.toml fastadmin tests
 	make -C frontend fix
 
 .PHONY: lint
 lint:
-	poetry run isort --diff --check-only --settings-path pyproject.toml fastadmin
-	poetry run black --diff --check --config pyproject.toml fastadmin
-	poetry run flake8 --show-source --config .flake8 fastadmin
+	poetry run isort --diff --check-only --settings-path pyproject.toml fastadmin tests
+	poetry run black --diff --check --config pyproject.toml fastadmin tests
+	poetry run flake8 --show-source --config .flake8 fastadmin tests
 	poetry run mypy --show-error-code --install-types --non-interactive --namespace-packages --show-traceback --config-file pyproject.toml fastadmin
 	make -C frontend lint
 

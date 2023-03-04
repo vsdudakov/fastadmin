@@ -1,5 +1,5 @@
-from tortoise.models import Model
 from tortoise import fields
+from tortoise.models import Model
 
 
 class BaseModel(Model):
@@ -30,8 +30,8 @@ class Tournament(BaseModel):
 class Event(BaseModel):
     name = fields.CharField(max_length=255)
 
-    tournament = fields.ForeignKeyField('models.Tournament', related_name='events')
-    participants = fields.ManyToManyField('models.User', related_name='events')
+    tournament = fields.ForeignKeyField("models.Tournament", related_name="events")
+    participants = fields.ManyToManyField("models.User", related_name="events")
 
     def __str__(self):
         return self.name

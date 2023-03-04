@@ -1,6 +1,7 @@
 import asyncio
 from collections import OrderedDict
 from typing import Any
+from uuid import UUID
 
 from fastapi import HTTPException, status
 
@@ -29,7 +30,7 @@ async def obj_to_dict(obj: Any, with_m2m: bool = True) -> dict:
 
 
 class TortoiseModelAdmin(BaseModelAdmin):
-    async def save_model(self, id: str | None, payload: dict) -> dict | None:
+    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
         :params id: an id of object.
@@ -71,7 +72,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
                     await m2m_rel.add(*remote_model_objs)
         return await obj_to_dict(obj)
 
-    async def delete_model(self, id: str) -> None:
+    async def delete_model(self, id: UUID | int) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.
@@ -79,7 +80,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
         """
         await self.model_cls.filter(id=id).delete()
 
-    async def get_obj(self, id: str) -> dict | None:
+    async def get_obj(self, id: UUID | int) -> dict | None:
         """This method is used to get orm/db model object by id.
 
         :params id: an id of object.

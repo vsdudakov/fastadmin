@@ -1,5 +1,5 @@
+from fastadmin.models.helpers import register_admin_model, unregister_admin_model
 from tests.api.helpers import sign_in, sign_out
-from fastadmin.models.helpers import unregister_admin_model, register_admin_model
 
 
 async def test_list(objects, client):

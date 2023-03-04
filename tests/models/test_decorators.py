@@ -1,6 +1,6 @@
 import pytest
 
-from fastadmin import register, ModelAdmin
+from fastadmin import ModelAdmin, register
 
 
 async def test_register():
@@ -25,7 +25,6 @@ async def test_register_error():
 
     with pytest.raises(ValueError):
         register()(MyModelAdmin)
-
 
     with pytest.raises(ValueError):
         register(Model)(InvalidModelAdmin)

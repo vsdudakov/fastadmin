@@ -1,15 +1,12 @@
 from tortoise import Tortoise
 
-from tests.tortoise import models
-from tests.tortoise import admins
+from tests.tortoise import admins, models
+
 
 async def tortoise_init_db_connection():
-    await Tortoise.init(
-        db_url='sqlite://:memory:',
-        modules={'models': ['tests.tortoise.models']}
-    )
+    await Tortoise.init(db_url="sqlite://:memory:", modules={"models": ["tests.tortoise.models"]})
     await Tortoise.generate_schemas()
-    return Tortoise.get_connection('default')
+    return Tortoise.get_connection("default")
 
 
 async def tortoise_close_db_connection():
@@ -17,10 +14,10 @@ async def tortoise_close_db_connection():
 
 
 async def tortoise_create_objects():
-    superuser = await models.User.create(username='Test SuperUser', password='password', is_superuser=True)
-    user = await models.User.create(username='Test User', password='password')
-    tournament = await models.Tournament.create(name='Test Tournament')
-    event = await models.Event.create(name='Test Event', tournament=tournament)
+    superuser = await models.User.create(username="Test SuperUser", password="password", is_superuser=True)
+    user = await models.User.create(username="Test User", password="password")
+    tournament = await models.Tournament.create(name="Test Tournament")
+    event = await models.Event.create(name="Test Event", tournament=tournament)
     await event.participants.add(user)
     return {
         "superuser": superuser,

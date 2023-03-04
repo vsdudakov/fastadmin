@@ -1,4 +1,4 @@
-from fastadmin.models.helpers import unregister_admin_model, register_admin_model
+from fastadmin.models.helpers import register_admin_model, unregister_admin_model
 
 
 async def sign_in(client, user, admin_user_cls):
@@ -8,7 +8,7 @@ async def sign_in(client, user, admin_user_cls):
         json={
             "username": user.username,
             "password": user.password,
-        }
+        },
     )
     assert r.status_code == 200
     assert r.json() is None

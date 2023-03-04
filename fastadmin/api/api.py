@@ -1,5 +1,7 @@
 import logging
 from datetime import datetime, timedelta
+from typing import Any, List
+from uuid import UUID
 
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -29,7 +31,7 @@ router = APIRouter(prefix="/api")
 async def sign_in(
     response: Response,
     payload: SignInInputSchema,
-):
+) -> None:
     """This method is used to sign in.
 
     :params response: a response object.
@@ -62,8 +64,8 @@ async def sign_in(
 @router.post("/sign-out")
 async def sign_out(
     response: Response,
-    _: str = Depends(get_user_id),
-):
+    _: UUID | int = Depends(get_user_id),
+) -> None:
     """This method is used to sign out.
 
     :params response: a response object.
@@ -75,15 +77,15 @@ async def sign_out(
 
 @router.get("/me")
 async def me(
-    user_id: str = Depends(get_user_id),
-):
+    user_id: UUID | int = Depends(get_user_id),
+) -> Any:
     """This method is used to get current user.
 
     :params user_id: a user id.
     :return: A user object.
     """
     model = settings.ADMIN_USER_MODEL
-    admin_model = get_admin_model(model)
+    admin_model: Any = get_admin_model(model)
     return await admin_model.get_obj(user_id)
 
 
@@ -95,8 +97,8 @@ async def list(
     sort_by: str = "-created_at",
     offset: int | None = 0,
     limit: int | None = 10,
-    _: str = Depends(get_user_id),
-):
+    _: UUID | int = Depends(get_user_id),
+) -> dict[str, int | List[Any]]:
     """This method is used to get a list of objects.
 
     :params request: a request object.
@@ -132,9 +134,9 @@ async def list(
 @router.get("/retrieve/{model}/{id}")
 async def get(
     model: str,
-    id: str,
-    _: str = Depends(get_user_id),
-):
+    id: UUID | int,
+    _: UUID | int = Depends(get_user_id),
+) -> Any:
     """This method is used to get an object.
 
     :params model: a name of model.
@@ -154,8 +156,8 @@ async def get(
 async def add(
     model: str,
     payload: dict,
-    _: str = Depends(get_user_id),
-):
+    _: UUID | int = Depends(get_user_id),
+) -> Any:
     """This method is used to add an object.
 
     :params model: a name of model.
@@ -165,19 +167,16 @@ async def add(
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
-    obj = await admin_model.save_model(None, payload)
-    if not obj:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} not found.")
-    return obj
+    return await admin_model.save_model(None, payload)
 
 
 @router.patch("/change/{model}/{id}")
 async def change(
     model: str,
-    id: str,
+    id: UUID | int,
     payload: dict,
-    _: str = Depends(get_user_id),
-):
+    _: UUID | int = Depends(get_user_id),
+) -> Any:
     """This method is used to change an object.
 
     :params model: a name of model.
@@ -201,7 +200,7 @@ async def export(
     payload: ExportSchema,
     search: str | None = None,
     sort_by: str = "-created_at",
-    _: str = Depends(get_user_id),
+    _: UUID | int = Depends(get_user_id),
 ):
     """This method is used to export a list of objects.
 
@@ -237,9 +236,9 @@ async def export(
 @router.delete("/delete/{model}/{id}")
 async def delete(
     model: str,
-    id: str,
-    user_id: str = Depends(get_user_id),
-):
+    id: UUID | int,
+    user_id: UUID | int = Depends(get_user_id),
+) -> UUID | int:
     """This method is used to delete an object.
 
     :params model: a name of model.
@@ -249,7 +248,7 @@ async def delete(
     admin_model = get_admin_model(model)
     if not admin_model:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
-    if user_id == id:
+    if str(user_id) == str(id) and model == settings.ADMIN_USER_MODEL:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail="You cannot delete yourself.")
     await admin_model.delete_model(id)
     return id
@@ -257,8 +256,8 @@ async def delete(
 
 @router.get("/configuration")
 async def configuration(
-    user_id: str | None = Depends(get_user_id_or_none),
-):
+    user_id: UUID | int | None = Depends(get_user_id_or_none),
+) -> ConfigurationSchema:
     """This method is used to get a configuration.
 
     :params user_id: an id of user.

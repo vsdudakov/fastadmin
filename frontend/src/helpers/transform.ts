@@ -18,7 +18,7 @@ export const isArray = (v: any): boolean => {
 };
 
 export const isBoolean = (v: any): boolean => {
-  return v === 'true' || v === 'false' || typeof v == 'boolean' || !!v === v;
+  return v === 'true' || v === 'false' || typeof v === 'boolean' || !!v === v;
 };
 
 export const transformValueToServer = (value: any): any => {

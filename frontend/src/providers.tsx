@@ -15,12 +15,9 @@ interface IInternalProviders {
 
 export const InternalProviders: React.FC<IInternalProviders> = ({ children }) => (
   <SignInUserProvider>
-    <ConfigurationProvider>
-      {children}
-    </ConfigurationProvider>
+    <ConfigurationProvider>{children}</ConfigurationProvider>
   </SignInUserProvider>
 );
-
 
 interface IExternalProviders {
   children?: React.ReactNode;
@@ -29,24 +26,18 @@ interface IExternalProviders {
   i18n?: any;
 }
 
-
 export const ExternalProviders: React.FC<IExternalProviders> = ({ children, client, i18n }) => (
   <HashRouter>
     <QueryClientProvider client={client}>
       <I18nextProvider i18n={i18n}>
-        <HelmetProvider>
-          {children}
-        </HelmetProvider>
+        <HelmetProvider>{children}</HelmetProvider>
       </I18nextProvider>
     </QueryClientProvider>
   </HashRouter>
 );
 
-
 export const TestProviders: React.FC<IExternalProviders> = ({ children, client }) => (
   <ExternalProviders client={client} i18n={i18next}>
-    <ConfigProvider>
-      {children}
-    </ConfigProvider>
+    <ConfigProvider>{children}</ConfigProvider>
   </ExternalProviders>
 );

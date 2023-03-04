@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 import jwt
 from fastapi import Request, status
@@ -8,7 +9,7 @@ from fastadmin.models.helpers import get_admin_model
 from fastadmin.settings import settings
 
 
-async def get_user_id_or_none(request: Request) -> str | None:
+async def get_user_id_or_none(request: Request) -> UUID | int | None:
     """This method is used to get user id from request or None.
 
     :params request: a request object.
@@ -42,7 +43,7 @@ async def get_user_id_or_none(request: Request) -> str | None:
     return user_id
 
 
-async def get_user_id(request: Request) -> str:
+async def get_user_id(request: Request) -> UUID | int:
     """This method is used to get user id from request.
 
     :params request: a request object.

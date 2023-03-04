@@ -7,9 +7,10 @@ import { FormContainer } from 'components/form-container';
 
 test('Renders FormContainer', () => {
   const queryClient = new QueryClient();
+  const onFinish = (data: any) => undefined;
   render(
     <TestProviders client={queryClient}>
-      <FormContainer form="test" onFinish={(data: any) => {}} mode="add">
+      <FormContainer form="test" onFinish={onFinish} mode="add">
         <div />
       </FormContainer>
     </TestProviders>

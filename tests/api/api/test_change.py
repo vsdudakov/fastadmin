@@ -1,5 +1,5 @@
+from fastadmin.models.helpers import register_admin_model, unregister_admin_model
 from tests.api.helpers import sign_in, sign_out
-from fastadmin.models.helpers import unregister_admin_model, register_admin_model
 
 
 async def test_change(objects, client):
@@ -14,7 +14,7 @@ async def test_change(objects, client):
         json={
             "name": "new name",
             "participants": [superuser.id],
-        }
+        },
     )
     assert r.status_code == 200
 
@@ -39,12 +39,12 @@ async def test_change_401(objects, client):
         json={
             "name": "new name",
             "participants": [superuser.id],
-        }
+        },
     )
     assert r.status_code == 401
 
 
-async def test_change_404(objects, client):
+async def test_change_404_admin_class_found(objects, client):
     superuser = objects["superuser"]
     event = objects["event"]
     admin_user_cls = objects["admin_user_cls"]
@@ -54,7 +54,36 @@ async def test_change_404(objects, client):
         json={
             "name": "new name",
             "participants": [superuser.id],
-        }
+        },
     )
     assert r.status_code == 404
+    await sign_out(client, superuser)
+
+
+async def test_change_404_obj_not_found(objects, client):
+    superuser = objects["superuser"]
+    event = objects["event"]
+    admin_user_cls = objects["admin_user_cls"]
+    admin_event_cls = objects["admin_event_cls"]
+    await sign_in(client, superuser, admin_user_cls)
+    register_admin_model(admin_event_cls, [event.__class__])
+    r = await client.patch(
+        f"/api/change/{event.__class__.__name__}/invalid",
+        json={
+            "name": "new name",
+            "participants": [superuser.id],
+        },
+    )
+    assert r.status_code == 422
+
+    r = await client.patch(
+        f"/api/change/{event.__class__.__name__}/-1",
+        json={
+            "name": "new name",
+            "participants": [superuser.id],
+        },
+    )
+    assert r.status_code == 404
+
+    unregister_admin_model([event.__class__])
     await sign_out(client, superuser)

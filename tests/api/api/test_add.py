@@ -1,5 +1,5 @@
+from fastadmin.models.helpers import register_admin_model, unregister_admin_model
 from tests.api.helpers import sign_in, sign_out
-from fastadmin.models.helpers import unregister_admin_model, register_admin_model
 
 
 async def test_add(objects, client):
@@ -16,12 +16,12 @@ async def test_add(objects, client):
             "name": "new name",
             "tournament_id": tournament.id,
             "participants": [superuser.id],
-        }
+        },
     )
     assert r.status_code == 200
     item = r.json()
     event = await event.__class__.get(id=item["id"])
-    assert item["name"] ==  "new name"
+    assert item["name"] == "new name"
     assert item["tournament_id"] == tournament.id
     assert item["created_at"] == event.created_at.isoformat()
     assert item["updated_at"] == event.updated_at.isoformat()
@@ -41,7 +41,7 @@ async def test_add_401(objects, client):
             "name": "new name",
             "tournament_id": tournament.id,
             "participants": [superuser.id],
-        }
+        },
     )
     assert r.status_code == 401
 
@@ -58,7 +58,7 @@ async def test_add_404(objects, client):
             "name": "new name",
             "tournament_id": tournament.id,
             "participants": [superuser.id],
-        }
+        },
     )
     assert r.status_code == 404
     await sign_out(client, superuser)
