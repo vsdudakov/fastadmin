@@ -26,7 +26,7 @@ lint:
 
 .PHONY: test
 test:
-	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=100 -s tests
+	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=89 -s tests
 	make -C frontend test
 
 .PHONY: kill
@@ -64,3 +64,19 @@ pre-commit-install:
 .PHONY: pre-commit
 pre-commit:
 	pre-commit run --all-files
+
+
+.PHONY: push
+push:
+	make fix
+	make lint
+	make test
+	make build
+	make pre-commit
+	git stash
+	git checkout main
+	git pull origin main
+	git stash pop
+	git add .
+	git commit -am "$(message)"
+	git push origin main

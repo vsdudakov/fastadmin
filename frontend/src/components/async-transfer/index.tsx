@@ -11,7 +11,7 @@ import { useIsMobile } from 'hooks/useIsMobile';
 export interface IAsyncTransfer {
   parentModel: string;
   idField: string;
-  labelField: string;
+  labelFields: string[];
   layout?: 'horizontal' | 'vertical';
   value: string[] | undefined;
   onChange: any;
@@ -20,7 +20,7 @@ export interface IAsyncTransfer {
 export const AsyncTransfer: React.FC<IAsyncTransfer> = ({
   parentModel,
   idField,
-  labelField,
+  labelFields,
   layout,
   value,
   onChange,
@@ -53,6 +53,7 @@ export const AsyncTransfer: React.FC<IAsyncTransfer> = ({
   };
 
   const dataSource = (data?.results || []).map((item: any) => {
+    const labelField = labelFields.filter((f) => item[f])[0];
     return { key: item[idField], title: item[labelField] };
   });
 

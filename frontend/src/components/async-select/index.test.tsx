@@ -9,7 +9,7 @@ test('Renders AsyncTransfer', () => {
   const queryClient = new QueryClient();
   render(
     <TestProviders client={queryClient}>
-      <AsyncSelect idField="id" labelField="id" parentModel="test" />
+      <AsyncSelect idField="id" labelFields={['id']} parentModel="test" />
     </TestProviders>
   );
 });

@@ -23,6 +23,11 @@ export enum EModelPermission {
   Export = 'Export',
 }
 
+export interface IModelAction {
+  name: string;
+  description?: string;
+}
+
 export interface IListConfigurationField {
   index?: number;
   sorter?: boolean;
@@ -57,6 +62,10 @@ export interface IModelField {
 export interface IModel {
   name: string;
   permissions: EModelPermission[];
+  actions: IModelAction[];
+  actions_on_top?: boolean;
+  actions_on_bottom?: boolean;
+  actions_selection_counter?: boolean;
   fields: IModelField[];
   list_per_page?: number;
   save_on_top?: boolean;

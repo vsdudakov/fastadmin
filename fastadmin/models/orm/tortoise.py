@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 from collections import OrderedDict
 from typing import Any
 from uuid import UUID
@@ -11,10 +12,12 @@ from fastadmin.schemas.configuration import WidgetType
 from fastadmin.settings import settings
 
 
-async def obj_to_dict(obj: Any, with_m2m: bool = True) -> dict:
+async def obj_to_dict(obj: Any, with_m2m: bool = True, with_display_fields: bool = False) -> dict:
     """Converts object to dict.
 
     :params obj: an object.
+    :params with_m2m: a flag to include m2m fields.
+    :params with_display_fields: a flag to include display fields.
     :return: A dict.
     """
     obj_dict = {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
@@ -24,6 +27,17 @@ async def obj_to_dict(obj: Any, with_m2m: bool = True) -> dict:
             remote_model = m2m_rel.remote_model
             remote_ids = await m2m_rel.all().values_list(remote_model._meta.pk_attr, flat=True)
             obj_dict[field] = remote_ids
+    if with_display_fields:
+        if admin_model := get_admin_model(obj.__class__.__name__):
+            for field in admin_model.list_display:
+                display_field_function = getattr(admin_model, field, None)
+                if (
+                    not display_field_function
+                    or not inspect.ismethod(display_field_function)
+                    or not hasattr(display_field_function, "is_display")
+                ):
+                    continue
+                obj_dict[field] = await display_field_function(obj)
     return obj_dict
 
 
@@ -157,7 +171,9 @@ class TortoiseModelAdmin(BaseModelAdmin):
                     )
             qs = qs.select_related(*(f.replace("_id", "") for f in self.list_select_related))
 
-        results = await asyncio.gather(*(obj_to_dict(obj, with_m2m=False) for obj in await qs))
+        results = await asyncio.gather(
+            *(obj_to_dict(obj, with_m2m=False, with_display_fields=True) for obj in await qs)
+        )
 
         return results, total
 
@@ -181,15 +197,15 @@ class TortoiseModelAdmin(BaseModelAdmin):
                 continue
             field = getattr(field, "reference", None) or field
             parent_model_id = None
-            parent_model_label = None
+            parent_model_labels = ()
             parent_model = getattr(field, "model_name", "").rsplit(".", 1)[-1] or None
             if parent_model:
                 parent_admin_model = get_admin_model(parent_model)
                 parent_model_id = "id"
-                parent_model_label = "id"
+                parent_model_labels = ("id",)
                 if parent_admin_model:
                     parent_model_id = parent_admin_model.model_cls._meta.pk_attr
-                    parent_model_label = parent_admin_model.repr_field or parent_model_id
+                    parent_model_labels = parent_admin_model.label_fields or (parent_model_id,)
 
             form_hidden = (
                 getattr(field, "_generated", False)
@@ -206,7 +222,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
                 "orm_class_name": field.__class__.__name__,
                 "parent_model": parent_model,
                 "parent_model_id": parent_model_id,
-                "parent_model_label": parent_model_label,
+                "parent_model_labels": parent_model_labels,
                 "enum_type": getattr(field, "enum_type", None),
                 "required": not getattr(field, "null", False)
                 and not getattr(field, "default", False)
@@ -275,8 +291,8 @@ class TortoiseModelAdmin(BaseModelAdmin):
                 return WidgetType.AsyncSelect, {
                     **widget_props,
                     "parentModel": field.get("parent_model"),
-                    "idField": field.get("parent_model_id") or "id",
-                    "labelField": field.get("parent_model_label") or "id",
+                    "idField": field.get("parent_model_id"),
+                    "labelFields": field.get("parent_model_labels"),
                 }
             case "ManyToManyFieldInstance":
                 if field_name in self.raw_id_fields:
@@ -286,8 +302,8 @@ class TortoiseModelAdmin(BaseModelAdmin):
                         **widget_props,
                         "required": False,
                         "parentModel": field.get("parent_model"),
-                        "idField": field.get("parent_model_id") or "id",
-                        "labelField": field.get("parent_model_label") or "id",
+                        "idField": field.get("parent_model_id"),
+                        "labelFields": field.get("parent_model_labels"),
                         "layout": "vertical" if field in self.filter_vertical else "horizontal",
                     }
                 return WidgetType.AsyncSelect, {
@@ -295,8 +311,8 @@ class TortoiseModelAdmin(BaseModelAdmin):
                     "required": False,
                     "mode": "multiple",
                     "parentModel": field.get("parent_model"),
-                    "idField": field.get("parent_model_id") or "id",
-                    "labelField": field.get("parent_model_label") or "id",
+                    "idField": field.get("parent_model_id"),
+                    "labelFields": field.get("parent_model_labels"),
                 }
             case "OneToOneFieldInstance":
                 if field_name in self.raw_id_fields:
@@ -304,8 +320,8 @@ class TortoiseModelAdmin(BaseModelAdmin):
                 return WidgetType.AsyncSelect, {
                     **widget_props,
                     "parentModel": field.get("parent_model"),
-                    "idField": field.get("parent_model_id") or "id",
-                    "labelField": field.get("parent_model_label") or "id",
+                    "idField": field.get("parent_model_id"),
+                    "labelFields": field.get("parent_model_labels"),
                 }
             case "CharEnumFieldInstance":
                 if field_name in self.radio_fields:

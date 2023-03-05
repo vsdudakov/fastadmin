@@ -13,46 +13,68 @@ from fastadmin.settings import settings
 class BaseModelAdmin:
     """Base class for model admin"""
 
-    # Field name for representation of model instance (labels in selects)
-    repr_field = "id"
+    # Labels for model. We use them in select, autocomplete and other wigets where we represent model items.
+    # We user first from label_fields, if it is empty, we use the second and so on.
+    # If you don't set this attribute, we will use id attr as label.
+    # Example of usage: label_fields = ("name", "email", "id")
+    label_fields: Sequence[str] = ()
 
-    # Not supported setting
-    # actions
+    # A list of actions to make available on the change list page.
+    # You have to implement methods with names like <action_name> in your ModelAdmin class and decorate them with @action decorator.  # noqa: E501
+    # Example of usage:
+    #
+    # actions = ("make_published",)
+    # @action(
+    #     description="Mark selected stories as published",
+    # )
+    # async def make_published(self, objs: list[Any]) -> None:
+    #     ...
+    actions: Sequence[str] = ()
 
-    # Not supported setting
-    # actions_on_top
+    # Controls where on the page the actions bar appears.
+    # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).  # noqa: E501
+    # Example of usage: actions_on_top = True
+    actions_on_top: bool = False
 
-    # Not supported setting
-    # actions_on_bottom
+    # Controls where on the page the actions bar appears.
+    # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).  # noqa: E501
+    # Example of usage: actions_on_bottom = False
+    actions_on_bottom: bool = True
 
-    # Not supported setting
-    # actions_selection_counter
+    # Controls whether a selection counter is displayed next to the action dropdown. By default, the admin changelist will display it  # noqa: E501
+    # Example of usage: actions_selection_counter = False
+    actions_selection_counter: bool = True
 
     # Not supported setting
     # date_hierarchy
 
     # This attribute overrides the default display value for record’s fields that are empty (None, empty string, etc.). The default value is - (a dash).  # noqa: E501
+    # Example of usage: empty_value_display = "N/A"
     empty_value_display: str = "-"
 
     # This attribute, if given, should be a list of field names to exclude from the form.
+    # Example of usage: exclude = ("password", "otp")
     exclude: Sequence[str] = ()
 
     # Use the fields option to make simple layout changes in the forms on the “add” and “change” pages
     # such as showing only a subset of available fields, modifying their order, or grouping them into rows.
     # For more complex layout needs, see the fieldsets option.
+    # Example of usage: fields = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
     fields: Sequence[str] = ()
 
     # Set fieldsets to control the layout of admin “add” and “change” pages.
     # fieldsets is a list of two-tuples, in which each two-tuple represents a <fieldset> on the admin form page. (A <fieldset> is a “section” of the form.)  # noqa: E501
     fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
 
-    # By default, a ManyToManyField is displayed in the admin site with a <select multiple>.
+    # By default, a ManyToManyField is displayed in the admin dashboard with a <select multiple>.
     # However, multiple-select boxes can be difficult to use when selecting many items.
     # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.  # noqa: E501
     # The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.  # noqa: E501
+    # Example of usage: filter_horizontal = ("groups", "user_permissions")
     filter_horizontal: Sequence[str] = ()
 
     # Same as filter_horizontal, but uses a vertical display of the filter interface with the box of unselected options appearing above the box of selected options.  # noqa: E501
+    # Example of usage: filter_vertical = ("groups", "user_permissions")
     filter_vertical: Sequence[str] = ()
 
     # Not supported setting
@@ -66,27 +88,34 @@ class BaseModelAdmin:
 
     # Set list_display to control which fields are displayed on the list page of the admin.
     # If you don’t set list_display, the admin site will display a single column that displays the __str__() representation of each object  # noqa: E501
+    # Example of usage: list_display = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
     list_display: Sequence[str] = ()
 
     # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.  # noqa: E501
+    # Example of usage: list_display_links = ("id", "mobile_number", "email")
     list_display_links: Sequence[str] = ()
 
     # Set list_filter to activate filters in the tabel columns of the list page of the admin.
+    # Example of usage: list_filter = ("is_superuser", "is_active", "created_at")
     list_filter: Sequence[str] = ()
 
     # Set list_max_show_all to control how many items can appear on a “Show all” admin change list page.
     # The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.  # noqa: E501
+    # Example of usage: list_max_show_all = 100
     list_max_show_all: int = 200
 
     # Set list_per_page to control how many items appear on each paginated admin list page. By default, this is set to 10.  # noqa: E501
+    # Example of usage: list_per_page = 50
     list_per_page = 10
 
     # Set list_select_related to tell ORM to use select_related() in retrieving the list of objects on the admin list page.  # noqa: E501
     # This can save you a bunch of database queries.
+    # Example of usage: list_select_related = ("user",)
     list_select_related: Sequence[str] = ()
 
     # Set ordering to specify how lists of objects should be ordered in the admin views.
     # This should be a list or tuple in the same format as a model’s ordering parameter.
+    # Example of usage: ordering = ("-created_at",)
     ordering: Sequence[str] = ()
 
     # Not supported setting
@@ -102,10 +131,12 @@ class BaseModelAdmin:
 
     # By default, applied filters are preserved on the list view after creating, editing, or deleting an object.
     # You can have filters cleared by setting this attribute to False.
+    # Example of usage: preserve_filters = False
     preserve_filters: bool = True
 
     # By default, FastAPI admin uses a select-box interface (<select>) for fields that are ForeignKey or have choices set.  # noqa: E501
     # If a field is present in radio_fields, FastAPI admin will use a radio-button interface instead.
+    # Example of usage: radio_fields = ("user",)
     radio_fields: Sequence[str] = ()
 
     # Not supported setting (all fk, m2m uses select js widget as default)
@@ -114,45 +145,55 @@ class BaseModelAdmin:
     # By default, FastAPI admin uses a select-box interface (<select>) for fields that are ForeignKey.
     # Sometimes you don’t want to incur the overhead of having to select all the related instances to display in the drop-down.  # noqa: E501
     # raw_id_fields is a list of fields you would like to change into an Input widget for either a ForeignKey or ManyToManyField.  # noqa: E501
+    # Example of usage: raw_id_fields = ("user",)
     raw_id_fields: Sequence[str] = ()
 
     # By default the admin shows all fields as editable.
     # Any fields in this option (which should be a list or tuple) will display its data as-is and non-editable.
+    # Example of usage: readonly_fields = ("created_at",)
     readonly_fields: Sequence[str] = ()
 
     # Normally, objects have three save options: “Save”, “Save and continue editing”, and “Save and add another”.
     # If save_as is True, “Save and add another” will be replaced
     # by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.
+    # Example of usage: save_as = True
     save_as: bool = False
 
     # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.  # noqa: E501
     # If you set save_as_continue=False, the redirect will be to the changelist view.
+    # Example of usage: save_as_continue = False
     save_as_continue: bool = False
 
     # Normally, the save buttons appear only at the bottom of the forms.
     # If you set save_on_top, the buttons will appear both on the top and the bottom.
+    # Example of usage: save_on_top = True
     save_on_top: bool = False
 
     # Set search_fields to enable a search box on the admin list page.
     # This should be set to a list of field names that will be searched whenever somebody submits a search query in that text box.  # noqa: E501
+    # Example of usage: search_fields = ("mobile_number", "email")
     search_fields: Sequence[str] = ()
 
     # Set search_help_text to specify a descriptive text for the search box which will be displayed below it.
+    # Example of usage: search_help_text = "Search by mobile number or email"
     search_help_text: str = ""
 
     # Set show_full_result_count to control whether the full count of objects should be displayed
     # on a filtered admin page (e.g. 99 results (103 total)).
     # If this option is set to False, a text like 99 results (Show all) is displayed instead.
+    # Example of usage: show_full_result_count = True
     show_full_result_count: bool = False
 
     # By default, the list page allows sorting by all model fields
     # If you want to disable sorting for some columns, set sortable_by to a collection (e.g. list, tuple, or set)
     # of the subset of list_display that you want to be sortable.
     # An empty collection disables sorting for all columns.
+    # Example of usage: sortable_by = ("mobile_number", "email")
     sortable_by: Sequence[str] = ()
 
     # Set view_on_site to control whether or not to display the “View on site” link.
     # This link should bring you to a URL where you can display the saved object.
+    # Example of usage: view_on_site = "http://example.com"
     view_on_site: str | None = None
 
     def __init__(self, model_cls: Any):

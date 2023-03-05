@@ -31,7 +31,8 @@ interface ICrudContainer {
   title: string;
   breadcrumbs?: JSX.Element | JSX.Element[];
   viewOnSite?: string;
-  actions?: JSX.Element | JSX.Element[];
+  headerActions?: JSX.Element | JSX.Element[];
+  bottomActions?: JSX.Element | JSX.Element[];
   isLoading?: boolean;
   children: JSX.Element | JSX.Element[];
 }
@@ -40,7 +41,8 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
   title,
   breadcrumbs,
   viewOnSite,
-  actions,
+  headerActions,
+  bottomActions,
   isLoading,
   children,
 }) => {
@@ -117,7 +119,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
       <Helmet defaultTitle={title}>
         <meta name="description" content={title} />
       </Helmet>
-      <Layout style={{ height: '100vh' }}>
+      <Layout style={{ minHeight: '100vh' }}>
         <Header style={{ background: colorPrimary, paddingInline: 20 }}>
           <Row justify="space-between">
             <Col>
@@ -232,13 +234,18 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                       {title}
                     </Title>
                   </Col>
-                  <Col>{actions}</Col>
+                  {headerActions ? <Col>{headerActions}</Col> : null}
                 </Row>
               }
               style={{ marginTop: 16 }}
             >
               <Skeleton loading={isLoading} active={true}>
                 {children}
+                {bottomActions ? (
+                  <Row>
+                    <Col>{bottomActions}</Col>
+                  </Row>
+                ) : null}
               </Skeleton>
             </Card>
           </Layout>

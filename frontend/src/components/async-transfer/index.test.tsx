@@ -12,7 +12,7 @@ test('Renders AsyncTransfer', () => {
     <TestProviders client={queryClient}>
       <AsyncTransfer
         idField="id"
-        labelField="id"
+        labelFields={['id']}
         parentModel="test"
         onChange={onChange}
         value={undefined}

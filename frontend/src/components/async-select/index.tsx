@@ -10,13 +10,13 @@ const { Option } = Select;
 export interface IAsyncSelect {
   parentModel: string;
   idField: string;
-  labelField: string;
+  labelFields: string[];
 }
 
 export const AsyncSelect: React.FC<IAsyncSelect> = ({
   parentModel,
   idField,
-  labelField,
+  labelFields,
   ...props
 }) => {
   const [search, setSearch] = useState<string | undefined>();
@@ -50,9 +50,10 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
       onSearch={debounce(onSearch, 500)}
       {...props}
     >
-      {(data?.results || []).map((item: any) => (
-        <Option key={item[idField]}>{item[labelField]}</Option>
-      ))}
+      {(data?.results || []).map((item: any) => {
+        const labelField = labelFields.filter((f) => item[f])[0];
+        return <Option key={item[idField]}>{item[labelField]}</Option>;
+      })}
     </Select>
   );
 };

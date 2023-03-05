@@ -13,6 +13,7 @@ import {
   Space,
   Switch,
   Tooltip,
+  Select,
 } from 'antd';
 import querystring from 'querystring';
 import {
@@ -27,24 +28,34 @@ import fileDownload from 'react-file-download';
 
 import { CrudContainer } from 'components/crud-container';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
-import { EFieldWidgetType, EModelPermission, IModel, IModelField } from 'interfaces/configuration';
+import {
+  EFieldWidgetType,
+  EModelPermission,
+  IModel,
+  IModelAction,
+  IModelField,
+} from 'interfaces/configuration';
 import { getTitleFromFieldName } from 'helpers/title';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { deleteFetcher, getFetcher, postFetcher } from 'fetchers/fetchers';
 import { FilterColumn } from './filter-column';
 import { transformColumnValueFromServer, transformFiltersToServer } from 'helpers/transform';
 import { TableOrCards } from 'components/table-or-cards';
 import { handleError } from 'helpers/forms';
+import { useIsMobile } from 'hooks/useIsMobile';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
 
 export const List: React.FC = () => {
   const { configuration } = useContext(ConfigurationContext);
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { t: _t } = useTranslation('List');
   const { model } = useParams();
+  const isMobile = useIsMobile();
+
+  const [action, setAction] = useState<string | undefined>();
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
 
   const [filters, setFilters] = useState<any>({});
   const [search, setSearch] = useState<string | undefined>();
@@ -124,6 +135,9 @@ export const List: React.FC = () => {
               }
             : undefined,
           render: (value: any, record: any) => {
+            if (value === undefined) {
+              return field.list_configuration?.empty_value_display;
+            }
             const transformedValue = transformColumnValueFromServer(
               value,
               field.list_configuration?.empty_value_display,
@@ -147,7 +161,7 @@ export const List: React.FC = () => {
     ...transformFiltersToServer(filters),
   });
 
-  const { data, isLoading } = useQuery([`/list/${model}`, queryString], () =>
+  const { data, isLoading, refetch } = useQuery([`/list/${model}`, queryString], () =>
     getFetcher(`/list/${model}?${queryString}`)
   );
 
@@ -180,7 +194,7 @@ export const List: React.FC = () => {
     {
       onSuccess: () => {
         message.success(_t('Successfully deleted'));
-        queryClient.invalidateQueries([`/list/${model}`]);
+        refetch();
         setPage(DEFAULT_PAGE);
         setPageSize(DEFAULT_PAGE_SIZE);
         if (!modelConfiguration?.preserve_filters) {
@@ -190,6 +204,24 @@ export const List: React.FC = () => {
       },
       onError: (error) => {
         handleError(error);
+      },
+    }
+  );
+
+  const { mutate: mutateAction, isLoading: isLoadingAction } = useMutation(
+    (payload: any) => postFetcher(`/action/${model}/${action}`, payload),
+    {
+      onSuccess: () => {
+        refetch();
+        setSelectedRowKeys([]);
+        message.success(_t('Successfully applied'));
+        if (!modelConfiguration?.preserve_filters) {
+          setFilters({});
+          setSearch(undefined);
+        }
+      },
+      onError: () => {
+        message.error(_t('Server error'));
       },
     }
   );
@@ -207,6 +239,9 @@ export const List: React.FC = () => {
   const onExport = () => mutateExport();
   const onAdd = () => navigate(`/add/${model}`);
 
+  const onSelectRow = (v: string[]) => setSelectedRowKeys(v);
+  const onApplyAction = () => mutateAction({ ids: selectedRowKeys });
+
   return (
     <CrudContainer
       title={modelConfiguration?.name || model || ''}
@@ -219,15 +254,40 @@ export const List: React.FC = () => {
         </Breadcrumb>
       }
       viewOnSite={modelConfiguration?.view_on_site}
-      actions={
+      headerActions={
         <Row style={{ marginTop: 10, marginBottom: 10 }} gutter={[8, 8]}>
+          {(modelConfiguration?.actions || []).length > 0 && modelConfiguration?.actions_on_top && (
+            <Col>
+              <Select
+                placeholder={_t('Select Action By') as string}
+                allowClear={true}
+                value={action}
+                onChange={setAction}
+                style={{ width: 200 }}
+              >
+                {(modelConfiguration?.actions || []).map((a: IModelAction) => (
+                  <Select.Option key={a.name} value={a.name}>
+                    {a.description || a.name}
+                  </Select.Option>
+                ))}
+              </Select>
+              <Button
+                disabled={!action || selectedRowKeys.length === 0}
+                style={{ marginLeft: 5 }}
+                loading={isLoadingAction}
+                onClick={onApplyAction}
+              >
+                {_t('Apply')}
+              </Button>
+            </Col>
+          )}
           {(modelConfiguration?.search_fields || []).length > 0 && (
             <Col>
               <Input.Search
                 placeholder={modelConfiguration?.search_help_text || (_t('Search By') as string)}
                 allowClear={true}
                 onSearch={setSearch}
-                style={{ width: 300 }}
+                style={{ width: 200 }}
               />
             </Col>
           )}
@@ -247,10 +307,45 @@ export const List: React.FC = () => {
           )}
         </Row>
       }
+      bottomActions={
+        <>
+          {(modelConfiguration?.actions || []).length > 0 &&
+            modelConfiguration?.actions_on_bottom && (
+              <div style={{ marginTop: isMobile ? 10 : -50 }}>
+                <Select
+                  placeholder={_t('Select Action By') as string}
+                  allowClear={true}
+                  value={action}
+                  onChange={setAction}
+                  style={{ width: 200 }}
+                >
+                  {(modelConfiguration?.actions || []).map((a: IModelAction) => (
+                    <Select.Option key={a.name} value={a.name}>
+                      {a.description || a.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+                <Button
+                  disabled={!action || selectedRowKeys.length === 0}
+                  style={{ marginLeft: 5 }}
+                  loading={isLoadingAction}
+                  onClick={onApplyAction}
+                >
+                  {_t('Apply')}
+                </Button>
+              </div>
+            )}
+        </>
+      }
     >
       {modelConfiguration ? (
         <TableOrCards
           loading={isLoading}
+          rowSelection={{
+            selectedRowKeys,
+            onChange: onSelectRow as any,
+          }}
+          sticky={true}
           columns={[
             ...columns,
             {
@@ -282,7 +377,7 @@ export const List: React.FC = () => {
             },
           ]}
           onChange={onTableChange}
-          rowKey={'id'}
+          rowKey="id"
           dataSource={data?.results || []}
           pagination={{
             current: page,

@@ -33,6 +33,13 @@ class ModelPermission(str, Enum):
     Export = "Export"
 
 
+class ModelAction(BaseModel):
+    """Action"""
+
+    name: str
+    description: str | None
+
+
 class ListConfigurationFieldSchema(BaseModel):
     """List configuration field schema"""
 
@@ -80,6 +87,10 @@ class ModelSchema(BaseModel):
 
     name: str
     permissions: Sequence[ModelPermission]
+    actions: Sequence[ModelAction]
+    actions_on_top: bool | None
+    actions_on_bottom: bool | None
+    actions_selection_counter: bool | None
     fields: Sequence[ModelFieldSchema]
     list_per_page: int | None
     save_on_top: bool | None

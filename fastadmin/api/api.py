@@ -1,3 +1,4 @@
+import inspect
 import logging
 from datetime import datetime, timedelta
 from typing import Any
@@ -11,12 +12,13 @@ from fastadmin.api.depends import get_user_id, get_user_id_or_none
 from fastadmin.api.helpers import sanitize
 from fastadmin.models.base import BaseModelAdmin
 from fastadmin.models.helpers import get_admin_model, get_admin_models
-from fastadmin.schemas.api import ExportSchema, SignInInputSchema
+from fastadmin.schemas.api import ActionSchema, ExportSchema, SignInInputSchema
 from fastadmin.schemas.configuration import (
     AddConfigurationFieldSchema,
     ChangeConfigurationFieldSchema,
     ConfigurationSchema,
     ListConfigurationFieldSchema,
+    ModelAction,
     ModelFieldSchema,
     ModelPermission,
     ModelSchema,
@@ -44,7 +46,7 @@ async def sign_in(
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=f"{model} model is not registered.")
 
     user_id = await admin_model.authenticate(payload.username, payload.password)
-    if not user_id:
+    if not user_id or not (isinstance(user_id, int) or isinstance(user_id, UUID)):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials.")
 
     now = datetime.utcnow()
@@ -209,7 +211,7 @@ async def export(
     :params payload: a payload object.
     :params search: a search string.
     :params sort_by: a sort by string.
-    :return: A list of objects.
+    :return: A stream of export data.
     """
     admin_model = get_admin_model(model)
     if not admin_model:
@@ -254,6 +256,36 @@ async def delete(
     return id
 
 
+@router.post("/action/{model}/{action}")
+async def action(
+    request: Request,
+    model: str,
+    action: str,
+    payload: ActionSchema,
+    _: UUID | int = Depends(get_user_id),
+) -> None:
+    """This method is used to perform an action.
+
+    :params request: a request object.
+    :params model: a name of model.
+    :params action: a name of action.
+    :params payload: a payload object.
+    :return: A list of objects.
+    """
+    admin_model = get_admin_model(model)
+    if not admin_model:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{model} model is not registered.")
+
+    if action not in admin_model.actions:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"{action} action is not in actions setting.")
+
+    action_function = getattr(admin_model, action, None)
+    if not action_function or not inspect.ismethod(action_function) or not hasattr(action_function, "is_action"):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"{action} action is not registered.")
+
+    await action_function(payload.ids)
+
+
 @router.get("/configuration")
 async def configuration(
     user_id: UUID | int | None = Depends(get_user_id_or_none),
@@ -282,11 +314,12 @@ async def configuration(
         admin_obj: BaseModelAdmin = models[model_cls](model_cls)
 
         model_fields = admin_obj.get_model_fields()
+        list_display = admin_obj.get_list_display()
 
         fields_schema = []
+        display_fields = []
         for field_name, field in model_fields.items():
             is_m2m = model_fields.get(field_name, {}).get("is_m2m")
-            list_display = admin_obj.get_list_display()
             column_index = list_display.index(field_name) if field_name in list_display else None
             list_configuration = None
             filter_widget_type = None
@@ -305,6 +338,8 @@ async def configuration(
                     filter_widget_type=filter_widget_type,
                     filter_widget_props=filter_widget_props,
                 )
+            else:
+                display_fields.append(field_name)
 
             add_configuration = None
             change_configuration = None
@@ -335,6 +370,34 @@ async def configuration(
                 ),
             )
 
+        for field_name in admin_obj.list_display:
+            display_field_function = getattr(admin_obj, field_name, None)
+            if (
+                not display_field_function
+                or not inspect.ismethod(display_field_function)
+                or not hasattr(display_field_function, "is_display")
+            ):
+                continue
+
+            column_index = admin_obj.list_display.index(field_name) if field_name in admin_obj.list_display else None
+            if column_index is None:
+                continue
+            fields_schema.append(
+                ModelFieldSchema(
+                    name=field_name,
+                    list_configuration=ListConfigurationFieldSchema(
+                        index=column_index,
+                        sorter=None,
+                        is_link=field_name in admin_obj.list_display_links,
+                        empty_value_display=admin_obj.empty_value_display,
+                        filter_widget_type=None,
+                        filter_widget_props=None,
+                    ),
+                    add_configuration=None,
+                    change_configuration=None,
+                ),
+            )
+
         permissions = []
         if admin_obj.has_add_permission():
             permissions.append(ModelPermission.Add)
@@ -345,10 +408,30 @@ async def configuration(
         if admin_obj.has_export_permission():
             permissions.append(ModelPermission.Export)
 
+        actions = []
+        for action in admin_obj.actions:
+            action_function = getattr(admin_obj, action, None)
+            if (
+                not action_function
+                or not inspect.ismethod(action_function)
+                or not hasattr(action_function, "is_action")
+            ):
+                continue
+            actions.append(
+                ModelAction(
+                    name=action,
+                    description=getattr(action_function, "short_description", None),
+                )
+            )
+
         models_schemas.append(
             ModelSchema(
                 name=model_cls.__name__,
                 permissions=permissions,
+                actions=actions,
+                actions_on_top=admin_obj.actions_on_top,
+                actions_on_bottom=admin_obj.actions_on_bottom,
+                actions_selection_counter=admin_obj.actions_selection_counter,
                 fields=fields_schema,
                 list_per_page=admin_obj.list_per_page,
                 save_on_top=admin_obj.save_on_top,

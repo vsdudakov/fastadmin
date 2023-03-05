@@ -1,4 +1,5 @@
 from enum import Enum
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -22,3 +23,9 @@ class ExportSchema(BaseModel):
     format: ExportFormat | None
     limit: int | None
     offset: int | None
+
+
+class ActionSchema(BaseModel):
+    """Action schema"""
+
+    ids: list[int | UUID]
