@@ -12,7 +12,7 @@ async def test_list(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
-    assert r.status_code == 200
+    assert r.status_code == 200, r.text
     data = r.json()
     assert data
     assert data["total"] == 1
@@ -38,7 +38,7 @@ async def test_list_filters(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?name__icontains={event.name[:2]}",
     )
-    assert r.status_code == 200
+    assert r.status_code == 200, r.text
     data = r.json()
     assert data
     assert data["total"] == 1
@@ -48,7 +48,7 @@ async def test_list_filters(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?name__icontains=invalid",
     )
-    assert r.status_code == 200
+    assert r.status_code == 200, r.text
     data = r.json()
     assert data
     assert data["total"] == 0
@@ -56,7 +56,7 @@ async def test_list_filters(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?invalid__icontains={event.name[:2]}",
     )
-    assert r.status_code == 422
+    assert r.status_code == 422, r.text
 
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
@@ -74,7 +74,7 @@ async def test_list_search(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?search={event.name[:2]}",
     )
-    assert r.status_code == 200
+    assert r.status_code == 200, r.text
     data = r.json()
     assert data
     assert data["total"] == 1
@@ -84,7 +84,7 @@ async def test_list_search(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?search=invalid",
     )
-    assert r.status_code == 200
+    assert r.status_code == 200, r.text
     data = r.json()
     assert data
     assert data["total"] == 0
@@ -93,9 +93,9 @@ async def test_list_search(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?search={event.name[:2]}",
     )
-    assert r.status_code == 422
+    assert r.status_code == 422, r.text
 
-    admin_event_cls.search_fields = []
+    admin_event_cls.search_fields = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
@@ -111,7 +111,7 @@ async def test_list_sort_by(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?sort_by=-name",
     )
-    assert r.status_code == 200
+    assert r.status_code == 200, r.text
     data = r.json()
     assert data
     assert data["total"] == 1
@@ -119,13 +119,13 @@ async def test_list_sort_by(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?sort_by=invalid",
     )
-    assert r.status_code == 422
+    assert r.status_code == 422, r.text
 
     admin_event_cls.ordering = ["name"]
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
-    assert r.status_code == 200
+    assert r.status_code == 200, r.text
     data = r.json()
     assert data
     assert data["total"] == 1
@@ -134,9 +134,9 @@ async def test_list_sort_by(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
-    assert r.status_code == 422
+    assert r.status_code == 422, r.text
 
-    admin_event_cls.ordering = []
+    admin_event_cls.ordering = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
@@ -153,15 +153,40 @@ async def test_list_select_related(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
-    assert r.status_code == 200
+    assert r.status_code == 200, r.text
 
     admin_event_cls.list_select_related = ["invalid"]
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
-    assert r.status_code == 422
+    assert r.status_code == 422, r.text
 
-    admin_event_cls.list_select_related = []
+    admin_event_cls.list_select_related = ()
+    unregister_admin_model([event.__class__])
+    await sign_out(client, superuser)
+
+
+async def test_list_display_fields(objects, client):
+    superuser = objects["superuser"]
+    event = objects["event"]
+    admin_user_cls = objects["admin_user_cls"]
+    admin_event_cls = objects["admin_event_cls"]
+    await sign_in(client, superuser, admin_user_cls)
+    register_admin_model(admin_event_cls, [event.__class__])
+
+    admin_event_cls.list_display = ["started", "name_with_price"]
+    r = await client.get(
+        f"/api/list/{event.__class__.__name__}",
+    )
+    assert r.status_code == 200, r.text
+
+    admin_event_cls.list_display = ["invalid"]
+    r = await client.get(
+        f"/api/list/{event.__class__.__name__}",
+    )
+    assert r.status_code == 200, r.text
+
+    admin_event_cls.list_display = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
@@ -171,7 +196,7 @@ async def test_list_401(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
-    assert r.status_code == 401
+    assert r.status_code == 401, r.text
 
 
 async def test_list_404(objects, client):
@@ -183,5 +208,5 @@ async def test_list_404(objects, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
-    assert r.status_code == 404
+    assert r.status_code == 404, r.text
     await sign_out(client, superuser)

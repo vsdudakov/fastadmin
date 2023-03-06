@@ -13,10 +13,10 @@ async def test_export(objects, client):
         "POST",
         f"/api/export/{event.__class__.__name__}",
         json={},
-    ) as response:
-        assert response.status_code == 200
+    ) as r:
+        assert r.status_code == 200, r.text
         rows = []
-        async for line in response.aiter_lines():
+        async for line in r.aiter_lines():
             rows.append(line)
     assert rows
 
@@ -30,8 +30,8 @@ async def test_export_401(objects, client):
         "POST",
         f"/api/export/{event.__class__.__name__}",
         json={},
-    ) as response:
-        assert response.status_code == 401
+    ) as r:
+        assert r.status_code == 401, r.text
 
 
 async def test_export_404(objects, client):
@@ -44,6 +44,6 @@ async def test_export_404(objects, client):
         "POST",
         f"/api/export/{event.__class__.__name__}",
         json={},
-    ) as response:
-        assert response.status_code == 404
+    ) as r:
+        assert r.status_code == 404, r.text
     await sign_out(client, superuser)

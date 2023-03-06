@@ -1,4 +1,4 @@
-from fastadmin import TortoiseModelAdmin
+from fastadmin import TortoiseModelAdmin, display, action
 
 
 class UserAdmin(TortoiseModelAdmin):
@@ -14,4 +14,19 @@ class TournamentAdmin(TortoiseModelAdmin):
 
 
 class EventAdmin(TortoiseModelAdmin):
-    pass
+
+    @action(description="Make user active")
+    async def make_is_active(self, ids):
+        await self.model_cls.filter(id__in=ids).update(is_active=True)
+
+    @action
+    async def make_is_not_active(self, ids):
+        await self.model_cls.filter(id__in=ids).update(is_active=True)
+
+    @display
+    async def started(self, obj):
+        return bool(obj.start_time)
+
+    @display()
+    async def name_with_price(self, obj):
+        return f"{obj.name} - {obj.price}"

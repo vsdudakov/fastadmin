@@ -13,7 +13,7 @@ async def test_retrieve(objects, client):
     r = await client.get(
         f"/api/retrieve/{event.__class__.__name__}/{event.id}",
     )
-    assert r.status_code == 200
+    assert r.status_code == 200, r.text
     item = r.json()
     assert item["id"] == event.id
     assert item["name"] == event.name
@@ -32,7 +32,7 @@ async def test_retrieve_401(objects, client):
     r = await client.get(
         f"/api/retrieve/{event.__class__.__name__}/{event.id}",
     )
-    assert r.status_code == 401
+    assert r.status_code == 401, r.text
 
 
 async def test_retrieve_404_admin_class_found(objects, client):
@@ -44,7 +44,7 @@ async def test_retrieve_404_admin_class_found(objects, client):
     r = await client.get(
         f"/api/retrieve/{event.__class__.__name__}/{event.id}",
     )
-    assert r.status_code == 404
+    assert r.status_code == 404, r.text
     await sign_out(client, superuser)
 
 
@@ -58,10 +58,10 @@ async def test_retrieve_404_obj_not_found(objects, client):
     r = await client.get(
         f"/api/retrieve/{event.__class__.__name__}/invalid",
     )
-    assert r.status_code == 422
+    assert r.status_code == 422, r.text
     r = await client.get(
         f"/api/retrieve/{event.__class__.__name__}/-1",
     )
-    assert r.status_code == 404
+    assert r.status_code == 404, r.text
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)

@@ -370,7 +370,7 @@ async def configuration(
                 ),
             )
 
-        for field_name in admin_obj.list_display:
+        for column_index, field_name in enumerate(admin_obj.list_display):
             display_field_function = getattr(admin_obj, field_name, None)
             if (
                 not display_field_function
@@ -379,15 +379,12 @@ async def configuration(
             ):
                 continue
 
-            column_index = admin_obj.list_display.index(field_name) if field_name in admin_obj.list_display else None
-            if column_index is None:
-                continue
             fields_schema.append(
                 ModelFieldSchema(
                     name=field_name,
                     list_configuration=ListConfigurationFieldSchema(
                         index=column_index,
-                        sorter=None,
+                        sorter=False,
                         is_link=field_name in admin_obj.list_display_links,
                         empty_value_display=admin_obj.empty_value_display,
                         filter_widget_type=None,

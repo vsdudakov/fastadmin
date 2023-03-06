@@ -2,89 +2,98 @@ from fastadmin.models.helpers import register_admin_model, unregister_admin_mode
 from tests.api.helpers import sign_in, sign_out
 
 
-async def test_change(objects, client):
+async def test_action(objects, client):
     superuser = objects["superuser"]
     event = objects["event"]
     admin_user_cls = objects["admin_user_cls"]
     admin_event_cls = objects["admin_event_cls"]
     await sign_in(client, superuser, admin_user_cls)
     register_admin_model(admin_event_cls, [event.__class__])
-    r = await client.patch(
-        f"/api/change/{event.__class__.__name__}/{event.id}",
+
+    admin_event_cls.actions = ("make_is_active",)
+    event.is_active = False
+    await event.save()
+    r = await client.post(
+        f"/api/action/{event.__class__.__name__}/make_is_active",
         json={
-            "name": "new name",
-            "participants": [superuser.id],
+            "ids": [event.id],
         },
     )
     assert r.status_code == 200, r.text
-
-    event = await event.__class__.get(id=event.id)
     item = r.json()
-    assert item["id"] == event.id
-    assert item["name"] == event.name
-    assert item["tournament_id"] == event.tournament_id
-    assert item["created_at"] == event.created_at.isoformat()
-    assert item["updated_at"] == event.updated_at.isoformat()
-    assert item["participants"] == [superuser.id]
+    assert not item
+    event = await event.__class__.get(id=event.id)
+    assert event.is_active
 
+    admin_event_cls.actions = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
 
-async def test_change_401(objects, client):
-    superuser = objects["superuser"]
+async def test_action_401(objects, client):
     event = objects["event"]
-    r = await client.patch(
-        f"/api/change/{event.__class__.__name__}/{event.id}",
+    r = await client.post(
+        f"/api/action/{event.__class__.__name__}/make_is_active",
         json={
-            "name": "new name",
-            "participants": [superuser.id],
+            "ids": [event.id],
         },
     )
     assert r.status_code == 401, r.text
 
 
-async def test_change_404_admin_class_found(objects, client):
+async def test_action_404(objects, client):
     superuser = objects["superuser"]
     event = objects["event"]
     admin_user_cls = objects["admin_user_cls"]
     unregister_admin_model([event.__class__])
     await sign_in(client, superuser, admin_user_cls)
-    r = await client.patch(
-        f"/api/change/{event.__class__.__name__}/{event.id}",
+    r = await client.post(
+        f"/api/action/{event.__class__.__name__}/make_is_active",
         json={
-            "name": "new name",
-            "participants": [superuser.id],
+            "ids": [event.id],
         },
     )
     assert r.status_code == 404, r.text
     await sign_out(client, superuser)
 
 
-async def test_change_404_obj_not_found(objects, client):
+async def test_action_422(objects, client):
     superuser = objects["superuser"]
     event = objects["event"]
     admin_user_cls = objects["admin_user_cls"]
     admin_event_cls = objects["admin_event_cls"]
     await sign_in(client, superuser, admin_user_cls)
     register_admin_model(admin_event_cls, [event.__class__])
-    r = await client.patch(
-        f"/api/change/{event.__class__.__name__}/invalid",
+
+    admin_event_cls.actions = ()
+    event.is_active = False
+    await event.save()
+    r = await client.post(
+        f"/api/action/{event.__class__.__name__}/make_is_active",
         json={
-            "name": "new name",
-            "participants": [superuser.id],
+            "ids": [event.id],
         },
     )
     assert r.status_code == 422, r.text
+    item = r.json()
+    assert item
+    event = await event.__class__.get(id=event.id)
+    assert not event.is_active
 
-    r = await client.patch(
-        f"/api/change/{event.__class__.__name__}/-1",
+    admin_event_cls.actions = ("invalid",)
+    event.is_active = False
+    await event.save()
+    r = await client.post(
+        f"/api/action/{event.__class__.__name__}/invalid",
         json={
-            "name": "new name",
-            "participants": [superuser.id],
+            "ids": [event.id],
         },
     )
-    assert r.status_code == 404, r.text
+    assert r.status_code == 422, r.text
+    item = r.json()
+    assert item
+    event = await event.__class__.get(id=event.id)
+    assert not event.is_active
 
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)

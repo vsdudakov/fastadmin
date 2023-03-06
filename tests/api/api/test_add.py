@@ -18,7 +18,7 @@ async def test_add(objects, client):
             "participants": [superuser.id],
         },
     )
-    assert r.status_code == 200
+    assert r.status_code == 200, r.text
     item = r.json()
     event = await event.__class__.get(id=item["id"])
     assert item["name"] == "new name"
@@ -43,7 +43,7 @@ async def test_add_401(objects, client):
             "participants": [superuser.id],
         },
     )
-    assert r.status_code == 401
+    assert r.status_code == 401, r.text
 
 
 async def test_add_404(objects, client):
@@ -61,5 +61,5 @@ async def test_add_404(objects, client):
             "participants": [superuser.id],
         },
     )
-    assert r.status_code == 404
+    assert r.status_code == 404, r.text
     await sign_out(client, superuser)

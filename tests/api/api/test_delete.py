@@ -12,7 +12,7 @@ async def test_delete(objects, client):
     r = await client.delete(
         f"/api/delete/{event.__class__.__name__}/{event.id}",
     )
-    assert r.status_code == 200
+    assert r.status_code == 200, r.text
     item = r.json()
     assert item == event.id
 
@@ -25,7 +25,7 @@ async def test_delete_401(objects, client):
     r = await client.delete(
         f"/api/delete/{event.__class__.__name__}/{event.id}",
     )
-    assert r.status_code == 401
+    assert r.status_code == 401, r.text
 
 
 async def test_delete_404(objects, client):
@@ -37,7 +37,7 @@ async def test_delete_404(objects, client):
     r = await client.delete(
         f"/api/delete/{event.__class__.__name__}/{event.id}",
     )
-    assert r.status_code == 404
+    assert r.status_code == 404, r.text
     await sign_out(client, superuser)
 
 
@@ -48,5 +48,5 @@ async def test_delete_403(objects, client):
     r = await client.delete(
         f"/api/delete/{superuser.__class__.__name__}/{superuser.id}",
     )
-    assert r.status_code == 403
+    assert r.status_code == 403, r.text
     await sign_out(client, superuser)
