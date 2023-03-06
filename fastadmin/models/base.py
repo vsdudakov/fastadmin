@@ -420,18 +420,21 @@ class BaseModelAdmin:
 
         :return: A list of model field names.
         """
-        fields = self.fields
         model_fields = self.get_model_fields()
-        if not fields:
-            return [f for f in model_fields if not self.exclude or f not in self.exclude]
-        return [f for f in fields if f in model_fields]
 
-    # def get_fieldsets(self) -> Sequence[tuple[str | None, dict[str, Sequence[str]]]]:
-    #     """This method is used to get fieldsets data for form view.
+        fields = [f for f in model_fields if model_fields[f].get("is_pk")]
+        if not self.fields:
+            if self.fieldsets:
+                for item in self.fieldsets:
+                    for field in item[1].get("fields") or []:
+                        if field not in fields and field not in self.exclude:
+                            fields.append(field)
+            else:
+                for field in model_fields:
+                    if field not in fields and field not in self.exclude:
+                        fields.append(field)
 
-    #     :return: A list of fieldsets data.
-    #     """
-    #     return self.fieldsets
+        return fields
 
     def has_add_permission(self) -> bool:
         """This method is used to check if user has permission to add new model instance.

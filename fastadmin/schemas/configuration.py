@@ -92,6 +92,7 @@ class ModelSchema(BaseModel):
     actions_on_bottom: bool | None
     actions_selection_counter: bool | None
     fields: Sequence[ModelFieldSchema]
+    fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] | None
     list_per_page: int | None
     save_on_top: bool | None
     save_as: bool | None

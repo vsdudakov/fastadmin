@@ -1,7 +1,7 @@
 import React, { useCallback, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Divider, Form } from 'antd';
+import { Collapse, Divider, Form } from 'antd';
 
 import {
   EFieldWidgetType,
@@ -50,39 +50,69 @@ export const FormContainer: React.FC<IFormContainer> = ({ form, onFinish, childr
     [mode]
   );
 
+  const formItemWidgets = useCallback(
+    (formFields: IModelField[]) => {
+      return formFields
+        .sort((a: IModelField, b: IModelField) => (getConf(a).index || 0) - (getConf(b).index || 0))
+        .map((field: IModelField) => (
+          <Form.Item
+            key={field.name}
+            name={field.name}
+            label={getTitleFromFieldName(field.name)}
+            rules={
+              getConf(field).required
+                ? [
+                    {
+                      required: true,
+                    },
+                  ]
+                : []
+            }
+            valuePropName={
+              [
+                EFieldWidgetType.Checkbox,
+                EFieldWidgetType.Switch,
+                EFieldWidgetType.CheckboxGroup,
+              ].includes(getConf(field).form_widget_type as EFieldWidgetType)
+                ? 'checked'
+                : undefined
+            }
+          >
+            {getWidget(getConf(field))}
+          </Form.Item>
+        ));
+    },
+    [getConf, getWidget]
+  );
+
   const formItems = useCallback(() => {
-    const fields = (modelConfiguration || { fields: [] }).fields;
-    return fields
-      .filter((field: IModelField) => !!getConf(field).form_widget_type)
-      .sort((a: IModelField, b: IModelField) => (getConf(a).index || 0) - (getConf(b).index || 0))
-      .map((field: IModelField) => (
-        <Form.Item
-          key={field.name}
-          name={field.name}
-          label={getTitleFromFieldName(field.name)}
-          rules={
-            getConf(field).required
-              ? [
-                  {
-                    required: true,
-                  },
-                ]
-              : []
-          }
-          valuePropName={
-            [
-              EFieldWidgetType.Checkbox,
-              EFieldWidgetType.Switch,
-              EFieldWidgetType.CheckboxGroup,
-            ].includes(getConf(field).form_widget_type as EFieldWidgetType)
-              ? 'checked'
-              : undefined
-          }
-        >
-          {getWidget(getConf(field))}
-        </Form.Item>
-      ));
-  }, [getConf, getWidget, modelConfiguration]);
+    const fields = (modelConfiguration?.fields || []).filter(
+      (field: IModelField) => !!getConf(field).form_widget_type
+    );
+    const fieldsets = modelConfiguration?.fieldsets || [];
+    if (fieldsets.length > 0) {
+      const defaultActiveKey = fieldsets
+        .filter((fieldset) => !(fieldset[1]?.classes || []).includes('collapse'))
+        .map((fieldset) => JSON.stringify(fieldset[1]?.fields));
+      return (
+        <Collapse defaultActiveKey={defaultActiveKey}>
+          {fieldsets.map((fieldset) => {
+            const collapseTitle = fieldset[0];
+            const collapseFields = fieldset[1]?.fields;
+            return (
+              <Collapse.Panel header={collapseTitle || ''} key={JSON.stringify(collapseFields)}>
+                {formItemWidgets(
+                  fields.filter((field: IModelField) => (collapseFields || []).includes(field.name))
+                )}
+              </Collapse.Panel>
+            );
+          })}
+        </Collapse>
+      );
+    }
+
+    return formItemWidgets(fields);
+  }, [formItemWidgets, modelConfiguration?.fields, modelConfiguration?.fieldsets]);
 
   return (
     <Form layout="vertical" form={form} onFinish={onFinish}>

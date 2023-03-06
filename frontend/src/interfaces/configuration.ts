@@ -67,6 +67,7 @@ export interface IModel {
   actions_on_bottom?: boolean;
   actions_selection_counter?: boolean;
   fields: IModelField[];
+  fieldsets?: [string | undefined, Record<string, string[]>][];
   list_per_page?: number;
   save_on_top?: boolean;
   save_as?: boolean;

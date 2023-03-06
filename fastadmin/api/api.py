@@ -430,6 +430,7 @@ async def configuration(
                 actions_on_bottom=admin_obj.actions_on_bottom,
                 actions_selection_counter=admin_obj.actions_selection_counter,
                 fields=fields_schema,
+                fieldsets=admin_obj.fieldsets,
                 list_per_page=admin_obj.list_per_page,
                 save_on_top=admin_obj.save_on_top,
                 save_as=admin_obj.save_as,

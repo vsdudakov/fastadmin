@@ -142,6 +142,7 @@ async def test_configuration_list_display(objects, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
+    admin_event_cls.list_display = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
@@ -155,7 +156,7 @@ async def test_configuration_list_display_display_fields(objects, client):
     await sign_in(client, superuser, admin_user_cls)
 
     register_admin_model(admin_event_cls, [event.__class__])
-    admin_event_cls.list_display = ["started", "name_with_price"]  # see EventAdmin display methods
+    admin_event_cls.list_display = ("started", "name_with_price")  # see EventAdmin display methods
     r = await client.get(
         f"/api/configuration",
     )
@@ -164,6 +165,7 @@ async def test_configuration_list_display_display_fields(objects, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
+    admin_event_cls.list_display = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
@@ -187,6 +189,8 @@ async def test_configuration_list_filter(objects, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
+    admin_event_cls.list_display = ()
+    admin_event_cls.list_filter = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
@@ -202,7 +206,7 @@ async def test_configuration_sortable_by(objects, client):
     register_admin_model(admin_event_cls, [event.__class__])
     admin_event_cls.list_display = LIST_EVENT_FIELDS
     admin_event_cls.list_filter = LIST_EVENT_FIELDS
-    admin_event_cls.sortable_by = ["name"]
+    admin_event_cls.sortable_by = ("name",)
     r = await client.get(
         f"/api/configuration",
     )
@@ -211,6 +215,9 @@ async def test_configuration_sortable_by(objects, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
+    admin_event_cls.list_display = ()
+    admin_event_cls.list_filter = ()
+    admin_event_cls.sortable_by = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
@@ -226,7 +233,7 @@ async def test_configuration_radio_fields(objects, client):
     register_admin_model(admin_event_cls, [event.__class__])
     admin_event_cls.list_display = LIST_EVENT_FIELDS
     admin_event_cls.list_filter = LIST_EVENT_FIELDS
-    admin_event_cls.radio_fields = ["event_type"]
+    admin_event_cls.radio_fields = ("event_type",)
     r = await client.get(
         f"/api/configuration",
     )
@@ -235,6 +242,9 @@ async def test_configuration_radio_fields(objects, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
+    admin_event_cls.list_display = ()
+    admin_event_cls.list_filter = ()
+    admin_event_cls.radio_fields = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
@@ -250,7 +260,7 @@ async def test_configuration_filter_horizontal_vertical(objects, client):
     register_admin_model(admin_event_cls, [event.__class__])
     admin_event_cls.list_display = LIST_EVENT_FIELDS
     admin_event_cls.list_filter = LIST_EVENT_FIELDS
-    admin_event_cls.filter_horizontal = ["participants"]
+    admin_event_cls.filter_horizontal = ("participants",)
     r = await client.get(
         f"/api/configuration",
     )
@@ -268,6 +278,9 @@ async def test_configuration_filter_horizontal_vertical(objects, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
+    admin_event_cls.list_display = ()
+    admin_event_cls.list_filter = ()
+    admin_event_cls.filter_horizontal = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
@@ -283,7 +296,7 @@ async def test_configuration_raw_id_fields(objects, client):
     register_admin_model(admin_event_cls, [event.__class__])
     admin_event_cls.list_display = LIST_EVENT_FIELDS
     admin_event_cls.list_filter = LIST_EVENT_FIELDS
-    admin_event_cls.raw_id_fields = ["participants", "tournament_id", "base_id"]
+    admin_event_cls.raw_id_fields = ("participants", "tournament_id", "base_id")
     r = await client.get(
         f"/api/configuration",
     )
@@ -292,6 +305,9 @@ async def test_configuration_raw_id_fields(objects, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
+    admin_event_cls.list_display = ()
+    admin_event_cls.list_filter = ()
+    admin_event_cls.raw_id_fields = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
@@ -314,6 +330,7 @@ async def test_configuration_fields(objects, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
+    admin_event_cls.fields = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)
 
@@ -327,7 +344,7 @@ async def test_configuration_actions(objects, client):
     await sign_in(client, superuser, admin_user_cls)
 
     register_admin_model(admin_event_cls, [event.__class__])
-    admin_event_cls.actions = ["make_is_active"]
+    admin_event_cls.actions = ("make_is_active",)
     r = await client.get(
         f"/api/configuration",
     )
@@ -337,5 +354,44 @@ async def test_configuration_actions(objects, client):
     validate_configuration_response_data(response_data)
 
     admin_event_cls.actions = ()
+    unregister_admin_model([event.__class__])
+    await sign_out(client, superuser)
+
+
+async def test_configuration_fieldsets(objects, client):
+    superuser = objects["superuser"]
+    event = objects["event"]
+    admin_user_cls = objects["admin_user_cls"]
+    admin_event_cls = objects["admin_event_cls"]
+
+    await sign_in(client, superuser, admin_user_cls)
+
+    register_admin_model(admin_event_cls, [event.__class__])
+    admin_event_cls.fieldsets = [
+        (None, {"fields": ("base_id", "name", "tournament_id", "participants")}),
+        (
+            "Types",
+            {
+                "classes": ("collapse",),
+                "fields": ("is_active",),
+            },
+        ),
+        (
+            "Geo",
+            {
+                "classes": ("collapse",),
+                "fields": ("latitude", "longitude"),
+            },
+        ),
+    ]
+    r = await client.get(
+        f"/api/configuration",
+    )
+    assert r.status_code == 200, r.text
+    response_data = r.json()
+    assert response_data
+    validate_configuration_response_data(response_data)
+
+    admin_event_cls.fieldsets = ()
     unregister_admin_model([event.__class__])
     await sign_out(client, superuser)

@@ -247,7 +247,7 @@ class TortoiseModelAdmin(BaseModelAdmin):
         widget_props = {
             "required": field.get("required") or False,
             "disabled": field_name in self.readonly_fields,
-            "readonly": field_name in self.readonly_fields,
+            "readOnly": field_name in self.readonly_fields,
         }
         match field.get("orm_class_name"):
             case "CharField":
