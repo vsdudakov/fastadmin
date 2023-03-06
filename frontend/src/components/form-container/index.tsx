@@ -112,7 +112,7 @@ export const FormContainer: React.FC<IFormContainer> = ({ form, onFinish, childr
     }
 
     return formItemWidgets(fields);
-  }, [formItemWidgets, modelConfiguration?.fields, modelConfiguration?.fieldsets]);
+  }, [formItemWidgets, getConf, modelConfiguration?.fields, modelConfiguration?.fieldsets]);
 
   return (
     <Form layout="vertical" form={form} onFinish={onFinish}>
