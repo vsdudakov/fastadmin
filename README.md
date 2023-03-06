@@ -12,6 +12,12 @@
 ![List View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/images/list.png)
 ![Change View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/images/change.png)
 
+<p align="center">
+  <a href="https://twitter.com/intent/tweet?text=Admin%20Dashboard%20For%20FastAPI&url=https://github.com/vsdudakov/fastadmin&hashtags=FastAPI,AdminDashboard">
+    <img alt="tweet" src="https://img.shields.io/twitter/url/https/twitter?label=Share%20on%20twitter&style=social" target="_blank" />
+  </a>
+</p>
+
 ## Introduction
 
 FastAdmin is an easy-to-use Admin App for FastAPI inspired by Django Admin.
