@@ -36,13 +36,13 @@ FastAdmin is designed to be minimalistic, functional, yet familiar, to ease the 
 
 First you have to install FastAdmin like this:
 
-```
+```bash
 pip install fastadmin
 ```
 
 or using poetry
 
-```
+```bash
 poetry install fastadmin
 ```
 
@@ -55,7 +55,7 @@ Use prefix "/admin" as default for now. You can change it later.
 
 Example:
 
-```
+```python
 from fastapi import FastAPI
 from fastadmin import admin_app
 
@@ -76,7 +76,7 @@ Setup the following env variables to configure FastAdmin (add to .env or export 
 
 Example:
 
-```
+```bash
 export ADMIN_USER_MODEL = User
 export ADMIN_USER_MODEL_USERNAME_FIELD = username
 export ADMIN_SECRET_KEY = secret_key
@@ -92,7 +92,7 @@ Implement an authenticate method for ModelAdmin with registered model ADMIN_USER
 
 Example (for Tortoise ORM):
 
-```
+```python
 import bcrypt
 from tortoise.models import Model
 from fastadmin import TortoiseModelAdmin, register
@@ -102,6 +102,7 @@ class User(Model):
     username = fields.CharField(max_length=255, unique=True)
     hash_password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
+    is_active = fields.BooleanField(default=False)
 
     ...
 
@@ -132,7 +133,7 @@ class GroupAdmin(TortoiseModelAdmin):
 
 Run your project (see https://fastapi.tiangolo.com/tutorial/first-steps/):
 
-```
+```bash
 uvicorn ...
 ```
 
@@ -146,14 +147,29 @@ You can find all parameters and methods to configure your ModelAdmin classes [he
 
 Example:
 
-```
+```python
+from fastadmin import TortoiseModelAdmin, register, action, display
+
 @register(User)
 class UserAdmin(TortoiseModelAdmin):
+    label_fields = ("email", "id")
     exclude = ("hash_password",)
-    list_display = ("id", "username")
+    list_display = ("id", "email", "has_hash_password", "is_superuser", "is_active")
+    list_display_links = ("id",)
+    list_filter = ("id", "email", "is_superuser")
+    search_fields = ("email",)
+    actions = ("set_as_active",)
 
     def has_delete_permission(self) -> bool:
         return False
+
+    @action(description="Set as active")
+    async def set_as_active(self, ids: list[int | UUID]) -> None:
+        await User.filter(id__in=ids).update(is_active=True)
+
+    @display
+    async def has_hash_password(self, obj: Any) -> Any:
+        return obj.hash_password is not None
 
     ...
 ```
@@ -164,31 +180,30 @@ We are going to support SQLAlchemy and Pony ORM soon...
 
 If you have smth else (your own implementation of ORM and so on) you will may overload ModelAdmin class and implement the following interfaces
 
-```
+```python
 from typing import Any
 from collections import OrderedDict
 from fastadmin import ModelAdmin, WidgetType
 
 class MyModelAdmin(ModelAdmin):
-    async def save_model(self, obj: Any, payload: dict, add: bool = False) -> None:
+    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
-        :params obj: an orm/db model object.
+        :params id: an id of object.
         :params payload: a payload from request.
-        :params add: a flag for add or update object.
-        :return: None.
+        :return: A saved object or None.
         """
         raise NotImplementedError
 
-    async def delete_model(self, obj: Any) -> None:
+    async def delete_model(self, id: UUID | int) -> None:
         """This method is used to delete orm/db model object.
 
-        :params obj: an orm/db model object.
+        :params id: an id of object.
         :return: None.
         """
         raise NotImplementedError
 
-    async def get_obj(self, id: str) -> Any | None:
+    async def get_obj(self, id: UUID | int) -> dict | None:
         """This method is used to get orm/db model object by id.
 
         :params id: an id of object.
@@ -203,7 +218,7 @@ class MyModelAdmin(ModelAdmin):
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
-    ) -> tuple[list[Any], int]:
+    ) -> tuple[list[dict], int]:
         """This method is used to get list of orm/db model objects.
 
         :params offset: an offset for pagination.
@@ -231,7 +246,6 @@ class MyModelAdmin(ModelAdmin):
         :return: A tuple of widget type and widget props.
         """
         raise NotImplementedError
-
 ```
 
 ## License
