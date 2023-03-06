@@ -1,4 +1,4 @@
-from fastadmin import TortoiseModelAdmin, display, action
+from fastadmin import TortoiseModelAdmin, action, display
 
 
 class UserAdmin(TortoiseModelAdmin):
@@ -14,7 +14,6 @@ class TournamentAdmin(TortoiseModelAdmin):
 
 
 class EventAdmin(TortoiseModelAdmin):
-
     @action(description="Make user active")
     async def make_is_active(self, ids):
         await self.model_cls.filter(id__in=ids).update(is_active=True)
