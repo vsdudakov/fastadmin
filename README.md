@@ -131,122 +131,17 @@ class GroupAdmin(TortoiseModelAdmin):
 
 #### Run your project
 
-Run your project (see https://fastapi.tiangolo.com/tutorial/first-steps/):
+Run your project (see [https://fastapi.tiangolo.com/tutorial/first-steps/](https://fastapi.tiangolo.com/tutorial/first-steps/)):
 
 ```bash
 uvicorn ...
 ```
 
-Go to http://localhost:8000/admin
+Go to [http://localhost:8000/admin](http://localhost:8000/admin).
 
-## Configuration
+## Documentation
 
-You can find all env variables to configure FastAdmin [here](https://github.com/vsdudakov/fastadmin/blob/main/fastadmin/settings.py)
-
-You can find all parameters and methods to configure your ModelAdmin classes [here](https://github.com/vsdudakov/fastadmin/blob/main/fastadmin/models/base.py)
-
-Example:
-
-```python
-from fastadmin import TortoiseModelAdmin, register, action, display
-
-@register(User)
-class UserAdmin(TortoiseModelAdmin):
-    label_fields = ("email", "id")
-    exclude = ("hash_password",)
-    list_display = ("id", "email", "has_hash_password", "is_superuser", "is_active")
-    list_display_links = ("id",)
-    list_filter = ("id", "email", "is_superuser")
-    search_fields = ("email",)
-    actions = ("set_as_active",)
-
-    def has_delete_permission(self) -> bool:
-        return False
-
-    @action(description="Set as active")
-    async def set_as_active(self, ids: list[int | UUID]) -> None:
-        await User.filter(id__in=ids).update(is_active=True)
-
-    @display
-    async def has_hash_password(self, obj: Any) -> Any:
-        return obj.hash_password is not None
-
-    ...
-```
-
-## Other ORMs or own implementation
-
-We are going to support SQLAlchemy and Pony ORM soon...
-
-If you have smth else (your own implementation of ORM and so on) you will may overload ModelAdmin class and implement the following interfaces
-
-```python
-from typing import Any
-from collections import OrderedDict
-from fastadmin import ModelAdmin, WidgetType
-
-class MyModelAdmin(ModelAdmin):
-    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
-        """This method is used to save orm/db model object.
-
-        :params id: an id of object.
-        :params payload: a payload from request.
-        :return: A saved object or None.
-        """
-        raise NotImplementedError
-
-    async def delete_model(self, id: UUID | int) -> None:
-        """This method is used to delete orm/db model object.
-
-        :params id: an id of object.
-        :return: None.
-        """
-        raise NotImplementedError
-
-    async def get_obj(self, id: UUID | int) -> dict | None:
-        """This method is used to get orm/db model object by id.
-
-        :params id: an id of object.
-        :return: An object or None.
-        """
-        raise NotImplementedError
-
-    async def get_list(
-        self,
-        offset: int | None = None,
-        limit: int | None = None,
-        search: str | None = None,
-        sort_by: str | None = None,
-        filters: dict | None = None,
-    ) -> tuple[list[dict], int]:
-        """This method is used to get list of orm/db model objects.
-
-        :params offset: an offset for pagination.
-        :params limit: a limit for pagination.
-        :params search: a search query.
-        :params sort_by: a sort by field name.
-        :params filters: a dict of filters.
-        :return: A tuple of list of objects and total count.
-        """
-        raise NotImplementedError
-
-    def get_model_fields(self) -> OrderedDict[str, dict]:
-        """This method is used to get all orm/db model fields
-        with saving ordering (non relations, fk, o2o, m2m).
-
-        :return: An OrderedDict of model fields.
-        """
-        raise NotImplementedError
-
-    def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
-        """This method is used to get form item widget
-        for field from orm/db model.
-
-        :params field_name: a model field name.
-        :return: A tuple of widget type and widget props.
-        """
-        raise NotImplementedError
-```
+See a full documentation [here](https://vsdudakov.github.io/fastadmin/).
 
 ## License
 
