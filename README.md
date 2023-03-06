@@ -141,7 +141,7 @@ Go to [http://localhost:8000/admin](http://localhost:8000/admin).
 
 ## Documentation
 
-See a full documentation [here](https://vsdudakov.github.io/fastadmin/).
+See full documentation [here](https://vsdudakov.github.io/fastadmin/){:target="_blank"}.
 
 ## License
 
