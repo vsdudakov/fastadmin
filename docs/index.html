@@ -465,10 +465,11 @@ from fastadmin.tortoise import TortoiseModelAdmin, TortoiseInlineModelAdmin
               <pre>
 <code class="language-python">
 from fastadmin import register
+from fastadmin.tortoise import TortoiseModelAdmin
 from .models import Author
 
 @register(Author)
-class AuthorAdmin(admin.ModelAdmin):
+class AuthorAdmin(TortoiseModelAdmin):
     pass
   </code>
 </pre>
@@ -481,10 +482,11 @@ class AuthorAdmin(admin.ModelAdmin):
               <pre>
 <code class="language-python">
 from fastadmin import register
+from fastadmin.tortoise import TortoiseModelAdmin
 from .models import Author, Editor, Reader
 
 @register(Author, Reader, Editor)
-class PersonAdmin(admin.ModelAdmin):
+class PersonAdmin(TortoiseModelAdmin):
     pass
   </code>
 </pre>
