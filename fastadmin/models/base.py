@@ -415,7 +415,7 @@ class BaseModelAdmin:
 class InlineModelAdmin(BaseModelAdmin):
     """This class is used to create admin inline model class."""
 
-    # The model which the inline is using. This is required.
+    # The model class which the inline is using. This is required.
     model: Any
 
     # The name of the foreign key on the model.

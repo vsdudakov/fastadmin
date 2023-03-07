@@ -65,7 +65,15 @@
             </a>
 
             <ul class="social-icons social-icons-sm ml-lg-2 mr-2">
-              <li class="social-icons-github"><a href="https://github.com/vsdudakov/fastadmin" target="_blank" title="" data-original-title="github"><i class="fab fa-github"></i></a></li>
+              <li class="social-icons-github">
+                <a
+                  href="https://github.com/vsdudakov/fastadmin"
+                  target="_blank"
+                  title=""
+                  data-original-title="github"
+                  ><i class="fab fa-github"></i
+                ></a>
+              </li>
               <!--
                 <li class="social-icons-twitter"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Twitter"><i class="fab fa-twitter"></i></a></li>
                 <li class="social-icons-facebook"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Facebook"><i class="fab fa-facebook-f"></i></a></li>
@@ -83,9 +91,7 @@
               <a class="nav-link" href="#introduction">Introduction</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#getting_started">
-                Getting Started
-              </a>
+              <a class="nav-link" href="#getting_started"> Getting Started </a>
               <ul class="nav flex-column">
                 <li class="nav-item">
                   <a class="nav-link" href="#installation">Installation</a>
@@ -99,15 +105,18 @@
               <a class="nav-link" href="#settings">Settings</a>
             </li>
             <li class="nav-item">
+              <a class="nav-link" href="#orms">ORMs</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="#model_admin_objects">
                 ModelAdmin objects
               </a>
               <ul class="nav flex-column">
                 <li class="nav-item">
-                  <a class="nav-link" href="#model_admin_orms">ORMs</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#model_admin_the_register_decorator">
+                  <a
+                    class="nav-link"
+                    href="#model_admin_the_register_decorator"
+                  >
                     The register decorator
                   </a>
                 </li>
@@ -128,9 +137,6 @@
                 InlineModelAdmin objects
               </a>
               <ul class="nav flex-column">
-                <li class="nav-item">
-                  <a class="nav-link" href="#inline_model_admin_orms">ORMs</a>
-                </li>
                 <li class="nav-item">
                   <a class="nav-link" href="#inline_model_admin_options">
                     InlineModelAdmin options
@@ -203,17 +209,18 @@
               <h2>Introduction</h2>
               <p class="text-4">
                 <a href="https://github.com/vsdudakov/fastadmin">FastAdmin</a>
-                is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin.
+                is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django
+                inspired by Django Admin.
               </p>
               <p class="text-4">
-                FastAdmin
-                was built with relations in mind and admiration for the
-                excellent and popular Django Admin. It's engraved in its design
-                that you may configure your admin dashboard for
+                FastAdmin was built with relations in mind and admiration for
+                the excellent and popular Django Admin. It's engraved in its
+                design that you may configure your admin dashboard for
                 FastAPI/Flask/Django easiest way.
               </p>
               <p class="text-4">
-                FastAdmin is designed to be minimalistic, functional and yet familiar.
+                FastAdmin is designed to be minimalistic, functional and yet
+                familiar.
               </p>
             </section>
 
@@ -288,7 +295,7 @@ app.mount("/admin", admin_app)
               <p class="lead">Create and register first AdminModel classes</p>
               <h5>Tortoise ORM</h5>
               <pre>
-<code class="python">
+<code class="language-python">
 import bcrypt
 from tortoise.models import Model
 from fastadmin import register
@@ -343,108 +350,633 @@ class GroupAdmin(TortoiseModelAdmin):
               </p>
 
               <p class="alert alert-info">
-                See <a href="#model_admin_objects">ModelAdmin</a> and <a href="#inline_model_admin_objects">InlineModelAdmin</a> sections.
+                See <a href="#model_admin_objects">ModelAdmin</a> and
+                <a href="#inline_model_admin_objects">InlineModelAdmin</a>
+                sections.
               </p>
-
 
               <h5>SQLAlchemy ORM</h5>
-              <p class="alert alert-info">
-                Coming soon...
-              </p>
+              <p class="alert alert-info">Coming soon...</p>
               <h5>Pony ORM</h5>
-              <p class="alert alert-info">
-                Coming soon...
-              </p>
+              <p class="alert alert-info">Coming soon...</p>
               <h4>Django Framework</h4>
-              <p class="alert alert-info">
-                Coming soon...
-              </p>
+              <p class="alert alert-info">Coming soon...</p>
               <h5>Django ORM</h5>
-              <p class="alert alert-info">
-                Coming soon...
-              </p>
+              <p class="alert alert-info">Coming soon...</p>
               <h4>Flask Framework</h4>
-              <p class="alert alert-info">
-                Coming soon...
-              </p>
+              <p class="alert alert-info">Coming soon...</p>
             </section>
             <hr class="divider" />
 
             <section id="settings">
               <h2>Settings</h2>
-              <p class="lead">...</p>
+              <p class="lead">
+                Export virtual environment variables or create
+                <code>.env</code> file with variables and use
+                <code>python-dotenv</code> package.
+              </p>
+              <p class="lead">There are settings with default values:</p>
+
+              <pre>
+<code class="language-python">
+# This value is the prefix you used for mounting FastAdmin app for FastAPI.
+ADMIN_PREFIX: str = "admin"
+
+# This value is the site name on sign-in page and on header.
+ADMIN_SITE_NAME: str = "FastAdmin"
+
+# This value is the logo path on sign-in page.
+ADMIN_SITE_SIGN_IN_LOGO: str = "/admin/static/images/sign-in-logo.svg"
+
+# This value is the logo path on header.
+ADMIN_SITE_HEADER_LOGO: str = "/admin/static/images/header-logo.svg"
+
+# This value is the favicon path.
+ADMIN_SITE_FAVICON: str = "/admin/static/images/favicon.png"
+
+# This value is the primary color for FastAdmin.
+ADMIN_PRIMARY_COLOR: str = "#009485"
+
+# This value is the session id key to store session id in http only cookies.
+ADMIN_SESSION_ID_KEY: str = "admin_session_id"
+
+# This value is the expired_at period (in sec) for session id.
+ADMIN_SESSION_EXPIRED_AT: int = 144000  # in sec
+
+# This value is the name for User db/orm model class for authentication.
+ADMIN_USER_MODEL: str
+
+# This value is the username field for User db/orm model for for authentication.
+ADMIN_USER_MODEL_USERNAME_FIELD: str
+
+# This value is the key to securing signed data - it is vital you keep this secure, or attackers could use it to generate their own signed values.
+ADMIN_SECRET_KEY: str
+
+# This value is the date format for JS widgets.
+ADMIN_DATE_FORMAT: str = "YYYY-MM-DD"
+
+# This value is the datetime format for JS widgets.
+ADMIN_DATETIME_FORMAT: str = "YYYY-MM-DD HH:mm"
+
+# This value is the time format for JS widgets.
+ADMIN_TIME_FORMAT: str = "HH:mm:ss"
+</code>
+</pre>
+              <p class="alert alert-warning">
+                Note: Settings without default values are required.
+              </p>
             </section>
             <hr class="divider" />
 
-            <section id="model_admin_objects">
-              <h2>ModelAdmin objects</h2>
-              <p class="lead">...</p>
+            <section id="orms">
+              <h2>ORMs</h2>
+              <h3>Tortoise ORM</h3>
+              <p class="lead">
+                Use TortoiseModelAdmin and TortoiseInlineModelAdmin to create
+                and register admin models and inlines.
+              </p>
+              <pre>
+<code class="language-python">
+from fastadmin.tortoise import TortoiseModelAdmin, TortoiseInlineModelAdmin
+</code>
+</pre>
+              <h3>SQLAlchemy ORM</h3>
+              <p class="alert alert-info">Coming soon...</p>
+              <h3>Pony ORM</h3>
+              <p class="alert alert-info">Coming soon...</p>
             </section>
             <hr class="small-divider" />
 
-            <section id="model_admin_orms">
-              <h3>ORMs</h3>
-              <p class="lead">...</p>
+            <section id="model_admin_objects">
+              <h2>ModelAdmin objects</h2>
+              <p class="lead">
+                The ModelAdmin class is the representation of a model in the
+                admin interface.
+              </p>
             </section>
             <hr class="small-divider" />
 
             <section id="model_admin_the_register_decorator">
               <h3>The register decorator</h3>
-              <p class="lead">...</p>
+              <p class="lead">
+                There is also a decorator for registering your ModelAdmin
+                classes:
+              </p>
+              <pre>
+<code class="language-python">
+from fastadmin import register
+from .models import Author
+
+@register(Author)
+class AuthorAdmin(admin.ModelAdmin):
+    pass
+  </code>
+</pre>
+
+              <p class="lead">
+                It's given one or more model classes to register with the
+                ModelAdmin.
+              </p>
+
+              <pre>
+<code class="language-python">
+from fastadmin import register
+from .models import Author, Editor, Reader
+
+@register(Author, Reader, Editor)
+class PersonAdmin(admin.ModelAdmin):
+    pass
+  </code>
+</pre>
+
+              <p class="alert alert-warning">
+                Note: You can't use this decorator if you have to reference your
+                model admin class in its __init__() method, e.g.
+                super(PersonAdmin, self).__init__(*args, **kwargs). You can use
+                super().__init__(*args, **kwargs).
+              </p>
             </section>
             <hr class="small-divider" />
 
             <section id="model_admin_options">
               <h3>ModelAdmin options</h3>
-              <p class="lead">...</p>
+              <p class="lead">Base options:</p>
+              <pre>
+<code class="language-python">
+  # A list of actions to make available on the change list page.
+  # You have to implement methods with names like action_name in your ModelAdmin class and decorate them with @action decorator.
+  # Example of usage:
+  #
+  # actions = ("make_published",)
+  # @action(
+  #     description="Mark selected stories as published",
+  # )
+  # async def make_published(self, objs: list[Any]) -> None:
+  #     ...
+  actions: Sequence[str] = ()
+
+  # Controls where on the page the actions bar appears.
+  # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).
+  # Example of usage: actions_on_top = True
+  actions_on_top: bool = False
+
+  # Controls where on the page the actions bar appears.
+  # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).
+  # Example of usage: actions_on_bottom = False
+  actions_on_bottom: bool = True
+
+  # Controls whether a selection counter is displayed next to the action dropdown. By default, the admin changelist will display it
+  # Example of usage: actions_selection_counter = False
+  actions_selection_counter: bool = True
+
+  # This attribute overrides the default display value for record's fields that are empty (None, empty string, etc.). The default value is - (a dash).
+  # Example of usage: empty_value_display = "N/A"
+  empty_value_display: str = "-"
+
+  # This attribute, if given, should be a list of field names to exclude from the form.
+  # Example of usage: exclude = ("password", "otp")
+  exclude: Sequence[str] = ()
+
+  # Use the fields option to make simple layout changes in the forms on the “add” and “change” pages
+  # such as showing only a subset of available fields, modifying their order, or grouping them into rows.
+  # For more complex layout needs, see the fieldsets option.
+  # Example of usage: fields = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
+  fields: Sequence[str] = ()
+
+  # By default, a ManyToManyField is displayed in the admin dashboard with a multiply select.
+  # However, multiple-select boxes can be difficult to use when selecting many items.
+  # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.
+  # The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.
+  # Example of usage: filter_horizontal = ("groups", "user_permissions")
+  filter_horizontal: Sequence[str] = ()
+
+  # Same as filter_horizontal, but uses a vertical display of the filter interface with the box of unselected options appearing above the box of selected options.
+  # Example of usage: filter_vertical = ("groups", "user_permissions")
+  filter_vertical: Sequence[str] = ()
+
+  # Set list_display to control which fields are displayed on the list page of the admin.
+  # If you don't set list_display, the admin site will display a single column that displays the __str__() representation of each object
+  # Example of usage: list_display = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
+  list_display: Sequence[str] = ()
+
+  # Set list_filter to activate filters in the tabel columns of the list page of the admin.
+  # Example of usage: list_filter = ("is_superuser", "is_active", "created_at")
+  list_filter: Sequence[str] = ()
+
+  # By default, applied filters are preserved on the list view after creating, editing, or deleting an object.
+  # You can have filters cleared by setting this attribute to False.
+  # Example of usage: preserve_filters = False
+  preserve_filters: bool = True
+
+  # Set list_max_show_all to control how many items can appear on a “Show all” admin change list page.
+  # The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.
+  # Example of usage: list_max_show_all = 100
+  list_max_show_all: int = 200
+
+  # Set list_per_page to control how many items appear on each paginated admin list page. By default, this is set to 10.
+  # Example of usage: list_per_page = 50
+  list_per_page = 10
+
+  # Set list_select_related to tell ORM to use select_related() in retrieving the list of objects on the admin list page.
+  # This can save you a bunch of database queries.
+  # Example of usage: list_select_related = ("user",)
+  list_select_related: Sequence[str] = ()
+
+  # Set ordering to specify how lists of objects should be ordered in the admin views.
+  # This should be a list or tuple in the same format as a model's ordering parameter.
+  # Example of usage: ordering = ("-created_at",)
+  ordering: Sequence[str] = ()
+
+  # When set, the given fields will use a bit of JavaScript to populate from the fields assigned.
+  # The main use for this functionality is
+  # to automatically generate the value for SlugField fields from one or more other fields.
+  # The generated value is produced by concatenating the values of the source fields,
+  # and then by transforming that result into a valid slug
+  # (e.g. substituting dashes for spaces and lowercasing ASCII letters).
+  # prepopulated_fields: dict[str, Sequence[str]] = {}
+
+  # By default, FastAPI admin uses a select-box interface for fields that are ForeignKey or have choices set.
+  # If a field is present in radio_fields, FastAPI admin will use a radio-button interface instead.
+  # Example of usage: radio_fields = ("user",)
+  radio_fields: Sequence[str] = ()
+
+  # By default, FastAPI admin uses a select-box interface for fields that are ForeignKey.
+  # Sometimes you don't want to incur the overhead of having to select all the related instances to display in the drop-down.
+  # raw_id_fields is a list of fields you would like to change into an Input widget for either a ForeignKey or ManyToManyField.
+  # Example of usage: raw_id_fields = ("user",)
+  raw_id_fields: Sequence[str] = ()
+
+  # By default the admin shows all fields as editable.
+  # Any fields in this option (which should be a list or tuple) will display its data as-is and non-editable.
+  # Example of usage: readonly_fields = ("created_at",)
+  readonly_fields: Sequence[str] = ()
+
+  # Set search_fields to enable a search box on the admin list page.
+  # This should be set to a list of field names that will be searched whenever somebody submits a search query in that text box.
+  # Example of usage: search_fields = ("mobile_number", "email")
+  search_fields: Sequence[str] = ()
+
+  # Set search_help_text to specify a descriptive text for the search box which will be displayed below it.
+  # Example of usage: search_help_text = "Search by mobile number or email"
+  search_help_text: str = ""
+
+  # Set show_full_result_count to control whether the full count of objects should be displayed
+  # on a filtered admin page (e.g. 99 results (103 total)).
+  # If this option is set to False, a text like 99 results (Show all) is displayed instead.
+  # Example of usage: show_full_result_count = True
+  show_full_result_count: bool = False
+
+  # By default, the list page allows sorting by all model fields
+  # If you want to disable sorting for some columns, set sortable_by to a collection (e.g. list, tuple, or set)
+  # of the subset of list_display that you want to be sortable.
+  # An empty collection disables sorting for all columns.
+  # Example of usage: sortable_by = ("mobile_number", "email")
+  sortable_by: Sequence[str] = ()
+</code>
+</pre>
+              <p class="lead">Specific options:</p>
+              <pre>
+<code class="language-python">
+  # Labels for model. We use them in select, autocomplete and other wigets where we represent model items.
+  # We user first from label_fields, if it is empty, we use the second and so on.
+  # If you don't set this attribute, we will use id attr as label.
+  # Example of usage: label_fields = ("name", "email", "id")
+  label_fields: Sequence[str] = ()
+
+  # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.
+  # Example of usage: list_display_links = ("id", "mobile_number", "email")
+  list_display_links: Sequence[str] = ()
+
+  # Set fieldsets to control the layout of admin “add” and “change” pages.
+  # fieldsets is a list of two-tuples, in which each two-tuple represents a fieldset on the admin form page.
+  fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
+
+  # Normally, objects have three save options: “Save”, “Save and continue editing”, and “Save and add another”.
+  # If save_as is True, “Save and add another” will be replaced
+  # by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.
+  # Example of usage: save_as = True
+  save_as: bool = False
+
+  # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.
+  # If you set save_as_continue=False, the redirect will be to the changelist view.
+  # Example of usage: save_as_continue = False
+  save_as_continue: bool = False
+
+  # Normally, the save buttons appear only at the bottom of the forms.
+  # If you set save_on_top, the buttons will appear both on the top and the bottom.
+  # Example of usage: save_on_top = True
+  save_on_top: bool = False
+
+  # Set view_on_site to control whether or not to display the “View on site” link.
+  # This link should bring you to a URL where you can display the saved object.
+  # Example of usage: view_on_site = "http://example.com"
+  view_on_site: str | None = None
+
+  # See InlineModelAdmin section for more details.
+  inlines: Sequence[type[InlineModelAdmin]] = ()
+
+</code>
+</pre>
             </section>
             <hr class="small-divider" />
 
             <section id="model_admin_methods">
               <h3>ModelAdmin methods</h3>
-              <p class="lead">...</p>
+              <p class="lead">Base methods:</p>
+
+              <pre>
+<code class="language-python">
+async def get_list(
+  self,
+  offset: int | None = None,
+  limit: int | None = None,
+  search: str | None = None,
+  sort_by: str | None = None,
+  filters: dict | None = None,
+) -> tuple[list[dict], int]:
+  """This method is used to get list of orm/db model objects.
+
+  :params offset: an offset for pagination.
+  :params limit: a limit for pagination.
+  :params search: a search query.
+  :params sort_by: a sort by field name.
+  :params filters: a dict of filters.
+  :return: A tuple of list of objects and total count.
+  """
+  ...
+
+async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
+  """This method is used to save orm/db model object.
+
+  :params id: an id of object.
+  :params payload: a payload from request.
+  :return: A saved object or None.
+  """
+  ...
+
+async def get_obj(self, id: UUID | int) -> dict | None:
+  """This method is used to get orm/db model object by id.
+
+  :params id: an id of object.
+  :return: An object or None.
+  """
+  ...
+
+async def delete_model(self, id: UUID | int) -> None:
+  """This method is used to delete orm/db model object.
+
+  :params id: an id of object.
+  :return: None.
+  """
+  ...
+
+def get_model_fields(self) -> OrderedDict[str, dict]:
+  """This method is used to get all orm/db model fields
+  with saving ordering (non relations, fk, o2o, m2m).
+
+  :return: An OrderedDict of model fields.
+  """
+  ...
+
+def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
+  """This method is used to get form item widget
+  for field from orm/db model.
+
+  :params field_name: a model field name.
+  :return: A tuple of widget type and widget props.
+  """
+  ...
+
+async def get_export(
+  self,
+  export_format: ExportFormat | None,
+  offset: int | None = None,
+  limit: int | None = None,
+  search: str | None = None,
+  sort_by: str | None = None,
+  filters: dict | None = None,
+) -> StringIO | BytesIO | None:
+  """This method is used to get export data (str or bytes stream).
+
+  :params export_format: a n export format (CSV at default).
+  :params offset: an offset for pagination.
+  :params limit: a limit for pagination.
+  :params search: a search query.
+  :params sort_by: a sort by field name.
+  :params filters: a dict of filters.
+  :return: A StringIO or BytesIO object.
+  """
+  ...
+
+def get_filter_widget(self, field_name: str) -> tuple[WidgetType, dict]:
+  """This method is used to get filter widget for tabel columns
+  for field from orm/db model from list_filter parameter.
+
+  :params field_name: a model field name.
+  :return: A tuple of widget type and widget props.
+  """
+  ...
+
+def get_list_display(self) -> Sequence[str]:
+  """This method is used to get list of fields for display on table view.
+
+  :return: A list of model field names.
+  """
+  ...
+
+def get_fields(self) -> Sequence[str]:
+  """This method is used to get list of fields for display on form view.
+
+  :return: A list of model field names.
+  """
+  ...
+
+def has_add_permission(self) -> bool:
+  """This method is used to check if user has permission to add new model instance.
+
+  :return: A boolean value.
+  """
+  ...
+
+def has_change_permission(self) -> bool:
+  """This method is used to check if user has permission to change model instance.
+
+  :return: A boolean value.
+  """
+  ...
+
+def has_delete_permission(self) -> bool:
+  """This method is used to check if user has permission to delete model instance.
+
+  :return: A boolean value.
+  """
+  ...
+
+def has_export_permission(self) -> bool:
+  """This method is used to check if user has permission to export model instance.
+
+  :return: A boolean value.
+  """
+  ...
+
+</code>
+</pre>
+              <p class="lead">Specific methods:</p>
+              <pre>
+<code class="language-python">
+async def authenticate(self, username: str, password: str) -> UUID | int | None:
+  """This method is used to implement authentication for settings.ADMIN_USER_MODEL orm/db model.
+
+  :params username: a value for user model settings.ADMIN_USER_MODEL_USERNAME_FIELD field.
+  :params password: a password.
+  :return: An user id or None.
+  """
+  ...
+</code>
+</pre>
             </section>
             <hr class="divider" />
 
             <section id="inline_model_admin_objects">
               <h2>InlineModelAdmin objects</h2>
-              <p class="lead">...</p>
-            </section>
-            <hr class="small-divider" />
+              <p class="lead">
+                The admin interface has the ability to edit models on the same
+                page as a parent model. These are called inlines.
+              </p>
+              <p class="lead">
+                Suppose you have these two models (Tortoise Example):
+              </p>
+              <pre>
+<code class="language-python">
+from tortoise.models import Model
+from tortoise import fields
+from fastadmin import register
+from fastadmin.tortoise import TortoiseModelAdmin, TortoiseInlineModelAdmin
 
-            <section id="inline_model_admin_orms">
-              <h3>ORMs</h3>
-              <p class="lead">...</p>
+
+class Author(Model):
+  name = fields.CharField(max_length=255)
+
+
+class Book(Model):
+  author = fields.ForeignKey("models.Author")
+  title = fields.CharField(max_length=255)
+
+
+class BookInline(TortoiseInlineModelAdmin):
+  model = Book
+
+
+@register(Author)
+class AuthorAdmin(TortoiseModelAdmin):
+  label_fields = ("name",)
+  inlines = (
+    BookInline,
+  )
+</code>
+</pre>
             </section>
             <hr class="small-divider" />
 
             <section id="inline_model_admin_options">
               <h3>InlineModelAdmin options</h3>
-              <p class="lead">...</p>
+              <p class="lead">Base options:</p>
+              <p class="alert alert-warning">
+                See <a href="#model_admin_options">base options</a> for
+                ModelAdmin.
+              </p>
+              <p class="lead">Specific options:</p>
+              <pre>
+<code class="language-python">
+  # The model class which the inline is using. This is required.
+  model: Any
+
+  # The name of the foreign key on the model.
+  # In most cases this will be dealt with automatically, but fk_name must be specified explicitly
+  # if there are more than one foreign key to the same parent model.
+  fk_name: str
+
+  # This controls the maximum number of forms to show in the inline.
+  # This doesn't directly correlate to the number of objects, but can if the value is small enough.
+  # See Limiting the number of editable objects for more information.
+  max_num: int = 10
+
+  # This controls the minimum number of forms to show in the inline.
+  min_num: int = 1
+
+  # An override to the verbose_name from the model's inner Meta class.
+  verbose_name: str | None = None
+
+  # An override to the verbose_name_plural from the model's inner Meta class.
+  verbose_name_plural: str | None = None
+</code>
+</pre>
             </section>
             <hr class="small-divider" />
 
             <section id="inline_model_admin_methods">
               <h3>InlineModelAdmin methods</h3>
-              <p class="lead">...</p>
+              <p class="lead">Base methods:</p>
+              <p class="alert alert-warning">
+                See <a href="#model_admin_methods">base methods</a> for
+                ModelAdmin.
+              </p>
+              <p class="lead">Specific methods:</p>
+              <p class="alert alert-warning">
+                There are no specific methods for InlineModelAdmin
+              </p>
             </section>
             <hr class="small-divider" />
 
             <section id="inline_model_admin_fk">
               <h3>ForeignKey fields</h3>
-              <p class="lead">...</p>
+              <p class="lead">
+                It is sometimes possible to have more than one foreign key to
+                the same model. Take this model for instance:
+              </p>
+
+              <pre>
+<code class="language-python">
+from tortoise.models import Model
+from tortoise import fields
+
+class Friendship(Model):
+  to_person = fields.ForeignKey("models.Person", related_name="friends")
+  from_person = fields.ForeignKey("models.Person", related_name="from_friends")
+</code>
+</pre>
+              <p class="lead">
+                If you wanted to display an inline on the Person admin
+                add/change pages you need to explicitly define the foreign key
+                since it is unable to do so automatically:
+              </p>
+              <pre>
+<code class="language-python">
+from fastadmin.tortoise import TortoiseModelAdmin, TortoiseInlineModelAdmin
+from .models import Friendship
+
+class FriendshipInline(TortoiseInlineModelAdmin):
+  model = Friendship
+  fk_name = "to_person"
+
+class PersonAdmin(TortoiseModelAdmin):
+  inlines = (
+    FriendshipInline,
+  )
+</code>
+</pre>
             </section>
             <hr class="small-divider" />
 
             <section id="inline_model_admin_m2m">
               <h3>ManyToMany fields</h3>
-              <p class="lead">...</p>
+              <p class="alert alert-info">Coming soon...</p>
             </section>
             <hr class="small-divider" />
 
             <section id="inline_model_admin_json">
               <h3>JSON fields</h3>
-              <p class="lead">...</p>
+              <p class="alert alert-info">Coming soon...</p>
             </section>
             <hr class="divider" />
 
@@ -502,7 +1034,7 @@ class GroupAdmin(TortoiseModelAdmin):
       title="Back to Top"
       href="javascript:void(0)"
     >
-    ^
+      ^
     </a>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
