@@ -22,6 +22,7 @@ interface ITableQuery {
   selectedRowKeys: string[];
   setSelectedRowKeys: (selectedRowKeys: string[]) => void;
   onTableChange: (pagination: any, tableFilters: any, sorter: any) => void;
+  resetTable: (preserveFilters?: boolean) => void;
 }
 
 export const useTableQuery = (
@@ -61,6 +62,19 @@ export const useTableQuery = (
     }
   };
 
+  const resetTable = (preserveFilters?: boolean): void => {
+    setAction(undefined);
+    setSelectedRowKeys([]);
+    setPage(DEFAULT_PAGE);
+    setPageSize(DEFAULT_PAGE_SIZE);
+    setSortBy(undefined);
+
+    if (!preserveFilters) {
+      setFilters({});
+      setSearch(undefined);
+    }
+  };
+
   return {
     defaultPage: DEFAULT_PAGE,
     defaultPageSize: DEFAULT_PAGE_SIZE,
@@ -79,5 +93,6 @@ export const useTableQuery = (
     selectedRowKeys,
     setSelectedRowKeys,
     onTableChange,
+    resetTable,
   };
 };

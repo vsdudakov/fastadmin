@@ -46,6 +46,7 @@ export const List: React.FC = () => {
     selectedRowKeys,
     setSelectedRowKeys,
     onTableChange,
+    resetTable,
   } = useTableQuery(modelConfiguration);
 
   const queryString = querystring.stringify({
@@ -56,22 +57,21 @@ export const List: React.FC = () => {
     ...transformFiltersToServer(filters),
   });
 
-  const { data, isLoading, refetch } = useQuery([`/list/${model}`, queryString], () =>
-    getFetcher(`/list/${model}?${queryString}`)
+  const { data, isLoading, refetch } = useQuery(
+    [`/list/${model}`, queryString],
+    () => getFetcher(`/list/${model}?${queryString}`),
+    {
+      refetchOnWindowFocus: false,
+    }
   );
 
   const { mutate: mutateDelete } = useMutation(
     (id: string) => deleteFetcher(`/delete/${model}/${id}`),
     {
       onSuccess: () => {
-        message.success(_t('Successfully deleted'));
+        resetTable(modelConfiguration?.preserve_filters);
         refetch();
-        setPage(defaultPage);
-        setPageSize(defaultPageSize);
-        if (!modelConfiguration?.preserve_filters) {
-          setFilters({});
-          setSearch(undefined);
-        }
+        message.success(_t('Successfully deleted'));
       },
       onError: (error) => {
         handleError(error);
@@ -107,14 +107,9 @@ export const List: React.FC = () => {
     (payload: any) => postFetcher(`/action/${model}/${action}`, payload),
     {
       onSuccess: () => {
+        resetTable(modelConfiguration?.preserve_filters);
         refetch();
-        setSelectedRowKeys([]);
-        setAction(undefined);
         message.success(_t('Successfully applied'));
-        if (!modelConfiguration?.preserve_filters) {
-          setFilters({});
-          setSearch(undefined);
-        }
       },
       onError: () => {
         message.error(_t('Server error'));
@@ -162,20 +157,20 @@ export const List: React.FC = () => {
       [defaultPage, defaultPageSize, filters, setFilters, setPage, setPageSize]
     ),
     useCallback(
-      (id: string) => {
+      (record: any) => {
         // onDeleteItem
-        mutateDelete(id);
+        mutateDelete(record.id);
       },
       [mutateDelete]
     ),
     useCallback(
-      (id: string) => {
+      (record: any) => {
         // onChangeItem
-        navigate(`/change/${model}/${id}`);
+        navigate(`/change/${model}/${record.id}`);
       },
       [model, navigate]
     ),
-    {}
+    []
   );
 
   return (

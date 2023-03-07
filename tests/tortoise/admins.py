@@ -1,4 +1,4 @@
-from fastadmin import TortoiseModelAdmin, TortoiseInlineModelAdmin, action, display
+from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, action, display
 
 from .models import Event
 

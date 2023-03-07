@@ -59,6 +59,9 @@ export const transformFiltersToServer = (data: any) => {
 };
 
 export const transformValueFromServer = (value: any): any => {
+  if (value === null || value === undefined) {
+    return value;
+  }
   if (isArray(value)) {
     return value.map(transformValueFromServer);
   }
@@ -85,6 +88,9 @@ export const transformColumnValueFromServer = (
 ) => {
   if (isBoolean(value)) {
     return <Checkbox checked={value} />;
+  }
+  if (isNumeric(value)) {
+    return value;
   }
   if (isIsoDate(value) && dateTimeFormat) {
     return dayjs(value).format(dateTimeFormat);

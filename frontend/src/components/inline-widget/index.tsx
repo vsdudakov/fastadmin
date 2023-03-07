@@ -1,14 +1,15 @@
 import React, { useCallback, useContext, useState } from 'react';
-import { Button, Col, Divider, Form, Input, message, Modal, Row, Select } from 'antd';
+import { Button, Col, Divider, Input, message, Modal, Row, Select, Tooltip } from 'antd';
 import { DownloadOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import querystring from 'querystring';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import fileDownload from 'react-file-download';
+import { v4 as uuidv4 } from 'uuid';
 
 import { TableOrCards } from 'components/table-or-cards';
 import { useTableQuery } from 'hooks/useTableQuery';
-import { useTableColumns } from 'hooks/useTableColumns';
+import { ADD_PK_PREFIX, useTableColumns } from 'hooks/useTableColumns';
 import { handleError } from 'helpers/forms';
 import { transformFiltersToServer } from 'helpers/transform';
 import { deleteFetcher, getFetcher, postFetcher } from 'fetchers/fetchers';
@@ -23,9 +24,8 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
   const { t: _t } = useTranslation('Inline');
   const { configuration } = useContext(ConfigurationContext);
 
-  const [form] = Form.useForm();
   const [open, setOpen] = useState<boolean>(false);
-  const [updatedRows, setUpdatedRows] = useState<Record<string, Record<string, any>>>({});
+  const [updatedRows, setUpdatedRows] = useState<Record<string, any>[]>([]);
 
   const {
     defaultPage,
@@ -43,6 +43,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     setAction,
     selectedRowKeys,
     setSelectedRowKeys,
+    resetTable,
     onTableChange,
   } = useTableQuery(modelConfiguration);
 
@@ -61,8 +62,9 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     () => getFetcher(`/list/${model}?${queryString}`),
     {
       enabled: open,
+      refetchOnWindowFocus: false,
       onSuccess: () => {
-        setUpdatedRows({});
+        setUpdatedRows([]);
       },
     }
   );
@@ -71,14 +73,9 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     (id: string) => deleteFetcher(`/delete/${model}/${id}`),
     {
       onSuccess: () => {
-        message.success(_t('Successfully deleted'));
+        resetTable(modelConfiguration?.preserve_filters);
         refetch();
-        setPage(defaultPage);
-        setPageSize(defaultPageSize);
-        if (!modelConfiguration?.preserve_filters) {
-          setFilters({});
-          setSearch(undefined);
-        }
+        message.success(_t('Successfully deleted'));
       },
       onError: (error) => {
         handleError(error);
@@ -114,14 +111,23 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     (payload: any) => postFetcher(`/action/${model}/${action}`, payload),
     {
       onSuccess: () => {
+        resetTable(modelConfiguration?.preserve_filters);
         refetch();
-        setSelectedRowKeys([]);
-        setAction(undefined);
         message.success(_t('Successfully applied'));
-        if (!modelConfiguration?.preserve_filters) {
-          setFilters({});
-          setSearch(undefined);
-        }
+      },
+      onError: () => {
+        message.error(_t('Server error'));
+      },
+    }
+  );
+
+  const { mutate: mutateSaveInline, isLoading: isLoadingSaveInline } = useMutation(
+    (payload: any) => postFetcher(`/save-inline/${model}`, payload),
+    {
+      onSuccess: () => {
+        resetTable();
+        setUpdatedRows([]);
+        setOpen(false);
       },
       onError: () => {
         message.error(_t('Server error'));
@@ -167,20 +173,19 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
       [defaultPage, defaultPageSize, filters, setFilters, setPage, setPageSize]
     ),
     useCallback(
-      (id: string) => {
+      (record: any) => {
         // onDeleteItem
-        mutateDelete(id);
+        mutateDelete(record.id);
       },
       [mutateDelete]
     ),
     useCallback(
-      (id: string) => {
+      (record: any) => {
         // onChangeItem
-        if (!updatedRows[id]) {
-          setUpdatedRows({ ...updatedRows, [id]: {} });
+        if (!updatedRows.find((i) => i.id === record.id)) {
+          setUpdatedRows([...updatedRows, record]);
         } else {
-          delete updatedRows[id];
-          setUpdatedRows({ ...updatedRows });
+          setUpdatedRows(updatedRows.filter((i) => i.id !== record.id));
         }
       },
       [updatedRows]
@@ -193,18 +198,23 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
   };
 
   const onClose = () => {
-    setOpen(false);
-  };
-
-  const onReset = () => {
-    form.resetFields();
+    resetTable();
+    setUpdatedRows([]);
     setOpen(false);
   };
 
   const onSave = () => {
-    form.submit();
-    setOpen(false);
+    const payload: any = [];
+    updatedRows.forEach((r) => {
+      const row = { ...r, id: undefined };
+      payload.push(row);
+    });
+    mutateSaveInline(payload);
   };
+
+  const onAdd = useCallback(() => {
+    setUpdatedRows([...updatedRows, { id: `${ADD_PK_PREFIX}${uuidv4()}` }]);
+  }, [updatedRows]);
 
   const tableHeader = useCallback(
     () => (
@@ -309,9 +319,11 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
                 )}
             </Col>
             <Col>
-              <Button type="dashed">
-                <PlusCircleOutlined /> {_t('Add')}
-              </Button>
+              <Tooltip title={_t('Add a line')}>
+                <Button type="dashed" onClick={onAdd}>
+                  <PlusCircleOutlined /> {_t('Add')}
+                </Button>
+              </Tooltip>
             </Col>
           </Row>
         )}
@@ -324,6 +336,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     modelConfiguration?.actions,
     modelConfiguration?.actions_on_bottom,
     modelConfiguration?.permissions,
+    onAdd,
     onApplyAction,
     selectedRowKeys.length,
     setAction,
@@ -366,7 +379,10 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
               columns={columns}
               onChange={onTableChange}
               rowKey="id"
-              dataSource={data?.results || []}
+              dataSource={[
+                ...(data?.results || []),
+                ...updatedRows.filter((i) => String(i.id).startsWith(ADD_PK_PREFIX)),
+              ]}
               pagination={{
                 current: page,
                 pageSize,
@@ -378,12 +394,9 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
           </Col>
         </Row>
         <Divider />
-        <Row justify="space-between">
+        <Row justify="end">
           <Col>
-            <Button onClick={onReset}>{_t('Reset')}</Button>
-          </Col>
-          <Col>
-            <Button type="primary" onClick={onSave}>
+            <Button type="primary" loading={isLoadingSaveInline} onClick={onSave}>
               {_t('Save')}
             </Button>
           </Col>

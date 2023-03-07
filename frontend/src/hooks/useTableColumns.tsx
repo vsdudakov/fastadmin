@@ -21,6 +21,8 @@ import { FilterColumn } from 'components/filter-column';
 import { transformColumnValueFromServer, transformValueFromServer } from 'helpers/transform';
 import { getWidgetCls } from 'helpers/widgets';
 
+export const ADD_PK_PREFIX = '__add__';
+
 export const useTableColumns = (
   modelConfiguration: IModel | undefined,
   dateTimeFormat: string | undefined,
@@ -29,7 +31,7 @@ export const useTableColumns = (
   onResetFilter: any,
   onDeleteItem: any,
   onChangeItem: any,
-  updatedRows: Record<string, Record<string, any>>
+  updatedRows: Record<string, any>[]
 ): any => {
   const { t: _t } = useTranslation('List');
   const fields = (modelConfiguration || { fields: [] }).fields;
@@ -98,7 +100,11 @@ export const useTableColumns = (
               }
             : undefined,
           render: (value: any, record: any) => {
-            if (updatedRows[record.id] && field.change_configuration?.form_widget_type) {
+            const hasUpdatedRow = !!updatedRows.find(
+              (i) => i.id === record.id || String(record.id).startsWith(ADD_PK_PREFIX)
+            );
+
+            if (hasUpdatedRow && field.change_configuration?.form_widget_type) {
               const fieldValue = transformValueFromServer(value);
               return getWidget(field.change_configuration, fieldValue);
             }
@@ -122,32 +128,39 @@ export const useTableColumns = (
       });
     columns.push({
       title: _t('Actions'),
-      dataIndex: 'id',
       key: 'actions',
       width: 100,
       fixed: 'right',
-      render: (id: string) => {
-        const onDelete = () => onDeleteItem(id);
-        const onChange = () => onChangeItem(id);
+      render: (record: any) => {
+        const onDelete = () => onDeleteItem(record);
+        const onChange = () => onChangeItem(record);
+        const hasUpdatedRow = !!updatedRows.find(
+          (i) => i.id === record.id || String(record.id).startsWith(ADD_PK_PREFIX)
+        );
         return (
           <Space>
-            {(modelConfiguration?.permissions || []).includes(EModelPermission.Delete) && (
-              <Popconfirm title={_t('Are you sure?')} onConfirm={onDelete}>
-                <Button size="small" danger={true}>
-                  <DeleteOutlined />
-                </Button>
-              </Popconfirm>
-            )}
+            {(modelConfiguration?.permissions || []).includes(EModelPermission.Delete) &&
+              !hasUpdatedRow && (
+                <Popconfirm title={_t('Are you sure?')} onConfirm={onDelete}>
+                  <Button size="small" danger={true}>
+                    <DeleteOutlined />
+                  </Button>
+                </Popconfirm>
+              )}
             {(modelConfiguration?.permissions || []).includes(EModelPermission.Change) && (
-              <Button danger={!!updatedRows[id]} size="small" onClick={onChange}>
-                {!updatedRows[id] ? (
-                  <EditOutlined />
+              <>
+                {!hasUpdatedRow ? (
+                  <Button size="small" onClick={onChange}>
+                    <EditOutlined />
+                  </Button>
                 ) : (
-                  <Tooltip title={_t('Reset changes')}>
-                    <CloseCircleOutlined />
+                  <Tooltip title={_t('Remove changes')}>
+                    <Button danger={hasUpdatedRow} type="dashed" size="small" onClick={onChange}>
+                      <CloseCircleOutlined />
+                    </Button>
                   </Tooltip>
                 )}
-              </Button>
+              </>
             )}
           </Space>
         );
