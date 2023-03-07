@@ -1,5 +1,5 @@
 import inspect
-from typing import Any
+from typing import Any, cast
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.schemas.configuration import (
@@ -30,17 +30,17 @@ def sanitize(value: str) -> bool | None | str:
 
 
 def generate_models_schema(
-    models: dict[Any, type[ModelAdmin] | type[InlineModelAdmin]],
+    models: dict[Any, type[ModelAdmin | InlineModelAdmin]],
     is_inline_models: bool = False,
-) -> list[ModelSchema] | list[InlineModelSchema]:
+) -> list[ModelSchema | InlineModelSchema]:
     """Generate models schema
 
     :params models: a dict of models.
     :return: A list of models schema.
     """
-    models_schemas = []
+    models_schemas: list[ModelSchema | InlineModelSchema] = []
     for model_cls in models:
-        admin_obj: ModelAdmin = models[model_cls](model_cls)
+        admin_obj: ModelAdmin | InlineModelAdmin = models[model_cls](model_cls)
 
         model_fields = admin_obj.get_model_fields()
         list_display = admin_obj.get_list_display()
@@ -114,7 +114,7 @@ def generate_models_schema(
                     list_configuration=ListConfigurationFieldSchema(
                         index=column_index,
                         sorter=False,
-                        is_link=field_name in admin_obj.list_display_links,
+                        is_link=field_name in getattr(admin_obj, "list_display_links", ()),
                         empty_value_display=admin_obj.empty_value_display,
                         filter_widget_type=None,
                         filter_widget_props=None,
@@ -151,7 +151,7 @@ def generate_models_schema(
             )
 
         if not is_inline_models:
-            admin_obj: ModelAdmin = admin_obj
+            admin_obj = cast(ModelAdmin, admin_obj)
             models_schemas.append(
                 ModelSchema(
                     name=model_cls.__name__,
@@ -179,7 +179,7 @@ def generate_models_schema(
                 ),
             )
         else:
-            admin_obj: InlineModelAdmin = admin_obj
+            admin_obj = cast(InlineModelAdmin, admin_obj)
             models_schemas.append(
                 InlineModelSchema(
                     name=model_cls.__name__,

@@ -10,7 +10,7 @@ def register_admin_model(admin_model_class: type[ModelAdmin], model_classes: lis
     :params model_classes: a list of model classes.
     :return: None.
     """
-    from fastadmin.app import admin_models
+    from fastadmin.fastapi import admin_models
 
     for model_class in model_classes:
         admin_models[model_class] = admin_model_class
@@ -23,7 +23,7 @@ def unregister_admin_model(model_classes: list[Any]):
     :params model_classes: a list of model classes.
     :return: None.
     """
-    from fastadmin.app import admin_models
+    from fastadmin.fastapi import admin_models
 
     for model_class in model_classes:
         if model_class in admin_models:
@@ -35,7 +35,7 @@ def get_admin_models() -> dict[Any, type[ModelAdmin]]:
 
     :return: A dict of admin models.
     """
-    from fastadmin.app import admin_models
+    from fastadmin.fastapi import admin_models
 
     return admin_models
 
@@ -46,7 +46,7 @@ def get_admin_model(model_name: str) -> ModelAdmin | None:
     :params model_name: a name of model.
     :return: An admin model or None.
     """
-    from fastadmin.app import admin_models
+    from fastadmin.fastapi import admin_models
 
     for model, admin_model_class in admin_models.items():
         if model.__name__ == model_name:

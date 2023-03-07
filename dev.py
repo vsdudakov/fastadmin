@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from fastadmin.app import admin_app
+from fastadmin.fastapi import app as admin_app
 from fastadmin.settings import settings
 
 app = FastAPI()

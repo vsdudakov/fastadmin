@@ -485,7 +485,7 @@ class ModelAdmin(BaseModelAdmin):
     # Example of usage: view_on_site = "http://example.com"
     view_on_site: str | None = None
 
-    inlines: Sequence[InlineModelAdmin] = ()
+    inlines: Sequence[type[InlineModelAdmin]] = ()
 
     async def authenticate(self, username: str, password: str) -> UUID | int | None:
         """This method is used to implement authentication for settings.ADMIN_USER_MODEL orm/db model.

@@ -4,7 +4,7 @@ from collections.abc import AsyncGenerator
 import pytest
 from httpx import AsyncClient as TestClient
 
-from fastadmin.app import admin_app
+from fastadmin.fastapi import app as admin_app
 from tests.tortoise.helpers import (
     tortoise_close_db_connection,
     tortoise_create_objects,

@@ -150,10 +150,10 @@ class TortoiseMixin:
             qs = qs.order_by(sort_by)
         else:
             if self.ordering:
-                for sort_by in self.ordering:
-                    if sort_by.strip("-") not in fields:
+                for ordering_field in self.ordering:
+                    if ordering_field.strip("-") not in fields:
                         raise HTTPException(
-                            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Sort by {sort_by} is not allowed"
+                            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Sort by {ordering_field} is not allowed"
                         )
                 qs = qs.order_by(*self.ordering)
 

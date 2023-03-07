@@ -1,7 +1,8 @@
 import inspect
 import logging
+from collections.abc import Sequence
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, cast
 from uuid import UUID
 
 import jwt
@@ -10,9 +11,10 @@ from fastapi.responses import Response, StreamingResponse
 
 from fastadmin.api.depends import get_user_id, get_user_id_or_none
 from fastadmin.api.helpers import generate_models_schema, sanitize
+from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.helpers import get_admin_model, get_admin_models
 from fastadmin.schemas.api import ActionSchema, ExportSchema, SignInInputSchema
-from fastadmin.schemas.configuration import ConfigurationSchema
+from fastadmin.schemas.configuration import ConfigurationSchema, ModelSchema
 from fastadmin.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -298,7 +300,8 @@ async def configuration(
             models=[],
         )
 
-    models = get_admin_models()
+    admin_models = cast(dict[Any, type[ModelAdmin | InlineModelAdmin]], get_admin_models())
+    models = cast(Sequence[ModelSchema], generate_models_schema(admin_models))
     return ConfigurationSchema(
         site_name=settings.ADMIN_SITE_NAME,
         site_sign_in_logo=settings.ADMIN_SITE_SIGN_IN_LOGO,
@@ -308,5 +311,5 @@ async def configuration(
         username_field=settings.ADMIN_USER_MODEL_USERNAME_FIELD,
         date_format=settings.ADMIN_DATE_FORMAT,
         datetime_format=settings.ADMIN_DATETIME_FORMAT,
-        models=generate_models_schema(models),
+        models=models,
     )

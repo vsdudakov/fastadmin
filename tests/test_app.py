@@ -1,4 +1,4 @@
-from fastadmin.app import unicorn_exception_handler
+from fastadmin.fastapi import unicorn_exception_handler
 
 
 async def test_unicorn_exception_handler():

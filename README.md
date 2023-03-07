@@ -8,9 +8,9 @@
 
 ## Screenshots
 
-![SignIn View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/images/signin.png)
-![List View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/images/list.png)
-![Change View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/images/change.png)
+![SignIn View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/signin.png)
+![List View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/list.png)
+![Change View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/change.png)
 
 <p align="center">
   <a href="https://twitter.com/intent/tweet?text=Admin%20Dashboard%20For%20FastAPI&url=https://github.com/vsdudakov/fastadmin&hashtags=FastAPI,AdminDashboard">
@@ -24,10 +24,6 @@ FastAdmin is an easy-to-use Admin App for FastAPI inspired by Django Admin.
 
 FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI easiest way.
 
-Note
-
-FastAdmin supports only Tortoise ORM (SQLAlchemy, Pony ORM and others are in plans).
-
 ## Why was FastAdmin built?
 
 FastAPI is gaining huge popularity as an asyncio, minimalistic API framework, but there is no simple and clear system for administration your data.
@@ -40,30 +36,35 @@ FastAdmin is designed to be minimalistic, functional, yet familiar, to ease the 
 
 ### Installation
 
-First you have to install FastAdmin like this:
+#### Install the package using pip:
 
 ```bash
 pip install fastadmin
 ```
 
-or using poetry
+#### Setup ENV variables
 
-```bash
-poetry install fastadmin
-```
-
-### Quick Tutorial
-
-#### Mount FastAdmin app
-
-First of all you need to mount FastAdmin app into your app.
-Use prefix "/admin" as default for now. You can change it later.
+Setup the env variables:
 
 Example:
 
+```bash
+export ADMIN_USER_MODEL = User
+export ADMIN_USER_MODEL_USERNAME_FIELD = username
+export ADMIN_SECRET_KEY = secret_key
+```
+
+For additional information see [documentation](https://vsdudakov.github.io/fastadmin#settings)
+
+### Quick Tutorial
+
+#### Setup FastAdmin for framework
+
+##### For FastAPI:
+
 ```python
 from fastapi import FastAPI
-from fastadmin import admin_app
+from fastadmin.fastapi import app as admin_app
 
 ...
 
@@ -76,32 +77,29 @@ app.mount("/admin", admin_app)
 ...
 ```
 
-#### Setup ENV variables
-
-Setup the following env variables to configure FastAdmin (add to .env or export them like on example):
-
-Example:
+Run your project (see [https://fastapi.tiangolo.com/tutorial/first-steps/](https://fastapi.tiangolo.com/tutorial/first-steps/)):
 
 ```bash
-export ADMIN_USER_MODEL = User
-export ADMIN_USER_MODEL_USERNAME_FIELD = username
-export ADMIN_SECRET_KEY = secret_key
+uvicorn ...
 ```
 
-- ADMIN_USER_MODEL - a name of your User model (has to be registered in FastAdmin later)
-- ADMIN_USER_MODEL_USERNAME_FIELD - an username field (unique field from your user table) for authentication (could be email, or phone)
-- ADMIN_SECRET_KEY - a secret key (generate a strong secret key and provide here)
+Go to [http://localhost:8000/admin](http://localhost:8000/admin).
+
+##### For Django and Flask:
+
+We don't support it yet, but plan it in the future.
 
 #### Register ORM models
 
-Implement an authenticate method for ModelAdmin with registered model ADMIN_USER_MODEL
+You have to implement authenticate method for FastAdmin authentication on AdminModel class which is registered for ADMIN_USER_MODEL.
 
-Example (for Tortoise ORM):
+##### For Tortoise ORM:
 
 ```python
 import bcrypt
 from tortoise.models import Model
-from fastadmin import TortoiseModelAdmin, register
+from fastadmin import register
+from fastadmin.tortoise import TortoiseModelAdmin
 
 
 class User(Model):
@@ -135,19 +133,13 @@ class GroupAdmin(TortoiseModelAdmin):
     pass
 ```
 
-#### Run your project
+##### For SQLAlchemy and PonyORM:
 
-Run your project (see [https://fastapi.tiangolo.com/tutorial/first-steps/](https://fastapi.tiangolo.com/tutorial/first-steps/)):
-
-```bash
-uvicorn ...
-```
-
-Go to [http://localhost:8000/admin](http://localhost:8000/admin).
+We don't support it yet, but plan it in the future.
 
 ## Documentation
 
-See full documentation [here](https://vsdudakov.github.io/fastadmin/).
+See full documentation [here](https://vsdudakov.github.io/fastadmin).
 
 ## License
 
