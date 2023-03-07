@@ -85,7 +85,7 @@ For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmi
 
 ##### For Django and Flask:
 
-We don't support it yet, but plan it in the future.
+Coming soon...
 
 #### Register ORM models
 
@@ -117,6 +117,13 @@ class Group(Model):
 
 @register(User)
 class UserAdmin(TortoiseModelAdmin):
+    label_fields = ("username",)
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
+
     async def authenticate(self, username: str, password: str) -> UUID | int | None:
         user = await User.filter(username=username, is_superuser=True).first()
         if not user:
@@ -128,12 +135,16 @@ class UserAdmin(TortoiseModelAdmin):
 
 @register(Group)
 class GroupAdmin(TortoiseModelAdmin):
-    pass
+    label_fields = ("name",)
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
 ```
 
 ##### For SQLAlchemy and PonyORM:
 
-We don't support it yet, but plan it in the future.
+Coming soon...
 
 ## Documentation
 

@@ -640,7 +640,7 @@ blockquote,
 }
 
 hr {
-  border-top: 1px solid rgba(16, 85, 96, 0.1);
+  border-top: 1px solid gray !important;
 }
 
 /* =================================== */

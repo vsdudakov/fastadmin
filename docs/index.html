@@ -83,9 +83,9 @@
               <a class="nav-link" href="#introduction">Introduction</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#getting_started"
-                >Getting Started</a
-              >
+              <a class="nav-link" href="#getting_started">
+                Getting Started
+              </a>
               <ul class="nav flex-column">
                 <li class="nav-item">
                   <a class="nav-link" href="#installation">Installation</a>
@@ -99,62 +99,62 @@
               <a class="nav-link" href="#settings">Settings</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#model_admin_objects"
-                >ModelAdmin objects</a
-              >
+              <a class="nav-link" href="#model_admin_objects">
+                ModelAdmin objects
+              </a>
               <ul class="nav flex-column">
                 <li class="nav-item">
                   <a class="nav-link" href="#model_admin_orms">ORMs</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#model_admin_the_register_decorator"
-                    >The register decorator</a
-                  >
+                  <a class="nav-link" href="#model_admin_the_register_decorator">
+                    The register decorator
+                  </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#model_admin_discovery_admin_files"
-                    >Discovery of admin files</a
-                  >
+                  <a class="nav-link" href="#model_admin_options">
+                    ModelAdmin options
+                  </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#model_admin_options"
-                    >ModelAdmin options</a
-                  >
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#model_admin_methods"
-                    >ModelAdmin methods</a
-                  >
+                  <a class="nav-link" href="#model_admin_methods">
+                    ModelAdmin methods
+                  </a>
                 </li>
               </ul>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#inline_model_admin_objects"
-                >InlineModelAdmin objects</a
-              >
+              <a class="nav-link" href="#inline_model_admin_objects">
+                InlineModelAdmin objects
+              </a>
               <ul class="nav flex-column">
                 <li class="nav-item">
                   <a class="nav-link" href="#inline_model_admin_orms">ORMs</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#inline_model_admin_options"
-                    >InlineModelAdmin options</a
-                  >
+                  <a class="nav-link" href="#inline_model_admin_options">
+                    InlineModelAdmin options
+                  </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#inline_model_admin_more_fk"
-                    >Working with two or more foreign key fields</a
-                  >
+                  <a class="nav-link" href="#inline_model_admin_methods">
+                    InlineModelAdmin methods
+                  </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#inline_model_admin_m2m"
-                    >Working with many-to-many fields</a
-                  >
+                  <a class="nav-link" href="#inline_model_admin_fk">
+                    ForeignKey fields
+                  </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#inline_model_admin_m2m"
-                    >Working with json fields</a
-                  >
+                  <a class="nav-link" href="#inline_model_admin_m2m">
+                    ManyToMany fields
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#inline_model_admin_json">
+                    JSON fields
+                  </a>
                 </li>
               </ul>
             </li>
@@ -294,7 +294,7 @@ app.mount("/admin", admin_app)
                 Note: Use prefix "/admin". You can configure the prefix later.
                 See <a href="#settings">section</a>.
               </p>
-              <p class="lead">Create first AdminModel classes</p>
+              <p class="lead">Create and register first AdminModel classes</p>
               <h5>Tortoise ORM</h5>
               <pre>
 <code class="python">
@@ -313,7 +313,6 @@ class User(Model):
     ...
 
 
-
 class Group(Model):
     name = fields.CharField(max_length=255)
     ...
@@ -321,6 +320,13 @@ class Group(Model):
 
 @register(User)
 class UserAdmin(TortoiseModelAdmin):
+    label_fields = ("username",)
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
+
     async def authenticate(self, username: str, password: str) -> UUID | int | None:
         user = await User.filter(username=username, is_superuser=True).first()
         if not user:
@@ -332,7 +338,11 @@ class UserAdmin(TortoiseModelAdmin):
 
 @register(Group)
 class GroupAdmin(TortoiseModelAdmin):
-    pass
+    label_fields = ("name",)
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
 </code>
 </pre>
               <p class="alert alert-warning">
@@ -340,25 +350,31 @@ class GroupAdmin(TortoiseModelAdmin):
                 authentication on AdminModel class which is registered for
                 ADMIN_USER_MODEL.
               </p>
+
+              <p class="alert alert-info">
+                See <a href="#model_admin_objects">ModelAdmin</a> and <a href="#inline_model_admin_objects">InlineModelAdmin</a> sections.
+              </p>
+
+
               <h5>SQLAlchemy ORM</h5>
               <p class="alert alert-info">
-                We don't support it yet, but plan it in the future.
+                Coming soon...
               </p>
               <h5>Pony ORM</h5>
               <p class="alert alert-info">
-                We don't support it yet, but plan it in the future.
+                Coming soon...
               </p>
               <h4>Django Framework</h4>
               <p class="alert alert-info">
-                We don't support it yet, but plan it in the future.
+                Coming soon...
               </p>
               <h5>Django ORM</h5>
               <p class="alert alert-info">
-                We don't support it yet, but plan it in the future.
+                Coming soon...
               </p>
               <h4>Flask Framework</h4>
               <p class="alert alert-info">
-                We don't support it yet, but plan it in the future.
+                Coming soon...
               </p>
             </section>
             <hr class="divider" />
@@ -370,19 +386,73 @@ class GroupAdmin(TortoiseModelAdmin):
             <hr class="divider" />
 
             <section id="model_admin_objects">
-              <h2>Model Admin Objects</h2>
+              <h2>ModelAdmin objects</h2>
               <p class="lead">...</p>
             </section>
-            <hr class="divider" />
+            <hr class="small-divider" />
 
             <section id="model_admin_orms">
               <h3>ORMs</h3>
               <p class="lead">...</p>
             </section>
+            <hr class="small-divider" />
+
+            <section id="model_admin_the_register_decorator">
+              <h3>The register decorator</h3>
+              <p class="lead">...</p>
+            </section>
+            <hr class="small-divider" />
+
+            <section id="model_admin_options">
+              <h3>ModelAdmin options</h3>
+              <p class="lead">...</p>
+            </section>
+            <hr class="small-divider" />
+
+            <section id="model_admin_methods">
+              <h3>ModelAdmin methods</h3>
+              <p class="lead">...</p>
+            </section>
             <hr class="divider" />
 
             <section id="inline_model_admin_objects">
-              <h2>Inline Model Admin Objects</h2>
+              <h2>InlineModelAdmin objects</h2>
+              <p class="lead">...</p>
+            </section>
+            <hr class="small-divider" />
+
+            <section id="inline_model_admin_orms">
+              <h3>ORMs</h3>
+              <p class="lead">...</p>
+            </section>
+            <hr class="small-divider" />
+
+            <section id="inline_model_admin_options">
+              <h3>InlineModelAdmin options</h3>
+              <p class="lead">...</p>
+            </section>
+            <hr class="small-divider" />
+
+            <section id="inline_model_admin_methods">
+              <h3>InlineModelAdmin methods</h3>
+              <p class="lead">...</p>
+            </section>
+            <hr class="small-divider" />
+
+            <section id="inline_model_admin_fk">
+              <h3>ForeignKey fields</h3>
+              <p class="lead">...</p>
+            </section>
+            <hr class="small-divider" />
+
+            <section id="inline_model_admin_m2m">
+              <h3>ManyToMany fields</h3>
+              <p class="lead">...</p>
+            </section>
+            <hr class="small-divider" />
+
+            <section id="inline_model_admin_json">
+              <h3>JSON fields</h3>
               <p class="lead">...</p>
             </section>
             <hr class="divider" />
