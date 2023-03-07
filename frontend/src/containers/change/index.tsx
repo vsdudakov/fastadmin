@@ -34,27 +34,29 @@ export const Change: React.FC = () => {
       onSuccess: (data) => {
         form.setFieldsValue(transformDataFromServer(data));
       },
+      refetchOnWindowFocus: false,
     }
   );
 
-  const { mutate: mutateAdd, isLoading: isLoadingAdd } = useMutation(
-    (payload: any) => postFetcher(`/add/${model}`, payload),
-    {
-      onSuccess: () => {
-        message.success(_t('Succesfully added'));
-        queryClient.invalidateQueries([`/list/${model}`]);
-        const next = form.getFieldValue('next');
-        if (next) {
-          navigate(next);
-        }
-      },
-      onError: (error: Error) => {
-        handleError(error, form);
-      },
-    }
-  );
+  const {
+    mutate: mutateAdd,
+    isLoading: isLoadingAdd,
+    isError: isErrorAdd,
+  } = useMutation((payload: any) => postFetcher(`/add/${model}`, payload), {
+    onSuccess: () => {
+      message.success(_t('Succesfully added'));
+      queryClient.invalidateQueries([`/list/${model}`]);
+      const next = form.getFieldValue('next');
+      if (next) {
+        navigate(next);
+      }
+    },
+    onError: (error: Error) => {
+      handleError(error, form);
+    },
+  });
 
-  const { mutate, isLoading } = useMutation(
+  const { mutate, isLoading, isError } = useMutation(
     (payload: any) => patchFetcher(`/change/${model}/${id}`, payload),
     {
       onSuccess: () => {
@@ -130,51 +132,50 @@ export const Change: React.FC = () => {
       isLoading={isLoadingInitialValues}
     >
       {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Change) ? (
-        <Row gutter={[16, 16]}>
-          <Col xs={24} xl={14}>
-            <FormContainer form={form} onFinish={onFinish} mode="change">
-              <Row gutter={[8, 8]} justify="space-between">
-                <Col>
-                  <Space>
-                    <Popconfirm title={_t('Are you sure?')} onConfirm={onConfirmDelete}>
-                      <Button danger={true}>
-                        <DeleteOutlined /> {_t('Delete')}
-                      </Button>
-                    </Popconfirm>
-                  </Space>
-                </Col>
-                <Col>
-                  <Space>
-                    {!isMobile && !modelConfiguration?.save_as_continue && (
-                      <Button
-                        loading={isLoading || isLoadingAdd}
-                        onClick={onSaveAndContinueEditing}
-                        type="default"
-                      >
-                        <SaveFilled /> {_t('Save and continue editing')}
-                      </Button>
-                    )}
-                    {!isMobile && (
-                      <Button
-                        loading={isLoading || isLoadingAdd}
-                        onClick={onSaveAndAddAnother}
-                        type="default"
-                      >
-                        <SaveFilled />{' '}
-                        {modelConfiguration?.save_as
-                          ? _t('Save as new')
-                          : _t('Save and add another')}
-                      </Button>
-                    )}
-                    <Button loading={isLoading || isLoadingAdd} onClick={onSave} type="primary">
-                      <SaveOutlined /> {_t('Save')}
-                    </Button>
-                  </Space>
-                </Col>
-              </Row>
-            </FormContainer>
-          </Col>
-        </Row>
+        <FormContainer
+          form={form}
+          onFinish={onFinish}
+          mode="change"
+          hasOperationError={isError || isErrorAdd}
+        >
+          <Row gutter={[8, 8]} justify="space-between">
+            <Col>
+              <Space>
+                <Popconfirm title={_t('Are you sure?')} onConfirm={onConfirmDelete}>
+                  <Button danger={true}>
+                    <DeleteOutlined /> {_t('Delete')}
+                  </Button>
+                </Popconfirm>
+              </Space>
+            </Col>
+            <Col>
+              <Space>
+                {!isMobile && !modelConfiguration?.save_as_continue && (
+                  <Button
+                    loading={isLoading || isLoadingAdd}
+                    onClick={onSaveAndContinueEditing}
+                    type="default"
+                  >
+                    <SaveFilled /> {_t('Save and continue editing')}
+                  </Button>
+                )}
+                {!isMobile && (
+                  <Button
+                    loading={isLoading || isLoadingAdd}
+                    onClick={onSaveAndAddAnother}
+                    type="default"
+                  >
+                    <SaveFilled />{' '}
+                    {modelConfiguration?.save_as ? _t('Save as new') : _t('Save and add another')}
+                  </Button>
+                )}
+                <Button loading={isLoading || isLoadingAdd} onClick={onSave} type="primary">
+                  <SaveOutlined /> {_t('Save')}
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+        </FormContainer>
       ) : (
         <Empty description={_t('No permissions for model')} />
       )}

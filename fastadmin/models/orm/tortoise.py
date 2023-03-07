@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from fastadmin.models.base import BaseModelAdmin
+from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.schemas.configuration import WidgetType
 from fastadmin.settings import settings
@@ -41,7 +41,7 @@ async def obj_to_dict(obj: Any, with_m2m: bool = True, with_display_fields: bool
     return obj_dict
 
 
-class TortoiseModelAdmin(BaseModelAdmin):
+class TortoiseMixin:
     async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
@@ -334,3 +334,11 @@ class TortoiseModelAdmin(BaseModelAdmin):
                     "options": [{"label": k, "value": k} for k in field.get("enum_type") or []],
                 }
         return WidgetType.Input, widget_props
+
+
+class TortoiseModelAdmin(TortoiseMixin, ModelAdmin):
+    pass
+
+
+class TortoiseInlineModelAdmin(TortoiseMixin, InlineModelAdmin):
+    pass

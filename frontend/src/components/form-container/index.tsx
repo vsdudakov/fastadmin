@@ -1,26 +1,36 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Collapse, Divider, Form } from 'antd';
+import { Col, Collapse, Divider, Form, Row } from 'antd';
 
 import {
   EFieldWidgetType,
   IAddConfigurationField,
+  IChangeConfigurationField,
   IModel,
   IModelField,
+  IInlineModel,
 } from 'interfaces/configuration';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
 import { getWidgetCls } from 'helpers/widgets';
 import { getTitleFromFieldName } from 'helpers/title';
+import { InlineWidget } from 'components/inline-widget';
 
 interface IFormContainer {
   form: any;
   onFinish: (payload: any) => void;
   children: JSX.Element | JSX.Element[];
   mode: 'add' | 'change';
+  hasOperationError?: boolean;
 }
 
-export const FormContainer: React.FC<IFormContainer> = ({ form, onFinish, children, mode }) => {
+export const FormContainer: React.FC<IFormContainer> = ({
+  form,
+  onFinish,
+  children,
+  mode,
+  hasOperationError,
+}) => {
   const { configuration } = useContext(ConfigurationContext);
   const { t: _t } = useTranslation('FormContainer');
   const { model } = useParams();
@@ -29,13 +39,27 @@ export const FormContainer: React.FC<IFormContainer> = ({ form, onFinish, childr
     (item: IModel) => item.name === model
   );
 
+  const [activeKey, setActiveKey] = useState<string[]>(
+    (modelConfiguration?.fieldsets || [])
+      .filter((fieldset) => !(fieldset[1]?.classes || []).includes('collapse'))
+      .map((fieldset) => JSON.stringify(fieldset[1]?.fields))
+  );
+
+  useEffect(() => {
+    if (hasOperationError) {
+      setActiveKey(
+        (modelConfiguration?.fieldsets || []).map((fieldset) => JSON.stringify(fieldset[1]?.fields))
+      );
+    }
+  }, [hasOperationError, modelConfiguration?.fieldsets, setActiveKey]);
+
   const getWidget = useCallback(
-    (addConfiguration: IAddConfigurationField) => {
-      if (!addConfiguration.form_widget_type) {
+    (configurationField: IAddConfigurationField | IChangeConfigurationField) => {
+      if (!configurationField.form_widget_type) {
         return null;
       }
-      const [Widget, widgetProps]: any = getWidgetCls(addConfiguration.form_widget_type, _t);
-      return <Widget {...(widgetProps || {})} {...(addConfiguration.form_widget_props || {})} />;
+      const [Widget, widgetProps]: any = getWidgetCls(configurationField.form_widget_type, _t);
+      return <Widget {...(widgetProps || {})} {...(configurationField.form_widget_props || {})} />;
     },
     [_t]
   );
@@ -91,16 +115,22 @@ export const FormContainer: React.FC<IFormContainer> = ({ form, onFinish, childr
     );
     const fieldsets = modelConfiguration?.fieldsets || [];
     if (fieldsets.length > 0) {
-      const defaultActiveKey = fieldsets
-        .filter((fieldset) => !(fieldset[1]?.classes || []).includes('collapse'))
-        .map((fieldset) => JSON.stringify(fieldset[1]?.fields));
+      const onChange = (key: string[]) => setActiveKey(key);
       return (
-        <Collapse defaultActiveKey={defaultActiveKey}>
+        <Collapse
+          size="small"
+          expandIconPosition="end"
+          activeKey={activeKey}
+          onChange={onChange as any}
+        >
           {fieldsets.map((fieldset) => {
             const collapseTitle = fieldset[0];
             const collapseFields = fieldset[1]?.fields;
             return (
-              <Collapse.Panel header={collapseTitle || ''} key={JSON.stringify(collapseFields)}>
+              <Collapse.Panel
+                header={collapseTitle || _t('General')}
+                key={JSON.stringify(collapseFields)}
+              >
                 {formItemWidgets(
                   fields.filter((field: IModelField) => (collapseFields || []).includes(field.name))
                 )}
@@ -112,7 +142,27 @@ export const FormContainer: React.FC<IFormContainer> = ({ form, onFinish, childr
     }
 
     return formItemWidgets(fields);
-  }, [formItemWidgets, getConf, modelConfiguration?.fields, modelConfiguration?.fieldsets]);
+  }, [
+    _t,
+    activeKey,
+    formItemWidgets,
+    getConf,
+    modelConfiguration?.fields,
+    modelConfiguration?.fieldsets,
+  ]);
+
+  const inlineItems = useCallback(() => {
+    return (modelConfiguration?.inlines || []).map((inline: IInlineModel) => {
+      return (
+        <Form.Item
+          label={inline.verbose_name_plural || `${inline.verbose_name || inline.name}s`}
+          key={inline.name}
+        >
+          <InlineWidget modelConfiguration={inline} />
+        </Form.Item>
+      );
+    });
+  }, [modelConfiguration?.inlines]);
 
   return (
     <Form layout="vertical" form={form} onFinish={onFinish}>
@@ -122,7 +172,16 @@ export const FormContainer: React.FC<IFormContainer> = ({ form, onFinish, childr
           <Divider />
         </>
       )}
-      {formItems()}
+      <Row gutter={[32, 32]}>
+        <Col xs={24} xl={12}>
+          {formItems()}
+        </Col>
+        {mode === 'change' && (
+          <Col xs={24} xl={12}>
+            {inlineItems()}
+          </Col>
+        )}
+      </Row>
       <Divider />
       {children}
     </Form>

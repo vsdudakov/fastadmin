@@ -1,4 +1,4 @@
-from fastadmin.models.base import BaseModelAdmin
+from fastadmin import ModelAdmin
 from fastadmin.models.helpers import get_admin_model, register_admin_model, unregister_admin_model
 from fastadmin.settings import settings
 from tests.api.helpers import sign_in, sign_out
@@ -92,8 +92,8 @@ def validate_configuration_response_data(response_data, is_auth=True):
 async def test_configuration(objects, client):
     superuser = objects["superuser"]
     event = objects["event"]
-    admin_user_cls: BaseModelAdmin = objects["admin_user_cls"]
-    admin_event_cls: BaseModelAdmin = objects["admin_event_cls"]
+    admin_user_cls: ModelAdmin = objects["admin_user_cls"]
+    admin_event_cls: ModelAdmin = objects["admin_event_cls"]
 
     await sign_in(client, superuser, admin_user_cls)
 
@@ -394,4 +394,25 @@ async def test_configuration_fieldsets(objects, client):
 
     admin_event_cls.fieldsets = ()
     unregister_admin_model([event.__class__])
+    await sign_out(client, superuser)
+
+
+async def test_configuration_inlines(objects, client):
+    superuser = objects["superuser"]
+    tournament = objects["tournament"]
+    admin_user_cls = objects["admin_user_cls"]
+    admin_tournament_cls = objects["admin_tournament_cls"]
+
+    await sign_in(client, superuser, admin_user_cls)
+
+    register_admin_model(admin_tournament_cls, [tournament.__class__])
+    r = await client.get(
+        f"/api/configuration",
+    )
+    assert r.status_code == 200, r.text
+    response_data = r.json()
+    assert response_data
+    validate_configuration_response_data(response_data)
+
+    unregister_admin_model([tournament.__class__])
     await sign_out(client, superuser)

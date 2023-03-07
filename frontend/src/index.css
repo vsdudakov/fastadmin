@@ -9,3 +9,7 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+
+.table-row-selected {
+  background-color: #f0f0f0;
+}

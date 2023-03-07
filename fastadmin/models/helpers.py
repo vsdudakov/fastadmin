@@ -1,9 +1,9 @@
 from typing import Any
 
-from fastadmin.models.base import BaseModelAdmin
+from fastadmin.models.base import ModelAdmin
 
 
-def register_admin_model(admin_model_class: type[BaseModelAdmin], model_classes: list[Any]):
+def register_admin_model(admin_model_class: type[ModelAdmin], model_classes: list[Any]):
     """This method is used to register an admin model.
 
     :params admin_model_class: a class of admin model.
@@ -30,7 +30,7 @@ def unregister_admin_model(model_classes: list[Any]):
             del admin_models[model_class]
 
 
-def get_admin_models() -> dict[Any, type[BaseModelAdmin]]:
+def get_admin_models() -> dict[Any, type[ModelAdmin]]:
     """This method is used to get a dict of admin models.
 
     :return: A dict of admin models.
@@ -40,7 +40,7 @@ def get_admin_models() -> dict[Any, type[BaseModelAdmin]]:
     return admin_models
 
 
-def get_admin_model(model_name: str) -> BaseModelAdmin | None:
+def get_admin_model(model_name: str) -> ModelAdmin | None:
     """This method is used to get an admin model by model name.
 
     :params model_name: a name of model.

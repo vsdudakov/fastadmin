@@ -9,20 +9,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 
 from fastadmin.api.depends import get_user_id, get_user_id_or_none
-from fastadmin.api.helpers import sanitize
-from fastadmin.models.base import BaseModelAdmin
+from fastadmin.api.helpers import generate_models_schema, sanitize
 from fastadmin.models.helpers import get_admin_model, get_admin_models
 from fastadmin.schemas.api import ActionSchema, ExportSchema, SignInInputSchema
-from fastadmin.schemas.configuration import (
-    AddConfigurationFieldSchema,
-    ChangeConfigurationFieldSchema,
-    ConfigurationSchema,
-    ListConfigurationFieldSchema,
-    ModelAction,
-    ModelFieldSchema,
-    ModelPermission,
-    ModelSchema,
-)
+from fastadmin.schemas.configuration import ConfigurationSchema
 from fastadmin.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -309,141 +299,6 @@ async def configuration(
         )
 
     models = get_admin_models()
-    models_schemas = []
-    for model_cls in models:
-        admin_obj: BaseModelAdmin = models[model_cls](model_cls)
-
-        model_fields = admin_obj.get_model_fields()
-        list_display = admin_obj.get_list_display()
-
-        fields_schema = []
-        display_fields = []
-        for field_name, field in model_fields.items():
-            is_m2m = model_fields.get(field_name, {}).get("is_m2m")
-            column_index = list_display.index(field_name) if field_name in list_display else None
-            list_configuration = None
-            filter_widget_type = None
-            filter_widget_props = None
-            if column_index is not None and not is_m2m:
-                if field_name in admin_obj.list_filter:
-                    filter_widget_type, filter_widget_props = admin_obj.get_filter_widget(field_name)
-                sorter = True
-                if admin_obj.sortable_by and field_name not in admin_obj.sortable_by:
-                    sorter = False
-                list_configuration = ListConfigurationFieldSchema(
-                    index=column_index,
-                    sorter=sorter,
-                    is_link=field_name in admin_obj.list_display_links,
-                    empty_value_display=admin_obj.empty_value_display,
-                    filter_widget_type=filter_widget_type,
-                    filter_widget_props=filter_widget_props,
-                )
-            else:
-                display_fields.append(field_name)
-
-            add_configuration = None
-            change_configuration = None
-            if not field.get("form_hidden"):
-                fields = admin_obj.get_fields()
-                form_index = fields.index(field_name) if field_name in fields else None
-                if form_index is not None:
-                    form_widget_type, form_widget_props = admin_obj.get_form_widget(field_name)
-                    add_configuration = AddConfigurationFieldSchema(
-                        index=form_index,
-                        form_widget_type=form_widget_type,
-                        form_widget_props=form_widget_props,
-                        required=form_widget_props.get("required", False),
-                    )
-                    change_configuration = ChangeConfigurationFieldSchema(
-                        index=form_index,
-                        form_widget_type=form_widget_type,
-                        form_widget_props=form_widget_props,
-                        required=form_widget_props.get("required", False),
-                    )
-
-            fields_schema.append(
-                ModelFieldSchema(
-                    name=field_name,
-                    list_configuration=list_configuration,
-                    add_configuration=add_configuration,
-                    change_configuration=change_configuration,
-                ),
-            )
-
-        for column_index, field_name in enumerate(admin_obj.list_display):
-            display_field_function = getattr(admin_obj, field_name, None)
-            if (
-                not display_field_function
-                or not inspect.ismethod(display_field_function)
-                or not hasattr(display_field_function, "is_display")
-            ):
-                continue
-
-            fields_schema.append(
-                ModelFieldSchema(
-                    name=field_name,
-                    list_configuration=ListConfigurationFieldSchema(
-                        index=column_index,
-                        sorter=False,
-                        is_link=field_name in admin_obj.list_display_links,
-                        empty_value_display=admin_obj.empty_value_display,
-                        filter_widget_type=None,
-                        filter_widget_props=None,
-                    ),
-                    add_configuration=None,
-                    change_configuration=None,
-                ),
-            )
-
-        permissions = []
-        if admin_obj.has_add_permission():
-            permissions.append(ModelPermission.Add)
-        if admin_obj.has_change_permission():
-            permissions.append(ModelPermission.Change)
-        if admin_obj.has_delete_permission():
-            permissions.append(ModelPermission.Delete)
-        if admin_obj.has_export_permission():
-            permissions.append(ModelPermission.Export)
-
-        actions = []
-        for action in admin_obj.actions:
-            action_function = getattr(admin_obj, action, None)
-            if (
-                not action_function
-                or not inspect.ismethod(action_function)
-                or not hasattr(action_function, "is_action")
-            ):
-                continue
-            actions.append(
-                ModelAction(
-                    name=action,
-                    description=getattr(action_function, "short_description", None),
-                )
-            )
-
-        models_schemas.append(
-            ModelSchema(
-                name=model_cls.__name__,
-                permissions=permissions,
-                actions=actions,
-                actions_on_top=admin_obj.actions_on_top,
-                actions_on_bottom=admin_obj.actions_on_bottom,
-                actions_selection_counter=admin_obj.actions_selection_counter,
-                fields=fields_schema,
-                fieldsets=admin_obj.fieldsets,
-                list_per_page=admin_obj.list_per_page,
-                save_on_top=admin_obj.save_on_top,
-                save_as=admin_obj.save_as,
-                save_as_continue=admin_obj.save_as_continue,
-                view_on_site=admin_obj.view_on_site,
-                search_help_text=admin_obj.search_help_text,
-                search_fields=admin_obj.search_fields,
-                preserve_filters=admin_obj.preserve_filters,
-                list_max_show_all=admin_obj.list_max_show_all,
-                show_full_result_count=admin_obj.show_full_result_count,
-            ),
-        )
-
     return ConfigurationSchema(
         site_name=settings.ADMIN_SITE_NAME,
         site_sign_in_logo=settings.ADMIN_SITE_SIGN_IN_LOGO,
@@ -453,5 +308,5 @@ async def configuration(
         username_field=settings.ADMIN_USER_MODEL_USERNAME_FIELD,
         date_format=settings.ADMIN_DATE_FORMAT,
         datetime_format=settings.ADMIN_DATETIME_FORMAT,
-        models=models_schemas,
+        models=generate_models_schema(models),
     )

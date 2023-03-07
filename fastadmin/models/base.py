@@ -13,12 +13,6 @@ from fastadmin.settings import settings
 class BaseModelAdmin:
     """Base class for model admin"""
 
-    # Labels for model. We use them in select, autocomplete and other wigets where we represent model items.
-    # We user first from label_fields, if it is empty, we use the second and so on.
-    # If you don't set this attribute, we will use id attr as label.
-    # Example of usage: label_fields = ("name", "email", "id")
-    label_fields: Sequence[str] = ()
-
     # A list of actions to make available on the change list page.
     # You have to implement methods with names like <action_name> in your ModelAdmin class and decorate them with @action decorator.  # noqa: E501
     # Example of usage:
@@ -62,10 +56,6 @@ class BaseModelAdmin:
     # Example of usage: fields = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
     fields: Sequence[str] = ()
 
-    # Set fieldsets to control the layout of admin “add” and “change” pages.
-    # fieldsets is a list of two-tuples, in which each two-tuple represents a <fieldset> on the admin form page. (A <fieldset> is a “section” of the form.)  # noqa: E501
-    fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
-
     # By default, a ManyToManyField is displayed in the admin dashboard with a <select multiple>.
     # However, multiple-select boxes can be difficult to use when selecting many items.
     # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.  # noqa: E501
@@ -77,27 +67,19 @@ class BaseModelAdmin:
     # Example of usage: filter_vertical = ("groups", "user_permissions")
     filter_vertical: Sequence[str] = ()
 
-    # Not supported setting
-    # form
-
-    # Not supported setting
-    # inlines
-
-    # Not supported setting
-    # formfield_overrides
-
     # Set list_display to control which fields are displayed on the list page of the admin.
     # If you don’t set list_display, the admin site will display a single column that displays the __str__() representation of each object  # noqa: E501
     # Example of usage: list_display = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
     list_display: Sequence[str] = ()
 
-    # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.  # noqa: E501
-    # Example of usage: list_display_links = ("id", "mobile_number", "email")
-    list_display_links: Sequence[str] = ()
-
     # Set list_filter to activate filters in the tabel columns of the list page of the admin.
     # Example of usage: list_filter = ("is_superuser", "is_active", "created_at")
     list_filter: Sequence[str] = ()
+
+    # By default, applied filters are preserved on the list view after creating, editing, or deleting an object.
+    # You can have filters cleared by setting this attribute to False.
+    # Example of usage: preserve_filters = False
+    preserve_filters: bool = True
 
     # Set list_max_show_all to control how many items can appear on a “Show all” admin change list page.
     # The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.  # noqa: E501
@@ -129,11 +111,6 @@ class BaseModelAdmin:
     # (e.g. substituting dashes for spaces and lowercasing ASCII letters).
     # prepopulated_fields: dict[str, Sequence[str]] = {}
 
-    # By default, applied filters are preserved on the list view after creating, editing, or deleting an object.
-    # You can have filters cleared by setting this attribute to False.
-    # Example of usage: preserve_filters = False
-    preserve_filters: bool = True
-
     # By default, FastAPI admin uses a select-box interface (<select>) for fields that are ForeignKey or have choices set.  # noqa: E501
     # If a field is present in radio_fields, FastAPI admin will use a radio-button interface instead.
     # Example of usage: radio_fields = ("user",)
@@ -152,22 +129,6 @@ class BaseModelAdmin:
     # Any fields in this option (which should be a list or tuple) will display its data as-is and non-editable.
     # Example of usage: readonly_fields = ("created_at",)
     readonly_fields: Sequence[str] = ()
-
-    # Normally, objects have three save options: “Save”, “Save and continue editing”, and “Save and add another”.
-    # If save_as is True, “Save and add another” will be replaced
-    # by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.
-    # Example of usage: save_as = True
-    save_as: bool = False
-
-    # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.  # noqa: E501
-    # If you set save_as_continue=False, the redirect will be to the changelist view.
-    # Example of usage: save_as_continue = False
-    save_as_continue: bool = False
-
-    # Normally, the save buttons appear only at the bottom of the forms.
-    # If you set save_on_top, the buttons will appear both on the top and the bottom.
-    # Example of usage: save_on_top = True
-    save_on_top: bool = False
 
     # Set search_fields to enable a search box on the admin list page.
     # This should be set to a list of field names that will be searched whenever somebody submits a search query in that text box.  # noqa: E501
@@ -191,51 +152,12 @@ class BaseModelAdmin:
     # Example of usage: sortable_by = ("mobile_number", "email")
     sortable_by: Sequence[str] = ()
 
-    # Set view_on_site to control whether or not to display the “View on site” link.
-    # This link should bring you to a URL where you can display the saved object.
-    # Example of usage: view_on_site = "http://example.com"
-    view_on_site: str | None = None
-
     def __init__(self, model_cls: Any):
         """This method is used to initialize admin class.
 
         :params model_cls: an orm/db model class.
         """
         self.model_cls = model_cls
-
-    async def authenticate(self, username: str, password: str) -> UUID | int | None:
-        """This method is used to implement authentication for settings.ADMIN_USER_MODEL orm/db model.
-
-        :params username: a value for user model settings.ADMIN_USER_MODEL_USERNAME_FIELD field.
-        :params password: a password.
-        :return: An user id or None.
-        """
-        raise NotImplementedError
-
-    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
-        """This method is used to save orm/db model object.
-
-        :params id: an id of object.
-        :params payload: a payload from request.
-        :return: A saved object or None.
-        """
-        raise NotImplementedError
-
-    async def delete_model(self, id: UUID | int) -> None:
-        """This method is used to delete orm/db model object.
-
-        :params id: an id of object.
-        :return: None.
-        """
-        raise NotImplementedError
-
-    async def get_obj(self, id: UUID | int) -> dict | None:
-        """This method is used to get orm/db model object by id.
-
-        :params id: an id of object.
-        :return: An object or None.
-        """
-        raise NotImplementedError
 
     async def get_list(
         self,
@@ -253,6 +175,31 @@ class BaseModelAdmin:
         :params sort_by: a sort by field name.
         :params filters: a dict of filters.
         :return: A tuple of list of objects and total count.
+        """
+        raise NotImplementedError
+
+    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
+        """This method is used to save orm/db model object.
+
+        :params id: an id of object.
+        :params payload: a payload from request.
+        :return: A saved object or None.
+        """
+        raise NotImplementedError
+
+    async def get_obj(self, id: UUID | int) -> dict | None:
+        """This method is used to get orm/db model object by id.
+
+        :params id: an id of object.
+        :return: An object or None.
+        """
+        raise NotImplementedError
+
+    async def delete_model(self, id: UUID | int) -> None:
+        """This method is used to delete orm/db model object.
+
+        :params id: an id of object.
+        :return: None.
         """
         raise NotImplementedError
 
@@ -424,7 +371,7 @@ class BaseModelAdmin:
 
         fields = [f for f in model_fields if model_fields[f].get("is_pk")]
         if not self.fields:
-            if self.fieldsets:
+            if getattr(self, "fieldsets", None):
                 for item in self.fieldsets:
                     for field in item[1].get("fields") or []:
                         if field not in fields and field not in self.exclude:
@@ -465,7 +412,86 @@ class BaseModelAdmin:
         return True
 
 
+class InlineModelAdmin(BaseModelAdmin):
+    """This class is used to create admin inline model class."""
+
+    # The model which the inline is using. This is required.
+    model: Any
+
+    # The name of the foreign key on the model.
+    # In most cases this will be dealt with automatically, but fk_name must be specified explicitly
+    # if there are more than one foreign key to the same parent model.
+    fk_name: str
+
+    # This controls the maximum number of forms to show in the inline.
+    # This doesn’t directly correlate to the number of objects, but can if the value is small enough.
+    # See Limiting the number of editable objects for more information.
+    max_num: int = 10
+
+    # This controls the minimum number of forms to show in the inline.
+    min_num: int = 1
+
+    # An override to the verbose_name from the model’s inner Meta class.
+    verbose_name: str | None = None
+
+    # An override to the verbose_name_plural from the model’s inner Meta class.
+    verbose_name_plural: str | None = None
+
+
 class ModelAdmin(BaseModelAdmin):
     """This class is used to create admin model class."""
 
-    pass
+    # Labels for model. We use them in select, autocomplete and other wigets where we represent model items.
+    # We user first from label_fields, if it is empty, we use the second and so on.
+    # If you don't set this attribute, we will use id attr as label.
+    # Example of usage: label_fields = ("name", "email", "id")
+    label_fields: Sequence[str] = ()
+
+    # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.  # noqa: E501
+    # Example of usage: list_display_links = ("id", "mobile_number", "email")
+    list_display_links: Sequence[str] = ()
+
+    # Set fieldsets to control the layout of admin “add” and “change” pages.
+    # fieldsets is a list of two-tuples, in which each two-tuple represents a <fieldset> on the admin form page. (A <fieldset> is a “section” of the form.)  # noqa: E501
+    fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
+
+    # Not supported setting
+    # form
+
+    # Not supported setting
+    # inlines
+
+    # Not supported setting
+    # formfield_overrides
+
+    # Normally, objects have three save options: “Save”, “Save and continue editing”, and “Save and add another”.
+    # If save_as is True, “Save and add another” will be replaced
+    # by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.
+    # Example of usage: save_as = True
+    save_as: bool = False
+
+    # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.  # noqa: E501
+    # If you set save_as_continue=False, the redirect will be to the changelist view.
+    # Example of usage: save_as_continue = False
+    save_as_continue: bool = False
+
+    # Normally, the save buttons appear only at the bottom of the forms.
+    # If you set save_on_top, the buttons will appear both on the top and the bottom.
+    # Example of usage: save_on_top = True
+    save_on_top: bool = False
+
+    # Set view_on_site to control whether or not to display the “View on site” link.
+    # This link should bring you to a URL where you can display the saved object.
+    # Example of usage: view_on_site = "http://example.com"
+    view_on_site: str | None = None
+
+    inlines: Sequence[InlineModelAdmin] = ()
+
+    async def authenticate(self, username: str, password: str) -> UUID | int | None:
+        """This method is used to implement authentication for settings.ADMIN_USER_MODEL orm/db model.
+
+        :params username: a value for user model settings.ADMIN_USER_MODEL_USERNAME_FIELD field.
+        :params password: a password.
+        :return: An user id or None.
+        """
+        raise NotImplementedError

@@ -1,3 +1,4 @@
+import { Checkbox, Tag } from 'antd';
 import dayjs from 'dayjs';
 
 export const isDayJs = (v: any): boolean => {
@@ -80,17 +81,38 @@ export const transformDataFromServer = (data: any) => {
 export const transformColumnValueFromServer = (
   value: any,
   emptyValue?: string,
-  dateTimeFormat?: string,
-  booleanWidget?: any
+  dateTimeFormat?: string
 ) => {
   if (isBoolean(value)) {
-    if (booleanWidget) {
-      return booleanWidget(value);
-    }
-    return value ? 'v' : 'x';
+    return <Checkbox checked={value} />;
   }
   if (isIsoDate(value) && dateTimeFormat) {
     return dayjs(value).format(dateTimeFormat);
+  }
+  if (isArray(value)) {
+    const colors = [
+      'blue',
+      'purple',
+      'cyan',
+      'green',
+      'magenta',
+      'pink',
+      'red',
+      'orange',
+      'yellow',
+      'volcano',
+      'geekblue',
+      'lime',
+      'gold',
+    ];
+
+    return value.map((v: any, index: number) => {
+      return (
+        <Tag color={colors[index % colors.length]} key={v}>
+          {v}
+        </Tag>
+      );
+    });
   }
   return value || emptyValue || '-';
 };

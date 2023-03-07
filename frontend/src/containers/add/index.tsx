@@ -25,7 +25,7 @@ export const Add: React.FC = () => {
     (item: IModel) => item.name === model
   );
 
-  const { mutate, isLoading } = useMutation(
+  const { mutate, isLoading, isError } = useMutation(
     (payload: any) => postFetcher(`/add/${model}`, payload),
     {
       onSuccess: () => {
@@ -59,21 +59,17 @@ export const Add: React.FC = () => {
       }
     >
       {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Add) ? (
-        <Row gutter={[16, 16]}>
-          <Col xs={24} xl={14}>
-            <FormContainer form={form} onFinish={onFinish} mode="add">
-              <Row justify="end">
-                <Col>
-                  <Space>
-                    <Button loading={isLoading} htmlType="submit" type="primary">
-                      <SaveOutlined /> {_t('Add')}
-                    </Button>
-                  </Space>
-                </Col>
-              </Row>
-            </FormContainer>
-          </Col>
-        </Row>
+        <FormContainer form={form} onFinish={onFinish} mode="add" hasOperationError={isError}>
+          <Row justify="end">
+            <Col>
+              <Space>
+                <Button loading={isLoading} htmlType="submit" type="primary">
+                  <SaveOutlined /> {_t('Add')}
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+        </FormContainer>
       ) : (
         <Empty description={_t('No permissions for model')} />
       )}

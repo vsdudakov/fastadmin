@@ -56,7 +56,7 @@ def register(*models):
 
     :param models: A list of models to register.
     """
-    from fastadmin.models.base import BaseModelAdmin
+    from fastadmin.models.base import ModelAdmin
     from fastadmin.models.helpers import register_admin_model
 
     def wrapper(admin_class):
@@ -67,7 +67,7 @@ def register(*models):
         if not models:
             raise ValueError("At least one model must be passed to register.")
 
-        if not issubclass(admin_class, BaseModelAdmin):
+        if not issubclass(admin_class, ModelAdmin):
             raise ValueError("Wrapped class must subclass ModelAdmin.")
 
         register_admin_model(admin_class, models)

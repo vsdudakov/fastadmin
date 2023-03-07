@@ -1,4 +1,6 @@
-from fastadmin import TortoiseModelAdmin, action, display
+from fastadmin import TortoiseModelAdmin, TortoiseInlineModelAdmin, action, display
+
+from .models import Event
 
 
 class UserAdmin(TortoiseModelAdmin):
@@ -9,8 +11,13 @@ class UserAdmin(TortoiseModelAdmin):
         return obj.id
 
 
+class EventInlineAdmin(TortoiseInlineModelAdmin):
+    model = Event
+    fk_name = "tournament"
+
+
 class TournamentAdmin(TortoiseModelAdmin):
-    pass
+    inlines = (EventInlineAdmin,)
 
 
 class EventAdmin(TortoiseModelAdmin):

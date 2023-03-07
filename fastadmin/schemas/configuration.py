@@ -82,8 +82,8 @@ class ModelFieldSchema(BaseModel):
     change_configuration: ChangeConfigurationFieldSchema | None
 
 
-class ModelSchema(BaseModel):
-    """Model schema"""
+class BaseModelSchema(BaseModel):
+    """Base Model schema"""
 
     name: str
     permissions: Sequence[ModelPermission]
@@ -92,17 +92,33 @@ class ModelSchema(BaseModel):
     actions_on_bottom: bool | None
     actions_selection_counter: bool | None
     fields: Sequence[ModelFieldSchema]
-    fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] | None
     list_per_page: int | None
-    save_on_top: bool | None
-    save_as: bool | None
-    save_as_continue: bool | None
-    view_on_site: str | None
     search_help_text: str | None
     search_fields: Sequence[str] | None
     preserve_filters: bool | None
     list_max_show_all: int | None
     show_full_result_count: bool | None
+
+
+class InlineModelSchema(BaseModelSchema):
+    """Inline model schema"""
+
+    fk_name: str | None
+    max_num: int | None
+    min_num: int | None
+    verbose_name: str | None
+    verbose_name_plural: str | None
+
+
+class ModelSchema(BaseModelSchema):
+    """Model schema"""
+
+    fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] | None
+    save_on_top: bool | None
+    save_as: bool | None
+    save_as_continue: bool | None
+    view_on_site: str | None
+    inlines: Sequence[InlineModelSchema] | None
 
 
 class ConfigurationSchema(BaseModel):

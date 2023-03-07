@@ -59,7 +59,7 @@ export interface IModelField {
   change_configuration?: IChangeConfigurationField;
 }
 
-export interface IModel {
+interface IBaseModel {
   name: string;
   permissions: EModelPermission[];
   actions: IModelAction[];
@@ -67,17 +67,29 @@ export interface IModel {
   actions_on_bottom?: boolean;
   actions_selection_counter?: boolean;
   fields: IModelField[];
-  fieldsets?: [string | undefined, Record<string, string[]>][];
   list_per_page?: number;
-  save_on_top?: boolean;
-  save_as?: boolean;
-  save_as_continue?: boolean;
-  view_on_site?: string;
   search_help_text?: string;
   search_fields?: string[];
   preserve_filters?: boolean;
   list_max_show_all?: number;
   show_full_result_count?: boolean;
+}
+
+export interface IInlineModel extends IBaseModel {
+  fk_name?: string;
+  max_num?: number;
+  min_num?: number;
+  verbose_name?: string;
+  verbose_name_plural?: string;
+}
+
+export interface IModel extends IBaseModel {
+  fieldsets?: [string | undefined, Record<string, string[]>][];
+  save_on_top?: boolean;
+  save_as?: boolean;
+  save_as_continue?: boolean;
+  view_on_site?: string;
+  inlines?: IInlineModel[];
 }
 
 export interface IConfiguration {

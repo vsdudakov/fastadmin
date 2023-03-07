@@ -1,7 +1,6 @@
 import pytest
 
-from fastadmin import WidgetType
-from fastadmin.models.base import BaseModelAdmin
+from fastadmin import ModelAdmin, WidgetType
 from fastadmin.models.helpers import get_admin_model, register_admin_model, unregister_admin_model
 
 
@@ -9,7 +8,7 @@ async def test_not_implemented_methods():
     class Model:
         pass
 
-    base = BaseModelAdmin(Model)
+    base = ModelAdmin(Model)
     with pytest.raises(NotImplementedError):
         await base.authenticate("username", "password")
 
@@ -36,7 +35,7 @@ async def test_export_wrong_format(mocker):
     class Model:
         pass
 
-    base = BaseModelAdmin(Model)
+    base = ModelAdmin(Model)
 
     mocker.patch.object(base, "get_list", return_value=([], 0))
     mocker.patch.object(base, "get_model_fields", return_value={})
@@ -47,7 +46,7 @@ async def test_get_filter_widget(mocker):
     class Model:
         pass
 
-    base = BaseModelAdmin(Model)
+    base = ModelAdmin(Model)
     mocker.patch.object(base, "get_form_widget", return_value=(WidgetType.AsyncTransfer, {}))
     widget_type, widget_props = base.get_filter_widget("test")
     assert widget_type == WidgetType.AsyncTransfer
