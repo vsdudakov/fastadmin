@@ -44,10 +44,6 @@ pip install fastadmin
 
 #### Setup ENV variables
 
-Setup the env variables:
-
-Example:
-
 ```bash
 export ADMIN_USER_MODEL = User
 export ADMIN_USER_MODEL_USERNAME_FIELD = username
