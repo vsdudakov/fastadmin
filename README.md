@@ -50,7 +50,7 @@ export ADMIN_USER_MODEL_USERNAME_FIELD = username
 export ADMIN_SECRET_KEY = secret_key
 ```
 
-For additional information see [documentation](https://vsdudakov.github.io/fastadmin#settings)
+For additional information see [Settings](https://vsdudakov.github.io/fastadmin#settings) Documentation
 
 ### Quick Tutorial
 
@@ -80,6 +80,8 @@ uvicorn ...
 ```
 
 Go to [http://localhost:8000/admin](http://localhost:8000/admin).
+
+For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmin#model_admin_objects)  and [InlineModelAdmin](https://vsdudakov.github.io/fastadmin#inline_model_admin_objects) Documentation
 
 ##### For Django and Flask:
 
