@@ -24,13 +24,7 @@ FastAdmin is an easy-to-use Admin App for FastAPI inspired by Django Admin.
 
 FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI easiest way.
 
-## Why was FastAdmin built?
-
-FastAPI is gaining huge popularity as an asyncio, minimalistic API framework, but there is no simple and clear system for administration your data.
-
-Hence we started FastAdmin.
-
-FastAdmin is designed to be minimalistic, functional, yet familiar, to ease the migration of developers wishing to switch to FastAPI from Django.
+FastAdmin is designed to be minimalistic, functional and yet familiar.
 
 ## Getting Started
 
