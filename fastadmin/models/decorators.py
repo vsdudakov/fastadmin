@@ -45,7 +45,7 @@ def display(function=None):
         return decorator(function)
 
 
-def register(*models):
+def register(*orm_model_classes):
     """Register the given model(s) classes and wrapped ModelAdmin class with
     admin site:
 
@@ -57,21 +57,21 @@ def register(*models):
     :param models: A list of models to register.
     """
     from fastadmin.models.base import ModelAdmin
-    from fastadmin.models.helpers import register_admin_model
+    from fastadmin.models.helpers import register_admin_model_class
 
-    def wrapper(admin_class):
+    def wrapper(admin_model_class):
         """Wrapper for register.
 
         :param admin_class: A class to wrap.
         """
-        if not models:
+        if not orm_model_classes:
             raise ValueError("At least one model must be passed to register.")
 
-        if not issubclass(admin_class, ModelAdmin):
+        if not issubclass(admin_model_class, ModelAdmin):
             raise ValueError("Wrapped class must subclass ModelAdmin.")
 
-        register_admin_model(admin_class, models)
+        register_admin_model_class(admin_model_class, orm_model_classes)
 
-        return admin_class
+        return admin_model_class
 
     return wrapper

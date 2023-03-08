@@ -4,16 +4,15 @@ from collections import OrderedDict
 from typing import Any
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
-from fastadmin.models.base import InlineModelAdmin, ModelAdmin
+from fastadmin.models.base import InlineModelAdmin, ModelAdmin, ORMInterfaceMixin
+from fastadmin.models.exceptions import AdminModelException
 from fastadmin.models.helpers import get_admin_model
-from fastadmin.schemas.configuration import WidgetType
+from fastadmin.models.schemas import WidgetType
 from fastadmin.settings import settings
 
 
-async def obj_to_dict(obj: Any, with_m2m: bool = True, with_display_fields: bool = False) -> dict:
-    """Converts object to dict.
+async def _obj_to_dict(obj: Any, with_m2m: bool = True, with_display_fields: bool = False) -> dict:
+    """Converts orm model obj to dict.
 
     :params obj: an object.
     :params with_m2m: a flag to include m2m fields.
@@ -41,7 +40,7 @@ async def obj_to_dict(obj: Any, with_m2m: bool = True, with_display_fields: bool
     return obj_dict
 
 
-class TortoiseMixin:
+class TortoiseMixin(ORMInterfaceMixin):
     async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
@@ -80,7 +79,7 @@ class TortoiseMixin:
                     remote_model_objs.append(remote_model_obj)
                 if remote_model_objs:
                     await m2m_rel.add(*remote_model_objs)
-        return await obj_to_dict(obj)
+        return await _obj_to_dict(obj)
 
     async def delete_model(self, id: UUID | int) -> None:
         """This method is used to delete orm/db model object.
@@ -99,7 +98,7 @@ class TortoiseMixin:
         obj = await self.model_cls.filter(id=id).first()
         if not obj:
             return None
-        return await obj_to_dict(obj)
+        return await _obj_to_dict(obj)
 
     async def get_list(
         self,
@@ -126,18 +125,14 @@ class TortoiseMixin:
             for filter_condition, value in filters.items():
                 field = filter_condition.split("__", 1)[0]
                 if field not in fields:
-                    raise HTTPException(
-                        status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Filter by {filter_condition} is not allowed"
-                    )
+                    raise AdminModelException(detail=f"Filter by {filter_condition} is not allowed")
                 qs = qs.filter(**{filter_condition: value})
 
         if search:
             if self.search_fields:
                 for field in self.search_fields:
                     if field not in fields:
-                        raise HTTPException(
-                            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Search by {field} is not allowed"
-                        )
+                        raise AdminModelException(detail=f"Search by {field} is not allowed")
                 ids = await asyncio.gather(
                     *(qs.filter(**{f + "__icontains": search}).values_list("id", flat=True) for f in self.search_fields)
                 )
@@ -146,15 +141,13 @@ class TortoiseMixin:
 
         if sort_by:
             if sort_by.strip("-") not in fields:
-                raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Sort by {sort_by} is not allowed")
+                raise AdminModelException(detail=f"Sort by {sort_by} is not allowed")
             qs = qs.order_by(sort_by)
         else:
             if self.ordering:
                 for ordering_field in self.ordering:
                     if ordering_field.strip("-") not in fields:
-                        raise HTTPException(
-                            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Sort by {ordering_field} is not allowed"
-                        )
+                        raise AdminModelException(detail=f"Sort by {ordering_field} is not allowed")
                 qs = qs.order_by(*self.ordering)
 
         total = await qs.count()
@@ -166,13 +159,11 @@ class TortoiseMixin:
         if self.list_select_related:
             for field in self.list_select_related:
                 if field not in fields:
-                    raise HTTPException(
-                        status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Select related by {field} is not allowed"
-                    )
+                    raise AdminModelException(detail=f"Select related by {field} is not allowed")
             qs = qs.select_related(*(f.replace("_id", "") for f in self.list_select_related))
 
         results = await asyncio.gather(
-            *(obj_to_dict(obj, with_m2m=False, with_display_fields=True) for obj in await qs)
+            *(_obj_to_dict(obj, with_m2m=False, with_display_fields=True) for obj in await qs)
         )
 
         return results, total

@@ -5,12 +5,77 @@ from io import BytesIO, StringIO
 from typing import Any
 from uuid import UUID
 
-from fastadmin.schemas.api import ExportFormat
-from fastadmin.schemas.configuration import WidgetType
+from fastadmin.api.schemas import ExportFormat
+from fastadmin.models.schemas import WidgetType
 from fastadmin.settings import settings
 
 
-class BaseModelAdmin:
+class ORMInterfaceMixin:
+    """ORM mixin class."""
+
+    async def get_list(
+        self,
+        offset: int | None = None,
+        limit: int | None = None,
+        search: str | None = None,
+        sort_by: str | None = None,
+        filters: dict | None = None,
+    ) -> tuple[list[dict], int]:
+        """This method is used to get list of orm/db model objects.
+
+        :params offset: an offset for pagination.
+        :params limit: a limit for pagination.
+        :params search: a search query.
+        :params sort_by: a sort by field name.
+        :params filters: a dict of filters.
+        :return: A tuple of list of objects and total count.
+        """
+        raise NotImplementedError
+
+    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
+        """This method is used to save orm/db model object.
+
+        :params id: an id of object.
+        :params payload: a payload from request.
+        :return: A saved object or None.
+        """
+        raise NotImplementedError
+
+    async def get_obj(self, id: UUID | int) -> dict | None:
+        """This method is used to get orm/db model object by id.
+
+        :params id: an id of object.
+        :return: An object or None.
+        """
+        raise NotImplementedError
+
+    async def delete_model(self, id: UUID | int) -> None:
+        """This method is used to delete orm/db model object.
+
+        :params id: an id of object.
+        :return: None.
+        """
+        raise NotImplementedError
+
+    def get_model_fields(self) -> OrderedDict[str, dict]:
+        """This method is used to get all orm/db model fields
+        with saving ordering (non relations, fk, o2o, m2m).
+
+        :return: An OrderedDict of model fields.
+        """
+        raise NotImplementedError
+
+    def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
+        """This method is used to get form item widget
+        for field from orm/db model.
+
+        :params field_name: a model field name.
+        :return: A tuple of widget type and widget props.
+        """
+        raise NotImplementedError
+
+
+class BaseModelAdmin(ORMInterfaceMixin):
     """Base class for model admin"""
 
     # A list of actions to make available on the change list page.
@@ -158,67 +223,6 @@ class BaseModelAdmin:
         :params model_cls: an orm/db model class.
         """
         self.model_cls = model_cls
-
-    async def get_list(
-        self,
-        offset: int | None = None,
-        limit: int | None = None,
-        search: str | None = None,
-        sort_by: str | None = None,
-        filters: dict | None = None,
-    ) -> tuple[list[dict], int]:
-        """This method is used to get list of orm/db model objects.
-
-        :params offset: an offset for pagination.
-        :params limit: a limit for pagination.
-        :params search: a search query.
-        :params sort_by: a sort by field name.
-        :params filters: a dict of filters.
-        :return: A tuple of list of objects and total count.
-        """
-        raise NotImplementedError
-
-    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
-        """This method is used to save orm/db model object.
-
-        :params id: an id of object.
-        :params payload: a payload from request.
-        :return: A saved object or None.
-        """
-        raise NotImplementedError
-
-    async def get_obj(self, id: UUID | int) -> dict | None:
-        """This method is used to get orm/db model object by id.
-
-        :params id: an id of object.
-        :return: An object or None.
-        """
-        raise NotImplementedError
-
-    async def delete_model(self, id: UUID | int) -> None:
-        """This method is used to delete orm/db model object.
-
-        :params id: an id of object.
-        :return: None.
-        """
-        raise NotImplementedError
-
-    def get_model_fields(self) -> OrderedDict[str, dict]:
-        """This method is used to get all orm/db model fields
-        with saving ordering (non relations, fk, o2o, m2m).
-
-        :return: An OrderedDict of model fields.
-        """
-        raise NotImplementedError
-
-    def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
-        """This method is used to get form item widget
-        for field from orm/db model.
-
-        :params field_name: a model field name.
-        :return: A tuple of widget type and widget props.
-        """
-        raise NotImplementedError
 
     async def get_export(
         self,
@@ -383,30 +387,34 @@ class BaseModelAdmin:
 
         return fields
 
-    def has_add_permission(self) -> bool:
+    def has_add_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to add new model instance.
 
+        :param user_id: The user id.
         :return: A boolean value.
         """
         return True
 
-    def has_change_permission(self) -> bool:
+    def has_change_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to change model instance.
 
+        :param user_id: The user id.
         :return: A boolean value.
         """
         return True
 
-    def has_delete_permission(self) -> bool:
+    def has_delete_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to delete model instance.
 
+        :param user_id: The user id.
         :return: A boolean value.
         """
         return True
 
-    def has_export_permission(self) -> bool:
+    def has_export_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to export model instance.
 
+        :param user_id: The user id.
         :return: A boolean value.
         """
         return True
@@ -495,3 +503,6 @@ class ModelAdmin(BaseModelAdmin):
         :return: An user id or None.
         """
         raise NotImplementedError
+
+
+admin_model_classes: dict[Any, type[ModelAdmin]] = {}

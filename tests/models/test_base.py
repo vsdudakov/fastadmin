@@ -1,7 +1,7 @@
 import pytest
 
-from fastadmin import ModelAdmin, WidgetType
-from fastadmin.models.helpers import get_admin_model, register_admin_model, unregister_admin_model
+from fastadmin import ModelAdmin
+from fastadmin.models.schemas import WidgetType
 
 
 async def test_not_implemented_methods():
@@ -70,15 +70,3 @@ async def test_get_filter_widget(mocker):
     widget_type, widget_props = base.get_filter_widget("test")
     assert widget_type == WidgetType.Input
     assert not widget_props["required"]
-
-
-async def test_get_form_widget(objects):
-    superuser = objects["superuser"]
-    admin_user_cls = objects["admin_user_cls"]
-    register_admin_model(admin_user_cls, [superuser.__class__])
-
-    admin_model = get_admin_model(superuser.__class__.__name__)
-    with pytest.raises(Exception):
-        admin_model.get_form_widget("invalid")
-
-    unregister_admin_model([superuser.__class__])

@@ -5,12 +5,11 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from fastadmin.settings import settings
+from fastadmin.settings import ROOT_DIR, settings
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger(__name__)
 router = APIRouter()
-templates = Jinja2Templates(directory=os.path.join(current_dir, "templates"))
+templates = Jinja2Templates(directory=os.path.join(ROOT_DIR, "templates"))
 
 
 @router.get("/", response_class=HTMLResponse)

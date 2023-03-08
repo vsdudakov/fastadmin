@@ -1,10 +1,9 @@
-from fastadmin import action, display
-from fastadmin.tortoise import TortoiseInlineModelAdmin, TortoiseModelAdmin
+from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, action, display
 
 from .models import Event
 
 
-class UserAdmin(TortoiseModelAdmin):
+class UserModelAdmin(TortoiseModelAdmin):
     async def authenticate(self, username, password):
         obj = await self.model_cls.filter(username=username, password=password, is_superuser=True).first()
         if not obj:
@@ -12,16 +11,16 @@ class UserAdmin(TortoiseModelAdmin):
         return obj.id
 
 
-class EventInlineAdmin(TortoiseInlineModelAdmin):
+class EventInlineModelAdmin(TortoiseInlineModelAdmin):
     model = Event
     fk_name = "tournament"
 
 
-class TournamentAdmin(TortoiseModelAdmin):
-    inlines = (EventInlineAdmin,)
+class TournamentModelAdmin(TortoiseModelAdmin):
+    inlines = (EventInlineModelAdmin,)
 
 
-class EventAdmin(TortoiseModelAdmin):
+class EventModelAdmin(TortoiseModelAdmin):
     @action(description="Make user active")
     async def make_is_active(self, ids):
         await self.model_cls.filter(id__in=ids).update(is_active=True)

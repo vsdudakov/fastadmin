@@ -3,15 +3,14 @@ from datetime import datetime, timedelta
 import jwt
 from fastapi import Request
 
-from fastadmin.api.depends import get_user_id_or_none
-from fastadmin.models.helpers import register_admin_model, unregister_admin_model
+from fastadmin import register_admin_model_class, unregister_admin_model_class
+from fastadmin.api.fastapi.depends import get_user_id_or_none
 from fastadmin.settings import settings
+from tests.models.orms.tortoise.admins import UserModelAdmin
 
 
-async def test_get_user_id_or_none(objects):
-    superuser = objects["superuser"]
-    admin_user_cls = objects["admin_user_cls"]
-    register_admin_model(admin_user_cls, [superuser.__class__])
+async def test_get_user_id_or_none(tortoise_superuser):
+    register_admin_model_class(UserModelAdmin, [tortoise_superuser.__class__])
 
     request = Request(scope={"type": "http", "headers": []})
     assert await get_user_id_or_none(request) is None
@@ -21,7 +20,7 @@ async def test_get_user_id_or_none(objects):
 
     session_id = jwt.encode(
         {
-            "user_id": str(superuser.id),
+            "user_id": str(tortoise_superuser.id),
         },
         settings.ADMIN_SECRET_KEY,
         algorithm="HS256",
@@ -32,7 +31,7 @@ async def test_get_user_id_or_none(objects):
     now = datetime.utcnow() - timedelta(seconds=10)
     session_id = jwt.encode(
         {
-            "user_id": str(superuser.id),
+            "user_id": str(tortoise_superuser.id),
             "session_expired_at": now.isoformat(),
         },
         settings.ADMIN_SECRET_KEY,
@@ -53,4 +52,4 @@ async def test_get_user_id_or_none(objects):
     request.cookies[settings.ADMIN_SESSION_ID_KEY] = session_id
     assert await get_user_id_or_none(request) is None
 
-    unregister_admin_model([superuser.__class__])
+    unregister_admin_model_class([tortoise_superuser.__class__])

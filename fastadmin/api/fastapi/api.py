@@ -9,12 +9,12 @@ import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 
-from fastadmin.api.depends import get_user_id, get_user_id_or_none
+from fastadmin.api.fastapi.depends import get_user_id, get_user_id_or_none
 from fastadmin.api.helpers import generate_models_schema, sanitize
+from fastadmin.api.schemas import ActionSchema, ExportSchema, SignInInputSchema
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
-from fastadmin.models.helpers import get_admin_model, get_admin_models
-from fastadmin.schemas.api import ActionSchema, ExportSchema, SignInInputSchema
-from fastadmin.schemas.configuration import ConfigurationSchema, ModelSchema
+from fastadmin.models.helpers import get_admin_model, get_admin_model_classes
+from fastadmin.models.schemas import ConfigurationSchema, ModelSchema
 from fastadmin.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -300,7 +300,7 @@ async def configuration(
             models=[],
         )
 
-    admin_models = cast(dict[Any, type[ModelAdmin | InlineModelAdmin]], get_admin_models())
+    admin_models = cast(dict[Any, type[ModelAdmin | InlineModelAdmin]], get_admin_model_classes())
     models = cast(Sequence[ModelSchema], generate_models_schema(admin_models))
     return ConfigurationSchema(
         site_name=settings.ADMIN_SITE_NAME,

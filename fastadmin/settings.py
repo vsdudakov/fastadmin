@@ -6,6 +6,9 @@ from pydantic import BaseSettings
 load_dotenv(os.getenv("ADMIN_ENV_FILE") or ".env")
 
 
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
 class Settings(BaseSettings):
     """Settings"""
 

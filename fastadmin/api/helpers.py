@@ -1,8 +1,13 @@
 import inspect
+from datetime import datetime
 from typing import Any, cast
+from uuid import UUID
+
+import jwt
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
-from fastadmin.schemas.configuration import (
+from fastadmin.models.helpers import get_admin_model
+from fastadmin.models.schemas import (
     AddConfigurationFieldSchema,
     ChangeConfigurationFieldSchema,
     InlineModelSchema,
@@ -12,6 +17,7 @@ from fastadmin.schemas.configuration import (
     ModelPermission,
     ModelSchema,
 )
+from fastadmin.settings import settings
 
 
 def sanitize(value: str) -> bool | None | str:
@@ -204,3 +210,33 @@ def generate_models_schema(
                 ),
             )
     return models_schemas
+
+
+async def get_user_id_from_session_id(session_id: str) -> UUID | int | None:
+    """This method is used to get user id from session_id.
+
+    :param session_id: A session id.
+    :return: A user id or None.
+    """
+    admin_model = get_admin_model(settings.ADMIN_USER_MODEL)
+    if not admin_model:
+        return None
+
+    try:
+        token_payload = jwt.decode(session_id, settings.ADMIN_SECRET_KEY, algorithms=["HS256"])
+    except jwt.PyJWTError:
+        return None
+
+    session_expired_at = token_payload.get("session_expired_at")
+    if not session_expired_at:
+        return None
+
+    if datetime.fromisoformat(session_expired_at) < datetime.utcnow():
+        return None
+
+    user_id = token_payload.get("user_id")
+
+    if not user_id or not await admin_model.get_obj(user_id):
+        return None
+
+    return user_id
