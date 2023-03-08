@@ -55,7 +55,7 @@ For additional information see [Settings](https://vsdudakov.github.io/fastadmin#
 
 ```python
 from fastapi import FastAPI
-from fastadmin.fastapi import app as admin_app
+from fastadmin import fastapi_app as admin_app
 
 ...
 
@@ -91,8 +91,7 @@ You have to implement authenticate method for FastAdmin authentication on AdminM
 ```python
 import bcrypt
 from tortoise.models import Model
-from fastadmin import register
-from fastadmin.tortoise import TortoiseModelAdmin
+from fastadmin import register, TortoiseModelAdmin
 
 
 class User(Model):

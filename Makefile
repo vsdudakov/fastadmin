@@ -6,8 +6,8 @@ clean:
 	rm -rf .coverage
 
 .PHONY: dev
-dev:
-	poetry run uvicorn dev:app --reload --host=0.0.0.0 --port=8090
+dev_fastapi:
+	poetry run uvicorn tests.models.orms.tortoise.app:app --reload --host=0.0.0.0 --port=8090
 
 .PHONY: fix
 fix:
