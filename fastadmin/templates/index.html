@@ -12,10 +12,10 @@
     </script>
     <script
       defer="defer"
-      src="{{ url_for('static', path='/js/main.min.js') }}"
+      src="/{{settings.ADMIN_PREFIX}}/static/js/main.min.js"
     ></script>
     <link
-      href="{{ url_for('static', path='/css/main.min.css') }}"
+      href="/{{settings.ADMIN_PREFIX}}/static/css/main.min.css"
       rel="stylesheet"
     />
   </head>

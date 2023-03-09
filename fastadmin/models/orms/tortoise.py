@@ -4,43 +4,42 @@ from collections import OrderedDict
 from typing import Any
 from uuid import UUID
 
-from fastadmin.models.base import InlineModelAdmin, ModelAdmin, ORMInterfaceMixin
+from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.exceptions import AdminModelException
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.models.schemas import WidgetType
 from fastadmin.settings import settings
 
 
-async def _obj_to_dict(obj: Any, with_m2m: bool = True, with_display_fields: bool = False) -> dict:
-    """Converts orm model obj to dict.
+class TortoiseMixin:
+    async def _obj_to_dict(self, obj: Any, with_m2m: bool = True, with_display_fields: bool = False) -> dict:
+        """Converts orm model obj to dict.
 
-    :params obj: an object.
-    :params with_m2m: a flag to include m2m fields.
-    :params with_display_fields: a flag to include display fields.
-    :return: A dict.
-    """
-    obj_dict = {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
-    if with_m2m:
-        for field in obj.__class__._meta.m2m_fields:
-            m2m_rel = getattr(obj, field)
-            remote_model = m2m_rel.remote_model
-            remote_ids = await m2m_rel.all().values_list(remote_model._meta.pk_attr, flat=True)
-            obj_dict[field] = remote_ids
-    if with_display_fields:
-        if admin_model := get_admin_model(obj.__class__.__name__):
-            for field in admin_model.list_display:
-                display_field_function = getattr(admin_model, field, None)
-                if (
-                    not display_field_function
-                    or not inspect.ismethod(display_field_function)
-                    or not hasattr(display_field_function, "is_display")
-                ):
-                    continue
-                obj_dict[field] = await display_field_function(obj)
-    return obj_dict
+        :params obj: an object.
+        :params with_m2m: a flag to include m2m fields.
+        :params with_display_fields: a flag to include display fields.
+        :return: A dict.
+        """
+        obj_dict = {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
+        if with_m2m:
+            for field in obj.__class__._meta.m2m_fields:
+                m2m_rel = getattr(obj, field)
+                remote_model = m2m_rel.remote_model
+                remote_ids = await m2m_rel.all().values_list(remote_model._meta.pk_attr, flat=True)
+                obj_dict[field] = remote_ids
+        if with_display_fields:
+            if admin_model := get_admin_model(obj.__class__.__name__):
+                for field in admin_model.list_display:
+                    display_field_function = getattr(admin_model, field, None)
+                    if (
+                        not display_field_function
+                        or not inspect.ismethod(display_field_function)
+                        or not hasattr(display_field_function, "is_display")
+                    ):
+                        continue
+                    obj_dict[field] = await display_field_function(obj)
+        return obj_dict
 
-
-class TortoiseMixin(ORMInterfaceMixin):
     async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
@@ -79,7 +78,7 @@ class TortoiseMixin(ORMInterfaceMixin):
                     remote_model_objs.append(remote_model_obj)
                 if remote_model_objs:
                     await m2m_rel.add(*remote_model_objs)
-        return await _obj_to_dict(obj)
+        return await self._obj_to_dict(obj)
 
     async def delete_model(self, id: UUID | int) -> None:
         """This method is used to delete orm/db model object.
@@ -98,7 +97,7 @@ class TortoiseMixin(ORMInterfaceMixin):
         obj = await self.model_cls.filter(id=id).first()
         if not obj:
             return None
-        return await _obj_to_dict(obj)
+        return await self._obj_to_dict(obj)
 
     async def get_list(
         self,
@@ -163,7 +162,7 @@ class TortoiseMixin(ORMInterfaceMixin):
             qs = qs.select_related(*(f.replace("_id", "") for f in self.list_select_related))
 
         results = await asyncio.gather(
-            *(_obj_to_dict(obj, with_m2m=False, with_display_fields=True) for obj in await qs)
+            *(self._obj_to_dict(obj, with_m2m=False, with_display_fields=True) for obj in await qs)
         )
 
         return results, total

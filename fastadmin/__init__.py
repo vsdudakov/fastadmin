@@ -1,5 +1,6 @@
 # api
-from fastadmin.api.fastapi.app import app as fastapi_app
+from fastadmin.api.frameworks.fastapi.app import app as fastapi_app
+from fastadmin.api.frameworks.flask.app import app as flask_app
 
 # models
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin

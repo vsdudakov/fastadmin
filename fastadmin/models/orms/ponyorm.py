@@ -1,7 +1,7 @@
-from fastadmin.models.base import InlineModelAdmin, ModelAdmin, ORMInterfaceMixin
+from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 
 
-class PonyORMMixin(ORMInterfaceMixin):
+class PonyORMMixin:
     # TODO: Add support for PonyORM
     pass
 

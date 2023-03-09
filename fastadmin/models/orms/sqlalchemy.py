@@ -1,7 +1,7 @@
-from fastadmin.models.base import InlineModelAdmin, ModelAdmin, ORMInterfaceMixin
+from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 
 
-class SqlAlchemyMixin(ORMInterfaceMixin):
+class SqlAlchemyMixin:
     # TODO: Add support for SqlAlchemy
     pass
 

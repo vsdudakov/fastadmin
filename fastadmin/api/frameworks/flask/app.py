@@ -1,0 +1,32 @@
+import logging
+import os
+
+from flask import Blueprint
+from werkzeug.exceptions import HTTPException
+
+from fastadmin.api.frameworks.flask.api import api_router
+from fastadmin.api.frameworks.flask.views import views_router
+from fastadmin.settings import ROOT_DIR
+
+logger = logging.getLogger(__name__)
+
+app = Blueprint(
+    "FastAdmin App",
+    __name__,
+    url_prefix="/parent",
+    static_url_path="/static",
+    static_folder=os.path.join(ROOT_DIR, "static"),
+    template_folder=os.path.join(ROOT_DIR, "templates"),
+)
+app.register_blueprint(views_router)
+app.register_blueprint(api_router)
+
+
+@app.errorhandler(Exception)
+def exception_handler(exc):
+    if isinstance(exc, HTTPException):
+        return exc
+    return {
+        "status_code": 500,
+        "content": {"exception": str(exc)},
+    }

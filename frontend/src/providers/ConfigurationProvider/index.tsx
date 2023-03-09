@@ -40,7 +40,7 @@ export const ConfigurationProvider = ({ children }: IConfigurationProvider) => {
     return (
       <Result
         status="warning"
-        title="Invaid configuration. Please check your admin model classes and logs."
+        title="Invalid configuration. Please check your admin model classes and logs."
         extra={
           <Popover
             title={_t('Error')}

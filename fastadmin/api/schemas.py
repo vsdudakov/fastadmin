@@ -17,15 +17,15 @@ class SignInInputSchema(BaseModel):
     password: str
 
 
-class ExportSchema(BaseModel):
-    """Export schema"""
+class ExportInputSchema(BaseModel):
+    """Export input schema"""
 
     format: ExportFormat | None
     limit: int | None
     offset: int | None
 
 
-class ActionSchema(BaseModel):
-    """Action schema"""
+class ActionInputSchema(BaseModel):
+    """Action input schema"""
 
     ids: list[int | UUID]

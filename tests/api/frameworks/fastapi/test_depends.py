@@ -4,7 +4,7 @@ import jwt
 from fastapi import Request
 
 from fastadmin import register_admin_model_class, unregister_admin_model_class
-from fastadmin.api.fastapi.depends import get_user_id_or_none
+from fastadmin.api.frameworks.fastapi.depends import get_user_id_or_none
 from fastadmin.settings import settings
 from tests.models.orms.tortoise.admins import UserModelAdmin
 

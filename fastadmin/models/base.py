@@ -10,72 +10,7 @@ from fastadmin.models.schemas import WidgetType
 from fastadmin.settings import settings
 
 
-class ORMInterfaceMixin:
-    """ORM mixin class."""
-
-    async def get_list(
-        self,
-        offset: int | None = None,
-        limit: int | None = None,
-        search: str | None = None,
-        sort_by: str | None = None,
-        filters: dict | None = None,
-    ) -> tuple[list[dict], int]:
-        """This method is used to get list of orm/db model objects.
-
-        :params offset: an offset for pagination.
-        :params limit: a limit for pagination.
-        :params search: a search query.
-        :params sort_by: a sort by field name.
-        :params filters: a dict of filters.
-        :return: A tuple of list of objects and total count.
-        """
-        raise NotImplementedError
-
-    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
-        """This method is used to save orm/db model object.
-
-        :params id: an id of object.
-        :params payload: a payload from request.
-        :return: A saved object or None.
-        """
-        raise NotImplementedError
-
-    async def get_obj(self, id: UUID | int) -> dict | None:
-        """This method is used to get orm/db model object by id.
-
-        :params id: an id of object.
-        :return: An object or None.
-        """
-        raise NotImplementedError
-
-    async def delete_model(self, id: UUID | int) -> None:
-        """This method is used to delete orm/db model object.
-
-        :params id: an id of object.
-        :return: None.
-        """
-        raise NotImplementedError
-
-    def get_model_fields(self) -> OrderedDict[str, dict]:
-        """This method is used to get all orm/db model fields
-        with saving ordering (non relations, fk, o2o, m2m).
-
-        :return: An OrderedDict of model fields.
-        """
-        raise NotImplementedError
-
-    def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
-        """This method is used to get form item widget
-        for field from orm/db model.
-
-        :params field_name: a model field name.
-        :return: A tuple of widget type and widget props.
-        """
-        raise NotImplementedError
-
-
-class BaseModelAdmin(ORMInterfaceMixin):
+class BaseModelAdmin:
     """Base class for model admin"""
 
     # A list of actions to make available on the change list page.
@@ -223,6 +158,67 @@ class BaseModelAdmin(ORMInterfaceMixin):
         :params model_cls: an orm/db model class.
         """
         self.model_cls = model_cls
+
+    async def get_list(
+        self,
+        offset: int | None = None,
+        limit: int | None = None,
+        search: str | None = None,
+        sort_by: str | None = None,
+        filters: dict | None = None,
+    ) -> tuple[list[dict], int]:
+        """This method is used to get list of orm/db model objects.
+
+        :params offset: an offset for pagination.
+        :params limit: a limit for pagination.
+        :params search: a search query.
+        :params sort_by: a sort by field name.
+        :params filters: a dict of filters.
+        :return: A tuple of list of objects and total count.
+        """
+        raise NotImplementedError
+
+    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
+        """This method is used to save orm/db model object.
+
+        :params id: an id of object.
+        :params payload: a payload from request.
+        :return: A saved object or None.
+        """
+        raise NotImplementedError
+
+    async def get_obj(self, id: UUID | int) -> dict | None:
+        """This method is used to get orm/db model object by id.
+
+        :params id: an id of object.
+        :return: An object or None.
+        """
+        raise NotImplementedError
+
+    async def delete_model(self, id: UUID | int) -> None:
+        """This method is used to delete orm/db model object.
+
+        :params id: an id of object.
+        :return: None.
+        """
+        raise NotImplementedError
+
+    def get_model_fields(self) -> OrderedDict[str, dict]:
+        """This method is used to get all orm/db model fields
+        with saving ordering (non relations, fk, o2o, m2m).
+
+        :return: An OrderedDict of model fields.
+        """
+        raise NotImplementedError
+
+    def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
+        """This method is used to get form item widget
+        for field from orm/db model.
+
+        :params field_name: a model field name.
+        :return: A tuple of widget type and widget props.
+        """
+        raise NotImplementedError
 
     async def get_export(
         self,

@@ -5,9 +5,14 @@ clean:
 	rm -rf htmlcov
 	rm -rf .coverage
 
-.PHONY: dev
+.PHONY: dev_fastapi
 dev_fastapi:
-	poetry run uvicorn tests.models.orms.tortoise.app:app --reload --host=0.0.0.0 --port=8090
+	poetry run uvicorn fastadmin.api.frameworks.fastapi.dev:app --reload --host=0.0.0.0 --port=8090
+
+.PHONY: dev_flask
+dev_flask:
+	flask --app fastadmin.api.frameworks.flask.dev run --debug
+
 
 .PHONY: fix
 fix:
