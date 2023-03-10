@@ -1,4 +1,5 @@
 # api
+from fastadmin.api.frameworks.django.app.urls import get_admin_urls
 from fastadmin.api.frameworks.fastapi.app import app as fastapi_app
 from fastadmin.api.frameworks.flask.app import app as flask_app
 

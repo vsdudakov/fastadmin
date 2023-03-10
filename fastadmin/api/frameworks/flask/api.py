@@ -5,7 +5,7 @@ from flask import Blueprint, Response, make_response, request
 from werkzeug.exceptions import HTTPException
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.helpers import get_user_id_from_session_id
+from fastadmin.api.helpers import get_user_id_from_session_id, is_valid_uuid, is_digit
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.api.service import ApiService
 from fastadmin.models.exceptions import AdminModelException
@@ -95,13 +95,7 @@ async def me():
 
 
 @api_router.route("/list/<string:model>", methods=["GET"])
-async def list(
-    model: str,
-    search: str | None = None,
-    sort_by: str = None,
-    offset: int | None = 0,
-    limit: int | None = 10,
-):
+async def list(model: str):
     """This method is used to get a list of objects.
 
     :params request: a request object.
@@ -149,6 +143,10 @@ async def get(model: str, id: UUID | int):
     :params id: an id of object.
     :return: An object.
     """
+    if not is_digit(id) and not is_valid_uuid(id):
+        http_exception = HTTPException("Invalid id. It must be a UUID or an integer.")
+        http_exception.code = 422
+        raise http_exception
     try:
         return await api_service.get(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
@@ -198,6 +196,10 @@ async def change(model: str, id: UUID | int):
     :params payload: a payload object.
     :return: An object.
     """
+    if not is_digit(id) and not is_valid_uuid(id):
+        http_exception = HTTPException("Invalid id. It must be a UUID or an integer.")
+        http_exception.code = 422
+        raise http_exception
     try:
         return await api_service.change(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), model, id, request.json
@@ -260,6 +262,10 @@ async def delete(
     :params id: an id of object.
     :return: An id of object.
     """
+    if not is_digit(id) and not is_valid_uuid(id):
+        http_exception = HTTPException("Invalid id. It must be a UUID or an integer.")
+        http_exception.code = 422
+        raise http_exception
     try:
         return await api_service.delete(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),

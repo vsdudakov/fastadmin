@@ -166,7 +166,7 @@ class ApiService:
         session_id: str | None,
         model: str,
         id: UUID | int,
-    ) -> None:
+    ) -> UUID | int:
         current_user_id = await get_user_id_from_session_id(session_id)
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")

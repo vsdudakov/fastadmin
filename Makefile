@@ -14,6 +14,12 @@ dev_flask:
 	flask --app fastadmin.api.frameworks.flask.dev run --debug
 
 
+.PHONY: dev_django
+dev_django:
+	python fastadmin/api/frameworks/django/dev/manage.py migrate
+	python fastadmin/api/frameworks/django/dev/manage.py runserver
+
+
 .PHONY: fix
 fix:
 	poetry run pyupgrade --exit-zero-even-if-changed --py39-plus fastadmin/**/*.py tests/**/*.py

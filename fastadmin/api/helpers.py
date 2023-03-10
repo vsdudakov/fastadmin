@@ -35,6 +35,32 @@ def sanitize(value: str) -> bool | None | str:
     return value
 
 
+def is_valid_uuid(uuid_to_test: str) -> bool:
+    """Check if uuid_to_test is a valid uuid.
+
+    :param uuid_to_test: A uuid to test.
+    :return: True if uuid_to_test is a valid uuid, False otherwise.
+    """
+    try:
+        uuid_obj = UUID(uuid_to_test)
+    except ValueError:
+        return False
+    return str(uuid_obj) == uuid_to_test
+
+
+def is_digit(digit_to_test: str) -> bool:
+    """Check if digit_to_test is a digit.
+
+    :param digit_to_test: A digit to test.
+    :return: True if digit_to_test is a digit, False otherwise.
+    """
+    try:
+        int(digit_to_test)
+    except ValueError:
+        return False
+    return True
+
+
 async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | None:
     """This method is used to get user id from session_id.
 

@@ -5,8 +5,8 @@ async def test_delete(session_id, event, client):
         f"/api/delete/{event.__class__.__name__}/{event.id}",
     )
     assert r.status_code == 200, r.text
-    item = r.json()
-    assert item == event.id
+    id = r.json()
+    assert str(id) == str(event.id)
 
 
 async def test_delete_401(event, client):
