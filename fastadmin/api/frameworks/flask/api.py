@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 from uuid import UUID
 
 from flask import Blueprint, Response, make_response, request
@@ -9,7 +10,6 @@ from fastadmin.api.helpers import get_user_id_from_session_id, is_valid_id
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.api.service import ApiService
 from fastadmin.models.exceptions import AdminModelException
-from fastadmin.models.schemas import ConfigurationSchema
 from fastadmin.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -172,10 +172,11 @@ async def add(model: str) -> dict:
     :return: An object.
     """
     try:
+        payload: dict = request.json
         return await api_service.add(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
-            request.json,
+            payload,
         )
     except AdminModelException as e:
         http_exception = HTTPException(e.detail)
@@ -201,8 +202,12 @@ async def change(model: str, id: UUID | int) -> dict:
         http_exception.code = 422
         raise http_exception
     try:
+        payload: dict = request.json
         return await api_service.change(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), model, id, request.json
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
+            id,
+            payload,
         )
     except AdminModelException as e:
         http_exception = HTTPException(e.detail)
@@ -215,7 +220,7 @@ async def change(model: str, id: UUID | int) -> dict:
 
 
 @api_router.route("/export/<string:model>", methods=["POST"])
-async def export(model: str):
+async def export(model: str) -> Any:
     """This method is used to export a list of objects.
 
     :params request: a request object.
@@ -229,14 +234,15 @@ async def export(model: str):
     search = filters.get("search", None)
     sort_by = filters.get("sort_by", None)
     try:
-        payload = ExportInputSchema(**request.json)
+        request_payload: dict = request.json
+        payload: ExportInputSchema = ExportInputSchema(**request_payload)
         file_name, stream = await api_service.export(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             payload,
             search=search,
             sort_by=sort_by,
-            filters=request.query_params._dict,
+            filters=filters,
         )
         response = Response(stream, mimetype="text/csv")
         response.headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
@@ -251,7 +257,7 @@ async def export(model: str):
         raise http_exception
 
 
-@api_router.route("/delete/<string:model>/<string:id>", methods=["DELETE"])
+@api_router.route("/delete/<string:model>/<string:id>", methods=["DELETE"])  # type: ignore
 async def delete(
     model: str,
     id: UUID | int,
@@ -282,11 +288,11 @@ async def delete(
         raise http_exception
 
 
-@api_router.route("/change/<string:model>/<string:action>", methods=["POST"])
+@api_router.route("/action/<string:model>/<string:action>", methods=["POST"])  # type: ignore
 async def action(
     model: str,
     action: str,
-) -> None:
+):
     """This method is used to perform an action.
 
     :params model: a name of model.
@@ -295,13 +301,15 @@ async def action(
     :return: A list of objects.
     """
     try:
-        payload = ActionInputSchema(**request.json)
-        return await api_service.action(
+        request_payload: dict = request.json
+        payload: ActionInputSchema = ActionInputSchema(**request_payload)
+        await api_service.action(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             action,
             payload,
         )
+        return {}
     except AdminModelException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = 422

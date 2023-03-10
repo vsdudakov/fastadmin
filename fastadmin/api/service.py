@@ -57,7 +57,7 @@ class ApiService:
         session_id: str | None,
         model: str,
         search: str | None = None,
-        sort_by: str = None,
+        sort_by: str | None = None,
         filters: dict = {},
         offset: int | None = 0,
         limit: int | None = 10,
@@ -139,7 +139,7 @@ class ApiService:
         model: str,
         payload: ExportInputSchema,
         search: str | None = None,
-        sort_by: str = None,
+        sort_by: str | None = None,
         filters: dict = {},
     ) -> tuple[str, StringIO | BytesIO | None]:
         current_user_id = await get_user_id_from_session_id(session_id)

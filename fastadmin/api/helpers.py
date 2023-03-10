@@ -249,7 +249,7 @@ def generate_models_schema(
                     save_as=admin_obj.save_as,
                     save_as_continue=admin_obj.save_as_continue,
                     view_on_site=admin_obj.view_on_site,
-                    inlines=generate_models_schema(
+                    inlines=generate_models_schema(  # type: ignore
                         {inline.model: inline(inline.model) for inline in admin_obj.inlines}, is_inline_models=True
                     ),
                 ),

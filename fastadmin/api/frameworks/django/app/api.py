@@ -234,7 +234,7 @@ async def export(request, model: str):
             payload,
             search=search,
             sort_by=sort_by,
-            filters=request.query_params._dict,
+            filters=filters,
         )
         response = StreamingHttpResponse(stream, mimetype="text/csv")
         response.headers["Content-Disposition"] = f'attachment; filename="{file_name}"'

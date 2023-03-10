@@ -56,4 +56,4 @@ class Settings(BaseSettings):
     ADMIN_TIME_FORMAT: str = "HH:mm:ss"
 
 
-settings = Settings()
+settings = Settings()  # type: ignore

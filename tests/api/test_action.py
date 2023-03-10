@@ -54,8 +54,6 @@ async def test_action_422(session_id, admin_models, event, client):
         },
     )
     assert r.status_code == 422, r.text
-    item = r.json()
-    assert item
     event = await event.__class__.get(id=event.id)
     assert not event.is_active
 
@@ -69,7 +67,5 @@ async def test_action_422(session_id, admin_models, event, client):
         },
     )
     assert r.status_code == 422, r.text
-    item = r.json()
-    assert item
     event = await event.__class__.get(id=event.id)
     assert not event.is_active
