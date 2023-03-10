@@ -40,9 +40,9 @@ pip install fastadmin
 #### Setup ENV variables
 
 ```bash
-export ADMIN_USER_MODEL = User
-export ADMIN_USER_MODEL_USERNAME_FIELD = username
-export ADMIN_SECRET_KEY = secret_key
+export ADMIN_USER_MODEL=User
+export ADMIN_USER_MODEL_USERNAME_FIELD=username
+export ADMIN_SECRET_KEY=secret_key
 ```
 
 For additional information see [Settings](https://vsdudakov.github.io/fastadmin#settings) documentation.
