@@ -1,19 +1,35 @@
 import json
 import logging
+from datetime import datetime
 from functools import wraps
 from uuid import UUID
 
-from django.http import JsonResponse, StreamingHttpResponse
+from django.core.serializers.json import DjangoJSONEncoder
+from django.http import JsonResponse as BaseJsonResponse
+from django.http import StreamingHttpResponse
+from django.http.request import HttpRequest
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import get_user_id_from_session_id, is_valid_id
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.api.service import ApiService
-from fastadmin.models.exceptions import AdminModelException
 from fastadmin.settings import settings
 
 logger = logging.getLogger(__name__)
 api_service = ApiService()
+
+
+class JsonEncoder(DjangoJSONEncoder):
+    def default(self, o):
+        if isinstance(o, datetime):
+            return o.isoformat()
+        return super().default(o)
+
+
+class JsonResponse(BaseJsonResponse):
+    def __init__(self, *args, **kwargs):
+        kwargs["encoder"] = JsonEncoder
+        super().__init__(*args, **kwargs)
 
 
 def csrf_exempt(view_func):
@@ -25,7 +41,7 @@ def csrf_exempt(view_func):
 
 
 @csrf_exempt
-async def sign_in(request) -> None:
+async def sign_in(request: HttpRequest) -> JsonResponse:
     """This method is used to sign in.
 
     :params response: a response object.
@@ -44,14 +60,13 @@ async def sign_in(request) -> None:
         response = JsonResponse({})
         response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
         return response
-    except AdminModelException as e:
-        return JsonResponse({"detail": e.detail}, status=422)
+
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
 
 @csrf_exempt
-async def sign_out(request) -> None:
+async def sign_out(request: HttpRequest) -> JsonResponse:
     """This method is used to sign out.
 
     :params response: a response object.
@@ -66,13 +81,13 @@ async def sign_out(request) -> None:
         ):
             response.delete_cookie(settings.ADMIN_SESSION_ID_KEY)
         return response
-    except AdminModelException as e:
-        return JsonResponse({"detail": e.detail}, status=422)
+
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
 
-async def me(request):
+@csrf_exempt
+async def me(request: HttpRequest) -> JsonResponse:
     """This method is used to get current user.
 
     :params user_id: a user id.
@@ -90,13 +105,13 @@ async def me(request):
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None), settings.ADMIN_USER_MODEL, user_id
         )
         return JsonResponse(obj)
-    except AdminModelException as e:
-        return JsonResponse({"detail": e.detail}, status=422)
+
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
 
-async def list(request, model: str):
+@csrf_exempt
+async def list(request: HttpRequest, model: str) -> JsonResponse:
     """This method is used to get a list of objects.
 
     :params request: a request object.
@@ -130,13 +145,13 @@ async def list(request, model: str):
                 "results": objs,
             }
         )
-    except AdminModelException as e:
-        return JsonResponse({"detail": e.detail}, status=422)
+
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
 
-async def get(request, model: str, id: UUID | int):
+@csrf_exempt
+async def get(request: HttpRequest, model: str, id: UUID | int) -> JsonResponse:
     """This method is used to get an object.
 
     :params model: a name of model.
@@ -154,14 +169,13 @@ async def get(request, model: str, id: UUID | int):
             id,
         )
         return JsonResponse(obj)
-    except AdminModelException as e:
-        return JsonResponse({"detail": e.detail}, status=422)
+
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
 
 @csrf_exempt
-async def add(request, model: str):
+async def add(request: HttpRequest, model: str) -> JsonResponse:
     """This method is used to add an object.
 
     :params model: a name of model.
@@ -177,14 +191,13 @@ async def add(request, model: str):
             json.loads(request.body),
         )
         return JsonResponse(obj)
-    except AdminModelException as e:
-        return JsonResponse({"detail": e.detail}, status=422)
+
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
 
 @csrf_exempt
-async def change(request, model: str, id: UUID | int):
+async def change(request: HttpRequest, model: str, id: UUID | int) -> JsonResponse:
     """This method is used to change an object.
 
     :params model: a name of model.
@@ -204,14 +217,13 @@ async def change(request, model: str, id: UUID | int):
             json.loads(request.body),
         )
         return JsonResponse(obj)
-    except AdminModelException as e:
-        return JsonResponse({"detail": e.detail}, status=422)
+
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
 
 @csrf_exempt
-async def export(request, model: str):
+async def export(request: HttpRequest, model: str) -> JsonResponse:
     """This method is used to export a list of objects.
 
     :params request: a request object.
@@ -236,21 +248,20 @@ async def export(request, model: str):
             sort_by=sort_by,
             filters=filters,
         )
-        response = StreamingHttpResponse(stream, mimetype="text/csv")
+        response = StreamingHttpResponse(stream, content_type="text/csv")
         response.headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
         return response
-    except AdminModelException as e:
-        return JsonResponse({"detail": e.detail}, status=422)
+
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
 
 @csrf_exempt
 async def delete(
-    request,
+    request: HttpRequest,
     model: str,
     id: UUID | int,
-):
+) -> JsonResponse:
     """This method is used to delete an object.
 
     :params model: a name of model.
@@ -268,18 +279,17 @@ async def delete(
             id,
         )
         return JsonResponse(deleted_id, safe=False)
-    except AdminModelException as e:
-        return JsonResponse({"detail": e.detail}, status=422)
+
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
 
 @csrf_exempt
 async def action(
-    request,
+    request: HttpRequest,
     model: str,
     action: str,
-):
+) -> JsonResponse:
     """This method is used to perform an action.
 
     :params model: a name of model.
@@ -298,13 +308,13 @@ async def action(
             payload,
         )
         return JsonResponse({})
-    except AdminModelException as e:
-        return JsonResponse({"detail": e.detail}, status=422)
+
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
 
-async def configuration(request):
+@csrf_exempt
+async def configuration(request: HttpRequest) -> JsonResponse:
     """This method is used to get a configuration.
 
     :params user_id: an id of user.
@@ -312,12 +322,8 @@ async def configuration(request):
     """
     if request.method != "GET":
         return JsonResponse({"error": "Method not allowed"}, status=405)
-    try:
-        obj = await api_service.get_configuration(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
-        )
-        return JsonResponse(obj.dict())
-    except AdminModelException as e:
-        return JsonResponse({"detail": e.detail}, status=422)
-    except AdminApiException as e:
-        return JsonResponse({"detail": e.detail}, status=e.status_code)
+
+    obj = await api_service.get_configuration(
+        request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+    )
+    return JsonResponse(obj.dict())

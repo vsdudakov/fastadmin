@@ -4,8 +4,8 @@ from collections import OrderedDict
 from typing import Any
 from uuid import UUID
 
+from fastadmin.api.exceptions import AdminApiException
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
-from fastadmin.models.exceptions import AdminModelException
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.models.schemas import WidgetType
 from fastadmin.settings import settings
@@ -124,14 +124,14 @@ class TortoiseMixin:
             for filter_condition, value in filters.items():
                 field = filter_condition.split("__", 1)[0]
                 if field not in fields:
-                    raise AdminModelException(detail=f"Filter by {filter_condition} is not allowed")
+                    raise AdminApiException(422, detail=f"Filter by {filter_condition} is not allowed")
                 qs = qs.filter(**{filter_condition: value})
 
         if search:
             if self.search_fields:
                 for field in self.search_fields:
                     if field not in fields:
-                        raise AdminModelException(detail=f"Search by {field} is not allowed")
+                        raise AdminApiException(422, detail=f"Search by {field} is not allowed")
                 ids = await asyncio.gather(
                     *(qs.filter(**{f + "__icontains": search}).values_list("id", flat=True) for f in self.search_fields)
                 )
@@ -140,13 +140,13 @@ class TortoiseMixin:
 
         if sort_by:
             if sort_by.strip("-") not in fields:
-                raise AdminModelException(detail=f"Sort by {sort_by} is not allowed")
+                raise AdminApiException(422, detail=f"Sort by {sort_by} is not allowed")
             qs = qs.order_by(sort_by)
         else:
             if self.ordering:
                 for ordering_field in self.ordering:
                     if ordering_field.strip("-") not in fields:
-                        raise AdminModelException(detail=f"Sort by {ordering_field} is not allowed")
+                        raise AdminApiException(422, detail=f"Sort by {ordering_field} is not allowed")
                 qs = qs.order_by(*self.ordering)
 
         total = await qs.count()
@@ -158,7 +158,7 @@ class TortoiseMixin:
         if self.list_select_related:
             for field in self.list_select_related:
                 if field not in fields:
-                    raise AdminModelException(detail=f"Select related by {field} is not allowed")
+                    raise AdminApiException(422, detail=f"Select related by {field} is not allowed")
             qs = qs.select_related(*(f.replace("_id", "") for f in self.list_select_related))
 
         results = await asyncio.gather(

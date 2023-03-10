@@ -19,6 +19,14 @@ async def test_change(session_id, superuser, event, client):
     assert item["participants"] == [superuser.id]
 
 
+async def test_change_405(session_id, event, client):
+    assert session_id
+    r = await client.get(
+        f"/api/change/{event.__class__.__name__}/{event.id}",
+    )
+    assert r.status_code == 405, r.text
+
+
 async def test_change_401(superuser, event, client):
     r = await client.patch(
         f"/api/change/{event.__class__.__name__}/{event.id}",

@@ -12,6 +12,14 @@ async def test_export(session_id, event, client):
     assert rows
 
 
+async def test_export_405(session_id, event, client):
+    assert session_id
+    r = await client.get(
+        f"/api/export/{event.__class__.__name__}",
+    )
+    assert r.status_code == 405, r.text
+
+
 async def test_export_401(event, client):
     async with client.stream(
         "POST",

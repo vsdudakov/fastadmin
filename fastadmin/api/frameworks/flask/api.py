@@ -1,5 +1,4 @@
 import logging
-from typing import Any
 from uuid import UUID
 
 from flask import Blueprint, Response, make_response, request
@@ -9,7 +8,6 @@ from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import get_user_id_from_session_id, is_valid_id
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.api.service import ApiService
-from fastadmin.models.exceptions import AdminModelException
 from fastadmin.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -18,7 +16,7 @@ api_service = ApiService()
 
 
 @api_router.route("/sign-in", methods=["POST"])
-async def sign_in():
+async def sign_in() -> Response:
     """This method is used to sign in.
 
     :params response: a response object.
@@ -26,7 +24,8 @@ async def sign_in():
     :return: None.
     """
     try:
-        payload = SignInInputSchema(**request.json)
+        request_payload: dict = request.json
+        payload = SignInInputSchema(**request_payload)
         session_id = await api_service.sign_in(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             payload,
@@ -34,10 +33,6 @@ async def sign_in():
         response = make_response({})
         response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
         return response
-    except AdminModelException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = 422
-        raise http_exception
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -45,23 +40,19 @@ async def sign_in():
 
 
 @api_router.route("/sign-out", methods=["POST"])
-async def sign_out():
+async def sign_out() -> Response:
     """This method is used to sign out.
 
     :params response: a response object.
     :return: None.
     """
     try:
+        response = make_response({})
         if await api_service.sign_out(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
         ):
-            response = make_response({})
             response.delete_cookie(settings.ADMIN_SESSION_ID_KEY)
-            return response
-    except AdminModelException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = 422
-        raise http_exception
+        return response
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -84,10 +75,6 @@ async def me() -> dict:
         return await api_service.get(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), settings.ADMIN_USER_MODEL, user_id
         )
-    except AdminModelException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = 422
-        raise http_exception
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -95,7 +82,7 @@ async def me() -> dict:
 
 
 @api_router.route("/list/<string:model>", methods=["GET"])
-async def list(model: str):
+async def list(model: str) -> dict:
     """This method is used to get a list of objects.
 
     :params request: a request object.
@@ -125,10 +112,6 @@ async def list(model: str):
             "total": total,
             "results": objs,
         }
-    except AdminModelException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = 422
-        raise http_exception
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -153,10 +136,6 @@ async def get(model: str, id: UUID | int) -> dict:
             model,
             id,
         )
-    except AdminModelException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = 422
-        raise http_exception
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -178,10 +157,6 @@ async def add(model: str) -> dict:
             model,
             payload,
         )
-    except AdminModelException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = 422
-        raise http_exception
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -209,10 +184,6 @@ async def change(model: str, id: UUID | int) -> dict:
             id,
             payload,
         )
-    except AdminModelException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = 422
-        raise http_exception
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -220,7 +191,7 @@ async def change(model: str, id: UUID | int) -> dict:
 
 
 @api_router.route("/export/<string:model>", methods=["POST"])
-async def export(model: str) -> Any:
+async def export(model: str) -> Response:
     """This method is used to export a list of objects.
 
     :params request: a request object.
@@ -247,10 +218,6 @@ async def export(model: str) -> Any:
         response = Response(stream, mimetype="text/csv")
         response.headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
         return response
-    except AdminModelException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = 422
-        raise http_exception
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -278,10 +245,6 @@ async def delete(
             model,
             id,
         )
-    except AdminModelException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = 422
-        raise http_exception
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -292,7 +255,7 @@ async def delete(
 async def action(
     model: str,
     action: str,
-):
+) -> dict:
     """This method is used to perform an action.
 
     :params model: a name of model.
@@ -310,10 +273,6 @@ async def action(
             payload,
         )
         return {}
-    except AdminModelException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = 422
-        raise http_exception
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -321,22 +280,13 @@ async def action(
 
 
 @api_router.route("/configuration", methods=["GET"])
-async def configuration():
+async def configuration() -> dict:
     """This method is used to get a configuration.
 
     :params user_id: an id of user.
     :return: A configuration.
     """
-    try:
-        obj = await api_service.get_configuration(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
-        )
-        return obj.dict()
-    except AdminModelException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = 422
-        raise http_exception
-    except AdminApiException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = e.status_code
-        raise http_exception
+    obj = await api_service.get_configuration(
+        request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+    )
+    return obj.dict()

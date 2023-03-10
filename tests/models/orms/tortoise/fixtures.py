@@ -1,12 +1,12 @@
 import pytest
 from tortoise import Tortoise
 
-from tests.models.orms.tortoise import models
+from tests.dev.tortoise import models
 
 
 @pytest.fixture(scope="module")
 async def tortoise_connection():
-    await Tortoise.init(db_url="sqlite://:memory:", modules={"models": ["tests.models.orms.tortoise.models"]})
+    await Tortoise.init(db_url="sqlite://:memory:", modules={"models": ["tests.dev.tortoise.models"]})
     await Tortoise.generate_schemas()
     yield Tortoise.get_connection("default")
     await Tortoise.close_connections()

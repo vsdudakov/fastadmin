@@ -2,14 +2,13 @@ import logging
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import Response, StreamingResponse
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import get_user_id_from_session_id
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.api.service import ApiService
-from fastadmin.models.exceptions import AdminModelException
 from fastadmin.models.schemas import ConfigurationSchema
 from fastadmin.settings import settings
 
@@ -39,8 +38,6 @@ async def sign_in(
 
         response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
         return None
-    except AdminModelException as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.detail)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 
@@ -61,8 +58,6 @@ async def sign_out(
         ):
             response.delete_cookie(settings.ADMIN_SESSION_ID_KEY)
         return None
-    except AdminModelException as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.detail)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 
@@ -85,8 +80,6 @@ async def me(
         return await api_service.get(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), settings.ADMIN_USER_MODEL, user_id
         )
-    except AdminModelException as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.detail)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 
@@ -124,8 +117,6 @@ async def list(
             "total": total,
             "results": objs,
         }
-    except AdminModelException as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.detail)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 
@@ -148,8 +139,6 @@ async def get(
             model,
             id,
         )
-    except AdminModelException as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.detail)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 
@@ -172,8 +161,6 @@ async def add(
             model,
             payload,
         )
-    except AdminModelException as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.detail)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 
@@ -194,8 +181,6 @@ async def change(
     """
     try:
         return await api_service.change(request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), model, id, payload)
-    except AdminModelException as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.detail)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 
@@ -232,8 +217,6 @@ async def export(
             headers=headers,
             media_type="text/csv",
         )
-    except AdminModelException as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.detail)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 
@@ -256,8 +239,6 @@ async def delete(
             model,
             id,
         )
-    except AdminModelException as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.detail)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 
@@ -283,8 +264,6 @@ async def action(
             action,
             payload,
         )
-    except AdminModelException as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.detail)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 
@@ -298,11 +277,6 @@ async def configuration(
     :params user_id: an id of user.
     :return: A configuration.
     """
-    try:
-        return await api_service.get_configuration(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
-        )
-    except AdminModelException as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.detail)
-    except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+    return await api_service.get_configuration(
+        request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+    )

@@ -18,6 +18,14 @@ async def test_action(session_id, admin_models, event, client):
     assert event.is_active
 
 
+async def test_action_405(session_id, event, client):
+    assert session_id
+    r = await client.get(
+        f"/api/action/{event.__class__.__name__}/make_is_active",
+    )
+    assert r.status_code == 405, r.text
+
+
 async def test_action_401(event, client):
     r = await client.post(
         f"/api/action/{event.__class__.__name__}/make_is_active",

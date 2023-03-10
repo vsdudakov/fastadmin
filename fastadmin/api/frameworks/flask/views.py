@@ -1,7 +1,6 @@
 import logging
 
-from flask import Blueprint, abort, render_template, request
-from jinja2 import TemplateNotFound
+from flask import Blueprint, render_template, request
 
 from fastadmin.settings import settings
 
@@ -18,7 +17,4 @@ def index():
 
     :return: A response object.
     """
-    try:
-        return render_template("index.html", **{"request": request, "settings": settings})
-    except TemplateNotFound:
-        abort(404)
+    return render_template("index.html", **{"request": request, "settings": settings})

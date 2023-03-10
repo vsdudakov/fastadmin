@@ -1,7 +1,9 @@
 import logging
 import os
+from datetime import date
 
 from flask import Blueprint
+from flask.json.provider import DefaultJSONProvider
 from werkzeug.exceptions import HTTPException
 
 from fastadmin.api.frameworks.flask.api import api_router
@@ -9,6 +11,14 @@ from fastadmin.api.frameworks.flask.views import views_router
 from fastadmin.settings import ROOT_DIR
 
 logger = logging.getLogger(__name__)
+
+
+class JSONProvider(DefaultJSONProvider):
+    def default(self, o):
+        if isinstance(o, date):
+            return o.isoformat()
+        return super().default(o)
+
 
 app = Blueprint(
     "FastAdmin App",

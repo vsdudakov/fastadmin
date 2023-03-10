@@ -159,3 +159,11 @@ async def test_list_404(session_id, admin_models, event, client):
         f"/api/list/{event.__class__.__name__}",
     )
     assert r.status_code == 404, r.text
+
+
+async def test_list_405(session_id, event, client):
+    assert session_id
+    r = await client.post(
+        f"/api/list/{event.__class__.__name__}",
+    )
+    assert r.status_code == 405, r.text

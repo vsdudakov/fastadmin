@@ -15,6 +15,14 @@ async def test_retrieve(session_id, event, user, client):
     assert item["participants"][0] == user.id
 
 
+async def test_list_405(session_id, event, client):
+    assert session_id
+    r = await client.post(
+        f"/api/retrieve/{event.__class__.__name__}/{event.id}",
+    )
+    assert r.status_code == 405, r.text
+
+
 async def test_retrieve_401(event, client):
     r = await client.get(
         f"/api/retrieve/{event.__class__.__name__}/{event.id}",

@@ -98,6 +98,14 @@ async def test_configuration(session_id, event, client):
     validate_configuration_response_data(response_data)
 
 
+async def test_configuration_405(session_id, client):
+    assert session_id
+    r = await client.post(
+        f"/api/configuration",
+    )
+    assert r.status_code == 405, r.text
+
+
 async def test_configuration_not_auth(client):
     r = await client.get(
         f"/api/configuration",
@@ -242,6 +250,15 @@ async def test_configuration_actions(session_id, admin_models, event, client):
     event_admin_model = admin_models[event.__class__]
 
     event_admin_model.actions = ("make_is_active",)
+    r = await client.get(
+        f"/api/configuration",
+    )
+    assert r.status_code == 200, r.text
+    response_data = r.json()
+    assert response_data
+    validate_configuration_response_data(response_data)
+
+    event_admin_model.actions = ("test_action",)
     r = await client.get(
         f"/api/configuration",
     )

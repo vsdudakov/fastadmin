@@ -12,15 +12,21 @@ async def test_sign_in_401_invalid_password(superuser, client):
     assert r.status_code == 401, r.text
 
 
-async def test_sign_in_401_invalid_username(superuser, client):
+async def test_sign_in_401(superuser, admin_models, client):
+    del admin_models[superuser.__class__]
     r = await client.post(
         "/api/sign-in",
         json={
-            "username": "invalid",
+            "username": superuser.username,
             "password": superuser.password,
         },
     )
     assert r.status_code == 401, r.text
+
+
+async def test_sign_in_405(client):
+    r = await client.get("/api/sign-in")
+    assert r.status_code == 405, r.text
 
 
 async def test_sign_in(superuser, client):
@@ -49,6 +55,12 @@ async def test_me(session_id, superuser, client):
 async def test_me_401(client):
     r = await client.get("/api/me")
     assert r.status_code == 401, r.text
+
+
+async def test_me_405(session_id, client):
+    assert session_id
+    r = await client.post("/api/me")
+    assert r.status_code == 405, r.text
 
 
 async def test_me_404(session_id, admin_models, superuser, client):
@@ -83,3 +95,9 @@ async def test_sign_out(superuser, client):
         "/api/sign-out",
     )
     assert r.status_code == 401, r.text
+
+
+async def test_sign_out_405(session_id, client):
+    assert session_id
+    r = await client.get("/api/sign-out")
+    assert r.status_code == 405, r.text

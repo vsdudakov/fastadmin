@@ -18,6 +18,14 @@ async def test_add(session_id, superuser, tournament, event, client):
     assert item["participants"] == [superuser.id]
 
 
+async def test_add_405(session_id, event, client):
+    assert session_id
+    r = await client.get(
+        f"/api/add/{event.__class__.__name__}",
+    )
+    assert r.status_code == 405, r.text
+
+
 async def test_add_401(superuser, tournament, event, client):
     r = await client.post(
         f"/api/add/{event.__class__.__name__}",
