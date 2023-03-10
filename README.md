@@ -124,14 +124,11 @@ python manage.py runserver
 Go to [http://localhost:8000/admin](http://localhost:8000/admin).
 
 
-For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmin#model_admin_objects) and [InlineModelAdmin](https://vsdudakov.github.io/fastadmin#inline_model_admin_objects) documentation.
-
-
 #### Register ORM models
 
 You have to implement authenticate method for FastAdmin authentication on AdminModel class which is registered for ADMIN_USER_MODEL.
 
-##### For Tortoise ORM:
+#### For Tortoise ORM:
 
 ```python
 import bcrypt
@@ -181,9 +178,15 @@ class GroupAdmin(TortoiseModelAdmin):
     search_fields = ("name",)
 ```
 
-##### For SQLAlchemy and PonyORM:
+#### For SQLAlchemy:
 
 Coming soon...
+
+#### For PonyORM:
+
+Coming soon...
+
+For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmin#model_admin_objects) and [InlineModelAdmin](https://vsdudakov.github.io/fastadmin#inline_model_admin_objects) documentation.
 
 ## Documentation
 
