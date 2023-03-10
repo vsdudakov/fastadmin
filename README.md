@@ -49,6 +49,8 @@ For additional information see [Settings](https://vsdudakov.github.io/fastadmin#
 
 ### Quick Tutorial
 
+### Setup with your framework:
+
 #### For FastAPI:
 
 ```python
@@ -124,7 +126,7 @@ python manage.py runserver
 Go to [http://localhost:8000/admin](http://localhost:8000/admin).
 
 
-#### Register ORM models
+### Register ORM models:
 
 You have to implement authenticate method for FastAdmin authentication on AdminModel class which is registered for ADMIN_USER_MODEL.
 
