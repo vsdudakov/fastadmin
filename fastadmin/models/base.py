@@ -501,4 +501,4 @@ class ModelAdmin(BaseModelAdmin):
         raise NotImplementedError
 
 
-admin_model_classes: dict[Any, type[ModelAdmin]] = {}
+admin_models: dict[Any, ModelAdmin] = {}

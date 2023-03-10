@@ -1,8 +1,5 @@
-from fastadmin import register_admin_model_class, unregister_admin_model_class
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.settings import settings
-from tests.api.helpers import sign_in, sign_out
-from tests.models.orms.tortoise.admins import EventModelAdmin, TournamentModelAdmin
 
 LIST_EVENT_FIELDS = [
     "name",
@@ -90,10 +87,9 @@ def validate_configuration_response_data(response_data, is_auth=True):
             assert "filter_widget_props" in list_field["list_configuration"]
 
 
-async def test_configuration(superuser, event, client):
-    await sign_in(client, superuser)
+async def test_configuration(session_id, event, client):
+    assert session_id
 
-    register_admin_model_class(EventModelAdmin, [event.__class__])
     r = await client.get(
         f"/api/configuration",
     )
@@ -101,12 +97,8 @@ async def test_configuration(superuser, event, client):
     response_data = r.json()
     validate_configuration_response_data(response_data)
 
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
-
-async def test_configuration_not_auth(event, client):
-    register_admin_model_class(EventModelAdmin, [event.__class__])
+async def test_configuration_not_auth(client):
     r = await client.get(
         f"/api/configuration",
     )
@@ -114,14 +106,12 @@ async def test_configuration_not_auth(event, client):
     response_data = r.json()
     validate_configuration_response_data(response_data, is_auth=False)
 
-    unregister_admin_model_class([event.__class__])
 
+async def test_configuration_list_display(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-async def test_configuration_list_display(superuser, event, client):
-    await sign_in(client, superuser)
-
-    register_admin_model_class(EventModelAdmin, [event.__class__])
-    EventModelAdmin.list_display = LIST_EVENT_FIELDS
+    event_admin_model.list_display = LIST_EVENT_FIELDS
     r = await client.get(
         f"/api/configuration",
     )
@@ -130,16 +120,12 @@ async def test_configuration_list_display(superuser, event, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
-    EventModelAdmin.list_display = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_configuration_list_display_display_fields(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-async def test_configuration_list_display_display_fields(superuser, event, client):
-    await sign_in(client, superuser)
-
-    register_admin_model_class(EventModelAdmin, [event.__class__])
-    EventModelAdmin.list_display = ("started", "name_with_price")  # see EventAdmin display methods
+    event_admin_model.list_display = ("started", "name_with_price")  # see EventAdmin display methods
     r = await client.get(
         f"/api/configuration",
     )
@@ -148,17 +134,13 @@ async def test_configuration_list_display_display_fields(superuser, event, clien
     assert response_data
     validate_configuration_response_data(response_data)
 
-    EventModelAdmin.list_display = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_configuration_list_filter(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-async def test_configuration_list_filter(superuser, event, client):
-    await sign_in(client, superuser)
-
-    register_admin_model_class(EventModelAdmin, [event.__class__])
-    EventModelAdmin.list_display = LIST_EVENT_FIELDS
-    EventModelAdmin.list_filter = LIST_EVENT_FIELDS
+    event_admin_model.list_display = LIST_EVENT_FIELDS
+    event_admin_model.list_filter = LIST_EVENT_FIELDS
     r = await client.get(
         f"/api/configuration",
     )
@@ -167,19 +149,14 @@ async def test_configuration_list_filter(superuser, event, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
-    EventModelAdmin.list_display = ()
-    EventModelAdmin.list_filter = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_configuration_sortable_by(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-async def test_configuration_sortable_by(superuser, event, client):
-    await sign_in(client, superuser)
-
-    register_admin_model_class(EventModelAdmin, [event.__class__])
-    EventModelAdmin.list_display = LIST_EVENT_FIELDS
-    EventModelAdmin.list_filter = LIST_EVENT_FIELDS
-    EventModelAdmin.sortable_by = ("name",)
+    event_admin_model.list_display = LIST_EVENT_FIELDS
+    event_admin_model.list_filter = LIST_EVENT_FIELDS
+    event_admin_model.sortable_by = ("name",)
     r = await client.get(
         f"/api/configuration",
     )
@@ -188,20 +165,14 @@ async def test_configuration_sortable_by(superuser, event, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
-    EventModelAdmin.list_display = ()
-    EventModelAdmin.list_filter = ()
-    EventModelAdmin.sortable_by = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_configuration_radio_fields(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-async def test_configuration_radio_fields(superuser, event, client):
-    await sign_in(client, superuser)
-
-    register_admin_model_class(EventModelAdmin, [event.__class__])
-    EventModelAdmin.list_display = LIST_EVENT_FIELDS
-    EventModelAdmin.list_filter = LIST_EVENT_FIELDS
-    EventModelAdmin.radio_fields = ("event_type",)
+    event_admin_model.list_display = LIST_EVENT_FIELDS
+    event_admin_model.list_filter = LIST_EVENT_FIELDS
+    event_admin_model.radio_fields = ("event_type",)
     r = await client.get(
         f"/api/configuration",
     )
@@ -210,20 +181,14 @@ async def test_configuration_radio_fields(superuser, event, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
-    EventModelAdmin.list_display = ()
-    EventModelAdmin.list_filter = ()
-    EventModelAdmin.radio_fields = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_configuration_filter_horizontal_vertical(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-async def test_configuration_filter_horizontal_vertical(superuser, event, client):
-    await sign_in(client, superuser)
-
-    register_admin_model_class(EventModelAdmin, [event.__class__])
-    EventModelAdmin.list_display = LIST_EVENT_FIELDS
-    EventModelAdmin.list_filter = LIST_EVENT_FIELDS
-    EventModelAdmin.filter_horizontal = ("participants",)
+    event_admin_model.list_display = LIST_EVENT_FIELDS
+    event_admin_model.list_filter = LIST_EVENT_FIELDS
+    event_admin_model.filter_horizontal = ("participants",)
     r = await client.get(
         f"/api/configuration",
     )
@@ -232,7 +197,7 @@ async def test_configuration_filter_horizontal_vertical(superuser, event, client
     assert response_data
     validate_configuration_response_data(response_data)
 
-    EventModelAdmin.filter_vertical = ["participants"]
+    event_admin_model.filter_vertical = ["participants"]
     r = await client.get(
         f"/api/configuration",
     )
@@ -241,20 +206,14 @@ async def test_configuration_filter_horizontal_vertical(superuser, event, client
     assert response_data
     validate_configuration_response_data(response_data)
 
-    EventModelAdmin.list_display = ()
-    EventModelAdmin.list_filter = ()
-    EventModelAdmin.filter_horizontal = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_configuration_raw_id_fields(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-async def test_configuration_raw_id_fields(superuser, event, client):
-    await sign_in(client, superuser)
-
-    register_admin_model_class(EventModelAdmin, [event.__class__])
-    EventModelAdmin.list_display = LIST_EVENT_FIELDS
-    EventModelAdmin.list_filter = LIST_EVENT_FIELDS
-    EventModelAdmin.raw_id_fields = ("participants", "tournament_id", "base_id")
+    event_admin_model.list_display = LIST_EVENT_FIELDS
+    event_admin_model.list_filter = LIST_EVENT_FIELDS
+    event_admin_model.raw_id_fields = ("participants", "tournament_id", "base_id")
     r = await client.get(
         f"/api/configuration",
     )
@@ -263,18 +222,12 @@ async def test_configuration_raw_id_fields(superuser, event, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
-    EventModelAdmin.list_display = ()
-    EventModelAdmin.list_filter = ()
-    EventModelAdmin.raw_id_fields = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_configuration_fields(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-async def test_configuration_fields(superuser, event, client):
-    await sign_in(client, superuser)
-
-    register_admin_model_class(EventModelAdmin, [event.__class__])
-    EventModelAdmin.fields = LIST_EVENT_FIELDS
+    event_admin_model.fields = LIST_EVENT_FIELDS
     r = await client.get(
         f"/api/configuration",
     )
@@ -283,16 +236,12 @@ async def test_configuration_fields(superuser, event, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
-    EventModelAdmin.fields = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_configuration_actions(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-async def test_configuration_actions(superuser, event, client):
-    await sign_in(client, superuser)
-
-    register_admin_model_class(EventModelAdmin, [event.__class__])
-    EventModelAdmin.actions = ("make_is_active",)
+    event_admin_model.actions = ("make_is_active",)
     r = await client.get(
         f"/api/configuration",
     )
@@ -301,16 +250,12 @@ async def test_configuration_actions(superuser, event, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
-    EventModelAdmin.actions = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_configuration_fieldsets(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-async def test_configuration_fieldsets(superuser, event, client):
-    await sign_in(client, superuser)
-
-    register_admin_model_class(EventModelAdmin, [event.__class__])
-    EventModelAdmin.fieldsets = [
+    event_admin_model.fieldsets = [
         (None, {"fields": ("base_id", "name", "tournament_id", "participants")}),
         (
             "Types",
@@ -335,15 +280,10 @@ async def test_configuration_fieldsets(superuser, event, client):
     assert response_data
     validate_configuration_response_data(response_data)
 
-    EventModelAdmin.fieldsets = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_configuration_inlines(session_id, client):
+    assert session_id
 
-async def test_configuration_inlines(superuser, tournament, client):
-    await sign_in(client, superuser)
-
-    register_admin_model_class(TournamentModelAdmin, [tournament.__class__])
     r = await client.get(
         f"/api/configuration",
     )
@@ -351,6 +291,3 @@ async def test_configuration_inlines(superuser, tournament, client):
     response_data = r.json()
     assert response_data
     validate_configuration_response_data(response_data)
-
-    unregister_admin_model_class([tournament.__class__])
-    await sign_out(client, superuser)

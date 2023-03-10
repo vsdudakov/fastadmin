@@ -1,10 +1,7 @@
-from fastadmin import register_admin_model_class, unregister_admin_model_class
-from tests.api.helpers import sign_in, sign_out
-from tests.models.orms.tortoise.admins import UserModelAdmin
+from fastadmin.settings import settings
 
 
 async def test_sign_in_401_invalid_password(superuser, client):
-    register_admin_model_class(UserModelAdmin, [superuser.__class__])
     r = await client.post(
         "/api/sign-in",
         json={
@@ -13,14 +10,13 @@ async def test_sign_in_401_invalid_password(superuser, client):
         },
     )
     assert r.status_code == 401, r.text
-    unregister_admin_model_class([superuser.__class__])
 
 
-async def test_sign_in_401(superuser, client):
+async def test_sign_in_401_invalid_username(superuser, client):
     r = await client.post(
         "/api/sign-in",
         json={
-            "username": superuser.username,
+            "username": "invalid",
             "password": superuser.password,
         },
     )
@@ -28,13 +24,19 @@ async def test_sign_in_401(superuser, client):
 
 
 async def test_sign_in(superuser, client):
-    assert await sign_in(client, superuser)
-    await sign_out(client, superuser)
+    settings.ADMIN_USER_MODEL = superuser.__class__.__name__
+    r = await client.post(
+        "/api/sign-in",
+        json={
+            "username": superuser.username,
+            "password": superuser.password,
+        },
+    )
+    assert r.status_code == 200, r.text
 
 
-async def test_me(superuser, client):
-    await sign_in(client, superuser)
-
+async def test_me(session_id, superuser, client):
+    assert session_id
     r = await client.get(
         "/api/me",
     )
@@ -42,7 +44,6 @@ async def test_me(superuser, client):
     me = r.json()
     assert me["id"] == superuser.id
     assert me["username"] == superuser.username
-    await sign_out(client, superuser)
 
 
 async def test_me_401(client):
@@ -50,17 +51,23 @@ async def test_me_401(client):
     assert r.status_code == 401, r.text
 
 
-async def test_me_404(superuser, client):
-    await sign_in(client, superuser)
-    unregister_admin_model_class([superuser.__class__])
+async def test_me_404(session_id, admin_models, superuser, client):
+    assert session_id
+    del admin_models[superuser.__class__]
     r = await client.get("/api/me")
     assert r.status_code == 401, r.text
-    register_admin_model_class(UserModelAdmin, [superuser.__class__])
-    await sign_out(client, superuser)
 
 
 async def test_sign_out(superuser, client):
-    await sign_in(client, superuser)
+    settings.ADMIN_USER_MODEL = superuser.__class__.__name__
+    r = await client.post(
+        "/api/sign-in",
+        json={
+            "username": superuser.username,
+            "password": superuser.password,
+        },
+    )
+    assert r.status_code == 200, r.status_code
 
     r = await client.post(
         "/api/sign-out",

@@ -1,11 +1,6 @@
-from fastadmin import register_admin_model_class, unregister_admin_model_class
-from tests.api.helpers import sign_in, sign_out
-from tests.models.orms.tortoise.admins import EventModelAdmin
+async def test_list(session_id, event, client):
+    assert session_id
 
-
-async def test_list(superuser, event, client):
-    await sign_in(client, superuser)
-    register_admin_model_class(EventModelAdmin, [event.__class__])
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
@@ -19,15 +14,12 @@ async def test_list(superuser, event, client):
     assert item["tournament_id"] == event.tournament_id
     assert item["created_at"] == event.created_at.isoformat()
     assert item["updated_at"] == event.updated_at.isoformat()
-    assert "participants" not in item  # no m2m2 fields on list
-
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
+    assert "participants" not in item  # no m2m fields on list
 
 
-async def test_list_filters(superuser, event, client):
-    await sign_in(client, superuser)
-    register_admin_model_class(EventModelAdmin, [event.__class__])
+async def test_list_filters(session_id, event, client):
+    assert session_id
+
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?name__icontains={event.name[:2]}",
     )
@@ -51,15 +43,13 @@ async def test_list_filters(superuser, event, client):
     )
     assert r.status_code == 422, r.text
 
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_list_search(session_id, admin_models, event, client):
+    assert session_id
 
-async def test_list_search(superuser, event, client):
-    await sign_in(client, superuser)
-    register_admin_model_class(EventModelAdmin, [event.__class__])
+    event_admin_model = admin_models[event.__class__]
 
-    EventModelAdmin.search_fields = ["name"]
+    event_admin_model.search_fields = ["name"]
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?search={event.name[:2]}",
     )
@@ -78,20 +68,17 @@ async def test_list_search(superuser, event, client):
     assert data
     assert data["total"] == 0
 
-    EventModelAdmin.search_fields = ["invalid"]
+    event_admin_model.search_fields = ["invalid"]
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?search={event.name[:2]}",
     )
     assert r.status_code == 422, r.text
 
-    EventModelAdmin.search_fields = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_list_sort_by(session_id, admin_models, event, client):
+    assert session_id
 
-async def test_list_sort_by(superuser, event, client):
-    await sign_in(client, superuser)
-    register_admin_model_class(EventModelAdmin, [event.__class__])
+    event_admin_model = admin_models[event.__class__]
 
     r = await client.get(
         f"/api/list/{event.__class__.__name__}?sort_by=-name",
@@ -106,7 +93,7 @@ async def test_list_sort_by(superuser, event, client):
     )
     assert r.status_code == 422, r.text
 
-    EventModelAdmin.ordering = ["name"]
+    event_admin_model.ordering = ["name"]
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
@@ -115,72 +102,60 @@ async def test_list_sort_by(superuser, event, client):
     assert data
     assert data["total"] == 1
 
-    EventModelAdmin.ordering = ["invalid"]
+    event_admin_model.ordering = ["invalid"]
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
     assert r.status_code == 422, r.text
 
-    EventModelAdmin.ordering = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_list_select_related(session_id, admin_models, event, client):
+    assert session_id
 
-async def test_list_select_related(superuser, event, client):
-    await sign_in(client, superuser)
-    register_admin_model_class(EventModelAdmin, [event.__class__])
+    event_admin_model = admin_models[event.__class__]
 
-    EventModelAdmin.list_select_related = ["tournament_id"]
+    event_admin_model.list_select_related = ["tournament_id"]
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
     assert r.status_code == 200, r.text
 
-    EventModelAdmin.list_select_related = ["invalid"]
+    event_admin_model.list_select_related = ["invalid"]
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
     assert r.status_code == 422, r.text
 
-    EventModelAdmin.list_select_related = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
+async def test_list_display_fields(session_id, admin_models, event, client):
+    assert session_id
 
-async def test_list_display_fields(superuser, event, client):
-    await sign_in(client, superuser)
-    register_admin_model_class(EventModelAdmin, [event.__class__])
+    event_admin_model = admin_models[event.__class__]
 
-    EventModelAdmin.list_display = ["started", "name_with_price"]
+    event_admin_model.list_display = ["started", "name_with_price"]
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
     assert r.status_code == 200, r.text
 
-    EventModelAdmin.list_display = ["invalid"]
+    event_admin_model.list_display = ["invalid"]
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
     assert r.status_code == 200, r.text
 
-    EventModelAdmin.list_display = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
 
-
-async def test_list_401(superuser, event, client):
-    event = event
+async def test_list_401(event, client):
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
     assert r.status_code == 401, r.text
 
 
-async def test_list_404(superuser, event, client):
-    unregister_admin_model_class([event.__class__])
-    await sign_in(client, superuser)
+async def test_list_404(session_id, admin_models, event, client):
+    assert session_id
+    del admin_models[event.__class__]
     r = await client.get(
         f"/api/list/{event.__class__.__name__}",
     )
     assert r.status_code == 404, r.text
-    await sign_out(client, superuser)

@@ -11,7 +11,7 @@ from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import generate_models_schema, get_user_id_from_session_id, sanitize
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
-from fastadmin.models.helpers import get_admin_model, get_admin_model_classes
+from fastadmin.models.helpers import get_admin_model, get_admin_models
 from fastadmin.models.schemas import ConfigurationSchema, ModelSchema
 from fastadmin.settings import settings
 
@@ -216,7 +216,7 @@ class ApiService:
                 models=[],
             )
 
-        admin_models = cast(dict[Any, type[ModelAdmin | InlineModelAdmin]], get_admin_model_classes())
+        admin_models = cast(dict[Any, ModelAdmin | InlineModelAdmin], get_admin_models())
         models = cast(Sequence[ModelSchema], generate_models_schema(admin_models))
         return ConfigurationSchema(
             site_name=settings.ADMIN_SITE_NAME,

@@ -1,15 +1,11 @@
 import pytest
-from httpx import Client as SyncClient
 
+from fastadmin.settings import settings
 from tests.api.frameworks.fastapi.fixtures import *
 from tests.api.frameworks.flask.fixtures import *
 
-from fastadmin import register_admin_model_class, unregister_admin_model_class
-from fastadmin.api.schemas import SignInInputSchema
-from fastadmin.api.service import ApiService
-from tests.models.orms.tortoise.admins import UserModelAdmin
-
 frameworks = ["fastapi", "flask"]
+
 
 @pytest.fixture(params=frameworks)
 async def app(request, fastapi_app, flask_app):
@@ -30,14 +26,20 @@ async def client(request, fastapi_client, flask_client):
 
 
 @pytest.fixture
-async def session_id(superuser):
-    service = ApiService()
-    payload = SignInInputSchema(
-        username=superuser.username,
-        password=superuser.password,
+async def session_id(superuser, client):
+    settings.ADMIN_USER_MODEL = superuser.__class__.__name__
+    r = await client.post(
+        "/api/sign-in",
+        json={
+            "username": superuser.username,
+            "password": superuser.password,
+        },
     )
-    register_admin_model_class(UserModelAdmin, [superuser.__class__])
-    session_id = await service.sign_in(None, payload)
-    yield session_id
-    await service.sign_out(session_id)
-    unregister_admin_model_class([superuser.__class__])
+    assert r.status_code == 200, r.status_code
+    assert not r.json(), r.json()
+
+    yield r.cookies[settings.ADMIN_SESSION_ID_KEY]
+
+    r = await client.post("/api/sign-out")
+    assert r.status_code == 200, r.status_code
+    assert not r.json(), r.json()

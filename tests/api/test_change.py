@@ -1,11 +1,5 @@
-from fastadmin import register_admin_model_class, unregister_admin_model_class
-from tests.api.helpers import sign_in, sign_out
-from tests.models.orms.tortoise.admins import EventModelAdmin
-
-
-async def test_change(superuser, event, client):
-    await sign_in(client, superuser)
-    register_admin_model_class(EventModelAdmin, [event.__class__])
+async def test_change(session_id, superuser, event, client):
+    assert session_id
     r = await client.patch(
         f"/api/change/{event.__class__.__name__}/{event.id}",
         json={
@@ -24,9 +18,6 @@ async def test_change(superuser, event, client):
     assert item["updated_at"] == event.updated_at.isoformat()
     assert item["participants"] == [superuser.id]
 
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
-
 
 async def test_change_401(superuser, event, client):
     r = await client.patch(
@@ -39,9 +30,9 @@ async def test_change_401(superuser, event, client):
     assert r.status_code == 401, r.text
 
 
-async def test_change_404_admin_class_found(superuser, event, client):
-    unregister_admin_model_class([event.__class__])
-    await sign_in(client, superuser)
+async def test_change_404_admin_class_found(session_id, admin_models, superuser, event, client):
+    assert session_id
+    del admin_models[event.__class__]
     r = await client.patch(
         f"/api/change/{event.__class__.__name__}/{event.id}",
         json={
@@ -50,12 +41,10 @@ async def test_change_404_admin_class_found(superuser, event, client):
         },
     )
     assert r.status_code == 404, r.text
-    await sign_out(client, superuser)
 
 
-async def test_change_404_obj_not_found(superuser, event, client):
-    await sign_in(client, superuser)
-    register_admin_model_class(EventModelAdmin, [event.__class__])
+async def test_change_404_obj_not_found(session_id, superuser, event, client):
+    assert session_id
     r = await client.patch(
         f"/api/change/{event.__class__.__name__}/invalid",
         json={
@@ -73,6 +62,3 @@ async def test_change_404_obj_not_found(superuser, event, client):
         },
     )
     assert r.status_code == 404, r.text
-
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)

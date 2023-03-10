@@ -69,7 +69,7 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
 
 
 def generate_models_schema(
-    models: dict[Any, type[ModelAdmin | InlineModelAdmin]],
+    admin_models: dict[Any, ModelAdmin | InlineModelAdmin],
     is_inline_models: bool = False,
 ) -> list[ModelSchema | InlineModelSchema]:
     """Generate models schema
@@ -78,8 +78,8 @@ def generate_models_schema(
     :return: A list of models schema.
     """
     models_schemas: list[ModelSchema | InlineModelSchema] = []
-    for model_cls in models:
-        admin_obj: ModelAdmin | InlineModelAdmin = models[model_cls](model_cls)
+    for orm_model_cls in admin_models:
+        admin_obj: ModelAdmin | InlineModelAdmin = admin_models[orm_model_cls]
 
         model_fields = admin_obj.get_model_fields()
         list_display = admin_obj.get_list_display()
@@ -193,7 +193,7 @@ def generate_models_schema(
             admin_obj = cast(ModelAdmin, admin_obj)
             models_schemas.append(
                 ModelSchema(
-                    name=model_cls.__name__,
+                    name=orm_model_cls.__name__,
                     permissions=permissions,
                     actions=actions,
                     actions_on_top=admin_obj.actions_on_top,
@@ -213,7 +213,7 @@ def generate_models_schema(
                     save_as_continue=admin_obj.save_as_continue,
                     view_on_site=admin_obj.view_on_site,
                     inlines=generate_models_schema(
-                        {inline.model: inline for inline in admin_obj.inlines}, is_inline_models=True
+                        {inline.model: inline(inline.model) for inline in admin_obj.inlines}, is_inline_models=True
                     ),
                 ),
             )
@@ -221,7 +221,7 @@ def generate_models_schema(
             admin_obj = cast(InlineModelAdmin, admin_obj)
             models_schemas.append(
                 InlineModelSchema(
-                    name=model_cls.__name__,
+                    name=orm_model_cls.__name__,
                     permissions=permissions,
                     actions=actions,
                     actions_on_top=admin_obj.actions_on_top,

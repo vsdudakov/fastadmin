@@ -1,9 +1,8 @@
 import pytest
-from httpx import AsyncClient as TestClient
 from asgiref.wsgi import WsgiToAsgi
+from httpx import AsyncClient as TestClient
 
 from fastadmin.api.frameworks.flask.dev import app
-
 
 
 @pytest.fixture

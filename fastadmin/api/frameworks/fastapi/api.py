@@ -30,11 +30,13 @@ async def sign_in(
     :params payload: a payload object.
     :return: None.
     """
+
     try:
         session_id = await api_service.sign_in(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             payload,
         )
+
         response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
         return None
     except AdminModelException as e:

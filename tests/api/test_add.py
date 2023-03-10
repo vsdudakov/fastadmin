@@ -1,11 +1,5 @@
-from fastadmin import register_admin_model_class, unregister_admin_model_class
-from tests.api.helpers import sign_in, sign_out
-from tests.models.orms.tortoise.admins import EventModelAdmin
-
-
-async def test_add(superuser, tournament, event, client):
-    await sign_in(client, superuser)
-    register_admin_model_class(EventModelAdmin, [event.__class__])
+async def test_add(session_id, superuser, tournament, event, client):
+    assert session_id
     r = await client.post(
         f"/api/add/{event.__class__.__name__}",
         json={
@@ -23,9 +17,6 @@ async def test_add(superuser, tournament, event, client):
     assert item["updated_at"] == event.updated_at.isoformat()
     assert item["participants"] == [superuser.id]
 
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
-
 
 async def test_add_401(superuser, tournament, event, client):
     r = await client.post(
@@ -39,9 +30,9 @@ async def test_add_401(superuser, tournament, event, client):
     assert r.status_code == 401, r.text
 
 
-async def test_add_404(superuser, tournament, event, client):
-    unregister_admin_model_class([event.__class__])
-    await sign_in(client, superuser)
+async def test_add_404(session_id, admin_models, superuser, tournament, event, client):
+    assert session_id
+    del admin_models[event.__class__]
     r = await client.post(
         f"/api/add/{event.__class__.__name__}",
         json={
@@ -51,4 +42,3 @@ async def test_add_404(superuser, tournament, event, client):
         },
     )
     assert r.status_code == 404, r.text
-    await sign_out(client, superuser)

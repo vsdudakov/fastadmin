@@ -4,6 +4,8 @@ from tortoise import fields
 from tortoise.contrib.postgres.fields import ArrayField
 from tortoise.models import Model
 
+from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, action, display, register
+
 
 class EventTypeEnum(str, Enum):
     PRIVATE = "PRIVATE"
@@ -19,7 +21,7 @@ class BaseModel(Model):
         abstract = True
 
 
-class User(BaseModel):
+class TortoiseUser(BaseModel):
     username = fields.CharField(max_length=255)
     password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
@@ -28,23 +30,23 @@ class User(BaseModel):
         return self.username
 
 
-class Tournament(BaseModel):
+class TortoiseTournament(BaseModel):
     name = fields.CharField(max_length=255)
 
     def __str__(self):
         return self.name
 
 
-class BaseEvent(BaseModel):
+class TortoiseBaseEvent(BaseModel):
     pass
 
 
-class Event(BaseModel):
-    base = fields.OneToOneField("models.BaseEvent", related_name="event", null=True)
+class TortoiseEvent(BaseModel):
+    base = fields.OneToOneField("models.TortoiseBaseEvent", related_name="event", null=True)
     name = fields.CharField(max_length=255)
 
-    tournament = fields.ForeignKeyField("models.Tournament", related_name="events")
-    participants = fields.ManyToManyField("models.User", related_name="events")
+    tournament = fields.ForeignKeyField("models.TortoiseTournament", related_name="events")
+    participants = fields.ManyToManyField("models.TortoiseUser", related_name="events")
 
     rating = fields.IntField(default=0)
     description = fields.TextField(null=True)
@@ -61,3 +63,41 @@ class Event(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+@register(TortoiseUser)
+class TortoiseUserModelAdmin(TortoiseModelAdmin):
+    async def authenticate(self, username, password):
+        obj = await self.model_cls.filter(username=username, password=password, is_superuser=True).first()
+        if not obj:
+            return None
+        return obj.id
+
+
+class TortoiseEventInlineModelAdmin(TortoiseInlineModelAdmin):
+    model = TortoiseEvent
+    fk_name = "tournament"
+
+
+@register(TortoiseTournament)
+class TortoiseTournamentModelAdmin(TortoiseModelAdmin):
+    inlines = (TortoiseEventInlineModelAdmin,)
+
+
+@register(TortoiseEvent)
+class TortoiseEventModelAdmin(TortoiseModelAdmin):
+    @action(description="Make user active")
+    async def make_is_active(self, ids):
+        await self.model_cls.filter(id__in=ids).update(is_active=True)
+
+    @action
+    async def make_is_not_active(self, ids):
+        await self.model_cls.filter(id__in=ids).update(is_active=True)
+
+    @display
+    async def started(self, obj):
+        return bool(obj.start_time)
+
+    @display()
+    async def name_with_price(self, obj):
+        return f"{obj.name} - {obj.price}"

@@ -1,7 +1,7 @@
 import logging
 from uuid import UUID
 
-from flask import Blueprint, request, make_response, Response
+from flask import Blueprint, Response, make_response, request
 from werkzeug.exceptions import HTTPException
 
 from fastadmin.api.exceptions import AdminApiException
@@ -199,7 +199,9 @@ async def change(model: str, id: UUID | int):
     :return: An object.
     """
     try:
-        return await api_service.change(request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), model, id, request.json)
+        return await api_service.change(
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), model, id, request.json
+        )
     except AdminModelException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = 422
@@ -234,8 +236,8 @@ async def export(model: str):
             sort_by=sort_by,
             filters=request.query_params._dict,
         )
-        response = Response(stream, mimetype='text/csv')
-        response.headers['Content-Disposition'] = f'attachment; filename="{file_name}"'
+        response = Response(stream, mimetype="text/csv")
+        response.headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
         return response
     except AdminModelException as e:
         http_exception = HTTPException(e.detail)
@@ -302,8 +304,6 @@ async def action(
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
         raise http_exception
-
-
 
 
 @api_router.route("/configuration", methods=["GET"])

@@ -1,13 +1,8 @@
-from fastadmin import register_admin_model_class, unregister_admin_model_class
-from tests.api.helpers import sign_in, sign_out
-from tests.models.orms.tortoise.admins import EventModelAdmin
+async def test_action(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-
-async def test_action(superuser, event, client):
-    await sign_in(client, superuser)
-    register_admin_model_class(EventModelAdmin, [event.__class__])
-
-    EventModelAdmin.actions = ("make_is_active",)
+    event_admin_model.actions = ("make_is_active",)
     event.is_active = False
     await event.save()
     r = await client.post(
@@ -22,10 +17,6 @@ async def test_action(superuser, event, client):
     event = await event.__class__.get(id=event.id)
     assert event.is_active
 
-    EventModelAdmin.actions = ()
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
-
 
 async def test_action_401(event, client):
     r = await client.post(
@@ -37,9 +28,9 @@ async def test_action_401(event, client):
     assert r.status_code == 401, r.text
 
 
-async def test_action_404(superuser, event, client):
-    unregister_admin_model_class([event.__class__])
-    await sign_in(client, superuser)
+async def test_action_404(session_id, admin_models, event, client):
+    assert session_id
+    del admin_models[event.__class__]
     r = await client.post(
         f"/api/action/{event.__class__.__name__}/make_is_active",
         json={
@@ -47,14 +38,13 @@ async def test_action_404(superuser, event, client):
         },
     )
     assert r.status_code == 404, r.text
-    await sign_out(client, superuser)
 
 
-async def test_action_422(superuser, event, client):
-    await sign_in(client, superuser)
-    register_admin_model_class(EventModelAdmin, [event.__class__])
+async def test_action_422(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
 
-    EventModelAdmin.actions = ()
+    event_admin_model.actions = ()
     event.is_active = False
     await event.save()
     r = await client.post(
@@ -69,7 +59,7 @@ async def test_action_422(superuser, event, client):
     event = await event.__class__.get(id=event.id)
     assert not event.is_active
 
-    EventModelAdmin.actions = ("invalid",)
+    event_admin_model.actions = ("invalid",)
     event.is_active = False
     await event.save()
     r = await client.post(
@@ -83,6 +73,3 @@ async def test_action_422(superuser, event, client):
     assert item
     event = await event.__class__.get(id=event.id)
     assert not event.is_active
-
-    unregister_admin_model_class([event.__class__])
-    await sign_out(client, superuser)
