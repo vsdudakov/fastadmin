@@ -59,7 +59,7 @@ collectstatic:
 
 .PHONY: install
 install:
-	poetry install
+	poetry install --all-extras
 	make -C frontend install
 
 .PHONY: build
