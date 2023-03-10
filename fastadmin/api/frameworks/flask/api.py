@@ -5,7 +5,7 @@ from flask import Blueprint, Response, make_response, request
 from werkzeug.exceptions import HTTPException
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.helpers import get_user_id_from_session_id, is_valid_uuid, is_digit
+from fastadmin.api.helpers import get_user_id_from_session_id, is_valid_id
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.api.service import ApiService
 from fastadmin.models.exceptions import AdminModelException
@@ -69,7 +69,7 @@ async def sign_out():
 
 
 @api_router.route("/me", methods=["GET"])
-async def me():
+async def me() -> dict:
     """This method is used to get current user.
 
     :params user_id: a user id.
@@ -109,8 +109,8 @@ async def list(model: str):
     filters = request.args.to_dict()
     search = filters.get("search", None)
     sort_by = filters.get("sort_by", None)
-    offset = filters.get("offset", 0)
-    limit = filters.get("limit", 10)
+    offset = int(filters.get("offset", 0))
+    limit = int(filters.get("limit", 10))
     try:
         objs, total = await api_service.list(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
@@ -136,14 +136,14 @@ async def list(model: str):
 
 
 @api_router.route("/retrieve/<string:model>/<string:id>", methods=["GET"])
-async def get(model: str, id: UUID | int):
+async def get(model: str, id: UUID | int) -> dict:
     """This method is used to get an object.
 
     :params model: a name of model.
     :params id: an id of object.
     :return: An object.
     """
-    if not is_digit(id) and not is_valid_uuid(id):
+    if not is_valid_id(id):
         http_exception = HTTPException("Invalid id. It must be a UUID or an integer.")
         http_exception.code = 422
         raise http_exception
@@ -164,7 +164,7 @@ async def get(model: str, id: UUID | int):
 
 
 @api_router.route("/add/<string:model>", methods=["POST"])
-async def add(model: str):
+async def add(model: str) -> dict:
     """This method is used to add an object.
 
     :params model: a name of model.
@@ -188,7 +188,7 @@ async def add(model: str):
 
 
 @api_router.route("/change/<string:model>/<string:id>", methods=["PATCH"])
-async def change(model: str, id: UUID | int):
+async def change(model: str, id: UUID | int) -> dict:
     """This method is used to change an object.
 
     :params model: a name of model.
@@ -196,7 +196,7 @@ async def change(model: str, id: UUID | int):
     :params payload: a payload object.
     :return: An object.
     """
-    if not is_digit(id) and not is_valid_uuid(id):
+    if not is_valid_id(id):
         http_exception = HTTPException("Invalid id. It must be a UUID or an integer.")
         http_exception.code = 422
         raise http_exception
@@ -262,7 +262,7 @@ async def delete(
     :params id: an id of object.
     :return: An id of object.
     """
-    if not is_digit(id) and not is_valid_uuid(id):
+    if not is_valid_id(id):
         http_exception = HTTPException("Invalid id. It must be a UUID or an integer.")
         http_exception.code = 422
         raise http_exception
@@ -313,7 +313,7 @@ async def action(
 
 
 @api_router.route("/configuration", methods=["GET"])
-async def configuration() -> ConfigurationSchema:
+async def configuration():
     """This method is used to get a configuration.
 
     :params user_id: an id of user.

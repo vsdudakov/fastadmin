@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient as TestClient
 
-from fastadmin.api.frameworks.fastapi.dev import app
+from tests.dev.fastapi.dev import app
 
 
 @pytest.fixture

@@ -7,17 +7,17 @@ clean:
 
 .PHONY: dev_fastapi
 dev_fastapi:
-	poetry run uvicorn fastadmin.api.frameworks.fastapi.dev:app --reload --host=0.0.0.0 --port=8090
+	poetry run uvicorn tests.dev.fastapi.dev:app --reload --host=0.0.0.0 --port=8090
 
 .PHONY: dev_flask
 dev_flask:
-	flask --app fastadmin.api.frameworks.flask.dev run --debug
+	flask --app tests.dev.flask.dev run --debug
 
 
 .PHONY: dev_django
 dev_django:
-	python fastadmin/api/frameworks/django/dev/manage.py migrate
-	python fastadmin/api/frameworks/django/dev/manage.py runserver
+	python tests/dev/django/dev/manage.py migrate
+	python tests/dev/django/dev/manage.py runserver
 
 
 .PHONY: fix

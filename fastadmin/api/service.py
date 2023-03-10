@@ -111,7 +111,7 @@ class ApiService:
         admin_model = get_admin_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
-        return await admin_model.save_model(None, payload)
+        return await admin_model.save_model(None, payload)  # type: ignore
 
     async def change(
         self,

@@ -1,13 +1,12 @@
-import logging
 import json
-from uuid import UUID
+import logging
 from functools import wraps
+from uuid import UUID
 
 from django.http import JsonResponse, StreamingHttpResponse
-from django.views.decorators.csrf import csrf_exempt
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.helpers import get_user_id_from_session_id, is_valid_uuid, is_digit
+from fastadmin.api.helpers import get_user_id_from_session_id, is_valid_id
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.api.service import ApiService
 from fastadmin.models.exceptions import AdminModelException
@@ -33,7 +32,7 @@ async def sign_in(request) -> None:
     :params payload: a payload object.
     :return: None.
     """
-    if request.method != 'POST':
+    if request.method != "POST":
         return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
         payload = SignInInputSchema(**json.loads(request.body))
@@ -58,7 +57,7 @@ async def sign_out(request) -> None:
     :params response: a response object.
     :return: None.
     """
-    if request.method != 'POST':
+    if request.method != "POST":
         return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
         response = JsonResponse({})
@@ -125,10 +124,12 @@ async def list(request, model: str):
             offset=offset,
             limit=limit,
         )
-        return JsonResponse({
-            "total": total,
-            "results": objs,
-        })
+        return JsonResponse(
+            {
+                "total": total,
+                "results": objs,
+            }
+        )
     except AdminModelException as e:
         return JsonResponse({"detail": e.detail}, status=422)
     except AdminApiException as e:
@@ -144,7 +145,7 @@ async def get(request, model: str, id: UUID | int):
     """
     if request.method != "GET":
         return JsonResponse({"error": "Method not allowed"}, status=405)
-    if not is_digit(id) and not is_valid_uuid(id):
+    if not is_valid_id(id):
         return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
     try:
         obj = await api_service.get(
@@ -193,11 +194,14 @@ async def change(request, model: str, id: UUID | int):
     """
     if request.method != "PATCH":
         return JsonResponse({"error": "Method not allowed"}, status=405)
-    if not is_digit(id) and not is_valid_uuid(id):
+    if not is_valid_id(id):
         return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
     try:
         obj = await api_service.change(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None), model, id, json.loads(request.body),
+            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
+            id,
+            json.loads(request.body),
         )
         return JsonResponse(obj)
     except AdminModelException as e:
@@ -255,7 +259,7 @@ async def delete(
     """
     if request.method != "DELETE":
         return JsonResponse({"error": "Method not allowed"}, status=405)
-    if not is_digit(id) and not is_valid_uuid(id):
+    if not is_valid_id(id):
         return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
     try:
         deleted_id = await api_service.delete(
@@ -287,18 +291,17 @@ async def action(
         return JsonResponse({"error": "Method not allowed"}, status=405)
     try:
         payload = ActionInputSchema(**json.loads(request.body))
-        obj = await api_service.action(
+        await api_service.action(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             action,
             payload,
         )
-        return JsonResponse(obj or {})
+        return JsonResponse({})
     except AdminModelException as e:
         return JsonResponse({"detail": e.detail}, status=422)
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
-
 
 
 async def configuration(request):

@@ -5,7 +5,7 @@ from django.urls import path
 
 from fastadmin.settings import ROOT_DIR
 
-from .api import configuration, sign_in, sign_out, me, list, get, add, change, export, delete, action
+from .api import action, add, change, configuration, delete, export, get, list, me, sign_in, sign_out
 from .views import index
 
 

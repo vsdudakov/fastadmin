@@ -27,7 +27,7 @@ def unregister_admin_model_class(orm_model_classes: list[Any]) -> None:
     return None
 
 
-def get_admin_models() -> dict[Any, type[ModelAdmin]]:
+def get_admin_models() -> dict[Any, ModelAdmin]:
     """This method is used to get a dict of admin models.
 
     :return: A dict of admin models.

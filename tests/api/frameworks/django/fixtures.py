@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient as TestClient
 
-from fastadmin.api.frameworks.django.dev.dev.asgi import application
+from tests.dev.django.dev.dev.asgi import application
 
 
 @pytest.fixture

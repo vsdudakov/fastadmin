@@ -61,6 +61,15 @@ def is_digit(digit_to_test: str) -> bool:
     return True
 
 
+def is_valid_id(id: UUID | int) -> bool:
+    """Check if id is a valid id.
+
+    :param id: An id to test.
+    :return: True if id is a valid id, False otherwise.
+    """
+    return is_digit(str(id)) or is_valid_uuid(str(id))
+
+
 async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | None:
     """This method is used to get user id from session_id.
 
@@ -131,6 +140,7 @@ def generate_models_schema(
                     empty_value_display=admin_obj.empty_value_display,
                     filter_widget_type=filter_widget_type,
                     filter_widget_props=filter_widget_props,
+                    width=None,
                 )
             else:
                 display_fields.append(field_name)
@@ -183,6 +193,7 @@ def generate_models_schema(
                         empty_value_display=admin_obj.empty_value_display,
                         filter_widget_type=None,
                         filter_widget_props=None,
+                        width=None,
                     ),
                     add_configuration=None,
                     change_configuration=None,
