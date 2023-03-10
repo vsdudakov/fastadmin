@@ -51,7 +51,7 @@ For additional information see [Settings](https://vsdudakov.github.io/fastadmin#
 
 #### Setup FastAdmin for framework
 
-##### For FastAPI:
+#### For FastAPI:
 
 ```python
 from fastapi import FastAPI
@@ -76,9 +76,7 @@ uvicorn ...
 
 Go to [http://localhost:8000/admin](http://localhost:8000/admin).
 
-For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmin#model_admin_objects) and [InlineModelAdmin](https://vsdudakov.github.io/fastadmin#inline_model_admin_objects) documentation.
-
-##### For Flask:
+#### For Flask:
 
 ```python
 from flask import Flask
@@ -103,10 +101,8 @@ flask ...
 
 Go to [http://localhost:5000/admin](http://localhost:5000/admin).
 
-For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmin#model_admin_objects) and [InlineModelAdmin](https://vsdudakov.github.io/fastadmin#inline_model_admin_objects) documentation.
 
-
-##### For Django:
+#### For Django:
 
 In root urls.py
 
@@ -128,6 +124,7 @@ python manage.py runserver
 ```
 
 Go to [http://localhost:8000/admin](http://localhost:8000/admin).
+
 
 For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmin#model_admin_objects) and [InlineModelAdmin](https://vsdudakov.github.io/fastadmin#inline_model_admin_objects) documentation.
 
