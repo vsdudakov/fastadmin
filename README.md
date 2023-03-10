@@ -119,7 +119,7 @@ In root urls.py
 
 ```python
 from django.urls import path
-from fastadmin import get_admin_urls
+from fastadmin import get_django_admin_urls as get_admin_urls
 
 ...
 

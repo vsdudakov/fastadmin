@@ -334,13 +334,15 @@ app.register_blueprint(admin_app, url_prefix="/admin")
               <pre>
                 <code class="language-python">
 from django.urls import path
-from fastadmin import get_admin_urls
+from fastadmin import get_django_admin_urls as get_admin_urls
 
 ...
 
 urlpatterns = [
     path("admin/", get_admin_urls()),
 ]
+
+...
                 </code>
               </pre>
               <p class="alert alert-warning">
