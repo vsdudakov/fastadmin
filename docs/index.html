@@ -252,20 +252,20 @@
               <p class="lead">Follow the steps below to setup FastAdmin</p>
               <p class="lead">Install the package using pip:</p>
               <pre>
-<code class="language-bash">
+                <code class="language-bash">
 pip install fastadmin
-</code>
-</pre>
+                </code>
+              </pre>
               <p class="lead">
                 Configure FastAdmin with virtual environment variables:
               </p>
               <pre>
-<code class="language-bash">
+                <code class="language-bash">
 export ADMIN_USER_MODEL=User
 export ADMIN_USER_MODEL_USERNAME_FIELD=username
 export ADMIN_SECRET_KEY=secret_key
-</code>
-</pre>
+                </code>
+              </pre>
               <p class="alert alert-warning">
                 Note: You can add these variables to .env and use python-dotenv
                 to load them.
@@ -281,9 +281,8 @@ export ADMIN_SECRET_KEY=secret_key
                 use in 3 steps.
               </p>
               <h4>FastAPI Framework</h4>
-              <p class="lead">Mount FastAdmin App</p>
               <pre>
-<code class="language-python">
+                <code class="language-python">
 from fastapi import FastAPI
 from fastadmin import fastapi_app as admin_app
 
@@ -296,8 +295,41 @@ app = FastAPI()
 app.mount("/admin", admin_app)
 
 ...
-</code>
-</pre>
+              </code>
+            </pre>
+            <h4>Flask Framework</h4>
+            <pre>
+              <code class="language-python">
+from flask import Flask
+from fastadmin import flask_app as admin_app
+
+...
+
+app = Flask(__name__)
+
+...
+
+app.register_blueprint(admin_app, url_prefix="/admin")
+
+...
+                </code>
+              </pre>
+              <h4>Django Framework</h4>
+              <p class="lead">
+                In root urls.py:
+              </p>
+              <pre>
+                <code class="language-python">
+from django.urls import path
+from fastadmin import get_admin_urls
+
+...
+
+urlpatterns = [
+    path("admin/", get_admin_urls()),
+]
+                </code>
+              </pre>
               <p class="alert alert-warning">
                 Note: Use prefix "/admin". You can configure the prefix later.
                 See <a href="#settings">section</a>.
@@ -305,7 +337,7 @@ app.mount("/admin", admin_app)
               <p class="lead">Create and register first AdminModel classes</p>
               <h5>Tortoise ORM</h5>
               <pre>
-<code class="language-python">
+                <code class="language-python">
 import bcrypt
 from tortoise.models import Model
 from fastadmin import register, TortoiseModelAdmin
@@ -350,8 +382,8 @@ class GroupAdmin(TortoiseModelAdmin):
     list_display_links = ("id",)
     list_filter = ("id", "name")
     search_fields = ("name",)
-</code>
-</pre>
+                </code>
+              </pre>
               <p class="alert alert-warning">
                 Note: You have to implement authenticate method for FastAdmin
                 authentication on AdminModel class which is registered for
@@ -368,12 +400,6 @@ class GroupAdmin(TortoiseModelAdmin):
               <p class="alert alert-info">Coming soon...</p>
               <h5>Pony ORM</h5>
               <p class="alert alert-info">Coming soon...</p>
-              <h4>Django Framework</h4>
-              <p class="alert alert-info">Coming soon...</p>
-              <h5>Django ORM</h5>
-              <p class="alert alert-info">Coming soon...</p>
-              <h4>Flask Framework</h4>
-              <p class="alert alert-info">Coming soon...</p>
             </section>
             <hr class="divider" />
 
@@ -387,7 +413,7 @@ class GroupAdmin(TortoiseModelAdmin):
               <p class="lead">There are settings with default values:</p>
 
               <pre>
-<code class="language-python">
+                <code class="language-python">
 # This value is the prefix you used for mounting FastAdmin app for FastAPI.
 ADMIN_PREFIX: str = "admin"
 
@@ -429,8 +455,8 @@ ADMIN_DATETIME_FORMAT: str = "YYYY-MM-DD HH:mm"
 
 # This value is the time format for JS widgets.
 ADMIN_TIME_FORMAT: str = "HH:mm:ss"
-</code>
-</pre>
+                </code>
+              </pre>
               <p class="alert alert-warning">
                 Note: Settings without default values are required.
               </p>
@@ -445,10 +471,10 @@ ADMIN_TIME_FORMAT: str = "HH:mm:ss"
                 and register admin models and inlines.
               </p>
               <pre>
-<code class="language-python">
-from fastadmin.tortoise import TortoiseModelAdmin, TortoiseInlineModelAdmin
-</code>
-</pre>
+                <code class="language-python">
+from fastadmin import TortoiseModelAdmin, TortoiseInlineModelAdmin
+                </code>
+              </pre>
               <h3>SQLAlchemy ORM</h3>
               <p class="alert alert-info">Coming soon...</p>
               <h3>Pony ORM</h3>
@@ -473,8 +499,7 @@ from fastadmin.tortoise import TortoiseModelAdmin, TortoiseInlineModelAdmin
               </p>
               <pre>
 <code class="language-python">
-from fastadmin import register
-from fastadmin.tortoise import TortoiseModelAdmin
+from fastadmin import register, TortoiseModelAdmin
 from .models import Author
 
 @register(Author)
@@ -512,7 +537,7 @@ class PersonAdmin(TortoiseModelAdmin):
               <h3>ModelAdmin options</h3>
               <p class="lead">Base options:</p>
               <pre>
-<code class="language-python">
+                <code class="language-python">
   # A list of actions to make available on the change list page.
   # You have to implement methods with names like action_name in your ModelAdmin class and decorate them with @action decorator.
   # Example of usage:
@@ -642,11 +667,11 @@ class PersonAdmin(TortoiseModelAdmin):
   # An empty collection disables sorting for all columns.
   # Example of usage: sortable_by = ("mobile_number", "email")
   sortable_by: Sequence[str] = ()
-</code>
-</pre>
+                </code>
+              </pre>
               <p class="lead">Specific options:</p>
               <pre>
-<code class="language-python">
+                <code class="language-python">
   # Labels for model. We use them in select, autocomplete and other wigets where we represent model items.
   # We user first from label_fields, if it is empty, we use the second and so on.
   # If you don't set this attribute, we will use id attr as label.
@@ -685,8 +710,8 @@ class PersonAdmin(TortoiseModelAdmin):
   # See InlineModelAdmin section for more details.
   inlines: Sequence[type[InlineModelAdmin]] = ()
 
-</code>
-</pre>
+              </code>
+            </pre>
             </section>
             <hr class="small-divider" />
 
@@ -695,7 +720,7 @@ class PersonAdmin(TortoiseModelAdmin):
               <p class="lead">Base methods:</p>
 
               <pre>
-<code class="language-python">
+                <code class="language-python">
 async def get_list(
   self,
   offset: int | None = None,
@@ -829,11 +854,11 @@ def has_export_permission(self) -> bool:
   """
   ...
 
-</code>
-</pre>
+                </code>
+              </pre>
               <p class="lead">Specific methods:</p>
               <pre>
-<code class="language-python">
+                <code class="language-python">
 async def authenticate(self, username: str, password: str) -> UUID | int | None:
   """This method is used to implement authentication for settings.ADMIN_USER_MODEL orm/db model.
 
@@ -842,8 +867,8 @@ async def authenticate(self, username: str, password: str) -> UUID | int | None:
   :return: An user id or None.
   """
   ...
-</code>
-</pre>
+                </code>
+              </pre>
             </section>
             <hr class="divider" />
 
@@ -857,7 +882,7 @@ async def authenticate(self, username: str, password: str) -> UUID | int | None:
                 Tortoise Example:
               </p>
               <pre>
-<code class="language-python">
+                <code class="language-python">
 from tortoise.models import Model
 from tortoise import fields
 from fastadmin import register, TortoiseModelAdmin, TortoiseInlineModelAdmin
@@ -882,8 +907,8 @@ class AuthorAdmin(TortoiseModelAdmin):
   inlines = (
     BookInline,
   )
-</code>
-</pre>
+                </code>
+              </pre>
             </section>
             <hr class="small-divider" />
 
@@ -896,7 +921,7 @@ class AuthorAdmin(TortoiseModelAdmin):
               </p>
               <p class="lead">Specific options:</p>
               <pre>
-<code class="language-python">
+                <code class="language-python">
   # The model class which the inline is using. This is required.
   model: Any
 
@@ -918,8 +943,8 @@ class AuthorAdmin(TortoiseModelAdmin):
 
   # An override to the verbose_name_plural from the model's inner Meta class.
   verbose_name_plural: str | None = None
-</code>
-</pre>
+                </code>
+              </pre>
             </section>
             <hr class="small-divider" />
 
@@ -945,22 +970,22 @@ class AuthorAdmin(TortoiseModelAdmin):
               </p>
 
               <pre>
-<code class="language-python">
+                <code class="language-python">
 from tortoise.models import Model
 from tortoise import fields
 
 class Friendship(Model):
   to_person = fields.ForeignKey("models.Person", related_name="friends")
   from_person = fields.ForeignKey("models.Person", related_name="from_friends")
-</code>
-</pre>
+                  </code>
+                </pre>
               <p class="lead">
                 If you wanted to display an inline on the Person admin
                 add/change pages you need to explicitly define the foreign key
                 since it is unable to do so automatically:
               </p>
               <pre>
-<code class="language-python">
+                <code class="language-python">
 from fastadmin import TortoiseModelAdmin, TortoiseInlineModelAdmin
 from .models import Friendship
 
@@ -972,8 +997,8 @@ class PersonAdmin(TortoiseModelAdmin):
   inlines = (
     FriendshipInline,
   )
-</code>
-</pre>
+              </code>
+            </pre>
             </section>
             <hr class="small-divider" />
 

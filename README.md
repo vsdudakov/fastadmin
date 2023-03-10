@@ -78,9 +78,59 @@ Go to [http://localhost:8000/admin](http://localhost:8000/admin).
 
 For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmin#model_admin_objects) and [InlineModelAdmin](https://vsdudakov.github.io/fastadmin#inline_model_admin_objects) documentation.
 
-##### For Django and Flask:
+##### For Flask:
 
-Coming soon...
+```python
+from flask import Flask
+from fastadmin import flask_app as admin_app
+
+...
+
+app = Flask(__name__)
+
+...
+
+app.register_blueprint(admin_app, url_prefix="/admin")
+
+...
+```
+
+Run your project (see [https://flask.palletsprojects.com/en/2.2.x/quickstart/](https://flask.palletsprojects.com/en/2.2.x/quickstart/)):
+
+```bash
+flask ...
+```
+
+Go to [http://localhost:5000/admin](http://localhost:5000/admin).
+
+For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmin#model_admin_objects) and [InlineModelAdmin](https://vsdudakov.github.io/fastadmin#inline_model_admin_objects) documentation.
+
+
+##### For Django:
+
+In root urls.py
+
+```python
+from django.urls import path
+from fastadmin import get_admin_urls
+
+...
+
+urlpatterns = [
+    path("admin/", get_admin_urls()),
+]
+```
+
+Run your project (see [https://docs.djangoproject.com/en/4.1/intro/](https://docs.djangoproject.com/en/4.1/intro/):
+
+```bash
+python manage.py runserver
+```
+
+Go to [http://localhost:8000/admin](http://localhost:8000/admin).
+
+For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmin#model_admin_objects) and [InlineModelAdmin](https://vsdudakov.github.io/fastadmin#inline_model_admin_objects) documentation.
+
 
 #### Register ORM models
 
