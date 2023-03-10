@@ -34,7 +34,19 @@ FastAdmin is designed to be minimalistic, functional and yet familiar.
 #### Install the package using pip:
 
 ```bash
-pip install fastadmin
+pip install fastadmin["fastapi"]  # for fastapi
+pip install fastadmin["flask"]  # for flask
+pip install fastadmin["django"]  # for django
+pip install fastadmin["fastapi,django,flask"]  # for multiple
+```
+
+or using poetry
+
+```bash
+poetry add 'fastadmin["fastapi"]'  # for fastapi
+poetry add 'fastadmin["flask"]'  # for flask
+poetry add 'fastadmin["django"]'  # for django
+poetry add 'fastadmin["fastapi,django,flask"]'  # for multiple
 ```
 
 #### Setup ENV variables
@@ -101,7 +113,6 @@ flask ...
 
 Go to [http://localhost:5000/admin](http://localhost:5000/admin).
 
-
 #### For Django:
 
 In root urls.py
@@ -124,7 +135,6 @@ python manage.py runserver
 ```
 
 Go to [http://localhost:8000/admin](http://localhost:8000/admin).
-
 
 ### Register ORM models:
 

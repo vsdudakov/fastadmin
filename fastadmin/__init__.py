@@ -1,7 +1,20 @@
 # api
-from fastadmin.api.frameworks.django.app.urls import get_admin_urls
-from fastadmin.api.frameworks.fastapi.app import app as fastapi_app
-from fastadmin.api.frameworks.flask.app import app as flask_app
+import logging
+
+try:
+    from fastadmin.api.frameworks.django.app.urls import get_admin_urls
+except ModuleNotFoundError:
+    logging.info("Django not installed")
+
+try:
+    from fastadmin.api.frameworks.fastapi.app import app as fastapi_app
+except ModuleNotFoundError:
+    logging.info("FastAPI not installed")
+
+try:
+    from fastadmin.api.frameworks.flask.app import app as flask_app
+except ModuleNotFoundError:
+    logging.info("Flask not installed")
 
 # models
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin

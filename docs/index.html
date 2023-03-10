@@ -7,7 +7,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no"
     />
-    <meta name="google-site-verification" content="c45rQ5FmAgrb6scHcK2hORmVz_8MwX6HRXrKpYu3vMw" />
+    <meta
+      name="google-site-verification"
+      content="c45rQ5FmAgrb6scHcK2hORmVz_8MwX6HRXrKpYu3vMw"
+    />
     <link href="assets/images/favicon.png" rel="icon" />
     <title>FastAdmin | Documentation</title>
     <meta
@@ -253,7 +256,19 @@
               <p class="lead">Install the package using pip:</p>
               <pre>
                 <code class="language-bash">
-pip install fastadmin
+pip install fastadmin["fastapi"]  # for fastapi
+pip install fastadmin["flask"]  # for flask
+pip install fastadmin["django"]  # for django
+pip install fastadmin["fastapi,django,flask"]  # for multiple
+                </code>
+              </pre>
+              <p class="lead">Or using poetry:</p>
+              <pre>
+                <code class="language-bash">
+poetry add 'fastadmin["fastapi"]'  # for fastapi
+poetry add 'fastadmin["flask"]'  # for flask
+poetry add 'fastadmin["django"]'  # for django
+poetry add 'fastadmin["fastapi,django,flask"]'  # for multiple
                 </code>
               </pre>
               <p class="lead">
@@ -297,8 +312,8 @@ app.mount("/admin", admin_app)
 ...
               </code>
             </pre>
-            <h4>Flask Framework</h4>
-            <pre>
+              <h4>Flask Framework</h4>
+              <pre>
               <code class="language-python">
 from flask import Flask
 from fastadmin import flask_app as admin_app
@@ -315,9 +330,7 @@ app.register_blueprint(admin_app, url_prefix="/admin")
                 </code>
               </pre>
               <h4>Django Framework</h4>
-              <p class="lead">
-                In root urls.py:
-              </p>
+              <p class="lead">In root urls.py:</p>
               <pre>
                 <code class="language-python">
 from django.urls import path
@@ -878,9 +891,7 @@ async def authenticate(self, username: str, password: str) -> UUID | int | None:
                 The admin interface has the ability to edit models on the same
                 page as a parent model. These are called inlines.
               </p>
-              <p class="lead">
-                Tortoise Example:
-              </p>
+              <p class="lead">Tortoise Example:</p>
               <pre>
                 <code class="language-python">
 from tortoise.models import Model
@@ -1062,12 +1073,7 @@ class PersonAdmin(TortoiseModelAdmin):
       </footer>
     </div>
 
-    <a
-      id="back-to-top"
-      data-toggle="tooltip"
-      title="Back to Top"
-      href="#"
-    >
+    <a id="back-to-top" data-toggle="tooltip" title="Back to Top" href="#">
       ^
     </a>
 
