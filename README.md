@@ -49,8 +49,6 @@ For additional information see [Settings](https://vsdudakov.github.io/fastadmin#
 
 ### Quick Tutorial
 
-#### Setup FastAdmin for framework
-
 #### For FastAPI:
 
 ```python
