@@ -115,7 +115,7 @@ urlpatterns = [
 ]
 ```
 
-Run your project (see [https://docs.djangoproject.com/en/4.1/intro/](https://docs.djangoproject.com/en/4.1/intro/):
+Run your project (see [https://docs.djangoproject.com/en/4.1/intro/](https://docs.djangoproject.com/en/4.1/intro/)):
 
 ```bash
 python manage.py runserver
