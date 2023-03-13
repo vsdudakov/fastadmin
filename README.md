@@ -190,6 +190,62 @@ class GroupAdmin(TortoiseModelAdmin):
     search_fields = ("name",)
 ```
 
+#### For Django ORM:
+
+```python
+from asgiref.sync import sync_to_async
+from django.db import models
+
+from fastadmin import DjangoModelAdmin, register
+
+
+
+class User(models.Model):
+    username = fields.CharField(max_length=255, unique=True)
+    hash_password = fields.CharField(max_length=255)
+    is_superuser = fields.BooleanField(default=False)
+    is_active = fields.BooleanField(default=False)
+
+    ...
+
+
+
+class Group(models.Model):
+    name = fields.CharField(max_length=255)
+    ...
+
+
+@register(User)
+class UserAdmin(DjangoModelAdmin):
+    label_fields = ("username",)
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
+
+    @sync_to_async
+    def _authenticate(self, username, password):
+        obj = User.objects.filter(username=username, is_superuser=True).first()
+        if not obj:
+            return None
+        if not obj.check_password(password):
+            return None
+        return obj.id
+
+    async def authenticate(self, username, password):
+        return await self._authenticate(username, password)
+
+
+@register(Group)
+class GroupAdmin(DjangoModelAdmin):
+    label_fields = ("name",)
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
+```
+
 #### For SQLAlchemy:
 
 Coming soon...

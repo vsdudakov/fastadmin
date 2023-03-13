@@ -182,6 +182,9 @@
               <a class="nav-link" href="#changelog">Changelog</a>
               <ul class="nav flex-column">
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_1_21">v0.1.21</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_1_20">v0.1.20</a>
                 </li>
                 <li class="nav-item">
@@ -203,7 +206,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 1.1.18</li>
+                    <li><strong>Version:</strong> 1.1.21</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank"
@@ -356,7 +359,7 @@ urlpatterns = [
                 See <a href="#settings">section</a>.
               </p>
               <p class="lead">Create and register first AdminModel classes</p>
-              <h5>Tortoise ORM</h5>
+              <h4>Tortoise ORM</h4>
               <pre>
                 <code class="language-python">
 import bcrypt
@@ -405,6 +408,67 @@ class GroupAdmin(TortoiseModelAdmin):
     search_fields = ("name",)
                 </code>
               </pre>
+              <h4>Django ORM</h4>
+              <pre>
+                <code class="language-python">
+from asgiref.sync import sync_to_async
+from django.db import models
+
+from fastadmin import DjangoModelAdmin, register
+
+
+
+class User(models.Model):
+    username = fields.CharField(max_length=255, unique=True)
+    hash_password = fields.CharField(max_length=255)
+    is_superuser = fields.BooleanField(default=False)
+    is_active = fields.BooleanField(default=False)
+
+    ...
+
+
+
+class Group(models.Model):
+    name = fields.CharField(max_length=255)
+    ...
+
+
+@register(User)
+class UserAdmin(DjangoModelAdmin):
+    label_fields = ("username",)
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
+
+    @sync_to_async
+    def _authenticate(self, username, password):
+        obj = User.objects.filter(username=username, is_superuser=True).first()
+        if not obj:
+            return None
+        if not obj.check_password(password):
+            return None
+        return obj.id
+
+    async def authenticate(self, username, password):
+        return await self._authenticate(username, password)
+
+
+@register(Group)
+class GroupAdmin(DjangoModelAdmin):
+    label_fields = ("name",)
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
+                </code>
+              </pre>
+              <h4>SQLAlchemy ORM</h4>
+              <p class="alert alert-info">Coming soon...</p>
+              <h4>Pony ORM</h4>
+              <p class="alert alert-info">Coming soon...</p>
+
               <p class="alert alert-warning">
                 Note: You have to implement authenticate method for FastAdmin
                 authentication on AdminModel class which is registered for
@@ -416,11 +480,6 @@ class GroupAdmin(TortoiseModelAdmin):
                 <a href="#inline_model_admin_objects">InlineModelAdmin</a>
                 sections.
               </p>
-
-              <h5>SQLAlchemy ORM</h5>
-              <p class="alert alert-info">Coming soon...</p>
-              <h5>Pony ORM</h5>
-              <p class="alert alert-info">Coming soon...</p>
             </section>
             <hr class="divider" />
 
@@ -1040,21 +1099,29 @@ class PersonAdmin(TortoiseModelAdmin):
                 See what's new added, changed, fixed, improved or updated in the
                 latest versions.
               </p>
-              <hr class="divider">
+              <hr class="small-divider">
               <!-- <p class="alert alert-info mb-5"> For Future Updates Follow Us <a target="_blank" href="http://themeforest.net/user/harnishdesign?ref=HarnishDesign">@themeforest</a> / <a target="_blank" href="http://facebook.com/harnishdesign">@facebook</a> / <a target="_blank" href="http://twitter.com/harnishdesign">@twitter</a> / <a target="_blank" href="https://dribbble.com/harnishdesign">@Dribbble</a></p> -->
+
+              <h3 id="v0_1_21">Version 0.1.21 <small class="text-muted">(13 March, 2023)</small></h3>
+              <ul class="changelog">
+                <li>Added support for Django ORM.</li>
+                <li>Added modular structure for bakend unit tests.</li>
+              </ul>
+              <hr class="small-divider">
 
               <h3 id="v0_1_20">Version 0.1.20 <small class="text-muted">(11 March, 2023)</small></h3>
               <ul class="changelog">
-                <li>Added supporting Django, Flask + moduling architecture.</li>
+                <li>Added support for Django, Flask frameworks.</li>
+                <li>Added modular architecture for backend API.</li>
                 <li>Fixed some minor bugs.</li>
               </ul>
-              <hr class="divider">
+              <hr class="small-divider">
 
               <h3 id="v0_1_19">Version 0.1.19 <small class="text-muted">(9 March, 2023)</small></h3>
               <ul class="changelog">
                 <li>Fixed some minor bugs.</li>
               </ul>
-              <hr class="divider">
+              <hr class="small-divider">
 
               <h3 id="v0_1_18">Version 0.1.18 <small class="text-muted">(7 March, 2023)</small></h3>
               <ul class="changelog">
