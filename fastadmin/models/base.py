@@ -13,6 +13,8 @@ from fastadmin.settings import settings
 class BaseModelAdmin:
     """Base class for model admin"""
 
+    model_name_prefix: str | None = None
+
     # A list of actions to make available on the change list page.
     # You have to implement methods with names like <action_name> in your ModelAdmin class and decorate them with @action decorator.  # noqa: E501
     # Example of usage:

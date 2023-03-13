@@ -12,10 +12,11 @@ import sys
 
 from django.core.asgi import get_asgi_application
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+from tests.settings import ROOT_DIR
 
-sys.path.append(os.path.join(ROOT_DIR, ".."))
-print(sys.path)
+sys.path.append(os.path.join(ROOT_DIR, "dev", "django", "dev"))  # for dev.settings
+sys.path.append(os.path.join(ROOT_DIR, "dev"))  # for djangoorm
+
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dev.settings")
 

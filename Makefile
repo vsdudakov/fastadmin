@@ -11,14 +11,12 @@ dev_fastapi:
 
 .PHONY: dev_flask
 dev_flask:
-	flask --app tests.dev.flask.dev run --debug
-
+	poetry run flask --app tests.dev.flask.dev run --debug
 
 .PHONY: dev_django
 dev_django:
-	python tests/dev/django/dev/manage.py migrate
-	python tests/dev/django/dev/manage.py runserver
-
+	poetry run python tests/dev/django/dev/manage.py migrate
+	poetry run python tests/dev/django/dev/manage.py runserver
 
 .PHONY: fix
 fix:

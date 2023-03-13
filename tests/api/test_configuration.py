@@ -3,12 +3,11 @@ from fastadmin.settings import settings
 
 LIST_EVENT_FIELDS = [
     "name",
-    "tournament_id",
+    "tournament",
     "participants",
     "rating",
     "description",
     "event_type",
-    "tags",
     "is_active",
     "created_at",
     "start_time",
@@ -37,7 +36,7 @@ def validate_configuration_response_data(response_data, is_auth=True):
         assert model_name
         admin_model = get_admin_model(model_name)
         assert admin_model
-        assert model["name"] == admin_model.model_cls.__name__
+        assert model["name"] == admin_model.model_cls.get_model_name()
         permissions = []
         if admin_model.has_add_permission():
             permissions.append("Add")
@@ -72,7 +71,7 @@ def validate_configuration_response_data(response_data, is_auth=True):
             if model_fields.get(list_display_field, {}).get("is_m2m"):
                 assert not list_field
                 continue
-            assert list_field and list_field["list_configuration"]
+            assert list_field and list_field["list_configuration"], list_display_field
             assert list_field["list_configuration"]["index"] == list_display.index(list_display_field)
             sorter = not admin_model.sortable_by or list_display_field in admin_model.sortable_by
             if hasattr(admin_model, list_display_field):
@@ -221,7 +220,7 @@ async def test_configuration_raw_id_fields(session_id, admin_models, event, clie
 
     event_admin_model.list_display = LIST_EVENT_FIELDS
     event_admin_model.list_filter = LIST_EVENT_FIELDS
-    event_admin_model.raw_id_fields = ("participants", "tournament_id", "base_id")
+    event_admin_model.raw_id_fields = ("participants", "tournament", "base")
     r = await client.get(
         f"/api/configuration",
     )
@@ -273,7 +272,7 @@ async def test_configuration_fieldsets(session_id, admin_models, event, client):
     event_admin_model = admin_models[event.__class__]
 
     event_admin_model.fieldsets = [
-        (None, {"fields": ("base_id", "name", "tournament_id", "participants")}),
+        (None, {"fields": ("base", "name", "tournament", "participants")}),
         (
             "Types",
             {

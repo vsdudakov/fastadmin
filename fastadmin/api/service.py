@@ -8,10 +8,10 @@ from uuid import UUID
 import jwt
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.helpers import generate_models_schema, get_user_id_from_session_id, sanitize
+from fastadmin.api.helpers import get_user_id_from_session_id, sanitize
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
-from fastadmin.models.helpers import get_admin_model, get_admin_models
+from fastadmin.models.helpers import generate_models_schema, get_admin_model, get_admin_models
 from fastadmin.models.schemas import ConfigurationSchema, ModelSchema
 from fastadmin.settings import settings
 
@@ -71,6 +71,34 @@ class ApiService:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
         filters = {k: sanitize(v) for k, v in filters.items() if k not in ("search", "sort_by", "offset", "limit")}
+
+        # validations
+        fields = admin_model.get_model_fields()
+
+        if search and admin_model.search_fields:
+            for field in admin_model.search_fields:
+                if field not in fields:
+                    raise AdminApiException(422, detail=f"Search by {field} is not allowed")
+
+        if filters:
+            for filter_condition in filters.keys():
+                field = filter_condition.split("__", 1)[0]
+                if field not in fields:
+                    raise AdminApiException(422, detail=f"Filter by {filter_condition} is not allowed")
+
+        if sort_by:
+            if sort_by.strip("-") not in fields:
+                raise AdminApiException(422, detail=f"Sort by {sort_by} is not allowed")
+        elif admin_model.ordering:
+            for ordering_field in admin_model.ordering:
+                if ordering_field.strip("-") not in fields:
+                    raise AdminApiException(422, detail=f"Sort by {ordering_field} is not allowed")
+
+        if admin_model.list_select_related:
+            for field in admin_model.list_select_related:
+                if field not in fields:
+                    raise AdminApiException(422, detail=f"Select related by {field} is not allowed")
+
         return await admin_model.get_list(
             offset=offset,
             limit=limit,

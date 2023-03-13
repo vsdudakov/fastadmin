@@ -1,49 +1,52 @@
 import pytest
-from tortoise import Tortoise
 
 from tests.dev.tortoise import models
+from tests.dev.tortoise.helpers import close_connection, init_connection
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 async def tortoise_connection():
-    await Tortoise.init(db_url="sqlite://:memory:", modules={"models": ["tests.dev.tortoise.models"]})
-    await Tortoise.generate_schemas()
-    yield Tortoise.get_connection("default")
-    await Tortoise.close_connections()
+    await init_connection()
+    yield None
+    await close_connection()
 
 
 @pytest.fixture
-async def tortoise_superuser(tortoise_connection):
-    obj = await models.TortoiseUser.create(username="Test SuperUser", password="password", is_superuser=True)
+async def tortoise_db(tortoise_connection):
+    yield None
+
+
+@pytest.fixture
+async def tortoise_superuser(tortoise_db):
+    obj = await models.User.create(username="Test SuperUser", password="password", is_superuser=True)
     yield obj
     await obj.delete()
 
 
 @pytest.fixture
-async def tortoise_user(tortoise_connection):
-    obj = await models.TortoiseUser.create(username="Test User", password="password")
+async def tortoise_user(tortoise_db):
+    obj = await models.User.create(username="Test User", password="password")
     yield obj
     await obj.delete()
 
 
 @pytest.fixture
-async def tortoise_tournament(tortoise_connection):
-    obj = await models.TortoiseTournament.create(name="Test Tournament")
+async def tortoise_tournament(tortoise_db):
+    obj = await models.Tournament.create(name="Test Tournament")
     yield obj
     await obj.delete()
 
 
 @pytest.fixture
-async def tortoise_base_event(tortoise_connection):
-    obj = await models.TortoiseBaseEvent.create()
+async def tortoise_base_event(tortoise_db):
+    obj = await models.BaseEvent.create()
     yield obj
     await obj.delete()
 
 
 @pytest.fixture
 async def tortoise_event(tortoise_base_event, tortoise_tournament, tortoise_user):
-    obj = await models.TortoiseEvent.create(base=tortoise_base_event, name="Test Event", tournament=tortoise_tournament)
+    obj = await models.Event.create(base=tortoise_base_event, name="Test Event", tournament=tortoise_tournament)
     await obj.participants.add(tortoise_user)
     yield obj
-    await obj.participants.clear()
     await obj.delete()

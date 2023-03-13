@@ -54,6 +54,7 @@ pytest-asyncio = "^0.20.3"
 tortoise-orm = "^0.19.3"
 sqlalchemy = "^2.0.4"
 pony = "^0.7.16"
+aioshutil = "^1.2"
 
 [build-system]
 requires = ["poetry-core"]

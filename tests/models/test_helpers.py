@@ -11,5 +11,7 @@ async def test_uregister_admin_model_class():
 
     register_admin_model_class(AdminModelClass, [OrmModelClass])
     assert get_admin_model(OrmModelClass.__name__)
+    assert get_admin_model(OrmModelClass)
     unregister_admin_model_class([OrmModelClass])
     assert not get_admin_model(OrmModelClass.__name__)
+    assert not get_admin_model(OrmModelClass)

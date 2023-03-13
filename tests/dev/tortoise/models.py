@@ -1,7 +1,6 @@
 from enum import Enum
 
 from tortoise import fields
-from tortoise.contrib.postgres.fields import ArrayField
 from tortoise.models import Model
 
 from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, action, display, register
@@ -17,11 +16,15 @@ class BaseModel(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
+    @classmethod
+    def get_model_name(cls):
+        return f"tortoise.{cls.__name__}"
+
     class Meta:
         abstract = True
 
 
-class TortoiseUser(BaseModel):
+class User(BaseModel):
     username = fields.CharField(max_length=255)
     password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
@@ -29,29 +32,35 @@ class TortoiseUser(BaseModel):
     def __str__(self):
         return self.username
 
+    class Meta:
+        table = "user"
 
-class TortoiseTournament(BaseModel):
+
+class Tournament(BaseModel):
     name = fields.CharField(max_length=255)
 
     def __str__(self):
         return self.name
 
+    class Meta:
+        table = "tournament"
 
-class TortoiseBaseEvent(BaseModel):
-    pass
+
+class BaseEvent(BaseModel):
+    class Meta:
+        table = "base_event"
 
 
-class TortoiseEvent(BaseModel):
-    base = fields.OneToOneField("models.TortoiseBaseEvent", related_name="event", null=True)
+class Event(BaseModel):
+    base = fields.OneToOneField("models.BaseEvent", related_name="event", null=True, on_delete=fields.SET_NULL)
     name = fields.CharField(max_length=255)
 
-    tournament = fields.ForeignKeyField("models.TortoiseTournament", related_name="events")
-    participants = fields.ManyToManyField("models.TortoiseUser", related_name="events")
+    tournament = fields.ForeignKeyField("models.Tournament", related_name="events", on_delete=fields.CASCADE)
+    participants = fields.ManyToManyField("models.User", related_name="events", through="event_participants")
 
     rating = fields.IntField(default=0)
     description = fields.TextField(null=True)
     event_type = fields.CharEnumField(EventTypeEnum, max_length=255, default=EventTypeEnum.PUBLIC)
-    tags = ArrayField(element_type="text", null=True)
     is_active = fields.BooleanField(default=True)
     start_time = fields.TimeField(null=True)
     date = fields.DateField(null=True)
@@ -64,9 +73,14 @@ class TortoiseEvent(BaseModel):
     def __str__(self):
         return self.name
 
+    class Meta:
+        table = "event"
 
-@register(TortoiseUser)
+
+@register(User)
 class TortoiseUserModelAdmin(TortoiseModelAdmin):
+    model_name_prefix = "tortoise"
+
     async def authenticate(self, username, password):
         obj = await self.model_cls.filter(username=username, password=password, is_superuser=True).first()
         if not obj:
@@ -75,17 +89,21 @@ class TortoiseUserModelAdmin(TortoiseModelAdmin):
 
 
 class TortoiseEventInlineModelAdmin(TortoiseInlineModelAdmin):
-    model = TortoiseEvent
+    model = Event
+    model_name_prefix = "tortoise"
     fk_name = "tournament"
 
 
-@register(TortoiseTournament)
+@register(Tournament)
 class TortoiseTournamentModelAdmin(TortoiseModelAdmin):
     inlines = (TortoiseEventInlineModelAdmin,)
+    model_name_prefix = "tortoise"
 
 
-@register(TortoiseEvent)
+@register(Event)
 class TortoiseEventModelAdmin(TortoiseModelAdmin):
+    model_name_prefix = "tortoise"
+
     @action(description="Make user active")
     async def make_is_active(self, ids):
         await self.model_cls.filter(id__in=ids).update(is_active=True)

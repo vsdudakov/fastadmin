@@ -4,7 +4,6 @@ from collections import OrderedDict
 from typing import Any
 from uuid import UUID
 
-from fastadmin.api.exceptions import AdminApiException
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.models.schemas import WidgetType
@@ -22,13 +21,15 @@ class TortoiseMixin:
         """
         obj_dict = {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
         if with_m2m:
-            for field in obj.__class__._meta.m2m_fields:
+            fields = self.get_model_fields()
+            m2m_fields = [f for f, v in fields.items() if v.get("is_m2m", False)]
+            for field in m2m_fields:
                 m2m_rel = getattr(obj, field)
                 remote_model = m2m_rel.remote_model
                 remote_ids = await m2m_rel.all().values_list(remote_model._meta.pk_attr, flat=True)
                 obj_dict[field] = remote_ids
         if with_display_fields:
-            if admin_model := get_admin_model(obj.__class__.__name__):
+            if admin_model := get_admin_model(obj.__class__):
                 for field in admin_model.list_display:
                     display_field_function = getattr(admin_model, field, None)
                     if (
@@ -39,6 +40,79 @@ class TortoiseMixin:
                         continue
                     obj_dict[field] = await display_field_function(obj)
         return obj_dict
+
+    def get_model_fields(self) -> OrderedDict[str, dict]:
+        """This method is used to get all orm/db model fields
+        with saving ordering (non relations, fk, o2o, m2m).
+
+        :return: An OrderedDict of model fields.
+        """
+        if hasattr(self, "_model_fields"):
+            return self._model_fields
+
+        all_fields = self.model_cls._meta.fields_map.items()
+        protection_fields = self.model_cls._meta.fields_db_projection.keys()
+        fk_fields = {
+            field_name
+            for field_name, field in all_fields
+            if field_name in self.model_cls._meta.fk_fields and not getattr(field, "_generated", False)
+        }
+        o2o_fields = {
+            field_name
+            for field_name, field in all_fields
+            if field_name in self.model_cls._meta.o2o_fields and not getattr(field, "_generated", False)
+        }
+        m2m_fields = {
+            field_name
+            for field_name, field in all_fields
+            if field_name in self.model_cls._meta.m2m_fields and not getattr(field, "_generated", False)
+        }
+
+        fields = OrderedDict()
+        for field_name, field in all_fields:
+            if field_name not in protection_fields and field_name not in m2m_fields:
+                continue
+            field = getattr(field, "reference", None) or field
+            parent_model_id = None
+            parent_model_labels = ()
+            parent_model = getattr(field, "related_model", None)
+            if parent_model:
+                parent_admin_model = get_admin_model(parent_model)
+                parent_model_id = "id"
+                parent_model_labels = ("id",)
+                if parent_admin_model:
+                    parent_model_id = parent_admin_model.model_cls._meta.pk_attr
+                    parent_model_labels = parent_admin_model.label_fields or (parent_model_id,)
+
+            form_hidden = (
+                getattr(field, "index", False)
+                or getattr(field, "auto_now", False)
+                or getattr(field, "auto_now_add", False)
+            )
+
+            if "_id" in field_name:
+                field_name_without_postfix = field_name.replace("_id", "")
+                if field_name_without_postfix in o2o_fields or field_name_without_postfix in fk_fields:
+                    field_name = field_name_without_postfix
+
+            fields[field_name] = {
+                "is_pk": getattr(field, "index", False),
+                "is_m2m": field_name in m2m_fields,
+                "is_fk": field_name in fk_fields,
+                "is_o2o": field_name in o2o_fields,
+                "orm_class_name": field.__class__.__name__,
+                "parent_model": parent_model.__name__ if parent_model else None,
+                "parent_model_id": parent_model_id,
+                "parent_model_labels": parent_model_labels,
+                "choices": getattr(field, "enum_type", None),
+                "required": not getattr(field, "null", False)
+                and not getattr(field, "default", False)
+                and field_name not in m2m_fields,
+                "form_hidden": form_hidden,
+            }
+
+        setattr(self, "_model_fields", fields)
+        return fields
 
     async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
@@ -118,36 +192,24 @@ class TortoiseMixin:
         """
         qs = self.model_cls.all()
 
-        fields = self.get_model_fields()
-
         if filters:
             for filter_condition, value in filters.items():
-                field = filter_condition.split("__", 1)[0]
-                if field not in fields:
-                    raise AdminApiException(422, detail=f"Filter by {filter_condition} is not allowed")
                 qs = qs.filter(**{filter_condition: value})
 
-        if search:
-            if self.search_fields:
-                for field in self.search_fields:
-                    if field not in fields:
-                        raise AdminApiException(422, detail=f"Search by {field} is not allowed")
-                ids = await asyncio.gather(
-                    *(qs.filter(**{f + "__icontains": search}).values_list("id", flat=True) for f in self.search_fields)
+        if search and self.search_fields:
+            ids = await asyncio.gather(
+                *(
+                    qs.filter(**{f + "__icontains": search}).values_list(self.model_cls._meta.pk_attr, flat=True)
+                    for f in self.search_fields
                 )
-                ids = [item for sublist in ids for item in sublist]
-                qs = qs.filter(id__in=ids)
+            )
+            ids = [item for sublist in ids for item in sublist]
+            qs = qs.filter(id__in=ids)
 
         if sort_by:
-            if sort_by.strip("-") not in fields:
-                raise AdminApiException(422, detail=f"Sort by {sort_by} is not allowed")
             qs = qs.order_by(sort_by)
-        else:
-            if self.ordering:
-                for ordering_field in self.ordering:
-                    if ordering_field.strip("-") not in fields:
-                        raise AdminApiException(422, detail=f"Sort by {ordering_field} is not allowed")
-                qs = qs.order_by(*self.ordering)
+        elif self.ordering:
+            qs = qs.order_by(*self.ordering)
 
         total = await qs.count()
 
@@ -156,72 +218,13 @@ class TortoiseMixin:
             qs = qs.limit(limit)
 
         if self.list_select_related:
-            for field in self.list_select_related:
-                if field not in fields:
-                    raise AdminApiException(422, detail=f"Select related by {field} is not allowed")
-            qs = qs.select_related(*(f.replace("_id", "") for f in self.list_select_related))
+            qs = qs.select_related(*self.list_select_related)
 
         results = await asyncio.gather(
             *(self._obj_to_dict(obj, with_m2m=False, with_display_fields=True) for obj in await qs)
         )
 
         return results, total
-
-    def get_model_fields(self) -> OrderedDict[str, dict]:
-        """This method is used to get all orm/db model fields
-        with saving ordering (non relations, fk, o2o, m2m).
-
-        :return: An OrderedDict of model fields.
-        """
-        if hasattr(self, "_model_fields"):
-            return self._model_fields
-
-        protection_fields = self.model_cls._meta.fields_db_projection.keys()
-        fk_fields = self.model_cls._meta.fk_fields
-        o2o_fields = self.model_cls._meta.o2o_fields
-        m2m_fields = self.model_cls._meta.m2m_fields
-
-        fields = OrderedDict()
-        for field_name, field in self.model_cls._meta.fields_map.items():
-            if field_name not in protection_fields and field_name not in m2m_fields:
-                continue
-            field = getattr(field, "reference", None) or field
-            parent_model_id = None
-            parent_model_labels = ()
-            parent_model = getattr(field, "model_name", "").rsplit(".", 1)[-1] or None
-            if parent_model:
-                parent_admin_model = get_admin_model(parent_model)
-                parent_model_id = "id"
-                parent_model_labels = ("id",)
-                if parent_admin_model:
-                    parent_model_id = parent_admin_model.model_cls._meta.pk_attr
-                    parent_model_labels = parent_admin_model.label_fields or (parent_model_id,)
-
-            form_hidden = (
-                getattr(field, "_generated", False)
-                or getattr(field, "index", False)
-                or getattr(field, "auto_now", False)
-                or getattr(field, "auto_now_add", False)
-            )
-
-            fields[field_name] = {
-                "is_pk": getattr(field, "index", False),
-                "is_m2m": field_name in m2m_fields,
-                "is_fk": field_name in fk_fields,
-                "is_o2o": field_name in o2o_fields,
-                "orm_class_name": field.__class__.__name__,
-                "parent_model": parent_model,
-                "parent_model_id": parent_model_id,
-                "parent_model_labels": parent_model_labels,
-                "enum_type": getattr(field, "enum_type", None),
-                "required": not getattr(field, "null", False)
-                and not getattr(field, "default", False)
-                and field_name not in m2m_fields,
-                "form_hidden": form_hidden,
-            }
-
-        setattr(self, "_model_fields", fields)
-        return fields
 
     def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
         """This method is used to get form item widget
@@ -231,9 +234,7 @@ class TortoiseMixin:
         :return: A tuple of widget type and widget props.
         """
         fields = self.get_model_fields()
-        field = fields.get(field_name)
-        if not field:
-            raise ValueError("Invalid field name %s" % field_name)
+        field = fields[field_name]
         widget_props = {
             "required": field.get("required") or False,
             "disabled": field_name in self.readonly_fields,
@@ -317,11 +318,11 @@ class TortoiseMixin:
                 if field_name in self.radio_fields:
                     return WidgetType.RadioGroup, {
                         **widget_props,
-                        "options": [{"label": k, "value": k} for k in field.get("enum_type") or []],
+                        "options": [{"label": k, "value": k} for k in field.get("choices") or []],
                     }
                 return WidgetType.Select, {
                     **widget_props,
-                    "options": [{"label": k, "value": k} for k in field.get("enum_type") or []],
+                    "options": [{"label": k, "value": k} for k in field.get("choices") or []],
                 }
         return WidgetType.Input, widget_props
 

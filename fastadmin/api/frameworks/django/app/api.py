@@ -191,7 +191,6 @@ async def add(request: HttpRequest, model: str) -> JsonResponse:
             json.loads(request.body),
         )
         return JsonResponse(obj)
-
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
