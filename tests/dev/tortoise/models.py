@@ -110,7 +110,7 @@ class TortoiseEventModelAdmin(TortoiseModelAdmin):
 
     @action
     async def make_is_not_active(self, ids):
-        await self.model_cls.filter(id__in=ids).update(is_active=True)
+        await self.model_cls.filter(id__in=ids).update(is_active=False)
 
     @display
     async def started(self, obj):

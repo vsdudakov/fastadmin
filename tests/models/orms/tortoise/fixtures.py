@@ -1,19 +1,19 @@
 import pytest
 
 from tests.dev.tortoise import models
-from tests.dev.tortoise.helpers import close_connection, init_connection
+from tests.dev.tortoise.helpers import dispose_engine, get_connection, init_engine
 
 
 @pytest.fixture(scope="session")
 async def tortoise_connection():
-    await init_connection()
-    yield None
-    await close_connection()
+    engine = await init_engine()
+    yield get_connection(engine)
+    await dispose_engine(engine)
 
 
 @pytest.fixture
 async def tortoise_db(tortoise_connection):
-    yield None
+    yield tortoise_connection
 
 
 @pytest.fixture

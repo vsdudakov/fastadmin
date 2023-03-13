@@ -1,9 +1,13 @@
 import django
 
 
-def init_connection():
+def init_engine():
     django.setup(set_prefix=False)
 
 
-def close_connection():
+def get_connection(engine):
+    return None
+
+
+def dispose_engine(engine):
     pass

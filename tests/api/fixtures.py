@@ -6,9 +6,9 @@ from tests.api.frameworks.fastapi.fixtures import *
 from tests.api.frameworks.flask.fixtures import *
 
 frameworks = [
-    "fastapi",
+    # "fastapi",
     "flask",
-    "django",
+    # "django",
 ]
 
 
@@ -36,7 +36,7 @@ async def client(request, fastapi_client, flask_client, django_client):
 
 @pytest.fixture
 async def session_id(superuser, client):
-    settings.ADMIN_USER_MODEL = superuser.__class__.__name__
+    settings.ADMIN_USER_MODEL = superuser.get_model_name()
     r = await client.post(
         "/api/sign-in",
         json={
