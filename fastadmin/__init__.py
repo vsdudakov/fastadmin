@@ -3,6 +3,7 @@ import logging
 
 try:
     from fastadmin.api.frameworks.django.app.urls import get_admin_urls as get_django_admin_urls
+    from fastadmin.models.orms.django import DjangoInlineModelAdmin, DjangoModelAdmin
 except ModuleNotFoundError:  # pragma: no cover
     logging.info("Django not installed")  # pragma: no cover
 
@@ -22,7 +23,6 @@ from fastadmin.models.decorators import action, display, register
 from fastadmin.models.helpers import register_admin_model_class, unregister_admin_model_class
 
 # orms
-from fastadmin.models.orms.django import DjangoInlineModelAdmin, DjangoModelAdmin
 from fastadmin.models.orms.ponyorm import PonyORMInlineModelAdmin, PonyORMModelAdmin
 from fastadmin.models.orms.sqlalchemy import SqlAlchemyInlineModelAdmin, SqlAlchemyModelAdmin
 from fastadmin.models.orms.tortoise import TortoiseInlineModelAdmin, TortoiseModelAdmin
