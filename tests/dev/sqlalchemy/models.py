@@ -16,7 +16,6 @@ from sqlalchemy import (
     Table,
     Text,
     Time,
-    func,
     select,
     update,
 )
