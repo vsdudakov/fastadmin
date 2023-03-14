@@ -107,20 +107,18 @@ class SqlAlchemyMixin:
                         {"label": "Yes", "value": True},
                         {"label": "No", "value": False},
                     ]
-                # case "ArrayField":
-                #     form_widget_type = WidgetType.Select
-                #     form_widget_props["mode"] = "tags"
-                #     filter_widget_type = WidgetType.Select
-                #     filter_widget_props["mode"] = "tags"
+                case "ARRAY":
+                    form_widget_type = WidgetType.Select
+                    form_widget_props["mode"] = "tags"
+                    filter_widget_type = WidgetType.Select
+                    filter_widget_props["mode"] = "tags"
                 case "Integer":
                     form_widget_type = WidgetType.InputNumber
                     filter_widget_type = WidgetType.InputNumber
                 case "Float":
+                    # including Decimal
                     form_widget_type = WidgetType.InputNumber
                     filter_widget_type = WidgetType.InputNumber
-                # case "Decimal":
-                #     form_widget_type = WidgetType.InputNumber
-                #     filter_widget_type = WidgetType.InputNumber
                 case "Date":
                     form_widget_type = WidgetType.DatePicker
                     form_widget_props["format"] = settings.ADMIN_DATE_FORMAT
