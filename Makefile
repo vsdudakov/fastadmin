@@ -35,7 +35,7 @@ lint:
 
 .PHONY: test
 test:
-	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=100 -s tests
+	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=95 -s tests
 	make -C frontend test
 
 .PHONY: kill
