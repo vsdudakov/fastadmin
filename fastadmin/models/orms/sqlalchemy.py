@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 from collections import OrderedDict
+from operator import attrgetter
 from typing import Any
 from uuid import UUID
 
@@ -8,6 +9,13 @@ from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.models.schemas import WidgetType
 from fastadmin.settings import settings
+
+
+def get_attrs(obj: Any, keys: str) -> Any | None:
+    try:
+        return attrgetter(keys)(obj)
+    except (TypeError, AttributeError):
+        return None
 
 
 class SqlAlchemyMixin:
@@ -31,10 +39,10 @@ class SqlAlchemyMixin:
         #     fields = self.get_model_fields()
         #     m2m_fields = [f for f, v in fields.items() if v.get("is_m2m", False)]
         #     for field in m2m_fields:
-        #         m2m_rel = getattr(obj, field)
-        #         remote_model = m2m_rel.remote_model
-        #         remote_ids = await m2m_rel.all().values_list(remote_model._meta.pk_attr, flat=True)
-        #         obj_dict[field] = remote_ids
+        #         m2m_results = await getattr(obj, field)
+        #         m2m_result_ids = [m2m_result.id for m2m_result in m2m_results]
+        #         await self.sqlalchemy_session.refresh(obj)
+        #         obj_dict[field] = m2m_result_ids
         if with_display_fields:
             if admin_model := get_admin_model(obj.__class__):
                 for field in admin_model.list_display:
@@ -57,9 +65,62 @@ class SqlAlchemyMixin:
         if hasattr(self, "_model_fields"):
             return self._model_fields
 
-        fields = OrderedDict()
+        from sqlalchemy import inspect
 
-        # TODO
+        mapper = inspect(self.model_cls)
+
+        # TODO remove backward relations, identify o2o correctly
+        all_fields = {f for f in mapper.c if not f.foreign_keys} | {f for f in mapper.relationships}
+        fk_fields = [f.key for f in mapper.relationships if f.direction.name == "MANYTOONE"]
+        o2o_fields = [f.key for f in mapper.relationships if f.direction.name == "MANYTOONE"]
+        m2m_fields = [f.key for f in mapper.relationships if f.direction.name == "MANYTOMANY"]
+        protection_fields = [f.key for f in all_fields if f.key not in m2m_fields]
+
+        fields = OrderedDict()
+        for field in all_fields:
+            field_name = field.key
+            if field_name not in protection_fields and field_name not in m2m_fields:
+                continue
+
+            parent_model_id = None
+            parent_model_labels = ()
+            parent_model = get_attrs(field, "entity.class_")
+            if parent_model:
+                parent_admin_model = get_admin_model(parent_model)
+                parent_model_id = "id"
+                parent_model_labels = ("id",)
+                if parent_admin_model:
+                    parent_model_id = (
+                        get_attrs(parent_admin_model.model_cls, "__table__.primary_key._autoincrement_column.name")
+                        or "id"
+                    )
+                    parent_model_labels = parent_admin_model.label_fields or (parent_model_id,)
+
+            form_hidden = getattr(field, "primary_key", False)
+
+            orm_class_name = get_attrs(field, "type.__class__.__name__")
+            if field_name in o2o_fields:
+                orm_class_name = "OneToOneField"
+            if field_name in fk_fields:
+                orm_class_name = "ForeignKeyField"
+            if field_name in m2m_fields:
+                orm_class_name = "ManyToManyField"
+
+            fields[field_name] = {
+                "is_pk": getattr(field, "primary_key", False),
+                "is_m2m": field_name in m2m_fields,
+                "is_fk": field_name in fk_fields,
+                "is_o2o": field_name in o2o_fields,
+                "orm_class_name": orm_class_name,
+                "parent_model": parent_model.__name__ if parent_model else None,
+                "parent_model_id": parent_model_id,
+                "parent_model_labels": parent_model_labels,
+                "choices": getattr(field, "enum_type", None),
+                "required": not getattr(field, "nullable", False)
+                and not getattr(field, "default", False)
+                and field_name not in m2m_fields,
+                "form_hidden": form_hidden,
+            }
 
         setattr(self, "_model_fields", fields)
         return fields
@@ -71,7 +132,7 @@ class SqlAlchemyMixin:
         :params payload: a payload from request.
         :return: A saved object or None.
         """
-        async with self.sqlalchemy_session() as session:
+        async with self.sqlalchemy_session() as session:  # type: ignore
             fields = self.get_model_fields()
             m2m_fields = [f for f, v in fields.items() if v.get("is_m2m", False)]
 
@@ -116,7 +177,7 @@ class SqlAlchemyMixin:
         """
         from sqlalchemy import delete
 
-        async with self.sqlalchemy_session() as session:
+        async with self.sqlalchemy_session() as session:  # type: ignore
             query = delete(self.model_cls).filter_by(id=id)
             await session.execute(query)
             await session.commit()
@@ -129,7 +190,7 @@ class SqlAlchemyMixin:
         """
         from sqlalchemy import select
 
-        async with self.sqlalchemy_session() as session:
+        async with self.sqlalchemy_session() as session:  # type: ignore
             query = select(self.model_cls).filter_by(id=id).limit(1)
             result = await session.scalars(query)
             obj = result.first()
@@ -156,7 +217,7 @@ class SqlAlchemyMixin:
         """
         from sqlalchemy import func, select
 
-        async with self.sqlalchemy_session() as session:
+        async with self.sqlalchemy_session() as session:  # type: ignore
             qs = select(self.model_cls)
 
             if filters:
@@ -173,10 +234,10 @@ class SqlAlchemyMixin:
             #     ids = [item for sublist in ids for item in sublist]
             #     qs = qs.filter(id__in=ids)
 
-            if sort_by:
-                qs = qs.order_by(sort_by)
-            elif self.ordering:
-                qs = qs.order_by(*self.ordering)
+            # if sort_by:
+            #     qs = qs.order_by(sort_by)
+            # elif self.ordering:
+            #     qs = qs.order_by(*self.ordering)
 
             total = await session.execute(qs.statement.with_only_columns([func.count()]).order_by(None))
 
@@ -209,42 +270,42 @@ class SqlAlchemyMixin:
             "readOnly": field_name in self.readonly_fields,
         }
         match field.get("orm_class_name"):
-            case "CharField":
+            case "String":
                 return WidgetType.Input, widget_props
-            case "TextField":
+            case "Text":
                 return WidgetType.TextArea, widget_props
-            case "BooleanField":
+            case "Boolean":
                 return WidgetType.Switch, {
                     **widget_props,
                     "required": False,
                 }
-            case "ArrayField":
-                return WidgetType.Select, {
-                    **widget_props,
-                    "mode": "tags",
-                }
-            case "IntField":
+            # case "Array":
+            #     return WidgetType.Select, {
+            #         **widget_props,
+            #         "mode": "tags",
+            #     }
+            case "Integer":
                 return WidgetType.InputNumber, widget_props
-            case "FloatField":
+            case "Float":
                 return WidgetType.InputNumber, widget_props
-            case "DecimalField":
-                return WidgetType.InputNumber, widget_props
-            case "DateField":
+            # case "Decimal":
+            #     return WidgetType.InputNumber, widget_props
+            case "Date":
                 return WidgetType.DatePicker, {
                     **widget_props,
                     "format": settings.ADMIN_DATE_FORMAT,
                 }
-            case "DatetimeField":
+            case "DateTime":
                 return WidgetType.DateTimePicker, {
                     **widget_props,
                     "format": settings.ADMIN_DATETIME_FORMAT,
                 }
-            case "TimeField":
+            case "Time":
                 return WidgetType.TimePicker, {
                     **widget_props,
                     "format": settings.ADMIN_TIME_FORMAT,
                 }
-            case "ForeignKeyFieldInstance":
+            case "ForeignKeyField":
                 if field_name in self.raw_id_fields:
                     return WidgetType.Input, widget_props
                 return WidgetType.AsyncSelect, {
@@ -253,7 +314,7 @@ class SqlAlchemyMixin:
                     "idField": field.get("parent_model_id"),
                     "labelFields": field.get("parent_model_labels"),
                 }
-            case "ManyToManyFieldInstance":
+            case "ManyToManyField":
                 if field_name in self.raw_id_fields:
                     return WidgetType.Input, widget_props
                 if field_name in self.filter_vertical or field_name in self.filter_horizontal:
@@ -273,7 +334,7 @@ class SqlAlchemyMixin:
                     "idField": field.get("parent_model_id"),
                     "labelFields": field.get("parent_model_labels"),
                 }
-            case "OneToOneFieldInstance":
+            case "OneToOneField":
                 if field_name in self.raw_id_fields:
                     return WidgetType.Input, widget_props
                 return WidgetType.AsyncSelect, {
@@ -282,16 +343,16 @@ class SqlAlchemyMixin:
                     "idField": field.get("parent_model_id"),
                     "labelFields": field.get("parent_model_labels"),
                 }
-            case "CharEnumFieldInstance":
-                if field_name in self.radio_fields:
-                    return WidgetType.RadioGroup, {
-                        **widget_props,
-                        "options": [{"label": k, "value": k} for k in field.get("choices") or []],
-                    }
-                return WidgetType.Select, {
-                    **widget_props,
-                    "options": [{"label": k, "value": k} for k in field.get("choices") or []],
-                }
+            # case "CharEnumFieldInstance":
+            #     if field_name in self.radio_fields:
+            #         return WidgetType.RadioGroup, {
+            #             **widget_props,
+            #             "options": [{"label": k, "value": k} for k in field.get("choices") or []],
+            #         }
+            #     return WidgetType.Select, {
+            #         **widget_props,
+            #         "options": [{"label": k, "value": k} for k in field.get("choices") or []],
+            #     }
         return WidgetType.Input, widget_props
 
 

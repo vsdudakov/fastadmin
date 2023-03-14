@@ -16,6 +16,7 @@ from sqlalchemy import (
     Table,
     Text,
     Time,
+    func,
     select,
     update,
 )
@@ -45,8 +46,8 @@ class BaseModel(Base):
     __abstract__ = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
-    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False, default=datetime.datetime.utcnow)
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False, default=datetime.datetime.utcnow)
 
     @classmethod
     def get_model_name(cls):
@@ -120,9 +121,9 @@ class SqlAlchemyUserModelAdmin(SqlAlchemyModelAdmin):
 
     async def authenticate(self, username, password):
         async with self.sqlalchemy_session() as session:
-            query = select(User).filter_by(username=username, password=password, is_superuser=True).limit(1)
-            result = await session.execute(query)
-            obj = result.scalars().one()
+            query = select(User).filter_by(username=username, password=password, is_superuser=True)
+            result = await session.scalars(query)
+            obj = result.first()
             if not obj:
                 return None
             return obj.id
@@ -155,7 +156,6 @@ class SqlAlchemyEventModelAdmin(SqlAlchemyModelAdmin):
             query = update(Event).where(Event.id.in_(ids)).values(is_active=True)
             await session.execute(query)
             await session.commit()
-            await session.refresh()
 
     @action
     async def make_is_not_active(self, ids):
@@ -163,7 +163,6 @@ class SqlAlchemyEventModelAdmin(SqlAlchemyModelAdmin):
             query = update(Event).where(Event.id.in_(ids)).values(is_active=False)
             await session.execute(query)
             await session.commit()
-            await session.refresh()
 
     @display
     async def started(self, obj):
