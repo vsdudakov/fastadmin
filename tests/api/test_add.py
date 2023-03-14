@@ -1,17 +1,24 @@
+from fastadmin.models.base import ModelAdmin
 from fastadmin.models.helpers import get_admin_model
+from fastadmin.models.schemas import ModelFieldWidgetSchema
 
 
 async def test_add(session_id, admin_models, event, client):
     assert session_id
-    event_admin_model = admin_models[event.__class__]
-    fields = event_admin_model.get_model_fields()
+    event_admin_model: ModelAdmin = admin_models[event.__class__]
+    fields = event_admin_model.get_model_fields_with_widget_types()
 
-    participant_model_cls_name: str = fields["participants"]["parent_model"]
-    participant_model = f"{event_admin_model.model_name_prefix}.{participant_model_cls_name}"
-    participant_admin_model = get_admin_model(participant_model)
-    participant = await participant_admin_model.save_model(None, {"username": "participant", "password": "test"})
+    participants_field: ModelFieldWidgetSchema = next((f for f in fields if f.name == "participants"), None)
+    assert participants_field
+    tournament_field: ModelFieldWidgetSchema = next((f for f in fields if f.name == "tournament"), None)
+    assert tournament_field
 
-    tournament_model_cls_name: str = fields["tournament"]["parent_model"]
+    participants_model_cls_name = participants_field.form_widget_props["parentModel"]
+    participants_model = f"{event_admin_model.model_name_prefix}.{participants_model_cls_name}"
+    participants_admin_model = get_admin_model(participants_model)
+    participant = await participants_admin_model.save_model(None, {"username": "participant", "password": "test"})
+
+    tournament_model_cls_name = tournament_field.form_widget_props["parentModel"]
     tournament_model = f"{event_admin_model.model_name_prefix}.{tournament_model_cls_name}"
     tournament_admin_model = get_admin_model(tournament_model)
     tournament = await tournament_admin_model.save_model(None, {"name": "test_tournament"})
@@ -20,7 +27,7 @@ async def test_add(session_id, admin_models, event, client):
         f"/api/add/{event.get_model_name()}",
         json={
             "name": "new name",
-            "tournament_id": tournament["id"],
+            "tournament": tournament["id"],
             "participants": [participant["id"]],
         },
     )
@@ -28,13 +35,13 @@ async def test_add(session_id, admin_models, event, client):
     item = r.json()
     updated_event = await event_admin_model.get_obj(item["id"])
     assert item["name"] == "new name"
-    assert item["tournament_id"] == tournament["id"]
+    assert item["tournament"] == tournament["id"]
     assert item["created_at"] == updated_event["created_at"].isoformat()
     assert item["updated_at"] == updated_event["updated_at"].isoformat()
     assert item["participants"] == [participant["id"]]
     r = await client.delete(f"/api/delete/{event.get_model_name()}/{item['id']}")
     assert r.status_code == 200, r.text
-    r = await client.delete(f"/api/delete/{participant_model}/{participant['id']}")
+    r = await client.delete(f"/api/delete/{participants_model}/{participant['id']}")
     assert r.status_code == 200, r.text
     r = await client.delete(f"/api/delete/{tournament_model}/{tournament['id']}")
     assert r.status_code == 200, r.text
@@ -53,7 +60,7 @@ async def test_add_401(superuser, tournament, event, client):
         f"/api/add/{event.get_model_name()}",
         json={
             "name": "new name",
-            "tournament_id": tournament.id,
+            "tournament": tournament.id,
             "participants": [superuser.id],
         },
     )
@@ -67,7 +74,7 @@ async def test_add_404(session_id, admin_models, superuser, tournament, event, c
         f"/api/add/{event.get_model_name()}",
         json={
             "name": "new name",
-            "tournament_id": tournament.id,
+            "tournament": tournament.id,
             "participants": [superuser.id],
         },
     )

@@ -73,7 +73,7 @@ class ApiService:
         filters = {k: sanitize(v) for k, v in filters.items() if k not in ("search", "sort_by", "offset", "limit")}
 
         # validations
-        fields = admin_model.get_model_fields()
+        fields = admin_model.get_fields_for_serialize()
 
         if search and admin_model.search_fields:
             for field in admin_model.search_fields:

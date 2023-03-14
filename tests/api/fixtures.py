@@ -4,15 +4,10 @@ from fastadmin.settings import settings
 from tests.api.frameworks.django.fixtures import *
 from tests.api.frameworks.fastapi.fixtures import *
 from tests.api.frameworks.flask.fixtures import *
-
-frameworks = [
-    "fastapi",
-    "flask",
-    "django",
-]
+from tests.settings import FRAMEWORKS
 
 
-@pytest.fixture(params=frameworks)
+@pytest.fixture(params=FRAMEWORKS)
 async def app(request, fastapi_app, flask_app, django_app):
     match request.param:
         case "fastapi":
@@ -23,7 +18,7 @@ async def app(request, fastapi_app, flask_app, django_app):
             yield django_app
 
 
-@pytest.fixture(params=frameworks)
+@pytest.fixture(params=FRAMEWORKS)
 async def client(request, fastapi_client, flask_client, django_client):
     match request.param:
         case "fastapi":

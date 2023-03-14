@@ -6,15 +6,10 @@ from fastadmin.models.base import admin_models as admin_models_objs
 from tests.models.orms.django.fixtures import *
 from tests.models.orms.sqlalchemy.fixtures import *
 from tests.models.orms.tortoise.fixtures import *
-
-orms = [
-    "tortoise",
-    "djangoorm",
-    "sqlalchemy",
-]
+from tests.settings import ORMS
 
 
-@pytest.fixture(params=orms)
+@pytest.fixture(params=ORMS)
 async def superuser(request, tortoise_superuser, django_superuser, sqlalchemy_superuser):
     match request.param:
         case "tortoise":
@@ -25,7 +20,7 @@ async def superuser(request, tortoise_superuser, django_superuser, sqlalchemy_su
             yield sqlalchemy_superuser
 
 
-@pytest.fixture(params=orms)
+@pytest.fixture(params=ORMS)
 async def user(request, tortoise_user, django_user, sqlalchemy_user):
     match request.param:
         case "tortoise":
@@ -36,7 +31,7 @@ async def user(request, tortoise_user, django_user, sqlalchemy_user):
             yield sqlalchemy_user
 
 
-@pytest.fixture(params=orms)
+@pytest.fixture(params=ORMS)
 async def tournament(request, tortoise_tournament, django_tournament, sqlalchemy_tournament):
     match request.param:
         case "tortoise":
@@ -47,7 +42,7 @@ async def tournament(request, tortoise_tournament, django_tournament, sqlalchemy
             yield sqlalchemy_tournament
 
 
-@pytest.fixture(params=orms)
+@pytest.fixture(params=ORMS)
 async def base_event(request, tortoise_base_event, django_base_event, sqlalchemy_base_event):
     match request.param:
         case "tortoise":
@@ -58,7 +53,7 @@ async def base_event(request, tortoise_base_event, django_base_event, sqlalchemy
             yield sqlalchemy_base_event
 
 
-@pytest.fixture(params=orms)
+@pytest.fixture(params=ORMS)
 async def event(request, tortoise_event, django_event, sqlalchemy_event):
     match request.param:
         case "tortoise":

@@ -133,3 +133,17 @@ class ConfigurationSchema(BaseModel):
     models: Sequence[ModelSchema]
     date_format: str
     datetime_format: str
+
+
+class ModelFieldWidgetSchema(BaseModel):
+    """Orm model field schema"""
+
+    name: str
+    column_name: str
+    is_m2m: bool
+    is_pk: bool
+    is_immutable: bool
+    form_widget_type: WidgetType
+    form_widget_props: dict
+    filter_widget_type: WidgetType
+    filter_widget_props: dict

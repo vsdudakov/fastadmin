@@ -1,13 +1,13 @@
+import asyncio
 import csv
-from collections import OrderedDict
+import inspect
 from collections.abc import Sequence
 from io import BytesIO, StringIO
 from typing import Any
 from uuid import UUID
 
 from fastadmin.api.schemas import ExportFormat
-from fastadmin.models.schemas import WidgetType
-from fastadmin.settings import settings
+from fastadmin.models.schemas import ModelFieldWidgetSchema
 
 
 class BaseModelAdmin:
@@ -161,14 +161,35 @@ class BaseModelAdmin:
         """
         self.model_cls = model_cls
 
-    async def get_list(
+    @staticmethod
+    def get_model_pk_name(orm_model_cls: Any) -> str:
+        """This method is used to get model pk name.
+
+        :return: A str.
+        """
+        raise NotImplementedError
+
+    def get_model_fields_with_widget_types(
+        self,
+        with_m2m: bool | None = None,
+    ) -> list[ModelFieldWidgetSchema]:
+        """This method is used to get model fields with widget types.
+
+        :params with_m2m: a flag to include m2m fields.
+        :params with_pk: a flag to include pk fields.
+        :params with_readonly: a flag to include readonly fields.
+        :return: A list of ModelFieldWidgetSchema.
+        """
+        raise NotImplementedError
+
+    async def orm_get_list(
         self,
         offset: int | None = None,
         limit: int | None = None,
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
-    ) -> tuple[list[dict], int]:
+    ) -> tuple[list[Any], int]:
         """This method is used to get list of orm/db model objects.
 
         :params offset: an offset for pagination.
@@ -180,24 +201,24 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
-        """This method is used to save orm/db model object.
-
-        :params id: an id of object.
-        :params payload: a payload from request.
-        :return: A saved object or None.
-        """
-        raise NotImplementedError
-
-    async def get_obj(self, id: UUID | int) -> dict | None:
-        """This method is used to get orm/db model object by id.
+    async def orm_get_obj(self, id: UUID | int) -> Any | None:
+        """This method is used to get orm/db model object.
 
         :params id: an id of object.
         :return: An object or None.
         """
         raise NotImplementedError
 
-    async def delete_model(self, id: UUID | int) -> None:
+    async def orm_save_obj(self, obj: Any, update_fields: list[str] | None = None) -> Any:
+        """This method is used to save orm/db model object.
+
+        :params obj: an object.
+        :params update_fields: a list of fields to update.
+        :return: An object.
+        """
+        raise NotImplementedError
+
+    async def orm_delete_obj(self, id: UUID | int) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.
@@ -205,22 +226,144 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    def get_model_fields(self) -> OrderedDict[str, dict]:
-        """This method is used to get all orm/db model fields
-        with saving ordering (non relations, fk, o2o, m2m).
+    async def orm_get_m2m_ids(self, obj: Any, field: str) -> list[int | UUID]:
+        """This method is used to get m2m ids.
 
-        :return: An OrderedDict of model fields.
+        :params obj: an object.
+        :params field: a m2m field name.
+
+        :return: A list of ids.
         """
         raise NotImplementedError
 
-    def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
-        """This method is used to get form item widget
-        for field from orm/db model.
+    async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | UUID]) -> None:
+        """This method is used to get m2m ids.
 
-        :params field_name: a model field name.
-        :return: A tuple of widget type and widget props.
+        :params obj: an object.
+        :params field: a m2m field name.
+
+        :return: A list of ids.
         """
         raise NotImplementedError
+
+    def get_fields_for_serialize(self) -> set[str]:
+        fields = self.get_model_fields_with_widget_types()
+        fields_for_serialize = {field.name for field in fields}
+        if self.exclude:
+            fields_for_serialize -= set(self.exclude)
+        include_fields = set(self.fields) | set(self.list_display)
+        if include_fields:
+            fields_for_serialize &= include_fields
+        return fields_for_serialize
+
+    async def serialize_obj(self, obj: Any, list_view: bool = False) -> dict:
+        """Serialize orm model obj to dict.
+
+        :params obj: an object.
+        :params exclude_fields: a list of fields to exclude.
+        :return: A dict.
+        """
+        fields = self.get_model_fields_with_widget_types()
+        fields_for_serialize = self.get_fields_for_serialize()
+
+        obj_dict = {}
+        for field in fields:
+            if field.name not in fields_for_serialize:
+                continue
+            if field.is_m2m and list_view:
+                continue
+            if field.is_m2m:
+                obj_dict[field.name] = await self.orm_get_m2m_ids(obj, field.column_name)
+            else:
+                obj_dict[field.name] = getattr(obj, field.column_name)
+
+        for field_name in fields_for_serialize:
+            display_field_function = getattr(self, field_name, None)
+            if (
+                not display_field_function
+                or not inspect.ismethod(display_field_function)
+                or not hasattr(display_field_function, "is_display")
+            ):
+                continue
+            obj_dict[field_name] = await display_field_function(obj)
+
+        return obj_dict
+
+    async def get_list(
+        self,
+        offset: int | None = None,
+        limit: int | None = None,
+        search: str | None = None,
+        sort_by: str | None = None,
+        filters: dict | None = None,
+    ) -> tuple[list[dict], int]:
+        """This method is used to get list of seriaized objects.
+
+        :params offset: an offset for pagination.
+        :params limit: a limit for pagination.
+        :params search: a search query.
+        :params sort_by: a sort by field name.
+        :params filters: a dict of filters.
+        :return: A tuple of list of dict and total count.
+        """
+        objs, total = await self.orm_get_list(
+            offset=offset,
+            limit=limit,
+            search=search,
+            sort_by=sort_by,
+            filters=filters,
+        )
+        return await asyncio.gather(*(self.serialize_obj(obj, list_view=True) for obj in objs)), total
+
+    async def get_obj(self, id: UUID | int) -> dict | None:
+        """This method is used to get serialized object by id.
+
+        :params id: an id of object.
+        :return: A dict or None.
+        """
+        obj = await self.orm_get_obj(id)
+        if not obj:
+            return None
+        return await self.serialize_obj(obj)
+
+    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
+        """This method is used to save orm/db model object.
+
+        :params id: an id of object.
+        :params payload: a payload from request.
+        :return: A saved object or None.
+        """
+        fields = self.get_model_fields_with_widget_types(with_m2m=False)
+        m2m_fields = self.get_model_fields_with_widget_types(with_m2m=True)
+
+        if id:
+            obj = await self.orm_get_obj(id)
+            if not obj:
+                return None
+        else:
+            obj = self.model_cls()
+
+        update_fields = []
+        for field in fields:
+            if field.name in payload:
+                setattr(obj, field.column_name, payload[field.name])
+                update_fields.append(field.column_name)
+
+        obj = await self.orm_save_obj(obj, update_fields=update_fields if id else None)
+
+        for m2m_field in m2m_fields:
+            if m2m_field.name in payload:
+                await self.orm_save_m2m_ids(obj, m2m_field.column_name, payload[m2m_field.name])
+
+        return await self.serialize_obj(obj)
+
+    async def delete_model(self, id: UUID | int) -> None:
+        """This method is used to delete orm/db model object.
+
+        :params id: an id of object.
+        :return: None.
+        """
+        await self.orm_delete_obj(id)
 
     async def get_export(
         self,
@@ -241,149 +384,21 @@ class BaseModelAdmin:
         :params filters: a dict of filters.
         :return: A StringIO or BytesIO object.
         """
-        objs, _ = await self.get_list(offset=offset, limit=limit, search=search, sort_by=sort_by, filters=filters)
-        model_fields = self.get_model_fields()
-        export_fields = [f for f, v in model_fields.items() if not v.get("is_m2m") and not v.get("form_hidden")]
+        objs, _ = await self.orm_get_list(offset=offset, limit=limit, search=search, sort_by=sort_by, filters=filters)
+        fields = self.get_model_fields_with_widget_types(with_m2m=False)
+
+        export_fields = [f.name for f in fields]
         if not export_format or export_format == ExportFormat.CSV:
             output = StringIO()
             writer = csv.DictWriter(output, fieldnames=export_fields)
             writer.writeheader()
             for obj in objs:
-                obj_dict = {fieldname: getattr(obj, fieldname, None) for fieldname in export_fields}
+                obj_dict = await self.serialize_obj(obj, list_view=True)
+                obj_dict = {k: v for k, v in obj_dict.items() if k in export_fields}
                 writer.writerow(obj_dict)
             output.seek(0)
             return output
         return None
-
-    def get_filter_widget(self, field_name: str) -> tuple[WidgetType, dict]:
-        """This method is used to get filter widget for tabel columns
-        for field from orm/db model from list_filter parameter.
-
-        :params field_name: a model field name.
-        :return: A tuple of widget type and widget props.
-        """
-        form_widget_type, form_widget_props = self.get_form_widget(field_name)
-        match form_widget_type:
-            case WidgetType.Input:
-                return WidgetType.Input, {
-                    **form_widget_props,
-                    "required": False,
-                }
-            case WidgetType.InputNumber:
-                return WidgetType.InputNumber, {
-                    **form_widget_props,
-                    "required": False,
-                }
-            case WidgetType.TextArea:
-                return WidgetType.Input, {
-                    **form_widget_props,
-                    "required": False,
-                }
-            case WidgetType.Select:
-                mode_tags = form_widget_props.get("mode") == "tags"
-                return WidgetType.Select, {
-                    **form_widget_props,
-                    "mode": "tags" if mode_tags else "multiple",
-                    "required": False,
-                }
-            case WidgetType.AsyncSelect:
-                return WidgetType.AsyncSelect, {
-                    **form_widget_props,
-                    "mode": "multiple",
-                    "required": False,
-                }
-            case WidgetType.AsyncTransfer:
-                return WidgetType.AsyncTransfer, {
-                    **form_widget_props,
-                    "required": False,
-                }
-            case WidgetType.Switch:
-                return WidgetType.RadioGroup, {
-                    **form_widget_props,
-                    "required": False,
-                    "options": [
-                        {"label": "Yes", "value": True},
-                        {"label": "No", "value": False},
-                    ],
-                }
-            case WidgetType.Checkbox:
-                return WidgetType.RadioGroup, {
-                    **form_widget_props,
-                    "required": False,
-                    "options": [
-                        {"label": "Yes", "value": True},
-                        {"label": "No", "value": False},
-                    ],
-                }
-            case WidgetType.TimePicker:
-                return WidgetType.RangePicker, {
-                    **form_widget_props,
-                    "required": False,
-                    "format": settings.ADMIN_TIME_FORMAT,
-                    "showTime": True,
-                }
-            case WidgetType.DatePicker:
-                return WidgetType.RangePicker, {
-                    **form_widget_props,
-                    "required": False,
-                    "format": settings.ADMIN_DATE_FORMAT,
-                }
-            case WidgetType.DateTimePicker:
-                return WidgetType.RangePicker, {
-                    **form_widget_props,
-                    "required": False,
-                    "format": settings.ADMIN_DATETIME_FORMAT,
-                    "showTime": True,
-                }
-            case WidgetType.RadioGroup:
-                return WidgetType.CheckboxGroup, {
-                    **form_widget_props,
-                    "required": False,
-                }
-            case WidgetType.CheckboxGroup:
-                return WidgetType.CheckboxGroup, {
-                    **form_widget_props,
-                    "required": False,
-                }
-            # case WidgetType.RangePicker:
-            # case WidgetType.Upload:
-            case _:
-                return WidgetType.Input, {
-                    **form_widget_props,
-                    "required": False,
-                }
-
-    def get_list_display(self) -> Sequence[str]:
-        """This method is used to get list of fields for display on table view.
-
-        :return: A list of model field names.
-        """
-        list_display = self.list_display
-        model_fields = self.get_model_fields()
-        if not list_display:
-            return [f for f in self.get_fields() if model_fields[f].get("is_pk")]
-        return [f for f in list_display if f in model_fields]
-
-    def get_fields(self) -> Sequence[str]:
-        """This method is used to get list of fields for display on form view.
-
-        :return: A list of model field names.
-        """
-        model_fields = self.get_model_fields()
-
-        fields = [f for f in model_fields if model_fields[f].get("is_pk")]
-        if not self.fields:
-            if getattr(self, "fieldsets", None):
-                for item in self.fieldsets:
-                    for field in item[1].get("fields") or []:
-                        if field not in fields and field not in self.exclude:
-                            fields.append(field)
-            else:
-                for field in model_fields:
-                    if field not in fields and field not in self.exclude:
-                        fields.append(field)
-
-        return fields
 
     def has_add_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to add new model instance.

@@ -64,24 +64,32 @@ def validate_configuration_response_data(response_data, is_auth=True):
 
         list_display = admin_model.list_display or ["id"]
 
-        model_fields = admin_model.get_model_fields()
+        model_fields = admin_model.get_model_fields_with_widget_types()
+        fields_for_serialize = admin_model.get_fields_for_serialize()
 
-        for list_display_field in list_display:
-            list_field = next((f for f in list_fields if f["name"] == list_display_field), None)
-            if model_fields.get(list_display_field, {}).get("is_m2m"):
+        # check list_configuration
+        for model_field in model_fields:
+            list_field = next((f for f in list_fields if f["name"] == model_field.name), None)
+            if model_field.is_m2m:
                 assert not list_field
                 continue
-            assert list_field and list_field["list_configuration"], list_display_field
-            assert list_field["list_configuration"]["index"] == list_display.index(list_display_field)
-            sorter = not admin_model.sortable_by or list_display_field in admin_model.sortable_by
-            if hasattr(admin_model, list_display_field):
+            if model_field.name not in fields_for_serialize:
+                assert not list_field
+                continue
+            if model_field.name not in list_display:
+                assert not list_field
+                continue
+            assert list_field and list_field["list_configuration"], model_field.name
+            assert list_field["list_configuration"]["index"] == list_display.index(model_field.name)
+            sorter = not admin_model.sortable_by or model_field.name in admin_model.sortable_by
+            if hasattr(admin_model, model_field.name):
                 sorter = False
             assert list_field["list_configuration"]["sorter"] == sorter
             assert list_field["list_configuration"]["width"] is None
-            assert list_field["list_configuration"]["is_link"] == (list_display_field in admin_model.list_display_links)
+            assert list_field["list_configuration"]["is_link"] == (model_field.name in admin_model.list_display_links)
             assert list_field["list_configuration"]["empty_value_display"] == admin_model.empty_value_display
             assert bool(list_field["list_configuration"]["filter_widget_type"]) == (
-                list_display_field in admin_model.list_filter
+                model_field.name in admin_model.list_filter
             )
             assert "filter_widget_props" in list_field["list_configuration"]
 

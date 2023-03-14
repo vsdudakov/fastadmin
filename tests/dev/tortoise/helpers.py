@@ -8,8 +8,8 @@ async def init_engine():
     await Tortoise.generate_schemas()
 
 
-async def get_connection(engine):
-    return await Tortoise.get_connection("default")
+def get_connection(engine):
+    return Tortoise.get_connection("default")
 
 
 async def dispose_engine(engine):

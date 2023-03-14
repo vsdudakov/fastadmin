@@ -2,17 +2,17 @@ async def test_list(session_id, event, client):
     assert session_id
 
     r = await client.get(
-        f"/api/list/{event.get_model_name()}",
+        f"/api/list/{event.get_model_name()}?limit=1000",
     )
     assert r.status_code == 200, r.text
     data = r.json()
     assert data
     assert data["total"] > 0
-    item = next((result for result in data["results"] if result["id"] == event.id), None)
+    item = next((result for result in data["results"] if str(result["id"]) == str(event.id)), None)
     assert item
     assert item["id"] == event.id
     assert item["name"] == event.name
-    assert item["tournament_id"] == event.tournament_id
+    assert item["tournament"] == event.tournament_id
     assert item["created_at"] == event.created_at.isoformat()
     assert item["updated_at"] == event.updated_at.isoformat()
     assert "participants" not in item  # no m2m fields on list
@@ -28,7 +28,7 @@ async def test_list_filters(session_id, event, client):
     data = r.json()
     assert data
     assert data["total"] > 0
-    item = next((result for result in data["results"] if result["id"] == event.id), None)
+    item = next((result for result in data["results"] if str(result["id"]) == str(event.id)), None)
     assert item
     assert item["id"] == event.id
 
@@ -59,7 +59,7 @@ async def test_list_search(session_id, admin_models, event, client):
     data = r.json()
     assert data
     assert data["total"] > 0
-    item = next((result for result in data["results"] if result["id"] == event.id), None)
+    item = next((result for result in data["results"] if str(result["id"]) == str(event.id)), None)
     assert item
     assert item["id"] == event.id
 
@@ -84,13 +84,13 @@ async def test_list_sort_by(session_id, admin_models, event, client):
     event_admin_model = admin_models[event.__class__]
 
     r = await client.get(
-        f"/api/list/{event.get_model_name()}?sort_by=-name",
+        f"/api/list/{event.get_model_name()}?sort_by=-name&limit=1000",
     )
     assert r.status_code == 200, r.text
     data = r.json()
     assert data
     assert data["total"] > 0
-    item = next((result for result in data["results"] if result["id"] == event.id), None)
+    item = next((result for result in data["results"] if str(result["id"]) == str(event.id)), None)
     assert item
 
     r = await client.get(
@@ -106,7 +106,7 @@ async def test_list_sort_by(session_id, admin_models, event, client):
     data = r.json()
     assert data
     assert data["total"] > 0
-    item = next((result for result in data["results"] if result["id"] == event.id), None)
+    item = next((result for result in data["results"] if str(result["id"]) == str(event.id)), None)
     assert item
 
     event_admin_model.ordering = ["invalid"]

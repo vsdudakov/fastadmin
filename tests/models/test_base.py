@@ -1,7 +1,6 @@
 import pytest
 
 from fastadmin import ModelAdmin
-from fastadmin.models.schemas import WidgetType
 
 
 async def test_not_implemented_methods():
@@ -13,22 +12,25 @@ async def test_not_implemented_methods():
         await base.authenticate("username", "password")
 
     with pytest.raises(NotImplementedError):
-        await base.save_model(0, {})
+        await base.orm_save_obj({})
 
     with pytest.raises(NotImplementedError):
-        await base.delete_model(0)
+        await base.orm_delete_obj({})
 
     with pytest.raises(NotImplementedError):
-        await base.get_obj(0)
+        await base.orm_get_list()
 
     with pytest.raises(NotImplementedError):
-        await base.get_list()
+        await base.orm_get_obj(0)
 
     with pytest.raises(NotImplementedError):
-        base.get_model_fields()
+        await base.orm_get_m2m_ids({}, "test")
 
     with pytest.raises(NotImplementedError):
-        base.get_form_widget("test")
+        await base.orm_save_m2m_ids({}, "test", [])
+
+    with pytest.raises(NotImplementedError):
+        await base.get_model_fields_with_widget_types()
 
 
 async def test_export_wrong_format(mocker):
@@ -37,36 +39,6 @@ async def test_export_wrong_format(mocker):
 
     base = ModelAdmin(Model)
 
-    mocker.patch.object(base, "get_list", return_value=([], 0))
-    mocker.patch.object(base, "get_model_fields", return_value={})
+    mocker.patch.object(base, "orm_get_list", return_value=([], 0))
+    mocker.patch.object(base, "get_model_fields_with_widget_types", return_value=[])
     await base.get_export("wrong_format") is None
-
-
-async def test_get_filter_widget(mocker):
-    class Model:
-        pass
-
-    base = ModelAdmin(Model)
-    mocker.patch.object(base, "get_form_widget", return_value=(WidgetType.AsyncTransfer, {}))
-    widget_type, widget_props = base.get_filter_widget("test")
-    assert widget_type == WidgetType.AsyncTransfer
-    assert not widget_props["required"]
-
-    mocker.patch.object(base, "get_form_widget", return_value=(WidgetType.Checkbox, {}))
-    widget_type, widget_props = base.get_filter_widget("test")
-    assert widget_type == WidgetType.RadioGroup
-    assert not widget_props["required"]
-    assert widget_props["options"] == [
-        {"label": "Yes", "value": True},
-        {"label": "No", "value": False},
-    ]
-
-    mocker.patch.object(base, "get_form_widget", return_value=(WidgetType.CheckboxGroup, {}))
-    widget_type, widget_props = base.get_filter_widget("test")
-    assert widget_type == WidgetType.CheckboxGroup
-    assert not widget_props["required"]
-
-    mocker.patch.object(base, "get_form_widget", return_value=("Invalid", {}))
-    widget_type, widget_props = base.get_filter_widget("test")
-    assert widget_type == WidgetType.Input
-    assert not widget_props["required"]
