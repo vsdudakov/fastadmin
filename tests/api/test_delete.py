@@ -41,7 +41,7 @@ async def test_delete_403(session_id, superuser, client):
     user_id = await get_user_id_from_session_id(session_id)
     assert user_id
     r = await client.delete(
-        f"/api/delete/{superuser.__class__.__name__}/{user_id}",
+        f"/api/delete/{superuser.get_model_name()}/{user_id}",
     )
     assert r.status_code == 403, r.text
 

@@ -6,9 +6,9 @@ from tests.api.frameworks.fastapi.fixtures import *
 from tests.api.frameworks.flask.fixtures import *
 
 frameworks = [
-    # "fastapi",
+    "fastapi",
     "flask",
-    # "django",
+    "django",
 ]
 
 

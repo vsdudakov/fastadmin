@@ -8,8 +8,8 @@ from tests.models.orms.sqlalchemy.fixtures import *
 from tests.models.orms.tortoise.fixtures import *
 
 orms = [
-    # "tortoise",
-    # "djangoorm",
+    "tortoise",
+    "djangoorm",
     "sqlalchemy",
 ]
 

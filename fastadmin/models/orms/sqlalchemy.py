@@ -18,6 +18,11 @@ def get_attrs(obj: Any, keys: str) -> Any | None:
         return None
 
 
+def convert_sort_by(sort_by: str) -> str:
+    if sort_by.startswith("-"):
+        return sort_by[1:] + " desc"
+    return sort_by
+
 class SqlAlchemyMixin:
     sqlalchemy_session = None
 
@@ -215,14 +220,13 @@ class SqlAlchemyMixin:
         :params filters: a dict of filters.
         :return: A tuple of list of objects and total count.
         """
-        from sqlalchemy import func, select
-
+        from sqlalchemy import func, select, text
         async with self.sqlalchemy_session() as session:  # type: ignore
             qs = select(self.model_cls)
 
-            if filters:
-                for filter_condition, value in filters.items():
-                    qs = qs.filter_by(**{filter_condition: value})
+            # if filters:
+            #     for filter_condition, value in filters.items():
+            #         qs = qs.filter_by(**{filter_condition: value})
 
             # if search and self.search_fields:
             #     ids = await asyncio.gather(
@@ -234,12 +238,15 @@ class SqlAlchemyMixin:
             #     ids = [item for sublist in ids for item in sublist]
             #     qs = qs.filter(id__in=ids)
 
-            # if sort_by:
-            #     qs = qs.order_by(sort_by)
-            # elif self.ordering:
-            #     qs = qs.order_by(*self.ordering)
+            if sort_by:
+                qs = qs.order_by(text(convert_sort_by(sort_by)))
+            elif self.ordering:
+                sort_by_text = ", ".join([convert_sort_by(f) for f in self.ordering])
+                qs = qs.order_by(text(sort_by_text))
 
-            total = await session.execute(qs.statement.with_only_columns([func.count()]).order_by(None))
+
+            objs = await session.execute(select(func.count()).select_from(qs))
+            total = objs.scalar()
 
             if offset is not None and limit is not None:
                 qs = qs.offset(offset)
@@ -252,7 +259,6 @@ class SqlAlchemyMixin:
             results = await asyncio.gather(
                 *(self._obj_to_dict(obj, with_m2m=False, with_display_fields=True) for obj in objs)
             )
-
             return results, total
 
     def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
