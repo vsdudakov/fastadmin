@@ -10,6 +10,16 @@ class ExportFormat(str, Enum):
     CSV = "CSV"
 
 
+class ListQuerySchema(BaseModel):
+    """List query schema"""
+
+    limit: int | None = 10
+    offset: int | None = 0
+    sort_by: str | None = None
+    search: str | None = None
+    filters: dict[str, str] | None = None
+
+
 class SignInInputSchema(BaseModel):
     """Sign in input schema"""
 

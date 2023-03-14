@@ -32,6 +32,9 @@ async def test_not_implemented_methods():
     with pytest.raises(NotImplementedError):
         await base.get_model_fields_with_widget_types()
 
+    with pytest.raises(NotImplementedError):
+        await base.get_model_pk_name(base.model_cls)
+
 
 async def test_export_wrong_format(mocker):
     class Model:
