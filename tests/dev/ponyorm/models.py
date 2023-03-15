@@ -42,8 +42,8 @@ class User(BaseModel, db.Entity):
     _table_ = "user"
 
     id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime)
-    updated_at = Required(datetime)
+    created_at = Required(datetime, default=datetime.utcnow)
+    updated_at = Required(datetime, default=datetime.utcnow)
 
     username = Required(str)
     password = Required(str)
@@ -59,8 +59,8 @@ class Tournament(BaseModel, db.Entity):
     _table_ = "tournament"
 
     id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime)
-    updated_at = Required(datetime)
+    created_at = Required(datetime, default=datetime.utcnow)
+    updated_at = Required(datetime, default=datetime.utcnow)
 
     name = Required(str)
 
@@ -73,8 +73,8 @@ class Tournament(BaseModel, db.Entity):
 class BaseEvent(BaseModel, db.Entity):
     _table_ = "base_event"
     id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime)
-    updated_at = Required(datetime)
+    created_at = Required(datetime, default=datetime.utcnow)
+    updated_at = Required(datetime, default=datetime.utcnow)
 
     event = Optional("Event")
 
@@ -83,8 +83,8 @@ class Event(BaseModel, db.Entity):
     _table_ = "event"
 
     id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime)
-    updated_at = Required(datetime)
+    created_at = Required(datetime, default=datetime.utcnow)
+    updated_at = Required(datetime, default=datetime.utcnow)
 
     base = Optional(BaseEvent, column="base_id")
     name = Required(str)
@@ -111,20 +111,18 @@ class Event(BaseModel, db.Entity):
 db.generate_mapping()
 
 
-# @register(User)
+@register(User)
 class PonyORMUserModelAdmin(PonyORMModelAdmin):
     model_name_prefix = "ponyorm"
 
     @sync_to_async
     @db_session
-    def _authenticate(self, username, password):
-        obj = self.model_cls.get(username=username, password=password, is_superuser=True)
+    def authenticate(self, username, password):
+        objs = list(self.model_cls.select(username=username, password=password, is_superuser=True))
+        obj = objs[0]
         if not obj:
             return None
         return obj.id
-
-    async def authenticate(self, username, password):
-        return await self._authenticate(username, password)
 
 
 class PonyORMEventInlineModelAdmin(PonyORMInlineModelAdmin):
@@ -133,19 +131,20 @@ class PonyORMEventInlineModelAdmin(PonyORMInlineModelAdmin):
     fk_name = "tournament"
 
 
-# @register(Tournament)
+@register(Tournament)
 class PonyORMTournamentModelAdmin(PonyORMModelAdmin):
     inlines = (PonyORMEventInlineModelAdmin,)
     model_name_prefix = "ponyorm"
 
 
-# @register(Event)
+@register(Event)
 class PonyORMEventModelAdmin(PonyORMModelAdmin):
     model_name_prefix = "ponyorm"
 
     @sync_to_async
     @db_session
-    def _make_is_active(self, ids):
+    @action(description="Make user active")
+    def make_is_active(self, ids):
         # update(o.set(is_active=True) for o in self.model_cls if o.id in ids)
         objs = self.model_cls.select(lambda o: o.id in ids)
         for obj in objs:
@@ -154,20 +153,13 @@ class PonyORMEventModelAdmin(PonyORMModelAdmin):
 
     @sync_to_async
     @db_session
-    def _make_is_not_active(self, ids):
+    @action
+    def make_is_not_active(self, ids):
         # update(o.set(is_active=False) for o in self.model_cls if o.id in ids)
         objs = self.model_cls.select(lambda o: o.id in ids)
         for obj in objs:
             obj.is_active = False
         commit()
-
-    @action(description="Make user active")
-    async def make_is_active(self, ids):
-        await self._make_is_active(ids)
-
-    @action
-    async def make_is_not_active(self, ids):
-        await self._make_is_not_active(ids)
 
     @display
     async def started(self, obj):

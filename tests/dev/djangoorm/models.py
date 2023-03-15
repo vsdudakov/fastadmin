@@ -79,14 +79,11 @@ class DjangoUserModelAdmin(DjangoModelAdmin):
     model_name_prefix = "django"
 
     @sync_to_async
-    def _authenticate(self, username, password):
+    def authenticate(self, username, password):
         obj = self.model_cls.objects.filter(username=username, password=password, is_superuser=True).first()
         if not obj:
             return None
         return obj.id
-
-    async def authenticate(self, username, password):
-        return await self._authenticate(username, password)
 
 
 class DjangoEventInlineModelAdmin(DjangoInlineModelAdmin):
@@ -105,21 +102,16 @@ class DjangoTournamentModelAdmin(DjangoModelAdmin):
 class DjangoEventModelAdmin(DjangoModelAdmin):
     model_name_prefix = "django"
 
+
     @sync_to_async
-    def _make_is_active(self, ids):
+    @action(description="Make user active")
+    def make_is_active(self, ids):
         self.model_cls.objects.filter(id__in=ids).update(is_active=True)
 
     @sync_to_async
-    def _make_is_not_active(self, ids):
-        self.model_cls.objects.filter(id__in=ids).update(is_active=False)
-
-    @action(description="Make user active")
-    async def make_is_active(self, ids):
-        await self._make_is_active(ids)
-
     @action
-    async def make_is_not_active(self, ids):
-        await self._make_is_not_active(ids)
+    def make_is_not_active(self, ids):
+        self.model_cls.objects.filter(id__in=ids).update(is_active=False)
 
     @display
     async def started(self, obj):

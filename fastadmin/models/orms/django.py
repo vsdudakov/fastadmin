@@ -9,69 +9,6 @@ from fastadmin.settings import settings
 
 
 class DjangoORMMixin:
-    @sync_to_async
-    def _sync_delete(self, qs: Any) -> None:
-        """Deletes all objects from queryset.
-
-        :params qs: a queryset.
-        :return: None.
-        """
-        return qs.delete()
-
-    @sync_to_async
-    def _sync_first(self, qs: Any) -> Any | None:
-        """Returns first object from queryset.
-
-        :params qs: a queryset.
-        :return: An object or None.
-        """
-        return qs.first()
-
-    @sync_to_async
-    def _sync_count(self, qs: Any) -> int:
-        """Returns count of objects from queryset.
-
-        :params qs: a queryset.
-        :return: An int.
-        """
-        return qs.count()
-
-    @sync_to_async
-    def _sync_list(self, qs: Any) -> list[Any]:
-        """Returns list of objects from queryset.
-
-        :params qs: a queryset.
-        :return: A list.
-        """
-        return list(qs)
-
-    @sync_to_async
-    def _sync_save(self, obj: Any, *args, **kwargs) -> None:
-        """Saves an object.
-
-        :params obj: an object.
-        :return: None.
-        """
-        obj.save(*args, **kwargs)
-
-    @sync_to_async
-    def _sync_set(self, qs, *args, **kwargs) -> None:
-        """Sets m2m fields.
-
-        :params qs: a queryset.
-        :return: None.
-        """
-        return qs.set(*args, **kwargs)
-
-    @sync_to_async
-    def _sync_values_list(self, qs, *args, **kwargs) -> list[Any]:
-        """Returns list of values from queryset.
-
-        :params qs: a queryset.
-        :return: A list.
-        """
-        return list(qs.values_list(*args, **kwargs))
-
     @staticmethod
     def get_model_pk_name(orm_model_cls: Any) -> str:
         """This method is used to get model pk name.
@@ -272,7 +209,8 @@ class DjangoORMMixin:
             )
         return fields
 
-    async def orm_get_list(
+    @sync_to_async
+    def orm_get_list(
         self,
         offset: int | None = None,
         limit: int | None = None,
@@ -299,7 +237,7 @@ class DjangoORMMixin:
             ids = []
             for f in self.search_fields:
                 qs = qs.filter(**{f + "__icontains": search})
-                ids += await self._sync_values_list(qs, self.get_model_pk_name(self.model_cls), flat=True)
+                ids += qs.values_list(self.get_model_pk_name(self.model_cls), flat=True)
             qs = qs.filter(id__in=set(ids))
 
         if sort_by:
@@ -307,7 +245,7 @@ class DjangoORMMixin:
         elif self.ordering:
             qs = qs.order_by(*self.ordering)
 
-        total = await self._sync_count(qs)
+        total = qs.count()
 
         if self.list_select_related:
             qs = qs.select_related(*self.list_select_related)
@@ -315,37 +253,41 @@ class DjangoORMMixin:
         if offset is not None and limit is not None:
             qs = qs[offset : offset + limit]
 
-        return await self._sync_list(qs), total
+        return list(qs), total
 
-    async def orm_get_obj(self, id: UUID | int) -> Any | None:
+    @sync_to_async
+    def orm_get_obj(self, id: UUID | int) -> Any | None:
         """This method is used to get orm/db model object.
 
         :params id: an id of object.
         :return: An object.
         """
         qs = self.model_cls.objects.filter(**{self.get_model_pk_name(self.model_cls): id})
-        return await self._sync_first(qs)
+        return qs.first()
 
-    async def orm_save_obj(self, obj: Any, update_fields: list[str] | None = None) -> Any:
+    @sync_to_async
+    def orm_save_obj(self, obj: Any, update_fields: list[str] | None = None) -> Any:
         """This method is used to save orm/db model object.
 
         :params obj: an object.
         :params update_fields: a list of fields to update.
         :return: An object.
         """
-        await self._sync_save(obj, update_fields=update_fields)
+        obj.save(update_fields=update_fields)
         return obj
 
-    async def orm_delete_obj(self, id: UUID | int) -> None:
+    @sync_to_async
+    def orm_delete_obj(self, id: UUID | int) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.
         :return: None.
         """
         qs = self.model_cls.objects.filter(**{self.get_model_pk_name(self.model_cls): id})
-        await self._sync_delete(qs)
+        qs.delete()
 
-    async def orm_get_m2m_ids(self, obj: Any, field: str) -> list[int | UUID]:
+    @sync_to_async
+    def orm_get_m2m_ids(self, obj: Any, field: str) -> list[int | UUID]:
         """This method is used to get m2m ids.
 
         :params obj: an object.
@@ -355,9 +297,10 @@ class DjangoORMMixin:
         """
         m2m_rel = getattr(obj, field)
         remote_model = m2m_rel.model
-        return await self._sync_values_list(m2m_rel, self.get_model_pk_name(remote_model), flat=True)
+        return list(m2m_rel.all().values_list(self.get_model_pk_name(remote_model), flat=True))
 
-    async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | UUID]) -> None:
+    @sync_to_async
+    def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | UUID]) -> None:
         """This method is used to get m2m ids.
 
         :params obj: an object.
@@ -368,7 +311,7 @@ class DjangoORMMixin:
         if not ids:
             return
         m2m_rel = getattr(obj, field)
-        await self._sync_set(m2m_rel, ids)
+        m2m_rel.set(ids)
 
 
 class DjangoModelAdmin(DjangoORMMixin, ModelAdmin):

@@ -1,4 +1,3 @@
-import inspect
 from collections.abc import Sequence
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
@@ -221,7 +220,7 @@ class ApiService:
             raise AdminApiException(422, detail=f"{action} action is not in actions setting.")
 
         action_function = getattr(admin_model, action, None)
-        if not action_function or not inspect.ismethod(action_function) or not hasattr(action_function, "is_action"):
+        if not hasattr(action_function, "is_action"):
             raise AdminApiException(422, detail=f"{action} action is not registered.")
 
         await action_function(payload.ids)
