@@ -15,4 +15,5 @@ ORMS = [
     "tortoise",
     "djangoorm",
     "sqlalchemy",
+    # "ponyorm",
 ]

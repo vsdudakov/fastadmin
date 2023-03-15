@@ -16,8 +16,8 @@ files = [
 name = "aiosqlite"
 version = "0.17.0"
 description = "asyncio bridge to the standard sqlite3 module"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.6"
 files = [
     {file = "aiosqlite-0.17.0-py3-none-any.whl", hash = "sha256:6c49dc6d3405929b1d08eeccc72306d3677503cc5e5e43771efc1e00232e8231"},
@@ -53,7 +53,7 @@ name = "asgiref"
 version = "3.6.0"
 description = "ASGI specs, helper code, and adapters"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "asgiref-3.6.0-py3-none-any.whl", hash = "sha256:71e68008da809b957b7ee4b43dbccff33d1b23519fb8344e33f049897077afac"},
@@ -358,8 +358,8 @@ dotenv = ["python-dotenv"]
 name = "greenlet"
 version = "2.0.2"
 description = "Lightweight in-process concurrent programming"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
 files = [
     {file = "greenlet-2.0.2-cp27-cp27m-macosx_10_14_x86_64.whl", hash = "sha256:bdfea8c661e80d3c1c99ad7c3ff74e6e87184895bbaca6ee8cc61209f8b9b85d"},
@@ -514,8 +514,8 @@ files = [
 name = "iso8601"
 version = "1.1.0"
 description = "Simple module to parse ISO 8601 dates"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.6.2,<4.0"
 files = [
     {file = "iso8601-1.1.0-py3-none-any.whl", hash = "sha256:8400e90141bf792bce2634df533dc57e3bee19ea120a87bebcd3da89a58ad73f"},
@@ -761,8 +761,8 @@ testing = ["pytest", "pytest-benchmark"]
 name = "pony"
 version = "0.7.16"
 description = "Pony Object-Relational Mapper"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "*"
 files = [
     {file = "pony-0.7.16-py3-none-any.whl", hash = "sha256:608a1c1d662983bad2590e650f2bbc1cd6ed48558894ad8f50da4739ff98f614"},
@@ -868,8 +868,8 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 name = "pypika-tortoise"
 version = "0.1.6"
 description = "Forked from pypika and streamline just for tortoise-orm"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7,<4.0"
 files = [
     {file = "pypika-tortoise-0.1.6.tar.gz", hash = "sha256:d802868f479a708e3263724c7b5719a26ad79399b2a70cea065f4a4cadbebf36"},
@@ -975,8 +975,8 @@ cli = ["click (>=5.0)"]
 name = "pytz"
 version = "2022.7.1"
 description = "World timezone definitions, modern and historical"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "*"
 files = [
     {file = "pytz-2022.7.1-py2.py3-none-any.whl", hash = "sha256:78f4f37d8198e0627c5f1143240bb0206b8691d8d7ac6d78fee88b78733f8c4a"},
@@ -1032,8 +1032,8 @@ files = [
 name = "sqlalchemy"
 version = "2.0.5.post1"
 description = "Database Abstraction Library"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "SQLAlchemy-2.0.5.post1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:7fe933831e17f93947b4e3db4e4a7470dae24340f269baf06cdfcc0538c8d1cb"},
@@ -1164,8 +1164,8 @@ files = [
 name = "tortoise-orm"
 version = "0.19.3"
 description = "Easy async ORM for python, built with relations in mind"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7,<4.0"
 files = [
     {file = "tortoise_orm-0.19.3-py3-none-any.whl", hash = "sha256:9e368820c70a0866ef9c521d43aa5503485bd7a20a561edc0933b7b0f7036fbc"},
@@ -1251,8 +1251,11 @@ watchdog = ["watchdog"]
 django = ["django"]
 fastapi = ["fastapi"]
 flask = ["flask"]
+pony = ["pony"]
+sqlalchemy = ["sqlalchemy"]
+tortoise-orm = ["tortoise-orm"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "9472e291339ad24726e38726fa29f8783d2f43ab49825f4a821508ff8ce2993e"
+content-hash = "7f52a152ebf1383770787316a6efe89ce955c82c58d09b0205dabcfea95d765a"

@@ -1,14 +1,14 @@
 import pytest
 
 from tests.dev.djangoorm import models
-from tests.dev.djangoorm.helpers import dispose_engine, get_connection, init_engine
+from tests.dev.djangoorm.helpers import close_connection, get_connection, init_connection
 
 
 @pytest.fixture(scope="session")
 def django_connection():
-    engine = init_engine()
-    yield get_connection(engine)
-    dispose_engine(engine)
+    init_connection()
+    yield get_connection()
+    close_connection()
 
 
 @pytest.fixture

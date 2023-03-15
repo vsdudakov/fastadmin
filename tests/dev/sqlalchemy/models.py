@@ -29,7 +29,7 @@ sqlalchemy_engine = create_async_engine(
     f"sqlite+aiosqlite:///{DB_SQLITE}",
     echo=True,
 )
-sqlalchemy_session = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
+sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
 
 
 class EventTypeEnum(str, Enum):
@@ -120,10 +120,10 @@ class Event(BaseModel):
 @register(User)
 class SqlAlchemyUserModelAdmin(SqlAlchemyModelAdmin):
     model_name_prefix = "sqlalchemy"
-    sqlalchemy_session = sqlalchemy_session
+    sqlalchemy_sessionmaker = sqlalchemy_sessionmaker
 
     async def authenticate(self, username, password):
-        async with self.sqlalchemy_session() as session:
+        async with self.sqlalchemy_sessionmaker() as session:
             query = select(User).filter_by(username=username, password=password, is_superuser=True)
             result = await session.scalars(query)
             obj = result.first()
@@ -134,7 +134,7 @@ class SqlAlchemyUserModelAdmin(SqlAlchemyModelAdmin):
 
 class SqlAlchemyEventInlineModelAdmin(SqlAlchemyInlineModelAdmin):
     model_name_prefix = "sqlalchemy"
-    sqlalchemy_session = sqlalchemy_session
+    sqlalchemy_sessionmaker = sqlalchemy_sessionmaker
 
     model = Event
     fk_name = "tournament"
@@ -143,7 +143,7 @@ class SqlAlchemyEventInlineModelAdmin(SqlAlchemyInlineModelAdmin):
 @register(Tournament)
 class SqlAlchemyTournamentModelAdmin(SqlAlchemyModelAdmin):
     model_name_prefix = "sqlalchemy"
-    sqlalchemy_session = sqlalchemy_session
+    sqlalchemy_sessionmaker = sqlalchemy_sessionmaker
 
     inlines = (SqlAlchemyEventInlineModelAdmin,)
 
@@ -151,18 +151,18 @@ class SqlAlchemyTournamentModelAdmin(SqlAlchemyModelAdmin):
 @register(Event)
 class SqlAlchemyEventModelAdmin(SqlAlchemyModelAdmin):
     model_name_prefix = "sqlalchemy"
-    sqlalchemy_session = sqlalchemy_session
+    sqlalchemy_sessionmaker = sqlalchemy_sessionmaker
 
     @action(description="Make user active")
     async def make_is_active(self, ids):
-        async with self.sqlalchemy_session() as session:
+        async with self.sqlalchemy_sessionmaker() as session:
             query = update(Event).where(Event.id.in_(ids)).values(is_active=True)
             await session.execute(query)
             await session.commit()
 
     @action
     async def make_is_not_active(self, ids):
-        async with self.sqlalchemy_session() as session:
+        async with self.sqlalchemy_sessionmaker() as session:
             query = update(Event).where(Event.id.in_(ids)).values(is_active=False)
             await session.execute(query)
             await session.commit()

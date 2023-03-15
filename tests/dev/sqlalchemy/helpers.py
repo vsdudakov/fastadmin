@@ -1,19 +1,13 @@
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
-from tests.settings import DB_SQLITE
+from .models import sqlalchemy_engine, sqlalchemy_sessionmaker
 
 
-def init_engine():
-    engine = create_async_engine(
-        f"sqlite+aiosqlite:///{DB_SQLITE}",
-        echo=True,
-    )
-    return engine
+def init_connection():
+    pass
 
 
-def get_connection(engine):
-    return async_sessionmaker(engine, expire_on_commit=False)
+def get_connection():
+    return sqlalchemy_sessionmaker
 
 
-async def dispose_engine(engine):
-    await engine.dispose()
+async def close_connection():
+    await sqlalchemy_engine.dispose()

@@ -11,7 +11,7 @@ from django.http.request import HttpRequest
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import get_user_id_from_session_id, is_valid_id
-from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema, ListQuerySchema
+from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, ListQuerySchema, SignInInputSchema
 from fastadmin.api.service import ApiService
 from fastadmin.settings import settings
 
@@ -130,13 +130,15 @@ async def list(request: HttpRequest, model: str) -> JsonResponse:
     offset = filters.get("offset", 0)
     limit = filters.get("limit", 10)
 
-    query_params = ListQuerySchema(**dict(
-        search=search,
-        sort_by=sort_by,
-        filters=filters,
-        offset=offset,
-        limit=limit,
-    ))
+    query_params = ListQuerySchema(
+        **dict(
+            search=search,
+            sort_by=sort_by,
+            filters=filters,
+            offset=offset,
+            limit=limit,
+        )
+    )
 
     try:
         objs, total = await api_service.list(

@@ -1,9 +1,8 @@
 from typing import Any
 from uuid import UUID
 
-from asgiref.sync import sync_to_async
-
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
+from fastadmin.models.decorators import sync_to_async
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 from fastadmin.settings import settings
@@ -171,16 +170,7 @@ class DjangoORMMixin:
                     form_widget_props["mode"] = "tags"
                     filter_widget_type = WidgetType.Select
                     filter_widget_props["mode"] = "tags"
-                case "AutoField":
-                    form_widget_type = WidgetType.InputNumber
-                    filter_widget_type = WidgetType.InputNumber
-                case "IntegerField":
-                    form_widget_type = WidgetType.InputNumber
-                    filter_widget_type = WidgetType.InputNumber
-                case "FloatField":
-                    form_widget_type = WidgetType.InputNumber
-                    filter_widget_type = WidgetType.InputNumber
-                case "DecimalField":
+                case "SmallAutoField" | "AutoField" | "BigAutoField" | "SmallIntegerField" | "BigIntegerField" | "PositiveIntegerField" | "PositiveSmallIntegerField" | "IntegerField" | "FloatField" | "DecimalField":  # noqa: E501
                     form_widget_type = WidgetType.InputNumber
                     filter_widget_type = WidgetType.InputNumber
                 case "DateField":

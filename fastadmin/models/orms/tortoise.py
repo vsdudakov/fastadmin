@@ -100,13 +100,7 @@ class TortoiseMixin:
                     form_widget_props["mode"] = "tags"
                     filter_widget_type = WidgetType.Select
                     filter_widget_props["mode"] = "tags"
-                case "IntField":
-                    form_widget_type = WidgetType.InputNumber
-                    filter_widget_type = WidgetType.InputNumber
-                case "FloatField":
-                    form_widget_type = WidgetType.InputNumber
-                    filter_widget_type = WidgetType.InputNumber
-                case "DecimalField":
+                case "IntField" | "SmallIntField" | "BigIntField" | "FloatField" | "DecimalField":
                     form_widget_type = WidgetType.InputNumber
                     filter_widget_type = WidgetType.InputNumber
                 case "DateField":
@@ -126,7 +120,7 @@ class TortoiseMixin:
                     filter_widget_type = WidgetType.RangePicker
                     filter_widget_props["format"] = settings.ADMIN_TIME_FORMAT
                     filter_widget_props["showTime"] = True
-                case "CharEnumFieldInstance":
+                case "CharEnumFieldInstance" | "IntEnumFieldInstance":
                     form_widget_props["options"] = [{"label": k, "value": v} for k, v in choices.items()]
                     filter_widget_props["options"] = [{"label": k, "value": v} for k, v in choices.items()]
                     if field_name in self.radio_fields:

@@ -1,7 +1,6 @@
-from asgiref.sync import sync_to_async
 from django.db import models
 
-from fastadmin import DjangoInlineModelAdmin, DjangoModelAdmin, action, display, register
+from fastadmin import DjangoInlineModelAdmin, DjangoModelAdmin, action, display, register, sync_to_async
 
 EventTypeEnum = (
     ("PRIVATE", "PRIVATE"),

@@ -1,6 +1,9 @@
 from typing import Any
 from uuid import UUID
 
+from sqlalchemy import and_, func, inspect, or_, select, text
+from sqlalchemy.orm import selectinload
+
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.helpers import get_admin_model, getattrs
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
@@ -8,12 +11,12 @@ from fastadmin.settings import settings
 
 
 class SqlAlchemyMixin:
-    sqlalchemy_session = None
+    sqlalchemy_sessionmaker = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not self.sqlalchemy_session:
-            raise ValueError("%s: sqlalchemy_session is not defined.", self.__class__.__name__)
+        if not self.sqlalchemy_sessionmaker:
+            raise ValueError("%s: sqlalchemy_sessionmaker is not defined.", self.__class__.__name__)
 
     @staticmethod
     def get_model_pk_name(orm_model_cls: Any) -> str:
@@ -34,8 +37,6 @@ class SqlAlchemyMixin:
         :params with_readonly: a flag to include readonly fields.
         :return: A list of ModelFieldWidgetSchema.
         """
-        from sqlalchemy import inspect
-
         mapper = inspect(self.model_cls)
         orm_model_fields = [f for f in mapper.c if not f.foreign_keys] + [f for f in mapper.relationships]
 
@@ -112,11 +113,7 @@ class SqlAlchemyMixin:
                     form_widget_props["mode"] = "tags"
                     filter_widget_type = WidgetType.Select
                     filter_widget_props["mode"] = "tags"
-                case "Integer":
-                    form_widget_type = WidgetType.InputNumber
-                    filter_widget_type = WidgetType.InputNumber
-                case "Float":
-                    # including Decimal
+                case "Integer" | "Float" | "Decimal":
                     form_widget_type = WidgetType.InputNumber
                     filter_widget_type = WidgetType.InputNumber
                 case "Date":
@@ -249,8 +246,6 @@ class SqlAlchemyMixin:
         :params filters: a dict of filters.
         :return: A tuple of list of objects and total count.
         """
-        from sqlalchemy import and_, func, or_, select, text
-        from sqlalchemy.orm import selectinload
 
         def convert_sort_by(sort_by: str) -> str:
             if sort_by.startswith("-"):
@@ -259,7 +254,7 @@ class SqlAlchemyMixin:
 
         objs = []
         total = 0
-        async with self.sqlalchemy_session() as session:  # type: ignore
+        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
             qs = select(self.model_cls)
 
             if filters:
@@ -303,7 +298,7 @@ class SqlAlchemyMixin:
         :return: An object.
         """
         obj = None
-        async with self.sqlalchemy_session() as session:  # type: ignore
+        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
             obj = await session.get(self.model_cls, id)
         return obj
 
@@ -314,7 +309,7 @@ class SqlAlchemyMixin:
         :params update_fields: a list of fields to update.
         :return: An object.
         """
-        async with self.sqlalchemy_session() as session:  # type: ignore
+        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
             if obj.id:
                 await session.merge(obj)
                 await session.commit()
@@ -330,7 +325,7 @@ class SqlAlchemyMixin:
         :params id: an id of object.
         :return: None.
         """
-        async with self.sqlalchemy_session() as session:  # type: ignore
+        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
             obj = await self.orm_get_obj(id)
             await session.delete(obj)
 
@@ -342,11 +337,8 @@ class SqlAlchemyMixin:
 
         :return: A list of ids.
         """
-        from sqlalchemy import select
-        from sqlalchemy.orm import selectinload
-
         ids = []
-        async with self.sqlalchemy_session() as session:  # type: ignore
+        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
             id_key = self.get_model_pk_name(self.model_cls)
             qs = select(self.model_cls)
             qs = qs.filter_by(**{id_key: getattr(obj, id_key)})
@@ -363,14 +355,12 @@ class SqlAlchemyMixin:
 
         :return: A list of ids.
         """
-        from sqlalchemy import inspect
-
         mapper = inspect(self.model_cls)
         orm_model_field = next((f for f in mapper.relationships if f.key == field), None)
         if not orm_model_field:
             raise ValueError(f"Field {field} is not a relationship field.")
 
-        async with self.sqlalchemy_session() as session:  # type: ignore
+        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
             values = []
             id_key = self.get_model_pk_name(self.model_cls)
             obj_id = getattr(obj, id_key)

@@ -1,12 +1,12 @@
-import django
+from pony.orm import db_session
 
 
 def init_connection():
-    django.setup(set_prefix=False)
+    pass
 
 
 def get_connection():
-    return django
+    return db_session
 
 
 def close_connection():
