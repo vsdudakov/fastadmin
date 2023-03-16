@@ -268,11 +268,12 @@ class BaseModelAdmin:
         """
         fields = self.get_model_fields_with_widget_types()
         fields_for_serialize = {field.name for field in fields}
+        if self.fields:
+            fields_for_serialize &= set(self.fields)
         if self.exclude:
             fields_for_serialize -= set(self.exclude)
-        include_fields = set(self.fields) | set(self.list_display)
-        if include_fields:
-            fields_for_serialize &= include_fields
+        if self.list_display:
+            fields_for_serialize |= set(self.list_display)
         return fields_for_serialize
 
     async def serialize_obj_attributes(
