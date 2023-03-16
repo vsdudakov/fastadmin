@@ -268,26 +268,33 @@
               <p class="lead">Install the package using pip:</p>
               <pre>
                 <code class="language-bash">
-pip install fastadmin["fastapi,django"]  # for fastapi with django orm
-pip install fastadmin["fastapi,tortoise-orm"]  # for fastapi with tortoise orm
-pip install fastadmin["fastapi,pony"]  # for fastapi with pony orm
-pip install fastadmin["fastapi,sqlalchemy"]  # for fastapi with sqlalchemy orm
-pip install fastadmin["django"]  # for django with django orm
-pip install fastadmin["django,pony"]  # for django with pony orm
-pip install fastadmin["flask,sqlalchemy"]  # for flask with sqlalchemy
+pip install fastadmin[fastapi,django]  # for fastapi with django orm
+pip install fastadmin[fastapi,tortoise-orm]  # for fastapi with tortoise orm
+pip install fastadmin[fastapi,pony]  # for fastapi with pony orm
+pip install fastadmin[fastapi,sqlalchemy]  # for fastapi with sqlalchemy orm
+pip install fastadmin[django]  # for django with django orm
+pip install fastadmin[django,pony]  # for django with pony orm
+pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
+...
+                </code>
+              </pre>
+              <p class="lead">for zsh (macos) use:</p>
+              <pre>
+                <code class="language-bash">
+pip install fastadmin\[fastapi,django\]
 ...
                 </code>
               </pre>
               <p class="lead">Or using poetry:</p>
               <pre>
                 <code class="language-bash">
-poetry add 'fastadmin["fastapi,django"]'  # for fastapi with django orm
-poetry add 'fastadmin["fastapi,tortoise-orm"]'  # for fastapi with tortoise orm
-poetry add 'fastadmin["fastapi,pony"]'  # for fastapi with pony orm
-poetry add 'fastadmin["fastapi,sqlalchemy"]'  # for fastapi with sqlalchemy orm
-poetry add 'fastadmin["django"]'  # for django with django orm
-poetry add 'fastadmin["django,pony"]'  # for django with pony orm
-poetry add 'fastadmin["flask,sqlalchemy"]'  # for flask with sqlalchemy
+poetry add 'fastadmin[fastapi,django]'  # for fastapi with django orm
+poetry add 'fastadmin[fastapi,tortoise-orm]'  # for fastapi with tortoise orm
+poetry add 'fastadmin[fastapi,pony]'  # for fastapi with pony orm
+poetry add 'fastadmin[fastapi,sqlalchemy]'  # for fastapi with sqlalchemy orm
+poetry add 'fastadmin[django]'  # for django with django orm
+poetry add 'fastadmin[django,pony]'  # for django with pony orm
+poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
 ...
                 </code>
               </pre>
