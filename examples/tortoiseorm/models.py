@@ -18,7 +18,7 @@ class BaseModel(Model):
 
     @classmethod
     def get_model_name(cls):
-        return f"tortoise.{cls.__name__}"
+        return f"tortoiseorm.{cls.__name__}"
 
     class Meta:
         abstract = True
@@ -78,8 +78,8 @@ class Event(BaseModel):
 
 
 @register(User)
-class TortoiseUserModelAdmin(TortoiseModelAdmin):
-    model_name_prefix = "tortoise"
+class TortoiseORMUserModelAdmin(TortoiseModelAdmin):
+    model_name_prefix = "tortoiseorm"
 
     async def authenticate(self, username, password):
         obj = await self.model_cls.filter(username=username, password=password, is_superuser=True).first()
@@ -88,21 +88,26 @@ class TortoiseUserModelAdmin(TortoiseModelAdmin):
         return obj.id
 
 
-class TortoiseEventInlineModelAdmin(TortoiseInlineModelAdmin):
+class TortoiseORMEventInlineModelAdmin(TortoiseInlineModelAdmin):
     model = Event
-    model_name_prefix = "tortoise"
+    model_name_prefix = "tortoiseorm"
     fk_name = "tournament"
 
 
 @register(Tournament)
-class TortoiseTournamentModelAdmin(TortoiseModelAdmin):
-    inlines = (TortoiseEventInlineModelAdmin,)
-    model_name_prefix = "tortoise"
+class TortoiseORMTournamentModelAdmin(TortoiseModelAdmin):
+    inlines = (TortoiseORMEventInlineModelAdmin,)
+    model_name_prefix = "tortoiseorm"
+
+
+@register(BaseEvent)
+class TortoiseORMBaseEventModelAdmin(TortoiseModelAdmin):
+    model_name_prefix = "tortoiseorm"
 
 
 @register(Event)
-class TortoiseEventModelAdmin(TortoiseModelAdmin):
-    model_name_prefix = "tortoise"
+class TortoiseORMEventModelAdmin(TortoiseModelAdmin):
+    model_name_prefix = "tortoiseorm"
 
     @action(description="Make user active")
     async def make_is_active(self, ids):

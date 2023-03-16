@@ -33,20 +33,34 @@ FastAdmin is designed to be minimalistic, functional and yet familiar.
 
 #### Install the package using pip:
 
+frameworks:
+fastapi, django, flask
+
+orms:
+django, tortoise-orm, pony, sqlalchemy
+
 ```bash
-pip install fastadmin["fastapi"]  # for fastapi
-pip install fastadmin["flask"]  # for flask
-pip install fastadmin["django"]  # for django
-pip install fastadmin["fastapi,django,flask"]  # for multiple
+pip install fastadmin["fastapi,django"]  # for fastapi with django orm
+pip install fastadmin["fastapi,tortoise-orm"]  # for fastapi with tortoise orm
+pip install fastadmin["fastapi,pony"]  # for fastapi with pony orm
+pip install fastadmin["fastapi,sqlalchemy"]  # for fastapi with sqlalchemy orm
+pip install fastadmin["django"]  # for django with django orm
+pip install fastadmin["django,pony"]  # for django with pony orm
+pip install fastadmin["flask,sqlalchemy"]  # for flask with sqlalchemy
+...
 ```
 
 or using poetry
 
 ```bash
-poetry add 'fastadmin["fastapi"]'  # for fastapi
-poetry add 'fastadmin["flask"]'  # for flask
-poetry add 'fastadmin["django"]'  # for django
-poetry add 'fastadmin["fastapi,django,flask"]'  # for multiple
+poetry add 'fastadmin["fastapi,django"]'  # for fastapi with django orm
+poetry add 'fastadmin["fastapi,tortoise-orm"]'  # for fastapi with tortoise orm
+poetry add 'fastadmin["fastapi,pony"]'  # for fastapi with pony orm
+poetry add 'fastadmin["fastapi,sqlalchemy"]'  # for fastapi with sqlalchemy orm
+poetry add 'fastadmin["django"]'  # for django with django orm
+poetry add 'fastadmin["django,pony"]'  # for django with pony orm
+poetry add 'fastadmin["flask,sqlalchemy"]'  # for flask with sqlalchemy
+...
 ```
 
 #### Setup ENV variables
@@ -153,9 +167,7 @@ class User(Model):
     hash_password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
     is_active = fields.BooleanField(default=False)
-
     ...
-
 
 
 class Group(Model):
@@ -193,11 +205,9 @@ class GroupAdmin(TortoiseModelAdmin):
 #### For Django ORM:
 
 ```python
-from asgiref.sync import sync_to_async
 from django.db import models
 
-from fastadmin import DjangoModelAdmin, register
-
+from fastadmin import DjangoModelAdmin, register, sync_to_async
 
 
 class User(models.Model):
@@ -205,9 +215,7 @@ class User(models.Model):
     hash_password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
     is_active = fields.BooleanField(default=False)
-
     ...
-
 
 
 class Group(models.Model):
@@ -225,16 +233,13 @@ class UserAdmin(DjangoModelAdmin):
     search_fields = ("username",)
 
     @sync_to_async
-    def _authenticate(self, username, password):
+    def authenticate(self, username, password):
         obj = User.objects.filter(username=username, is_superuser=True).first()
         if not obj:
             return None
         if not obj.check_password(password):
             return None
         return obj.id
-
-    async def authenticate(self, username, password):
-        return await self._authenticate(username, password)
 
 
 @register(Group)
@@ -248,11 +253,130 @@ class GroupAdmin(DjangoModelAdmin):
 
 #### For SQLAlchemy:
 
-Coming soon...
+```python
+import bcrypt
+from sqlalchemy import (
+    Boolean,
+    String,
+    select,
+)
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+from fastadmin import SqlAlchemyModelAdmin, register
+
+
+sqlalchemy_engine = create_async_engine(
+    f"sqlite+aiosqlite://db.sqlite",
+    echo=True,
+)
+sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class User(Base):
+    username: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    hash_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    ...
+
+
+class Group(Base):
+    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    ...
+
+
+@register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class UserAdmin(SqlAlchemyModelAdmin):
+    label_fields = ("username",)
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
+
+    async def authenticate(self, username, password):
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            query = select(User).filter_by(username=username, password=password, is_superuser=True)
+            result = await session.scalars(query)
+            user = result.first()
+            if not user:
+                return None
+            if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
+                return None
+            return user.id
+
+
+@register(Group, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class GroupAdmin(SqlAlchemyModelAdmin):
+    label_fields = ("name",)
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
+```
 
 #### For PonyORM:
 
-Coming soon...
+```python
+import bcrypt
+from pony.orm import Database, PrimaryKey
+
+from fastadmin import PonyORMModelAdmin, register, sync_to_async
+
+db = Database()
+db.bind(provider="sqlite", filename=DB_SQLITE, create_db=False)
+
+class User(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    username = Required(str)
+    hash_password = Required(str)
+    is_superuser = Required(bool, default=False)
+    is_active = Required(bool, default=False)
+    ...
+
+
+class Group(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    name = Required(str)
+    ...
+
+
+db.generate_mapping()
+
+
+@register(User)
+class UserAdmin(PonyORMModelAdmin):
+    label_fields = ("username",)
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
+
+    @sync_to_async
+    @db_session
+    def authenticate(self, username, password):
+        user = next((f for f in self.model_cls.select(username=username, password=password, is_superuser=True)), None)
+        if not user:
+            return None
+        if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
+            return None
+        return user.id
+
+
+@register(Tournament)
+class GroupAdmin(PonyORMModelAdmin):
+    label_fields = ("name",)
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
+```
 
 For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmin#model_admin_objects) and [InlineModelAdmin](https://vsdudakov.github.io/fastadmin#inline_model_admin_objects) documentation.
 

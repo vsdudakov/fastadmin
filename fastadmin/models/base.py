@@ -1,6 +1,4 @@
-import asyncio
 import csv
-import inspect
 from collections.abc import Sequence
 from io import BytesIO, StringIO
 from typing import Any
@@ -209,11 +207,11 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def orm_save_obj(self, obj: Any, update_fields: list[str] | None = None) -> Any:
+    async def orm_save_obj(self, id: UUID | Any | None, payload: dict) -> Any:
         """This method is used to save orm/db model object.
 
-        :params obj: an object.
-        :params update_fields: a list of fields to update.
+        :params id: an id of object.
+        :params payload: a dict of payload.
         :return: An object.
         """
         raise NotImplementedError
@@ -246,7 +244,28 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
+    @classmethod
+    def get_sessionmaker(cls) -> Any:
+        """This method is used to get db session maker for sqlalchemy.
+
+        :return: A db session maker.
+        """
+        return getattr(cls, "db_session_maker")
+
+    @classmethod
+    def set_sessionmaker(cls, db_session_maker: Any) -> None:
+        """This method is used to set db session maker for sqlalchemy.
+
+        :params db_session: a db session maker.
+        :return: None.
+        """
+        setattr(cls, "db_session_maker", db_session_maker)
+
     def get_fields_for_serialize(self) -> set[str]:
+        """This method is used to get fields for serialize.
+
+        :return: A set of fields.
+        """
         fields = self.get_model_fields_with_widget_types()
         fields_for_serialize = {field.name for field in fields}
         if self.exclude:
@@ -255,6 +274,17 @@ class BaseModelAdmin:
         if include_fields:
             fields_for_serialize &= include_fields
         return fields_for_serialize
+
+    async def serialize_obj_attributes(
+        self, obj: Any, attributes_to_serizalize: list[ModelFieldWidgetSchema]
+    ) -> dict[str, Any]:
+        """Serialize orm model obj attribute to dict.
+
+        :params obj: an object.
+        :params attributes_to_serizalize: a list of attributes to serialize.
+        :return: A dict of serialized attributes.
+        """
+        return {field.name: getattr(obj, field.column_name) for field in attributes_to_serizalize}
 
     async def serialize_obj(self, obj: Any, list_view: bool = False) -> dict:
         """Serialize orm model obj to dict.
@@ -267,6 +297,7 @@ class BaseModelAdmin:
         fields_for_serialize = self.get_fields_for_serialize()
 
         obj_dict = {}
+        attributes_to_serizalize = []
         for field in fields:
             if field.name not in fields_for_serialize:
                 continue
@@ -275,15 +306,13 @@ class BaseModelAdmin:
             if field.is_m2m:
                 obj_dict[field.name] = await self.orm_get_m2m_ids(obj, field.column_name)
             else:
-                obj_dict[field.name] = getattr(obj, field.column_name)
+                attributes_to_serizalize.append(field)
+
+        obj_dict.update(await self.serialize_obj_attributes(obj, attributes_to_serizalize))
 
         for field_name in fields_for_serialize:
             display_field_function = getattr(self, field_name, None)
-            if (
-                not display_field_function
-                or not inspect.ismethod(display_field_function)
-                or not hasattr(display_field_function, "is_display")
-            ):
+            if not display_field_function or not hasattr(display_field_function, "is_display"):
                 continue
             obj_dict[field_name] = await display_field_function(obj)
 
@@ -313,7 +342,10 @@ class BaseModelAdmin:
             sort_by=sort_by,
             filters=filters,
         )
-        return await asyncio.gather(*(self.serialize_obj(obj, list_view=True) for obj in objs)), total
+        serialized_objs = []
+        for obj in objs:
+            serialized_objs.append(await self.serialize_obj(obj, list_view=True))
+        return serialized_objs, total
 
     async def get_obj(self, id: UUID | int) -> dict | None:
         """This method is used to get serialized object by id.
@@ -336,20 +368,10 @@ class BaseModelAdmin:
         fields = self.get_model_fields_with_widget_types(with_m2m=False)
         m2m_fields = self.get_model_fields_with_widget_types(with_m2m=True)
 
-        if id:
-            obj = await self.orm_get_obj(id)
-            if not obj:
-                return None
-        else:
-            obj = self.model_cls()
-
-        update_fields = []
-        for field in fields:
-            if field.name in payload:
-                setattr(obj, field.column_name, payload[field.name])
-                update_fields.append(field.column_name)
-
-        obj = await self.orm_save_obj(obj, update_fields=update_fields if id else None)
+        fields_payload = {field.column_name: payload[field.name] for field in fields if field.name in payload}
+        obj = await self.orm_save_obj(id, fields_payload)
+        if not obj:
+            return None
 
         for m2m_field in m2m_fields:
             if m2m_field.name in payload:

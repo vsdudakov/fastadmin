@@ -9,8 +9,6 @@ from tests.settings import ROOT_DIR
 def main():
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dev.settings")
-    sys.path.append(os.path.join(ROOT_DIR, "dev"))  # for djangoorm
-
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

@@ -1,6 +1,6 @@
-import inspect
 from operator import attrgetter
 from typing import Any, cast
+from uuid import UUID
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin, admin_models
 from fastadmin.models.schemas import (
@@ -15,7 +15,7 @@ from fastadmin.models.schemas import (
 )
 
 
-def register_admin_model_class(admin_model_class: type[ModelAdmin], orm_model_classes: list[Any]) -> None:
+def register_admin_model_class(admin_model_class: type[ModelAdmin], orm_model_classes: list[Any], **kwargs) -> None:
     """This method is used to register an admin model.
 
     :params admin_model_class: a class of admin model.
@@ -23,6 +23,9 @@ def register_admin_model_class(admin_model_class: type[ModelAdmin], orm_model_cl
     :return: None.
     """
     for orm_model_class in orm_model_classes:
+        sqlalchemy_sessionmaker = kwargs.get("sqlalchemy_sessionmaker")
+        if sqlalchemy_sessionmaker:
+            admin_model_class.set_sessionmaker(sqlalchemy_sessionmaker)
         admin_models[orm_model_class] = admin_model_class(orm_model_class)
     return None
 
@@ -67,6 +70,7 @@ def get_admin_model(orm_model_cls: str | Any) -> ModelAdmin | None:
 
 def generate_models_schema(
     admin_models: dict[Any, ModelAdmin | InlineModelAdmin],
+    user_id: UUID | int | None = None,
     is_inline_models: bool = False,
 ) -> list[ModelSchema | InlineModelSchema]:
     """Generate models schema
@@ -145,11 +149,7 @@ def generate_models_schema(
 
         for column_index, field_name in enumerate(orm_model_fields_for_serialize):
             display_field_function = getattr(admin_model_obj, field_name, None)
-            if (
-                not display_field_function
-                or not inspect.ismethod(display_field_function)
-                or not hasattr(display_field_function, "is_display")
-            ):
+            if not display_field_function or not hasattr(display_field_function, "is_display"):
                 continue
 
             fields_schema.append(
@@ -170,23 +170,19 @@ def generate_models_schema(
             )
 
         permissions = []
-        if admin_model_obj.has_add_permission():
+        if admin_model_obj.has_add_permission(user_id=user_id):
             permissions.append(ModelPermission.Add)
-        if admin_model_obj.has_change_permission():
+        if admin_model_obj.has_change_permission(user_id=user_id):
             permissions.append(ModelPermission.Change)
-        if admin_model_obj.has_delete_permission():
+        if admin_model_obj.has_delete_permission(user_id=user_id):
             permissions.append(ModelPermission.Delete)
-        if admin_model_obj.has_export_permission():
+        if admin_model_obj.has_export_permission(user_id=user_id):
             permissions.append(ModelPermission.Export)
 
         actions = []
         for action in admin_model_obj.actions:
             action_function = getattr(admin_model_obj, action, None)
-            if (
-                not action_function
-                or not inspect.ismethod(action_function)
-                or not hasattr(action_function, "is_action")
-            ):
+            if not action_function or not hasattr(action_function, "is_action"):
                 continue
             actions.append(
                 ModelAction(
@@ -225,6 +221,7 @@ def generate_models_schema(
                     inlines=generate_models_schema(  # type: ignore
                         {inline.model: inline(inline.model) for inline in admin_model_obj.inlines},
                         is_inline_models=True,
+                        user_id=user_id,
                     ),
                 ),
             )

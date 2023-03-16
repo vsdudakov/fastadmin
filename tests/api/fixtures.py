@@ -39,11 +39,11 @@ async def session_id(superuser, client):
             "password": superuser.password,
         },
     )
-    assert r.status_code == 200, r.status_code
+    assert r.status_code == 200, r.text
     assert not r.json(), r.json()
 
     yield r.cookies[settings.ADMIN_SESSION_ID_KEY]
 
     r = await client.post("/api/sign-out")
-    assert r.status_code == 200, r.status_code
+    assert r.status_code == 200, r.text
     assert not r.json(), r.json()

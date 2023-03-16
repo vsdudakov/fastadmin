@@ -14,6 +14,7 @@ async def test_retrieve(session_id, admin_models, event, client):
     assert item["created_at"] == updated_event["created_at"].isoformat()
     assert item["updated_at"] == updated_event["updated_at"].isoformat()
     assert "participants" in item
+    assert item["participants"]
     assert item["participants"][0] == updated_event["participants"][0]
 
 

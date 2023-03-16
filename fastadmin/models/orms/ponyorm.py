@@ -1,7 +1,8 @@
+from enum import EnumMeta
 from typing import Any
 from uuid import UUID
 
-from pony.orm import db_session
+from pony.orm import commit, db_session, delete, desc, flush, select
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.decorators import sync_to_async
@@ -11,14 +12,13 @@ from fastadmin.settings import settings
 
 
 class PonyORMMixin:
-
     @staticmethod
     def get_model_pk_name(orm_model_cls: Any) -> str:
         """This method is used to get model pk name.
 
         :return: A str.
         """
-        return "id"
+        return orm_model_cls._pk_.name
 
     def get_model_fields_with_widget_types(
         self,
@@ -31,7 +31,182 @@ class PonyORMMixin:
         :params with_readonly: a flag to include readonly fields.
         :return: A list of ModelFieldWidgetSchema.
         """
-        return []
+        orm_model_fields = [v for f, v in self.model_cls.__dict__.items() if not f.startswith("_")]
+        fields = []
+        for orm_model_field in orm_model_fields:
+            field_type = orm_model_field.py_type.__name__
+            field_name = orm_model_field.name
+            column_name = orm_model_field.name
+
+            if orm_model_field.is_relation:
+                if orm_model_field.is_collection:
+                    field_type = "m2m"
+                    column_name = field_name
+                else:
+                    field_type = "fk"
+
+            is_m2m = field_type in "m2m"
+
+            if with_m2m is not None and not with_m2m and is_m2m:
+                continue
+
+            if with_m2m is not None and with_m2m and not is_m2m:
+                continue
+
+            is_pk = getattr(orm_model_field, "is_pk", False)
+            is_immutable = (
+                is_pk or getattr(orm_model_field, "hidden", False)
+            ) and field_name not in self.readonly_fields
+
+            required = getattr(orm_model_field, "is_required", False)
+
+            choices = None
+            if isinstance(orm_model_field.py_type, EnumMeta):
+                field_type = "enum"
+                choices = {item.name: item.value for item in orm_model_field.py_type}
+
+            form_widget_type = WidgetType.Input
+            form_widget_props = {
+                "required": required,
+                "disabled": field_name in self.readonly_fields,
+                "readOnly": field_name in self.readonly_fields,
+            }
+            filter_widget_type = WidgetType.Input
+            filter_widget_props = {
+                "required": False,
+            }
+
+            # columns
+            match field_type:
+                case "str" | "unicode":
+                    form_widget_type = WidgetType.Input
+                    filter_widget_type = WidgetType.Input
+                case "LongStr" | "LongUnicode":
+                    form_widget_type = WidgetType.TextArea
+                    filter_widget_type = WidgetType.TextArea
+                case "bool":
+                    form_widget_type = WidgetType.Switch
+                    filter_widget_type = WidgetType.RadioGroup
+                    filter_widget_props["options"] = [
+                        {"label": "Yes", "value": True},
+                        {"label": "No", "value": False},
+                    ]
+                case "IntArray" | "StrArray" | "FloatArray":
+                    form_widget_type = WidgetType.Select
+                    form_widget_props["mode"] = "tags"
+                    filter_widget_type = WidgetType.Select
+                    filter_widget_props["mode"] = "tags"
+                case "int" | "float" | "Decimal":
+                    form_widget_type = WidgetType.InputNumber
+                    filter_widget_type = WidgetType.InputNumber
+                case "date":
+                    form_widget_type = WidgetType.DatePicker
+                    form_widget_props["format"] = settings.ADMIN_DATE_FORMAT
+                    filter_widget_type = WidgetType.RangePicker
+                    filter_widget_props["format"] = settings.ADMIN_DATE_FORMAT
+                case "datetime":
+                    form_widget_type = WidgetType.DateTimePicker
+                    form_widget_props["format"] = settings.ADMIN_DATETIME_FORMAT
+                    filter_widget_type = WidgetType.RangePicker
+                    filter_widget_props["format"] = settings.ADMIN_DATETIME_FORMAT
+                    filter_widget_props["showTime"] = True
+                case "time":
+                    form_widget_type = WidgetType.TimePicker
+                    form_widget_props["format"] = settings.ADMIN_TIME_FORMAT
+                    filter_widget_type = WidgetType.RangePicker
+                    filter_widget_props["format"] = settings.ADMIN_TIME_FORMAT
+                    filter_widget_props["showTime"] = True
+                case "enum":
+                    form_widget_props["options"] = [{"label": k, "value": v} for k, v in (choices or {}).items()]
+                    filter_widget_props["options"] = [{"label": k, "value": v} for k, v in (choices or {}).items()]
+                    if field_name in self.radio_fields:
+                        form_widget_type = WidgetType.RadioGroup
+                        filter_widget_type = WidgetType.CheckboxGroup
+                    else:
+                        form_widget_type = WidgetType.Select
+                        filter_widget_type = WidgetType.Select
+                        filter_widget_props["mode"] = "multiple"
+
+            # relations
+            if field_type in ("fk", "o2o", "m2m"):
+                rel_model_cls = orm_model_field.py_type
+                rel_model = rel_model_cls.__name__
+                rel_model_id_field = self.get_model_pk_name(rel_model_cls)
+
+                rel_model_label_fields = (rel_model_id_field,)
+                parent_admin_model = get_admin_model(rel_model_cls)
+                if parent_admin_model and parent_admin_model.label_fields:
+                    rel_model_label_fields = parent_admin_model.label_fields
+
+                match field_type:
+                    case "o2o":
+                        if field_name in self.raw_id_fields:
+                            form_widget_type = WidgetType.Input
+                            filter_widget_type = WidgetType.Input
+                        else:
+                            form_widget_type = WidgetType.AsyncSelect
+                            form_widget_props["parentModel"] = rel_model
+                            form_widget_props["idField"] = rel_model_id_field
+                            form_widget_props["labelFields"] = rel_model_label_fields
+                            filter_widget_type = WidgetType.AsyncSelect
+                            filter_widget_props["mode"] = "multiple"
+                            filter_widget_props["parentModel"] = rel_model
+                            filter_widget_props["idField"] = rel_model_id_field
+                            filter_widget_props["labelFields"] = rel_model_label_fields
+                    case "fk":
+                        if field_name in self.raw_id_fields:
+                            form_widget_type = WidgetType.Input
+                            filter_widget_type = WidgetType.Input
+                        else:
+                            form_widget_type = WidgetType.AsyncSelect
+                            form_widget_props["parentModel"] = rel_model
+                            form_widget_props["idField"] = rel_model_id_field
+                            form_widget_props["labelFields"] = rel_model_label_fields
+                            filter_widget_type = WidgetType.AsyncSelect
+                            filter_widget_props["mode"] = "multiple"
+                            filter_widget_props["parentModel"] = rel_model
+                            filter_widget_props["idField"] = rel_model_id_field
+                            filter_widget_props["labelFields"] = rel_model_label_fields
+                    case "m2m":
+                        if field_name in self.raw_id_fields:
+                            form_widget_type = WidgetType.Input
+                            filter_widget_type = WidgetType.Input
+                        else:
+                            form_widget_props["parentModel"] = rel_model
+                            form_widget_props["idField"] = rel_model_id_field
+                            form_widget_props["labelFields"] = rel_model_label_fields
+                            filter_widget_props["parentModel"] = rel_model
+                            filter_widget_props["idField"] = rel_model_id_field
+                            filter_widget_props["labelFields"] = rel_model_label_fields
+                            if field_name in self.filter_vertical or field_name in self.filter_horizontal:
+                                form_widget_type = WidgetType.AsyncTransfer
+                                form_widget_props["layout"] = (
+                                    "vertical" if field_name in self.filter_vertical else "horizontal"
+                                )
+                                filter_widget_type = WidgetType.AsyncTransfer
+                                filter_widget_props["layout"] = (
+                                    "vertical" if field_name in self.filter_vertical else "horizontal"
+                                )
+                            else:
+                                form_widget_type = WidgetType.AsyncSelect
+                                form_widget_props["mode"] = "multiple"
+                                filter_widget_type = WidgetType.AsyncSelect
+                                filter_widget_props["mode"] = "multiple"
+
+            fields.append(
+                ModelFieldWidgetSchema(
+                    name=field_name,
+                    column_name=column_name,
+                    is_m2m=is_m2m,
+                    is_pk=is_pk,
+                    is_immutable=is_immutable,
+                    form_widget_type=form_widget_type,
+                    form_widget_props=form_widget_props,
+                    filter_widget_type=filter_widget_type,
+                    filter_widget_props=filter_widget_props,
+                )
+            )
+        return fields
 
     @sync_to_async
     @db_session
@@ -52,7 +227,60 @@ class PonyORMMixin:
         :params filters: a dict of filters.
         :return: A tuple of list of objects and total count.
         """
-        return [], 0
+
+        qs = select(m for m in self.model_cls)
+
+        if filters:
+            for filter_condition, value in filters.items():
+                if "__" not in filter_condition:
+                    filter_condition = f"{filter_condition}__exact"
+                field = filter_condition.split("__")[0]
+                cond = filter_condition.split("__")[1]
+                pony_cond = "=="
+                match cond:
+                    case "lte":
+                        pony_cond = ">="
+                    case "gte":
+                        pony_cond = "<="
+                    case "lt":
+                        pony_cond = ">"
+                    case "gt":
+                        pony_cond = "<"
+                    case "exact":
+                        pony_cond = "=="
+                    case "contains":
+                        pony_cond = "in"
+                    case "icontains":
+                        pony_cond = "in"
+                filter_expr = f""""{value}" {pony_cond}  m.{field}"""
+                qs = qs.filter(filter_expr)
+
+        if search and self.search_fields:
+            ids = []
+            for f in self.search_fields:
+                qs_ids = qs.filter(lambda m: search.lower() in getattr(m, f).lower())
+                ids += [o.id for o in qs_ids]
+            qs = qs.filter(lambda m: m.id in set(ids))
+
+        ordering = [sort_by] if sort_by else self.ordering
+        if ordering:
+            desc_fields = [o[1:] for o in ordering if o.startswith("-")]
+            asc_fields = [o for o in ordering if not o.startswith("-")]
+            if asc_fields:
+                qs = qs.order_by(*(getattr(self.model_cls, o) for o in asc_fields))
+            if desc_fields:
+                qs = qs.order_by(*(desc(getattr(self.model_cls, o)) for o in desc_fields))
+
+        total = qs.count()
+
+        if self.list_select_related:
+            qs = qs.prefetch(*[getattr(self.model_cls, field) for field in self.list_select_related])
+
+        if offset is not None and limit is not None:
+            qs = qs.limit(limit, offset=offset)
+
+        objs = list(qs)
+        return objs, total
 
     @sync_to_async
     @db_session
@@ -62,17 +290,26 @@ class PonyORMMixin:
         :params id: an id of object.
         :return: An object.
         """
-        return None
+        return next((i for i in self.model_cls.select(**{self.get_model_pk_name(self.model_cls): id})), None)
 
     @sync_to_async
     @db_session
-    def orm_save_obj(self, obj: Any, update_fields: list[str] | None = None) -> Any:
+    def orm_save_obj(self, id: UUID | Any | None, payload: dict) -> Any:
         """This method is used to save orm/db model object.
 
-        :params obj: an object.
-        :params update_fields: a list of fields to update.
+        :params id: an id of object.
+        :params payload: a dict of payload.
         :return: An object.
         """
+        if id:
+            obj = next((i for i in self.model_cls.select(**{self.get_model_pk_name(self.model_cls): id})), None)
+            if not obj:
+                return None
+            obj.set(**payload)
+        else:
+            obj = self.model_cls(**payload)
+        flush()
+        commit()
         return obj
 
     @sync_to_async
@@ -83,7 +320,9 @@ class PonyORMMixin:
         :params id: an id of object.
         :return: None.
         """
-        return None
+        delete(o for o in self.model_cls if getattr(o, self.get_model_pk_name(self.model_cls)) == id)
+        flush()
+        commit()
 
     @sync_to_async
     @db_session
@@ -95,7 +334,13 @@ class PonyORMMixin:
 
         :return: A list of ids.
         """
-        return []
+        key_id = self.get_model_pk_name(self.model_cls)
+        obj = next((i for i in self.model_cls.select(**{key_id: getattr(obj, key_id)})), None)
+        if not obj:
+            return []
+        rel_model_cls = getattr(self.model_cls, field).py_type
+        rel_key_id = self.get_model_pk_name(rel_model_cls)
+        return [getattr(o, rel_key_id) for o in getattr(obj, field)]
 
     @sync_to_async
     @db_session
@@ -107,8 +352,36 @@ class PonyORMMixin:
 
         :return: A list of ids.
         """
-        return None
+        key_id = self.get_model_pk_name(self.model_cls)
+        obj = next((i for i in self.model_cls.select(**{key_id: getattr(obj, key_id)})), None)
+        if not obj:
+            return None
+        rel_model_cls = getattr(self.model_cls, field).py_type
+        rel_key_id = self.get_model_pk_name(rel_model_cls)
+        rel_objs = list(rel_model_cls.select(lambda o: getattr(o, rel_key_id) in ids))
+        obj.participants.clear()
+        obj.participants.add(rel_objs)
+        flush()
+        commit()
 
+    @sync_to_async
+    @db_session
+    def serialize_obj_attributes(
+        self, obj: Any, attributes_to_serizalize: list[ModelFieldWidgetSchema]
+    ) -> dict[str, Any]:
+        """Serialize orm model obj attribute to dict.
+
+        :params obj: an object.
+        :params attributes_to_serizalize: a list of attributes to serialize.
+        :return: A dict of serialized attributes.
+        """
+        data = {}
+        key_id = self.get_model_pk_name(self.model_cls)
+        obj = next((i for i in self.model_cls.select(**{key_id: getattr(obj, key_id)})), None)
+        if not obj:
+            return data
+
+        return obj.to_dict(only=(f.column_name for f in attributes_to_serizalize))
 
 
 class PonyORMModelAdmin(PonyORMMixin, ModelAdmin):

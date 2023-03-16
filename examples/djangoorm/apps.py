@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 class OrmConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "tests.dev.djangoorm"
+    name = "examples.djangoorm"

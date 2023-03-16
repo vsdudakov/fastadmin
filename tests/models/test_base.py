@@ -12,7 +12,7 @@ async def test_not_implemented_methods():
         await base.authenticate("username", "password")
 
     with pytest.raises(NotImplementedError):
-        await base.orm_save_obj({})
+        await base.orm_save_obj(None, {})
 
     with pytest.raises(NotImplementedError):
         await base.orm_delete_obj({})

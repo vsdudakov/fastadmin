@@ -1,82 +1,84 @@
 from datetime import datetime
+from enum import Enum
 
 import pytest
+from pony.orm import commit, db_session
 
-from tests.dev.ponyorm import models
-from tests.dev.ponyorm.helpers import close_connection, get_connection, init_connection
-
-
-@pytest.fixture(scope="session")
-def ponyorm_connection():
-    init_connection()
-    yield get_connection()
-    close_connection()
+from examples.ponyorm import models
+from fastadmin.models.helpers import get_admin_model
+from tests.settings import DB_SQLITE
 
 
-@pytest.fixture
-def ponyorm_session(ponyorm_connection):
-    yield ponyorm_connection
+@pytest.fixture(scope="session", autouse=True)
+def ponyorm_session():
+    models.db.bind(provider="sqlite", filename=DB_SQLITE, create_db=False)
+    models.db.provider.converter_classes.append((Enum, models.EnumConverter))
+    models.db.generate_mapping()
 
-
-@pytest.fixture
-def ponyorm_superuser(ponyorm_session):
-    with ponyorm_session:
-        obj = models.User(
-            username="Test SuperUser",
-            password="password",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
-        yield obj
-        obj.delete()
+    with db_session:
+        yield db_session
 
 
 @pytest.fixture
-def ponyorm_user(ponyorm_session):
-    with ponyorm_session:
-        obj = models.User(
-            username="Test User",
-            password="password",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
-        yield obj
-        obj.delete()
+def ponyorm_superuser():
+    obj = models.User(
+        username="Test SuperUser",
+        password="password",
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+    commit()
+    yield obj
+    obj.delete()
 
 
 @pytest.fixture
-def ponyorm_tournament(ponyorm_session):
-    with ponyorm_session:
-        obj = models.Tournament(
-            name="Test Tournament",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
-        yield obj
-        obj.delete()
+def ponyorm_user():
+    obj = models.User(
+        username="Test User",
+        password="password",
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+    commit()
+    yield obj
+    obj.delete()
 
 
 @pytest.fixture
-def ponyorm_base_event(ponyorm_session):
-    with ponyorm_session:
-        obj = models.BaseEvent(
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
-        yield obj
-        obj.delete()
+def ponyorm_tournament():
+    obj = models.Tournament(
+        name="Test Tournament",
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+    commit()
+    yield obj
+    obj.delete()
 
 
 @pytest.fixture
-def ponyorm_event(ponyorm_session, ponyorm_base_event, ponyorm_tournament, ponyorm_user):
-    with ponyorm_session:
-        obj = models.Event(
-            base=ponyorm_base_event,
-            name="Test Event",
-            tournament=ponyorm_tournament,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
-        obj.participants.add(ponyorm_user)
-        yield obj
-        obj.delete()
+def ponyorm_base_event():
+    obj = models.BaseEvent(
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+    commit()
+    yield obj
+    obj.delete()
+
+
+@pytest.fixture
+def ponyorm_event(ponyorm_base_event, ponyorm_tournament, ponyorm_user):
+    obj = models.Event(
+        base=ponyorm_base_event,
+        name="Test Event",
+        tournament=ponyorm_tournament,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+    commit()
+    obj.participants.add(ponyorm_user)
+    commit()
+    yield obj
+    obj.delete()

@@ -19,17 +19,9 @@ from sqlalchemy import (
     select,
     update,
 )
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from fastadmin import SqlAlchemyInlineModelAdmin, SqlAlchemyModelAdmin, action, display, register
-from tests.settings import DB_SQLITE
-
-sqlalchemy_engine = create_async_engine(
-    f"sqlite+aiosqlite:///{DB_SQLITE}",
-    echo=True,
-)
-sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
 
 
 class EventTypeEnum(str, Enum):
@@ -117,13 +109,15 @@ class Event(BaseModel):
     json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
 
 
+# NOTE: provide sqlalchemy_sessionmaker as second parameter for your usage
+# @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 @register(User)
 class SqlAlchemyUserModelAdmin(SqlAlchemyModelAdmin):
     model_name_prefix = "sqlalchemy"
-    sqlalchemy_sessionmaker = sqlalchemy_sessionmaker
 
     async def authenticate(self, username, password):
-        async with self.sqlalchemy_sessionmaker() as session:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
             query = select(User).filter_by(username=username, password=password, is_superuser=True)
             result = await session.scalars(query)
             obj = result.first()
@@ -134,35 +128,45 @@ class SqlAlchemyUserModelAdmin(SqlAlchemyModelAdmin):
 
 class SqlAlchemyEventInlineModelAdmin(SqlAlchemyInlineModelAdmin):
     model_name_prefix = "sqlalchemy"
-    sqlalchemy_sessionmaker = sqlalchemy_sessionmaker
 
     model = Event
     fk_name = "tournament"
 
 
+# NOTE: provide sqlalchemy_sessionmaker as second parameter for your usage
+# @register(Tournament, sqlalchemy_sessionmaker)
 @register(Tournament)
 class SqlAlchemyTournamentModelAdmin(SqlAlchemyModelAdmin):
     model_name_prefix = "sqlalchemy"
-    sqlalchemy_sessionmaker = sqlalchemy_sessionmaker
 
     inlines = (SqlAlchemyEventInlineModelAdmin,)
 
 
+# NOTE: provide sqlalchemy_sessionmaker as second parameter for your usage
+# @register(BaseEvent, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+@register(BaseEvent)
+class SqlAlchemyBaseEventModelAdmin(SqlAlchemyModelAdmin):
+    model_name_prefix = "sqlalchemy"
+
+
+# NOTE: provide sqlalchemy_sessionmaker as second parameter for your usage
+# @register(Event, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 @register(Event)
 class SqlAlchemyEventModelAdmin(SqlAlchemyModelAdmin):
     model_name_prefix = "sqlalchemy"
-    sqlalchemy_sessionmaker = sqlalchemy_sessionmaker
 
     @action(description="Make user active")
     async def make_is_active(self, ids):
-        async with self.sqlalchemy_sessionmaker() as session:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
             query = update(Event).where(Event.id.in_(ids)).values(is_active=True)
             await session.execute(query)
             await session.commit()
 
     @action
     async def make_is_not_active(self, ids):
-        async with self.sqlalchemy_sessionmaker() as session:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
             query = update(Event).where(Event.id.in_(ids)).values(is_active=False)
             await session.execute(query)
             await session.commit()

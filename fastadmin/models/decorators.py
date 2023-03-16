@@ -48,7 +48,7 @@ def display(function=None):
         return decorator(function)
 
 
-def register(*orm_model_classes):
+def register(*orm_model_classes, **kwargs):
     """Register the given model(s) classes and wrapped ModelAdmin class with
     admin site:
 
@@ -73,7 +73,7 @@ def register(*orm_model_classes):
         if not issubclass(admin_model_class, ModelAdmin):
             raise ValueError("Wrapped class must subclass ModelAdmin.")
 
-        register_admin_model_class(admin_model_class, orm_model_classes)
+        register_admin_model_class(admin_model_class, orm_model_classes, **kwargs)
 
         return admin_model_class
 

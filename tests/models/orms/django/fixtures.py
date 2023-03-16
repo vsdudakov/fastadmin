@@ -1,44 +1,41 @@
+import django
 import pytest
+from django.db import connections
 
-from tests.dev.djangoorm import models
-from tests.dev.djangoorm.helpers import close_connection, get_connection, init_connection
-
-
-@pytest.fixture(scope="session")
-def django_connection():
-    init_connection()
-    yield get_connection()
-    close_connection()
+from examples.djangoorm import models
+from fastadmin.models.helpers import get_admin_model
 
 
-@pytest.fixture
-async def django_db(django_connection):
-    yield django_connection
+@pytest.fixture(scope="session", autouse=True)
+def django_session():
+    django.setup(set_prefix=False)
+    session = connections["default"]
+    yield session
 
 
 @pytest.fixture
-def django_superuser(django_db):
+def django_superuser():
     obj = models.User.objects.create(username="Test SuperUser", password="password", is_superuser=True)
     yield obj
     obj.delete()
 
 
 @pytest.fixture
-def django_user(django_db):
+def django_user():
     obj = models.User.objects.create(username="Test User", password="password")
     yield obj
     obj.delete()
 
 
 @pytest.fixture
-def django_tournament(django_db):
+def django_tournament():
     obj = models.Tournament.objects.create(name="Test Tournament")
     yield obj
     obj.delete()
 
 
 @pytest.fixture
-def django_base_event(django_db):
+def django_base_event():
     obj = models.BaseEvent.objects.create()
     yield obj
     obj.delete()

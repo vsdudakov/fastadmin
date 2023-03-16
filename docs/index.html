@@ -265,19 +265,27 @@
               <p class="lead">Install the package using pip:</p>
               <pre>
                 <code class="language-bash">
-pip install fastadmin["fastapi"]  # for fastapi
-pip install fastadmin["flask"]  # for flask
-pip install fastadmin["django"]  # for django
-pip install fastadmin["fastapi,django,flask"]  # for multiple
+pip install fastadmin["fastapi,django"]  # for fastapi with django orm
+pip install fastadmin["fastapi,tortoise-orm"]  # for fastapi with tortoise orm
+pip install fastadmin["fastapi,pony"]  # for fastapi with pony orm
+pip install fastadmin["fastapi,sqlalchemy"]  # for fastapi with sqlalchemy orm
+pip install fastadmin["django"]  # for django with django orm
+pip install fastadmin["django,pony"]  # for django with pony orm
+pip install fastadmin["flask,sqlalchemy"]  # for flask with sqlalchemy
+...
                 </code>
               </pre>
               <p class="lead">Or using poetry:</p>
               <pre>
                 <code class="language-bash">
-poetry add 'fastadmin["fastapi"]'  # for fastapi
-poetry add 'fastadmin["flask"]'  # for flask
-poetry add 'fastadmin["django"]'  # for django
-poetry add 'fastadmin["fastapi,django,flask"]'  # for multiple
+poetry add 'fastadmin["fastapi,django"]'  # for fastapi with django orm
+poetry add 'fastadmin["fastapi,tortoise-orm"]'  # for fastapi with tortoise orm
+poetry add 'fastadmin["fastapi,pony"]'  # for fastapi with pony orm
+poetry add 'fastadmin["fastapi,sqlalchemy"]'  # for fastapi with sqlalchemy orm
+poetry add 'fastadmin["django"]'  # for django with django orm
+poetry add 'fastadmin["django,pony"]'  # for django with pony orm
+poetry add 'fastadmin["flask,sqlalchemy"]'  # for flask with sqlalchemy
+...
                 </code>
               </pre>
               <p class="lead">
@@ -411,11 +419,9 @@ class GroupAdmin(TortoiseModelAdmin):
               <h4>Django ORM</h4>
               <pre>
                 <code class="language-python">
-from asgiref.sync import sync_to_async
 from django.db import models
 
-from fastadmin import DjangoModelAdmin, register
-
+from fastadmin import DjangoModelAdmin, register, sync_to_async
 
 
 class User(models.Model):
@@ -423,9 +429,7 @@ class User(models.Model):
     hash_password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
     is_active = fields.BooleanField(default=False)
-
     ...
-
 
 
 class Group(models.Model):
@@ -443,16 +447,13 @@ class UserAdmin(DjangoModelAdmin):
     search_fields = ("username",)
 
     @sync_to_async
-    def _authenticate(self, username, password):
+    def authenticate(self, username, password):
         obj = User.objects.filter(username=username, is_superuser=True).first()
         if not obj:
             return None
         if not obj.check_password(password):
             return None
         return obj.id
-
-    async def authenticate(self, username, password):
-        return await self._authenticate(username, password)
 
 
 @register(Group)
@@ -465,10 +466,133 @@ class GroupAdmin(DjangoModelAdmin):
                 </code>
               </pre>
               <h4>SQLAlchemy ORM</h4>
-              <p class="alert alert-info">Coming soon...</p>
-              <h4>Pony ORM</h4>
-              <p class="alert alert-info">Coming soon...</p>
+              <pre>
+                <code class="language-python">
+import bcrypt
+from sqlalchemy import (
+    Boolean,
+    String,
+    select,
+)
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+from fastadmin import SqlAlchemyModelAdmin, register
+
+
+sqlalchemy_engine = create_async_engine(
+    f"sqlite+aiosqlite://db.sqlite",
+    echo=True,
+)
+sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class User(Base):
+    username: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    hash_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    ...
+
+
+class Group(Base):
+    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    ...
+
+
+@register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class UserAdmin(SqlAlchemyModelAdmin):
+    label_fields = ("username",)
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
+
+    async def authenticate(self, username, password):
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            query = select(User).filter_by(username=username, password=password, is_superuser=True)
+            result = await session.scalars(query)
+            user = result.first()
+            if not user:
+                return None
+            if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
+                return None
+            return user.id
+
+
+@register(Group, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class GroupAdmin(SqlAlchemyModelAdmin):
+    label_fields = ("name",)
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
+                </code>
+              </pre>
+              <h4>Pony ORM</h4>
+              <pre>
+                <code class="language-python">
+import bcrypt
+from pony.orm import Database, PrimaryKey
+
+from fastadmin import PonyORMModelAdmin, register, sync_to_async
+
+db = Database()
+db.bind(provider="sqlite", filename=DB_SQLITE, create_db=False)
+
+
+class User(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    username = Required(str)
+    hash_password = Required(str)
+    is_superuser = Required(bool, default=False)
+    is_active = Required(bool, default=False)
+    ...
+
+
+class Group(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    name = Required(str)
+    ...
+
+
+db.generate_mapping()
+
+
+@register(User)
+class UserAdmin(PonyORMModelAdmin):
+    label_fields = ("username",)
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
+
+    @sync_to_async
+    @db_session
+    def authenticate(self, username, password):
+        user = next((f for f in self.model_cls.select(username=username, password=password, is_superuser=True)), None)
+        if not user:
+            return None
+        if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
+            return None
+        return user.id
+
+
+@register(Tournament)
+class GroupAdmin(PonyORMModelAdmin):
+    label_fields = ("name",)
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
+                </code>
+              </pre>
               <p class="alert alert-warning">
                 Note: You have to implement authenticate method for FastAdmin
                 authentication on AdminModel class which is registered for
@@ -556,9 +680,34 @@ from fastadmin import TortoiseModelAdmin, TortoiseInlineModelAdmin
                 </code>
               </pre>
               <h3>SQLAlchemy ORM</h3>
-              <p class="alert alert-info">Coming soon...</p>
+              <p class="lead">
+                Use SqlAlchemyModelAdmin and SqlAlchemyInlineModelAdmin to
+                create and register admin models and inlines.
+              </p>
+              <p class="lead">
+                Use sqlalchemy_sessionmaker parameter for register decorator to
+                initialize sqlalchemy session for admin model.
+              </p>
+              <pre>
+                <code class="language-python">
+from fastadmin import SqlAlchemyModelAdmin, SqlAlchemyInlineModelAdmin, register
+
+...
+
+@register(Model, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+...
+                </code>
+              </pre>
               <h3>Pony ORM</h3>
-              <p class="alert alert-info">Coming soon...</p>
+              <p class="lead">
+                Use PonyORMModelAdmin and PonyORMInlineModelAdmin to create and
+                register admin models and inlines.
+              </p>
+              <pre>
+                <code class="language-python">
+from fastadmin import PonyORMModelAdmin, PonyORMInlineModelAdmin
+                </code>
+              </pre>
             </section>
             <hr class="small-divider" />
 
@@ -801,139 +950,231 @@ class PersonAdmin(TortoiseModelAdmin):
 
               <pre>
                 <code class="language-python">
+@staticmethod
+def get_model_pk_name(orm_model_cls: Any) -> str:
+    """This method is used to get model pk name.
+
+    :return: A str.
+    """
+    raise NotImplementedError
+
+def get_model_fields_with_widget_types(
+    self,
+    with_m2m: bool | None = None,
+) -> list[ModelFieldWidgetSchema]:
+    """This method is used to get model fields with widget types.
+
+    :params with_m2m: a flag to include m2m fields.
+    :params with_pk: a flag to include pk fields.
+    :params with_readonly: a flag to include readonly fields.
+    :return: A list of ModelFieldWidgetSchema.
+    """
+    raise NotImplementedError
+
+async def orm_get_list(
+    self,
+    offset: int | None = None,
+    limit: int | None = None,
+    search: str | None = None,
+    sort_by: str | None = None,
+    filters: dict | None = None,
+) -> tuple[list[Any], int]:
+    """This method is used to get list of orm/db model objects.
+
+    :params offset: an offset for pagination.
+    :params limit: a limit for pagination.
+    :params search: a search query.
+    :params sort_by: a sort by field name.
+    :params filters: a dict of filters.
+    :return: A tuple of list of objects and total count.
+    """
+    raise NotImplementedError
+
+async def orm_get_obj(self, id: UUID | int) -> Any | None:
+    """This method is used to get orm/db model object.
+
+    :params id: an id of object.
+    :return: An object or None.
+    """
+    raise NotImplementedError
+
+async def orm_save_obj(self, id: UUID | Any | None, payload: dict) -> Any:
+    """This method is used to save orm/db model object.
+
+    :params id: an id of object.
+    :params payload: a dict of payload.
+    :return: An object.
+    """
+    raise NotImplementedError
+
+async def orm_delete_obj(self, id: UUID | int) -> None:
+    """This method is used to delete orm/db model object.
+
+    :params id: an id of object.
+    :return: None.
+    """
+    raise NotImplementedError
+
+async def orm_get_m2m_ids(self, obj: Any, field: str) -> list[int | UUID]:
+    """This method is used to get m2m ids.
+
+    :params obj: an object.
+    :params field: a m2m field name.
+
+    :return: A list of ids.
+    """
+    raise NotImplementedError
+
+async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | UUID]) -> None:
+    """This method is used to get m2m ids.
+
+    :params obj: an object.
+    :params field: a m2m field name.
+
+    :return: A list of ids.
+    """
+    raise NotImplementedError
+
+@classmethod
+def get_sessionmaker(cls) -> Any:
+    """This method is used to get db session maker for sqlalchemy.
+
+    :return: A db session maker.
+    """
+    ...
+
+@classmethod
+def set_sessionmaker(cls, db_session_maker: Any) -> None:
+    """This method is used to set db session maker for sqlalchemy.
+
+    :params db_session: a db session maker.
+    :return: None.
+    """
+    ...
+
+def get_fields_for_serialize(self) -> set[str]:
+    """This method is used to get fields for serialize.
+
+    :return: A set of fields.
+    """
+    ...
+
+async def serialize_obj_attributes(
+    self, obj: Any, attributes_to_serizalize: list[ModelFieldWidgetSchema]
+) -> dict[str, Any]:
+    """Serialize orm model obj attribute to dict.
+
+    :params obj: an object.
+    :params attributes_to_serizalize: a list of attributes to serialize.
+    :return: A dict of serialized attributes.
+    """
+    ...
+
+async def serialize_obj(self, obj: Any, list_view: bool = False) -> dict:
+    """Serialize orm model obj to dict.
+
+    :params obj: an object.
+    :params exclude_fields: a list of fields to exclude.
+    :return: A dict.
+    """
+    ...
+
 async def get_list(
-  self,
-  offset: int | None = None,
-  limit: int | None = None,
-  search: str | None = None,
-  sort_by: str | None = None,
-  filters: dict | None = None,
+    self,
+    offset: int | None = None,
+    limit: int | None = None,
+    search: str | None = None,
+    sort_by: str | None = None,
+    filters: dict | None = None,
 ) -> tuple[list[dict], int]:
-  """This method is used to get list of orm/db model objects.
+    """This method is used to get list of seriaized objects.
 
-  :params offset: an offset for pagination.
-  :params limit: a limit for pagination.
-  :params search: a search query.
-  :params sort_by: a sort by field name.
-  :params filters: a dict of filters.
-  :return: A tuple of list of objects and total count.
-  """
-  ...
-
-async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
-  """This method is used to save orm/db model object.
-
-  :params id: an id of object.
-  :params payload: a payload from request.
-  :return: A saved object or None.
-  """
-  ...
+    :params offset: an offset for pagination.
+    :params limit: a limit for pagination.
+    :params search: a search query.
+    :params sort_by: a sort by field name.
+    :params filters: a dict of filters.
+    :return: A tuple of list of dict and total count.
+    """
+    ...
 
 async def get_obj(self, id: UUID | int) -> dict | None:
-  """This method is used to get orm/db model object by id.
+    """This method is used to get serialized object by id.
 
-  :params id: an id of object.
-  :return: An object or None.
-  """
-  ...
+    :params id: an id of object.
+    :return: A dict or None.
+    """
+    ...
+
+async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
+    """This method is used to save orm/db model object.
+
+    :params id: an id of object.
+    :params payload: a payload from request.
+    :return: A saved object or None.
+    """
+    ...
 
 async def delete_model(self, id: UUID | int) -> None:
-  """This method is used to delete orm/db model object.
+    """This method is used to delete orm/db model object.
 
-  :params id: an id of object.
-  :return: None.
-  """
-  ...
-
-def get_model_fields(self) -> OrderedDict[str, dict]:
-  """This method is used to get all orm/db model fields
-  with saving ordering (non relations, fk, o2o, m2m).
-
-  :return: An OrderedDict of model fields.
-  """
-  ...
-
-def get_form_widget(self, field_name: str) -> tuple[WidgetType, dict]:
-  """This method is used to get form item widget
-  for field from orm/db model.
-
-  :params field_name: a model field name.
-  :return: A tuple of widget type and widget props.
-  """
-  ...
+    :params id: an id of object.
+    :return: None.
+    """
+    ...
 
 async def get_export(
-  self,
-  export_format: ExportFormat | None,
-  offset: int | None = None,
-  limit: int | None = None,
-  search: str | None = None,
-  sort_by: str | None = None,
-  filters: dict | None = None,
+    self,
+    export_format: ExportFormat | None,
+    offset: int | None = None,
+    limit: int | None = None,
+    search: str | None = None,
+    sort_by: str | None = None,
+    filters: dict | None = None,
 ) -> StringIO | BytesIO | None:
-  """This method is used to get export data (str or bytes stream).
+    """This method is used to get export data (str or bytes stream).
 
-  :params export_format: a n export format (CSV at default).
-  :params offset: an offset for pagination.
-  :params limit: a limit for pagination.
-  :params search: a search query.
-  :params sort_by: a sort by field name.
-  :params filters: a dict of filters.
-  :return: A StringIO or BytesIO object.
-  """
-  ...
+    :params export_format: a n export format (CSV at default).
+    :params offset: an offset for pagination.
+    :params limit: a limit for pagination.
+    :params search: a search query.
+    :params sort_by: a sort by field name.
+    :params filters: a dict of filters.
+    :return: A StringIO or BytesIO object.
+    """
+    ...
 
-def get_filter_widget(self, field_name: str) -> tuple[WidgetType, dict]:
-  """This method is used to get filter widget for tabel columns
-  for field from orm/db model from list_filter parameter.
+def has_add_permission(self, user_id: UUID | int | None = None) -> bool:
+    """This method is used to check if user has permission to add new model instance.
 
-  :params field_name: a model field name.
-  :return: A tuple of widget type and widget props.
-  """
-  ...
+    :param user_id: The user id.
+    :return: A boolean value.
+    """
+    ...
 
-def get_list_display(self) -> Sequence[str]:
-  """This method is used to get list of fields for display on table view.
+def has_change_permission(self, user_id: UUID | int | None = None) -> bool:
+    """This method is used to check if user has permission to change model instance.
 
-  :return: A list of model field names.
-  """
-  ...
+    :param user_id: The user id.
+    :return: A boolean value.
+    """
+    ...
 
-def get_fields(self) -> Sequence[str]:
-  """This method is used to get list of fields for display on form view.
+def has_delete_permission(self, user_id: UUID | int | None = None) -> bool:
+    """This method is used to check if user has permission to delete model instance.
 
-  :return: A list of model field names.
-  """
-  ...
+    :param user_id: The user id.
+    :return: A boolean value.
+    """
+    ...
 
-def has_add_permission(self) -> bool:
-  """This method is used to check if user has permission to add new model instance.
+def has_export_permission(self, user_id: UUID | int | None = None) -> bool:
+    """This method is used to check if user has permission to export model instance.
 
-  :return: A boolean value.
-  """
-  ...
-
-def has_change_permission(self) -> bool:
-  """This method is used to check if user has permission to change model instance.
-
-  :return: A boolean value.
-  """
-  ...
-
-def has_delete_permission(self) -> bool:
-  """This method is used to check if user has permission to delete model instance.
-
-  :return: A boolean value.
-  """
-  ...
-
-def has_export_permission(self) -> bool:
-  """This method is used to check if user has permission to export model instance.
-
-  :return: A boolean value.
-  """
-  ...
-
+    :param user_id: The user id.
+    :return: A boolean value.
+    """
+    ...
                 </code>
               </pre>
               <p class="lead">Specific methods:</p>
@@ -1099,31 +1340,41 @@ class PersonAdmin(TortoiseModelAdmin):
                 See what's new added, changed, fixed, improved or updated in the
                 latest versions.
               </p>
-              <hr class="small-divider">
+              <hr class="small-divider" />
               <!-- <p class="alert alert-info mb-5"> For Future Updates Follow Us <a target="_blank" href="http://themeforest.net/user/harnishdesign?ref=HarnishDesign">@themeforest</a> / <a target="_blank" href="http://facebook.com/harnishdesign">@facebook</a> / <a target="_blank" href="http://twitter.com/harnishdesign">@twitter</a> / <a target="_blank" href="https://dribbble.com/harnishdesign">@Dribbble</a></p> -->
 
-              <h3 id="v0_1_21">Version 0.1.21 <small class="text-muted">(13 March, 2023)</small></h3>
+              <h3 id="v0_1_21">
+                Version 0.1.21
+                <small class="text-muted">(13 March, 2023)</small>
+              </h3>
               <ul class="changelog">
                 <li>Added support for Django ORM.</li>
                 <li>Added modular structure for bakend unit tests.</li>
               </ul>
-              <hr class="small-divider">
+              <hr class="small-divider" />
 
-              <h3 id="v0_1_20">Version 0.1.20 <small class="text-muted">(11 March, 2023)</small></h3>
+              <h3 id="v0_1_20">
+                Version 0.1.20
+                <small class="text-muted">(11 March, 2023)</small>
+              </h3>
               <ul class="changelog">
                 <li>Added support for Django, Flask frameworks.</li>
                 <li>Added modular architecture for backend API.</li>
                 <li>Fixed some minor bugs.</li>
               </ul>
-              <hr class="small-divider">
+              <hr class="small-divider" />
 
-              <h3 id="v0_1_19">Version 0.1.19 <small class="text-muted">(9 March, 2023)</small></h3>
+              <h3 id="v0_1_19">
+                Version 0.1.19 <small class="text-muted">(9 March, 2023)</small>
+              </h3>
               <ul class="changelog">
                 <li>Fixed some minor bugs.</li>
               </ul>
-              <hr class="small-divider">
+              <hr class="small-divider" />
 
-              <h3 id="v0_1_18">Version 0.1.18 <small class="text-muted">(7 March, 2023)</small></h3>
+              <h3 id="v0_1_18">
+                Version 0.1.18 <small class="text-muted">(7 March, 2023)</small>
+              </h3>
               <ul class="changelog">
                 <li>Initial Release.</li>
               </ul>

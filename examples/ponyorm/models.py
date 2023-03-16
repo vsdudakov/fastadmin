@@ -6,7 +6,8 @@ from pony.orm import Database, Json, LongStr, Optional, PrimaryKey, Required, Se
 from pony.orm.dbapiprovider import StrConverter
 
 from fastadmin import PonyORMInlineModelAdmin, PonyORMModelAdmin, action, display, register, sync_to_async
-from tests.settings import DB_SQLITE
+
+db = Database()
 
 
 class EnumConverter(StrConverter):
@@ -20,11 +21,6 @@ class EnumConverter(StrConverter):
 
     def sql2py(self, value):
         return self.py_type[value]
-
-
-db = Database()
-db.bind(provider="sqlite", filename=DB_SQLITE, create_db=False)
-db.provider.converter_classes.append((Enum, EnumConverter))
 
 
 class EventTypeEnum(str, Enum):
@@ -42,39 +38,33 @@ class User(BaseModel, db.Entity):
     _table_ = "user"
 
     id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime, default=datetime.utcnow)
-    updated_at = Required(datetime, default=datetime.utcnow)
+    created_at = Required(datetime, default=datetime.utcnow, hidden=True)
+    updated_at = Required(datetime, default=datetime.utcnow, hidden=True)
 
     username = Required(str)
     password = Required(str)
     is_superuser = Required(bool, default=False)
 
-    events = Set("Event", table="event_participants", column="user_id")
-
-    def __str__(self):
-        return self.username
+    events = Set("Event", table="event_participants", column="event_id")
 
 
 class Tournament(BaseModel, db.Entity):
     _table_ = "tournament"
 
     id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime, default=datetime.utcnow)
-    updated_at = Required(datetime, default=datetime.utcnow)
+    created_at = Required(datetime, default=datetime.utcnow, hidden=True)
+    updated_at = Required(datetime, default=datetime.utcnow, hidden=True)
 
     name = Required(str)
 
     events = Set("Event")
 
-    def __str__(self):
-        return self.name
-
 
 class BaseEvent(BaseModel, db.Entity):
     _table_ = "base_event"
     id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime, default=datetime.utcnow)
-    updated_at = Required(datetime, default=datetime.utcnow)
+    created_at = Required(datetime, default=datetime.utcnow, hidden=True)
+    updated_at = Required(datetime, default=datetime.utcnow, hidden=True)
 
     event = Optional("Event")
 
@@ -83,14 +73,14 @@ class Event(BaseModel, db.Entity):
     _table_ = "event"
 
     id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime, default=datetime.utcnow)
-    updated_at = Required(datetime, default=datetime.utcnow)
+    created_at = Required(datetime, default=datetime.utcnow, hidden=True)
+    updated_at = Required(datetime, default=datetime.utcnow, hidden=True)
 
     base = Optional(BaseEvent, column="base_id")
     name = Required(str)
 
     tournament = Required(Tournament, column="tournament_id")
-    participants = Set(User, table="event_participants", column="event_id")
+    participants = Set(User, table="event_participants", column="user_id")
 
     rating = Required(int, default=0)
     description = Optional(LongStr)
@@ -104,12 +94,6 @@ class Event(BaseModel, db.Entity):
 
     json = Optional(Json)
 
-    def __str__(self):
-        return self.name
-
-
-db.generate_mapping()
-
 
 @register(User)
 class PonyORMUserModelAdmin(PonyORMModelAdmin):
@@ -118,8 +102,7 @@ class PonyORMUserModelAdmin(PonyORMModelAdmin):
     @sync_to_async
     @db_session
     def authenticate(self, username, password):
-        objs = list(self.model_cls.select(username=username, password=password, is_superuser=True))
-        obj = objs[0]
+        obj = next((f for f in self.model_cls.select(username=username, password=password, is_superuser=True)), None)
         if not obj:
             return None
         return obj.id
@@ -137,13 +120,18 @@ class PonyORMTournamentModelAdmin(PonyORMModelAdmin):
     model_name_prefix = "ponyorm"
 
 
+@register(BaseEvent)
+class PonyORMBaseEventModelAdmin(PonyORMModelAdmin):
+    model_name_prefix = "ponyorm"
+
+
 @register(Event)
 class PonyORMEventModelAdmin(PonyORMModelAdmin):
     model_name_prefix = "ponyorm"
 
     @sync_to_async
-    @db_session
     @action(description="Make user active")
+    @db_session
     def make_is_active(self, ids):
         # update(o.set(is_active=True) for o in self.model_cls if o.id in ids)
         objs = self.model_cls.select(lambda o: o.id in ids)
@@ -152,8 +140,8 @@ class PonyORMEventModelAdmin(PonyORMModelAdmin):
         commit()
 
     @sync_to_async
-    @db_session
     @action
+    @db_session
     def make_is_not_active(self, ids):
         # update(o.set(is_active=False) for o in self.model_cls if o.id in ids)
         objs = self.model_cls.select(lambda o: o.id in ids)

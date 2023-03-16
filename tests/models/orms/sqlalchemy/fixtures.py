@@ -1,21 +1,26 @@
 from datetime import datetime
 
 import pytest
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from tests.dev.sqlalchemy import models
-from tests.dev.sqlalchemy.helpers import close_connection, get_connection, init_connection
-
-
-@pytest.fixture(scope="session")
-async def sqlalchemy_connection():
-    init_connection()
-    yield get_connection()
-    await close_connection()
+from examples.sqlalchemy import models
+from fastadmin.models.helpers import get_admin_model
+from tests.settings import DB_SQLITE
 
 
-@pytest.fixture
-async def sqlalchemy_session(sqlalchemy_connection):
-    async with sqlalchemy_connection() as session:
+@pytest.fixture(scope="session", autouse=True)
+async def sqlalchemy_session():
+    sqlalchemy_engine = create_async_engine(
+        f"sqlite+aiosqlite:///{DB_SQLITE}",
+        echo=True,
+    )
+    sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
+    for model in (models.User, models.Tournament, models.BaseEvent, models.Event):
+        admin_model = get_admin_model(model)
+        assert admin_model
+        admin_model.set_sessionmaker(sqlalchemy_sessionmaker)
+
+    async with sqlalchemy_sessionmaker() as session:
         yield session
 
 

@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient as TestClient
 
-from tests.dev.fastapi.dev import app
+from examples.fastapi.dev import app
 
 
 @pytest.fixture

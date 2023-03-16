@@ -131,6 +131,15 @@ def test_get_form_widget_tournament(tournament):
                 assert field.filter_widget_props
                 assert field.form_widget_type == WidgetType.Input
                 assert field.form_widget_props
+            case "events":
+                assert field.column_name == "events"
+                assert field.is_m2m
+                assert not field.is_pk
+                assert not field.is_immutable
+                assert field.filter_widget_type == WidgetType.AsyncSelect
+                assert field.filter_widget_props["mode"] == "multiple"
+                assert field.form_widget_type == WidgetType.AsyncSelect
+                assert field.form_widget_props["mode"] == "multiple"
             case _:
                 raise ValueError(f"Unexpected field: {field.name}")
 
@@ -185,7 +194,7 @@ def test_get_form_widget_event(event):
                 assert field.form_widget_type == WidgetType.DateTimePicker
                 assert field.form_widget_props
             case "base":
-                assert field.column_name == "base_id"
+                assert field.column_name in ("base_id", "base")
                 assert not field.is_m2m
                 assert not field.is_pk
                 assert not field.is_immutable
@@ -203,7 +212,7 @@ def test_get_form_widget_event(event):
                 assert field.form_widget_type == WidgetType.Input
                 assert field.form_widget_props
             case "tournament":
-                assert field.column_name == "tournament_id"
+                assert field.column_name in ("tournament_id", "tournament")
                 assert not field.is_m2m
                 assert not field.is_pk
                 assert not field.is_immutable

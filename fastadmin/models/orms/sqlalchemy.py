@@ -11,13 +11,6 @@ from fastadmin.settings import settings
 
 
 class SqlAlchemyMixin:
-    sqlalchemy_sessionmaker = None
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not self.sqlalchemy_sessionmaker:
-            raise ValueError("%s: sqlalchemy_sessionmaker is not defined.", self.__class__.__name__)
-
     @staticmethod
     def get_model_pk_name(orm_model_cls: Any) -> str:
         """This method is used to get model pk name.
@@ -252,9 +245,8 @@ class SqlAlchemyMixin:
                 return sort_by[1:] + " desc"
             return sort_by
 
-        objs = []
-        total = 0
-        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
             qs = select(self.model_cls)
 
             if filters:
@@ -288,8 +280,7 @@ class SqlAlchemyMixin:
                 qs = qs.offset(offset)
                 qs = qs.limit(limit)
 
-            objs = await session.scalars(qs)
-        return objs, total
+            return await session.scalars(qs), total
 
     async def orm_get_obj(self, id: UUID | int) -> Any | None:
         """This method is used to get orm/db model object.
@@ -297,27 +288,32 @@ class SqlAlchemyMixin:
         :params id: an id of object.
         :return: An object.
         """
-        obj = None
-        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
-            obj = await session.get(self.model_cls, id)
-        return obj
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            return await session.get(self.model_cls, id)
 
-    async def orm_save_obj(self, obj: Any, update_fields: list[str] | None = None) -> Any:
+    async def orm_save_obj(self, id: UUID | Any | None, payload: dict) -> Any:
         """This method is used to save orm/db model object.
 
-        :params obj: an object.
-        :params update_fields: a list of fields to update.
+        :params id: an id of object.
+        :params payload: a dict of payload.
         :return: An object.
         """
-        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
-            if obj.id:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            if id:
+                obj = await session.get(self.model_cls, id)
+                if not obj:
+                    return None
+                for k, v in payload.items():
+                    setattr(obj, k, v)
                 await session.merge(obj)
                 await session.commit()
             else:
+                obj = self.model_cls(**payload)
                 session.add(obj)
                 await session.commit()
-            obj = await session.get(self.model_cls, getattr(obj, self.get_model_pk_name(self.model_cls)))
-        return obj
+            return await session.get(self.model_cls, getattr(obj, self.get_model_pk_name(self.model_cls)))
 
     async def orm_delete_obj(self, id: UUID | int) -> None:
         """This method is used to delete orm/db model object.
@@ -325,8 +321,9 @@ class SqlAlchemyMixin:
         :params id: an id of object.
         :return: None.
         """
-        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
-            obj = await self.orm_get_obj(id)
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            obj = await session.get(self.model_cls, id)
             await session.delete(obj)
 
     async def orm_get_m2m_ids(self, obj: Any, field: str) -> list[int | UUID]:
@@ -337,15 +334,14 @@ class SqlAlchemyMixin:
 
         :return: A list of ids.
         """
-        ids = []
-        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
             id_key = self.get_model_pk_name(self.model_cls)
             qs = select(self.model_cls)
             qs = qs.filter_by(**{id_key: getattr(obj, id_key)})
             qs = qs.options(selectinload(getattr(self.model_cls, field)))
             obj = await session.scalar(qs)
-            ids = [getattr(obj, id_key) for obj in getattr(obj, field, [])]
-        return ids
+            return [getattr(obj, id_key) for obj in getattr(obj, field, [])]
 
     async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | UUID]) -> None:
         """This method is used to get m2m ids.
@@ -360,7 +356,8 @@ class SqlAlchemyMixin:
         if not orm_model_field:
             raise ValueError(f"Field {field} is not a relationship field.")
 
-        async with self.sqlalchemy_sessionmaker() as session:  # type: ignore
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
             values = []
             id_key = self.get_model_pk_name(self.model_cls)
             obj_id = getattr(obj, id_key)

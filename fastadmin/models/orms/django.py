@@ -266,14 +266,22 @@ class DjangoORMMixin:
         return qs.first()
 
     @sync_to_async
-    def orm_save_obj(self, obj: Any, update_fields: list[str] | None = None) -> Any:
+    def orm_save_obj(self, id: UUID | Any | None, payload: dict) -> Any:
         """This method is used to save orm/db model object.
 
-        :params obj: an object.
-        :params update_fields: a list of fields to update.
+        :params id: an id of object.
+        :params payload: a dict of payload.
         :return: An object.
         """
-        obj.save(update_fields=update_fields)
+        if id:
+            obj = self.model_cls.objects.filter(**{self.get_model_pk_name(self.model_cls): id}).first()
+            if not obj:
+                return None
+            for k, v in payload.items():
+                setattr(obj, k, v)
+        else:
+            obj = self.model_cls(**payload)
+        obj.save(update_fields=payload.keys() if obj.id else None)
         return obj
 
     @sync_to_async
@@ -314,9 +322,9 @@ class DjangoORMMixin:
         m2m_rel.set(ids)
 
 
-class DjangoModelAdmin(DjangoORMMixin, ModelAdmin):
+class DjangoModelAdmin(DjangoORMMixin, ModelAdmin):  # type: ignore
     pass
 
 
-class DjangoInlineModelAdmin(DjangoORMMixin, InlineModelAdmin):
+class DjangoInlineModelAdmin(DjangoORMMixin, InlineModelAdmin):  # type: ignore
     pass

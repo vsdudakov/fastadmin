@@ -98,10 +98,14 @@ class DjangoTournamentModelAdmin(DjangoModelAdmin):
     inlines = (DjangoEventInlineModelAdmin,)
 
 
+@register(BaseEvent)
+class DjangoBaseEventModelAdmin(DjangoModelAdmin):
+    model_name_prefix = "django"
+
+
 @register(Event)
 class DjangoEventModelAdmin(DjangoModelAdmin):
     model_name_prefix = "django"
-
 
     @sync_to_async
     @action(description="Make user active")

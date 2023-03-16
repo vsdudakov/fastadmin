@@ -267,14 +267,22 @@ class TortoiseMixin:
         qs = self.model_cls.filter(**{self.get_model_pk_name(self.model_cls): id})
         return await qs.first()
 
-    async def orm_save_obj(self, obj: Any, update_fields: list[str] | None = None) -> Any:
+    async def orm_save_obj(self, id: UUID | Any | None, payload: dict) -> Any:
         """This method is used to save orm/db model object.
 
-        :params obj: an object.
-        :params update_fields: a list of fields to update.
+        :params id: an id of object.
+        :params payload: a dict of payload.
         :return: An object.
         """
-        await obj.save(update_fields=update_fields)
+        if id:
+            obj = await self.model_cls.filter(**{self.get_model_pk_name(self.model_cls): id}).first()
+            if not obj:
+                return None
+            for k, v in payload.items():
+                setattr(obj, k, v)
+        else:
+            obj = self.model_cls(**payload)
+        await obj.save(update_fields=payload.keys() if obj.id else None)
         return obj
 
     async def orm_delete_obj(self, id: UUID | int) -> None:

@@ -12,7 +12,7 @@ async def test_list(session_id, event, client):
     assert item
     assert item["id"] == event.id
     assert item["name"] == event.name
-    assert item["tournament"] == event.tournament_id
+    assert item["tournament"] == event.tournament_id if hasattr(event, "tournament_id") else event.tournament
     assert item["created_at"] == event.created_at.isoformat()
     assert item["updated_at"] == event.updated_at.isoformat()
     assert "participants" not in item  # no m2m fields on list

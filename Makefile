@@ -5,19 +5,6 @@ clean:
 	rm -rf htmlcov
 	rm -rf .coverage
 
-.PHONY: dev_fastapi
-dev_fastapi:
-	poetry run uvicorn tests.dev.fastapi.dev:app --reload --host=0.0.0.0 --port=8090
-
-.PHONY: dev_flask
-dev_flask:
-	poetry run flask --app tests.dev.flask.dev run --debug
-
-.PHONY: dev_django
-dev_django:
-	poetry run python tests/dev/django/dev/manage.py migrate
-	poetry run python tests/dev/django/dev/manage.py runserver
-
 .PHONY: fix
 fix:
 	poetry run pyupgrade --exit-zero-even-if-changed --py39-plus fastadmin/**/*.py tests/**/*.py
@@ -35,6 +22,7 @@ lint:
 
 .PHONY: test
 test:
+	python generate_db.py
 	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=95 -s tests
 	make -C frontend test
 

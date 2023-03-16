@@ -220,7 +220,7 @@ class ApiService:
             raise AdminApiException(422, detail=f"{action} action is not in actions setting.")
 
         action_function = getattr(admin_model, action, None)
-        if not hasattr(action_function, "is_action"):
+        if not action_function or not hasattr(action_function, "is_action"):
             raise AdminApiException(422, detail=f"{action} action is not registered.")
 
         await action_function(payload.ids)
@@ -244,7 +244,7 @@ class ApiService:
             )
 
         admin_models = cast(dict[Any, ModelAdmin | InlineModelAdmin], get_admin_models())
-        models = cast(Sequence[ModelSchema], generate_models_schema(admin_models))
+        models = cast(Sequence[ModelSchema], generate_models_schema(admin_models, user_id=current_user_id))
         return ConfigurationSchema(
             site_name=settings.ADMIN_SITE_NAME,
             site_sign_in_logo=settings.ADMIN_SITE_SIGN_IN_LOGO,
