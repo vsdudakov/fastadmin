@@ -22,7 +22,7 @@ lint:
 
 .PHONY: test
 test:
-	python generate_db.py
+	poetry run python generate_db.py
 	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=95 -s tests
 	make -C frontend test
 
@@ -55,13 +55,12 @@ build:
 
 .PHONY: pre-commit-install
 pre-commit-install:
-	pip install pre-commit
-	pre-commit install
+	poetry run pip install pre-commit
+	poetry run pre-commit install
 
 .PHONY: pre-commit
 pre-commit:
-	pre-commit run --all-files
-
+	poetry run pre-commit run --all-files
 
 .PHONY: push
 push:
