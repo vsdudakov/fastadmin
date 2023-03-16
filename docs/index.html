@@ -543,7 +543,7 @@ from pony.orm import Database, PrimaryKey
 from fastadmin import PonyORMModelAdmin, register, sync_to_async
 
 db = Database()
-db.bind(provider="sqlite", filename=DB_SQLITE, create_db=False)
+db.bind(provider="sqlite", filename="db.sqlite", create_db=True)
 
 
 class User(db.Entity):
