@@ -24,6 +24,10 @@ jobs:
       - name: Run Lint
         run: make lint
       - name: Run Tests
+        env:
+          ADMIN_USER_MODEL: User
+          ADMIN_USER_MODEL_USERNAME_FIELD: username
+          ADMIN_SECRET_KEY: secret_key
         run: make test
       - name: Run Build
         run: make -C frontend build
