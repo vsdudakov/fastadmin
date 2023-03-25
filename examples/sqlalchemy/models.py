@@ -66,6 +66,9 @@ class User(BaseModel):
 
     events: Mapped[List["Event"]] = relationship(secondary=user_m2m_event, back_populates="participants")
 
+    async def __str__(self):
+        return self.username
+
 
 class Tournament(BaseModel):
     __tablename__ = "tournament"
@@ -73,6 +76,9 @@ class Tournament(BaseModel):
     name: Mapped[str] = mapped_column(String(length=255), nullable=False)
 
     events: Mapped[List["Event"]] = relationship(back_populates="tournament")
+
+    async def __str__(self):
+        return self.name
 
 
 class BaseEvent(BaseModel):
@@ -107,6 +113,9 @@ class Event(BaseModel):
     )  # max_digits=10, decimal_places=2
 
     json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+
+    async def __str__(self):
+        return self.name
 
 
 # NOTE: provide sqlalchemy_sessionmaker as second parameter for your usage

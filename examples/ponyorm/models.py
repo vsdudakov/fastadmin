@@ -5,7 +5,7 @@ from enum import Enum
 from pony.orm import Database, Json, LongStr, Optional, PrimaryKey, Required, Set, commit, db_session
 from pony.orm.dbapiprovider import StrConverter
 
-from fastadmin import PonyORMInlineModelAdmin, PonyORMModelAdmin, action, display, register, sync_to_async
+from fastadmin import PonyORMInlineModelAdmin, PonyORMModelAdmin, action, display, register
 
 db = Database()
 
@@ -47,6 +47,9 @@ class User(BaseModel, db.Entity):
 
     events = Set("Event", table="event_participants", column="event_id")
 
+    def __str__(self):
+        return self.username
+
 
 class Tournament(BaseModel, db.Entity):
     _table_ = "tournament"
@@ -58,6 +61,9 @@ class Tournament(BaseModel, db.Entity):
     name = Required(str)
 
     events = Set("Event")
+
+    def __str__(self):
+        return self.name
 
 
 class BaseEvent(BaseModel, db.Entity):
@@ -94,12 +100,14 @@ class Event(BaseModel, db.Entity):
 
     json = Optional(Json)
 
+    def __str__(self):
+        return self.name
+
 
 @register(User)
 class PonyORMUserModelAdmin(PonyORMModelAdmin):
     model_name_prefix = "ponyorm"
 
-    @sync_to_async
     @db_session
     def authenticate(self, username, password):
         obj = next((f for f in self.model_cls.select(username=username, password=password, is_superuser=True)), None)
@@ -128,7 +136,6 @@ class PonyORMBaseEventModelAdmin(PonyORMModelAdmin):
 class PonyORMEventModelAdmin(PonyORMModelAdmin):
     model_name_prefix = "ponyorm"
 
-    @sync_to_async
     @action(description="Make user active")
     @db_session
     def make_is_active(self, ids):
@@ -138,7 +145,6 @@ class PonyORMEventModelAdmin(PonyORMModelAdmin):
             obj.is_active = True
         commit()
 
-    @sync_to_async
     @action
     @db_session
     def make_is_not_active(self, ids):

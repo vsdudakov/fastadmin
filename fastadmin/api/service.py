@@ -1,3 +1,4 @@
+import inspect
 from collections.abc import Sequence
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
@@ -5,12 +6,18 @@ from typing import Any, cast
 from uuid import UUID
 
 import jwt
+from asgiref.sync import sync_to_async
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import get_user_id_from_session_id, sanitize
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
-from fastadmin.models.helpers import generate_models_schema, get_admin_model, get_admin_models
+from fastadmin.models.helpers import (
+    generate_models_schema,
+    get_admin_model,
+    get_admin_models,
+    get_admin_or_admin_inline_model,
+)
 from fastadmin.models.schemas import ConfigurationSchema, ModelSchema
 from fastadmin.settings import settings
 
@@ -26,7 +33,13 @@ class ApiService:
         if not admin_model:
             raise AdminApiException(401, detail=f"{model} model is not registered.")
 
-        user_id = await admin_model.authenticate(payload.username, payload.password)
+        if inspect.iscoroutinefunction(admin_model.authenticate):
+            authenticate_fn = admin_model.authenticate
+        else:
+            authenticate_fn = sync_to_async(admin_model.authenticate)
+
+        user_id = await authenticate_fn(payload.username, payload.password)
+
         if not user_id or not (isinstance(user_id, int) or isinstance(user_id, UUID)):
             raise AdminApiException(401, detail="Invalid credentials.")
 
@@ -65,7 +78,7 @@ class ApiService:
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
-        admin_model = get_admin_model(model)
+        admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
@@ -116,7 +129,7 @@ class ApiService:
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
-        admin_model = get_admin_model(model)
+        admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
@@ -135,7 +148,7 @@ class ApiService:
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
-        admin_model = get_admin_model(model)
+        admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
         return await admin_model.save_model(None, payload)  # type: ignore
@@ -151,7 +164,7 @@ class ApiService:
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
-        admin_model = get_admin_model(model)
+        admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
@@ -173,7 +186,7 @@ class ApiService:
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
-        admin_model = get_admin_model(model)
+        admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
@@ -198,7 +211,7 @@ class ApiService:
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
-        admin_model = get_admin_model(model)
+        admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
@@ -212,7 +225,7 @@ class ApiService:
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
-        admin_model = get_admin_model(model)
+        admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
@@ -223,7 +236,12 @@ class ApiService:
         if not action_function or not hasattr(action_function, "is_action"):
             raise AdminApiException(422, detail=f"{action} action is not registered.")
 
-        await action_function(payload.ids)
+        if inspect.iscoroutinefunction(action_function):
+            action_function_fn = action_function
+        else:
+            action_function_fn = sync_to_async(action_function)
+
+        await action_function_fn(payload.ids)
 
     async def get_configuration(
         self,

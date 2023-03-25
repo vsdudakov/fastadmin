@@ -146,11 +146,7 @@ class SqlAlchemyMixin:
                 rel_model_cls = getattrs(orm_model_field, "entity.class_")
                 rel_model = rel_model_cls.__name__
                 rel_model_id_field = self.get_model_pk_name(rel_model_cls)
-
-                rel_model_label_fields = (rel_model_id_field,)
-                parent_admin_model = get_admin_model(rel_model_cls)
-                if parent_admin_model and parent_admin_model.label_fields:
-                    rel_model_label_fields = parent_admin_model.label_fields
+                rel_model_label_fields = ("__str__", rel_model_id_field)
 
                 match field_type:
                     case "ONETOONE":

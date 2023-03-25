@@ -51,6 +51,7 @@ pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
 ```
 
 for (macos) zsh use
+
 ```bash
 pip install fastadmin\[fastapi,django\]
 ```
@@ -173,16 +174,19 @@ class User(Model):
     is_superuser = fields.BooleanField(default=False)
     is_active = fields.BooleanField(default=False)
     ...
+    async def __str__(self):
+        return self.username
 
 
 class Group(Model):
     name = fields.CharField(max_length=255)
     ...
+    async def __str__(self):
+        return self.name
 
 
 @register(User)
 class UserAdmin(TortoiseModelAdmin):
-    label_fields = ("username",)
     exclude = ("hash_password",)
     list_display = ("id", "username", "is_superuser", "is_active")
     list_display_links = ("id", "username")
@@ -200,7 +204,6 @@ class UserAdmin(TortoiseModelAdmin):
 
 @register(Group)
 class GroupAdmin(TortoiseModelAdmin):
-    label_fields = ("name",)
     list_display = ("id", "name")
     list_display_links = ("id",)
     list_filter = ("id", "name")
@@ -212,7 +215,7 @@ class GroupAdmin(TortoiseModelAdmin):
 ```python
 from django.db import models
 
-from fastadmin import DjangoModelAdmin, register, sync_to_async
+from fastadmin import DjangoModelAdmin, register
 
 
 class User(models.Model):
@@ -221,23 +224,25 @@ class User(models.Model):
     is_superuser = fields.BooleanField(default=False)
     is_active = fields.BooleanField(default=False)
     ...
+    def __str__(self):
+        return self.username
 
 
 class Group(models.Model):
     name = fields.CharField(max_length=255)
     ...
+    def __str__(self):
+        return self.name
 
 
 @register(User)
 class UserAdmin(DjangoModelAdmin):
-    label_fields = ("username",)
     exclude = ("hash_password",)
     list_display = ("id", "username", "is_superuser", "is_active")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
 
-    @sync_to_async
     def authenticate(self, username, password):
         obj = User.objects.filter(username=username, is_superuser=True).first()
         if not obj:
@@ -249,7 +254,6 @@ class UserAdmin(DjangoModelAdmin):
 
 @register(Group)
 class GroupAdmin(DjangoModelAdmin):
-    label_fields = ("name",)
     list_display = ("id", "name")
     list_display_links = ("id",)
     list_filter = ("id", "name")
@@ -287,16 +291,19 @@ class User(Base):
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     ...
+    async def __str__(self):
+        return self.username
 
 
 class Group(Base):
     name: Mapped[str] = mapped_column(String(length=255), nullable=False)
     ...
+    async def __str__(self):
+        return self.name
 
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 class UserAdmin(SqlAlchemyModelAdmin):
-    label_fields = ("username",)
     exclude = ("hash_password",)
     list_display = ("id", "username", "is_superuser", "is_active")
     list_display_links = ("id", "username")
@@ -318,7 +325,6 @@ class UserAdmin(SqlAlchemyModelAdmin):
 
 @register(Group, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 class GroupAdmin(SqlAlchemyModelAdmin):
-    label_fields = ("name",)
     list_display = ("id", "name")
     list_display_links = ("id",)
     list_filter = ("id", "name")
@@ -331,7 +337,7 @@ class GroupAdmin(SqlAlchemyModelAdmin):
 import bcrypt
 from pony.orm import Database, PrimaryKey
 
-from fastadmin import PonyORMModelAdmin, register, sync_to_async
+from fastadmin import PonyORMModelAdmin, register
 
 db = Database()
 db.bind(provider="sqlite", filename="db.sqlite", create_db=True)
@@ -343,12 +349,16 @@ class User(db.Entity):
     is_superuser = Required(bool, default=False)
     is_active = Required(bool, default=False)
     ...
+    def __str__(self):
+        return self.username
 
 
 class Group(db.Entity):
     id = PrimaryKey(int, auto=True)
     name = Required(str)
     ...
+    def __str__(self):
+        return self.name
 
 
 db.generate_mapping()
@@ -356,14 +366,12 @@ db.generate_mapping()
 
 @register(User)
 class UserAdmin(PonyORMModelAdmin):
-    label_fields = ("username",)
     exclude = ("hash_password",)
     list_display = ("id", "username", "is_superuser", "is_active")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
 
-    @sync_to_async
     @db_session
     def authenticate(self, username, password):
         user = next((f for f in self.model_cls.select(username=username, password=password, is_superuser=True)), None)
@@ -376,7 +384,6 @@ class UserAdmin(PonyORMModelAdmin):
 
 @register(Tournament)
 class GroupAdmin(PonyORMModelAdmin):
-    label_fields = ("name",)
     list_display = ("id", "name")
     list_display_links = ("id",)
     list_filter = ("id", "name")

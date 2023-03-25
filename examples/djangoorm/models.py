@@ -1,6 +1,6 @@
 from django.db import models
 
-from fastadmin import DjangoInlineModelAdmin, DjangoModelAdmin, action, display, register, sync_to_async
+from fastadmin import DjangoInlineModelAdmin, DjangoModelAdmin, action, display, register
 
 EventTypeEnum = (
     ("PRIVATE", "PRIVATE"),
@@ -78,7 +78,6 @@ class Event(BaseModel):
 class DjangoUserModelAdmin(DjangoModelAdmin):
     model_name_prefix = "django"
 
-    @sync_to_async
     def authenticate(self, username, password):
         obj = self.model_cls.objects.filter(username=username, password=password, is_superuser=True).first()
         if not obj:
@@ -106,20 +105,18 @@ class DjangoBaseEventModelAdmin(DjangoModelAdmin):
 class DjangoEventModelAdmin(DjangoModelAdmin):
     model_name_prefix = "django"
 
-    @sync_to_async
     @action(description="Make user active")
     def make_is_active(self, ids):
         self.model_cls.objects.filter(id__in=ids).update(is_active=True)
 
-    @sync_to_async
     @action
     def make_is_not_active(self, ids):
         self.model_cls.objects.filter(id__in=ids).update(is_active=False)
 
     @display
-    async def started(self, obj):
+    def started(self, obj):
         return bool(obj.start_time)
 
     @display()
-    async def name_with_price(self, obj):
+    def name_with_price(self, obj):
         return f"{obj.name} - {obj.price}"

@@ -13,6 +13,7 @@ import { handleError } from 'helpers/forms';
 import { transformDataToServer, transformDataFromServer } from 'helpers/transform';
 import { FormContainer } from 'components/form-container';
 import { useIsMobile } from 'hooks/useIsMobile';
+import { getTitleFromModelClass } from 'helpers/title';
 
 export const Change: React.FC = () => {
   const [form] = Form.useForm();
@@ -117,14 +118,14 @@ export const Change: React.FC = () => {
 
   return (
     <CrudContainer
-      title={`${_t('Change')} ${model} ${id}`}
+      title={`${_t('Change')} ${getTitleFromModelClass(model)} ${id}`}
       breadcrumbs={
         <Breadcrumb>
           <Breadcrumb.Item>
             <Link to="/">{_t('Dashboard')}</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link to={`/list/${model}`}>{model}</Link>
+            <Link to={`/list/${model}`}>{getTitleFromModelClass(model)}</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>{id}</Breadcrumb.Item>
         </Breadcrumb>

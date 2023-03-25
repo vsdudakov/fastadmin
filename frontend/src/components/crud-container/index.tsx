@@ -23,6 +23,7 @@ import { SignInUserContext } from 'providers/SignInUserProvider';
 import { postFetcher } from 'fetchers/fetchers';
 import { IModel } from 'interfaces/configuration';
 import { useIsMobile } from 'hooks/useIsMobile';
+import { getTitleFromModelClass } from 'helpers/title';
 
 const { Header, Sider } = Layout;
 const { Title } = Typography;
@@ -107,7 +108,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
       .map((m: IModel) => {
         return {
           key: m.name,
-          label: m.name,
+          label: getTitleFromModelClass(m.name),
         };
       }),
   ];
@@ -143,7 +144,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
 
                 <Link to="/">
                   <Image
-                    src={(window as any).SERVER_FOMAIN + configuration.site_header_logo}
+                    src={(window as any).SERVER_DOMAIN + configuration.site_header_logo}
                     preview={false}
                     height={32}
                     alt={configuration.site_name}
@@ -231,7 +232,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                 <Row justify="space-between">
                   <Col>
                     <Title style={{ margin: 0, marginTop: 15 }} level={5}>
-                      {title}
+                      {getTitleFromModelClass(title)}
                     </Title>
                   </Col>
                   {headerActions ? <Col>{headerActions}</Col> : null}

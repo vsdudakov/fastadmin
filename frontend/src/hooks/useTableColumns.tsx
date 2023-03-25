@@ -21,8 +21,6 @@ import { FilterColumn } from 'components/filter-column';
 import { transformColumnValueFromServer, transformValueFromServer } from 'helpers/transform';
 import { getWidgetCls } from 'helpers/widgets';
 
-export const ADD_PK_PREFIX = '__add__';
-
 export const useTableColumns = (
   modelConfiguration: IModel | undefined,
   dateTimeFormat: string | undefined,
@@ -31,13 +29,18 @@ export const useTableColumns = (
   onResetFilter: any,
   onDeleteItem: any,
   onChangeItem: any,
-  updatedRows: Record<string, any>[]
+  rowsFor?: any[],
+  onChangeRowsFor?: any
 ): any => {
   const { t: _t } = useTranslation('List');
   const fields = (modelConfiguration || { fields: [] }).fields;
 
   const getWidget = useCallback(
-    (configurationField: IAddConfigurationField | IChangeConfigurationField, value: any) => {
+    (
+      configurationField: IAddConfigurationField | IChangeConfigurationField,
+      value: any,
+      onChange: any
+    ) => {
       if (!configurationField.form_widget_type) {
         return null;
       }
@@ -45,6 +48,7 @@ export const useTableColumns = (
       return (
         <Widget
           defaultValue={value}
+          onChange={onChange}
           {...(widgetProps || {})}
           {...(configurationField.form_widget_props || {})}
         />
@@ -100,13 +104,16 @@ export const useTableColumns = (
               }
             : undefined,
           render: (value: any, record: any) => {
-            const hasUpdatedRow = !!updatedRows.find(
-              (i) => i.id === record.id || String(record.id).startsWith(ADD_PK_PREFIX)
+            const withFormMode = (rowsFor || []).find(
+              (row: any) => row._table_key === record._table_key && row._form_mode
             );
 
-            if (hasUpdatedRow && field.change_configuration?.form_widget_type) {
+            if (withFormMode && field.change_configuration?.form_widget_type) {
               const fieldValue = transformValueFromServer(value);
-              return getWidget(field.change_configuration, fieldValue);
+              return getWidget(field.change_configuration, fieldValue, (newValue: any) => {
+                if (onChangeRowsFor)
+                  onChangeRowsFor({ ...record, [field.name]: newValue?.target?.value || newValue });
+              });
             }
 
             if (value === undefined) {
@@ -118,8 +125,12 @@ export const useTableColumns = (
               dateTimeFormat
             );
             if (field?.list_configuration?.is_link) {
-              const onChange = () => onChangeItem(record.id);
-              return <span onClick={onChange}>{transformedValue}</span>;
+              const onChange = () => onChangeItem(record);
+              return (
+                <Button style={{ padding: 0 }} type="link" onClick={onChange}>
+                  {transformedValue}
+                </Button>
+              );
             }
 
             return transformedValue;
@@ -134,28 +145,29 @@ export const useTableColumns = (
       render: (record: any) => {
         const onDelete = () => onDeleteItem(record);
         const onChange = () => onChangeItem(record);
-        const hasUpdatedRow = !!updatedRows.find(
-          (i) => i.id === record.id || String(record.id).startsWith(ADD_PK_PREFIX)
+        const btnType = !!rowsFor ? 'dashed' : undefined;
+        const withFormMode = (rowsFor || []).find(
+          (row: any) => row._table_key === record._table_key && row._form_mode
         );
         return (
           <Space>
             {(modelConfiguration?.permissions || []).includes(EModelPermission.Delete) &&
-              !hasUpdatedRow && (
+              !withFormMode && (
                 <Popconfirm title={_t('Are you sure?')} onConfirm={onDelete}>
-                  <Button size="small" danger={true}>
+                  <Button type={btnType} size="small" danger={true}>
                     <DeleteOutlined />
                   </Button>
                 </Popconfirm>
               )}
             {(modelConfiguration?.permissions || []).includes(EModelPermission.Change) && (
               <>
-                {!hasUpdatedRow ? (
-                  <Button size="small" onClick={onChange}>
+                {!withFormMode ? (
+                  <Button type={btnType} size="small" onClick={onChange}>
                     <EditOutlined />
                   </Button>
                 ) : (
                   <Tooltip title={_t('Remove changes')}>
-                    <Button danger={hasUpdatedRow} type="dashed" size="small" onClick={onChange}>
+                    <Button type={btnType} danger={true} size="small" onClick={onChange}>
                       <CloseCircleOutlined />
                     </Button>
                   </Tooltip>
@@ -178,6 +190,7 @@ export const useTableColumns = (
     onChangeItem,
     onDeleteItem,
     onResetFilter,
-    updatedRows,
+    rowsFor,
+    onChangeRowsFor,
   ]);
 };

@@ -12,6 +12,7 @@ import { postFetcher } from 'fetchers/fetchers';
 import { handleError } from 'helpers/forms';
 import { transformDataToServer } from 'helpers/transform';
 import { FormContainer } from 'components/form-container';
+import { getTitleFromModelClass } from 'helpers/title';
 
 export const Add: React.FC = () => {
   const [form] = Form.useForm();
@@ -45,14 +46,14 @@ export const Add: React.FC = () => {
 
   return (
     <CrudContainer
-      title={`${_t('Add')} ${model}`}
+      title={`${_t('Add')} ${getTitleFromModelClass(model)}`}
       breadcrumbs={
         <Breadcrumb>
           <Breadcrumb.Item>
             <Link to="/">{_t('Dashboard')}</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link to={`/list/${model}`}>{model}</Link>
+            <Link to={`/list/${model}`}>{getTitleFromModelClass(model)}</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>{_t('Add')}</Breadcrumb.Item>
         </Breadcrumb>

@@ -5,8 +5,6 @@ import debounce from 'lodash.debounce';
 import querystring from 'querystring';
 import { getFetcher } from 'fetchers/fetchers';
 
-const { Option } = Select;
-
 export interface IAsyncSelect {
   parentModel: string;
   idField: string;
@@ -33,8 +31,8 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
 
   const onFilter = (input: string, option: any) => {
     return (
-      ((option?.key as any) || '').toLowerCase().indexOf(input.toLowerCase()) >= 0 ||
-      ((option?.value as any) || '').toLowerCase().indexOf(input.toLowerCase()) >= 0
+      ((option?.label as any) || '').toString().toLowerCase().indexOf(input.toLowerCase()) >= 0 ||
+      ((option?.value as any) || '').toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
     );
   };
 
@@ -48,12 +46,14 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
       loading={isLoading}
       filterOption={onFilter}
       onSearch={debounce(onSearch, 500)}
-      {...props}
-    >
-      {(data?.results || []).map((item: any) => {
+      options={(data?.results || []).map((item: any) => {
         const labelField = labelFields.filter((f) => item[f])[0];
-        return <Option key={item[idField]}>{item[labelField]}</Option>;
+        return {
+          value: item[idField],
+          label: item[labelField],
+        };
       })}
-    </Select>
+      {...props}
+    />
   );
 };

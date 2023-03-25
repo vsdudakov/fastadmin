@@ -5,6 +5,7 @@ from functools import wraps
 from uuid import UUID
 
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models.fields.files import FieldFile, ImageFieldFile
 from django.http import JsonResponse as BaseJsonResponse
 from django.http import StreamingHttpResponse
 from django.http.request import HttpRequest
@@ -23,6 +24,13 @@ class JsonEncoder(DjangoJSONEncoder):
     def default(self, o):
         if isinstance(o, datetime):
             return o.isoformat()
+        if isinstance(o, UUID):
+            return str(o)
+        if isinstance(o, ImageFieldFile) or isinstance(o, FieldFile):
+            try:
+                return o.url
+            except ValueError:
+                return None
         return super().default(o)
 
 

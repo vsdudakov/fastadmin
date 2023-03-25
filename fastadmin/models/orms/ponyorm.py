@@ -2,10 +2,10 @@ from enum import EnumMeta
 from typing import Any
 from uuid import UUID
 
+from asgiref.sync import sync_to_async
 from pony.orm import commit, db_session, delete, desc, flush, select
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
-from fastadmin.models.decorators import sync_to_async
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 from fastadmin.settings import settings
@@ -132,11 +132,7 @@ class PonyORMMixin:
                 rel_model_cls = orm_model_field.py_type
                 rel_model = rel_model_cls.__name__
                 rel_model_id_field = self.get_model_pk_name(rel_model_cls)
-
-                rel_model_label_fields = (rel_model_id_field,)
-                parent_admin_model = get_admin_model(rel_model_cls)
-                if parent_admin_model and parent_admin_model.label_fields:
-                    rel_model_label_fields = parent_admin_model.label_fields
+                rel_model_label_fields = ("__str__", rel_model_id_field)
 
                 match field_type:
                     case "o2o":

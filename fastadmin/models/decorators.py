@@ -1,6 +1,3 @@
-from asgiref.sync import sync_to_async  # noqa: F401
-
-
 def action(function=None, *, description: str = None):
     """Conveniently add attributes to an action function:
 

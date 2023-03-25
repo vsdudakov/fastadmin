@@ -9,12 +9,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { TableOrCards } from 'components/table-or-cards';
 import { useTableQuery } from 'hooks/useTableQuery';
-import { ADD_PK_PREFIX, useTableColumns } from 'hooks/useTableColumns';
+import { useTableColumns } from 'hooks/useTableColumns';
 import { handleError } from 'helpers/forms';
 import { transformFiltersToServer } from 'helpers/transform';
 import { deleteFetcher, getFetcher, postFetcher } from 'fetchers/fetchers';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
 import { EModelPermission, IInlineModel, IModelAction } from 'interfaces/configuration';
+import { getTitleFromModelClass } from 'helpers/title';
 
 export interface IInlineWidget {
   modelConfiguration: IInlineModel;
@@ -25,7 +26,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
   const { configuration } = useContext(ConfigurationContext);
 
   const [open, setOpen] = useState<boolean>(false);
-  const [updatedRows, setUpdatedRows] = useState<Record<string, any>[]>([]);
+  const [rows, setRows] = useState<any[]>([]);
 
   const {
     defaultPage,
@@ -49,6 +50,16 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
 
   const model = modelConfiguration.name;
 
+  const onOpen = () => {
+    setOpen(true);
+  };
+
+  const onClose = () => {
+    resetTable();
+    setRows([]);
+    setOpen(false);
+  };
+
   const queryString = querystring.stringify({
     search,
     sort_by: sortBy,
@@ -63,8 +74,15 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     {
       enabled: open,
       refetchOnWindowFocus: false,
-      onSuccess: () => {
-        setUpdatedRows([]);
+      onSuccess: (response) => {
+        setRows(
+          (response.results || []).map((r: any) => ({
+            ...r,
+            _table_key: uuidv4(),
+            _form_mode: false,
+            _server_values: r,
+          }))
+        );
       },
     }
   );
@@ -125,9 +143,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     (payload: any) => postFetcher(`/save-inline/${model}`, payload),
     {
       onSuccess: () => {
-        resetTable();
-        setUpdatedRows([]);
-        setOpen(false);
+        onClose();
       },
       onError: () => {
         message.error(_t('Server error'));
@@ -182,39 +198,60 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     useCallback(
       (record: any) => {
         // onChangeItem
-        if (!updatedRows.find((i) => i.id === record.id)) {
-          setUpdatedRows([...updatedRows, record]);
-        } else {
-          setUpdatedRows(updatedRows.filter((i) => i.id !== record.id));
-        }
+        setRows(
+          rows
+            .map((r) => {
+              const formMode = r._table_key === record._table_key ? !r._form_mode : r._form_mode;
+              if (formMode) {
+                return { ...r, _form_mode: formMode };
+              } else {
+                return {
+                  ...r._server_values,
+                  _table_key: r._table_key,
+                  _form_mode: false,
+                  _server_values: r._server_values,
+                };
+              }
+            })
+            .filter((r) => r._form_mode || r.id)
+        );
       },
-      [updatedRows]
+      [rows]
     ),
-    updatedRows
+    rows,
+    useCallback(
+      // onChangeRowsFor
+      (record: any) => {
+        setRows(
+          rows.map((r) => {
+            if (r._table_key === record._table_key) {
+              return { ...r, ...record };
+            } else {
+              return r;
+            }
+          })
+        );
+      },
+      [rows]
+    )
   );
 
-  const onOpen = () => {
-    setOpen(true);
-  };
-
-  const onClose = () => {
-    resetTable();
-    setUpdatedRows([]);
-    setOpen(false);
-  };
-
   const onSave = () => {
-    const payload: any = [];
-    updatedRows.forEach((r) => {
-      const row = { ...r, id: undefined };
-      payload.push(row);
-    });
-    mutateSaveInline(payload);
+    mutateSaveInline(
+      rows
+        .filter((r) => r._form_mode)
+        .map((r) => ({
+          ...r,
+          _form_mode: undefined,
+          _server_values: undefined,
+          _table_key: undefined,
+        }))
+    );
   };
 
   const onAdd = useCallback(() => {
-    setUpdatedRows([...updatedRows, { id: `${ADD_PK_PREFIX}${uuidv4()}` }]);
-  }, [updatedRows]);
+    setRows([...rows, { _table_key: uuidv4(), _form_mode: true }]);
+  }, [rows]);
 
   const tableHeader = useCallback(
     () => (
@@ -343,7 +380,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
   ]);
 
   const getRowClass = (row: any) =>
-    !!updatedRows[row.id] ? 'table-row-selected' : (undefined as any);
+    !!rows.find((r) => r._table_key === row._table_key) ? 'table-row-selected' : (undefined as any);
 
   return (
     <div>
@@ -355,7 +392,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
         open={open}
         title={
           modelConfiguration.verbose_name_plural ||
-          `${modelConfiguration.verbose_name || modelConfiguration.name}s`
+          `${modelConfiguration.verbose_name || getTitleFromModelClass(modelConfiguration.name)}s`
         }
         onCancel={onClose}
         footer={null}
@@ -378,11 +415,8 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
               }
               columns={columns}
               onChange={onTableChange}
-              rowKey="id"
-              dataSource={[
-                ...(data?.results || []),
-                ...updatedRows.filter((i) => String(i.id).startsWith(ADD_PK_PREFIX)),
-              ]}
+              rowKey="_table_key"
+              dataSource={rows}
               pagination={{
                 current: page,
                 pageSize,
@@ -396,7 +430,12 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
         <Divider />
         <Row justify="end">
           <Col>
-            <Button type="primary" loading={isLoadingSaveInline} onClick={onSave}>
+            <Button
+              disabled={rows.filter((r) => r._form_mode).length === 0}
+              type="primary"
+              loading={isLoadingSaveInline}
+              onClick={onSave}
+            >
               {_t('Save')}
             </Button>
           </Col>

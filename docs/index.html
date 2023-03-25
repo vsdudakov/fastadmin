@@ -182,6 +182,9 @@
               <a class="nav-link" href="#changelog">Changelog</a>
               <ul class="nav flex-column">
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_1_25">v0.1.25</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_1_24">v0.1.24</a>
                 </li>
                 <li class="nav-item">
@@ -212,7 +215,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 1.1.24</li>
+                    <li><strong>Version:</strong> 1.1.25</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank"
@@ -393,18 +396,20 @@ class User(Model):
     hash_password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
     is_active = fields.BooleanField(default=False)
-
     ...
+    async def __str__(self):
+      return self.username
 
 
 class Group(Model):
     name = fields.CharField(max_length=255)
     ...
+    async def __str__(self):
+      return self.name
 
 
 @register(User)
 class UserAdmin(TortoiseModelAdmin):
-    label_fields = ("username",)
     exclude = ("hash_password",)
     list_display = ("id", "username", "is_superuser", "is_active")
     list_display_links = ("id", "username")
@@ -422,7 +427,6 @@ class UserAdmin(TortoiseModelAdmin):
 
 @register(Group)
 class GroupAdmin(TortoiseModelAdmin):
-    label_fields = ("name",)
     list_display = ("id", "name")
     list_display_links = ("id",)
     list_filter = ("id", "name")
@@ -434,7 +438,7 @@ class GroupAdmin(TortoiseModelAdmin):
                 <code class="language-python">
 from django.db import models
 
-from fastadmin import DjangoModelAdmin, register, sync_to_async
+from fastadmin import DjangoModelAdmin, register
 
 
 class User(models.Model):
@@ -443,23 +447,25 @@ class User(models.Model):
     is_superuser = fields.BooleanField(default=False)
     is_active = fields.BooleanField(default=False)
     ...
+    def __str__(self):
+      return self.username
 
 
 class Group(models.Model):
     name = fields.CharField(max_length=255)
     ...
+    def __str__(self):
+      return self.name
 
 
 @register(User)
 class UserAdmin(DjangoModelAdmin):
-    label_fields = ("username",)
     exclude = ("hash_password",)
     list_display = ("id", "username", "is_superuser", "is_active")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
 
-    @sync_to_async
     def authenticate(self, username, password):
         obj = User.objects.filter(username=username, is_superuser=True).first()
         if not obj:
@@ -471,7 +477,6 @@ class UserAdmin(DjangoModelAdmin):
 
 @register(Group)
 class GroupAdmin(DjangoModelAdmin):
-    label_fields = ("name",)
     list_display = ("id", "name")
     list_display_links = ("id",)
     list_filter = ("id", "name")
@@ -509,16 +514,19 @@ class User(Base):
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     ...
+    async def __str__(self):
+      return self.username
 
 
 class Group(Base):
     name: Mapped[str] = mapped_column(String(length=255), nullable=False)
     ...
+    async def __str__(self):
+      return self.name
 
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 class UserAdmin(SqlAlchemyModelAdmin):
-    label_fields = ("username",)
     exclude = ("hash_password",)
     list_display = ("id", "username", "is_superuser", "is_active")
     list_display_links = ("id", "username")
@@ -540,7 +548,6 @@ class UserAdmin(SqlAlchemyModelAdmin):
 
 @register(Group, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 class GroupAdmin(SqlAlchemyModelAdmin):
-    label_fields = ("name",)
     list_display = ("id", "name")
     list_display_links = ("id",)
     list_filter = ("id", "name")
@@ -553,7 +560,7 @@ class GroupAdmin(SqlAlchemyModelAdmin):
 import bcrypt
 from pony.orm import Database, PrimaryKey
 
-from fastadmin import PonyORMModelAdmin, register, sync_to_async
+from fastadmin import PonyORMModelAdmin, register
 
 db = Database()
 db.bind(provider="sqlite", filename="db.sqlite", create_db=True)
@@ -566,12 +573,16 @@ class User(db.Entity):
     is_superuser = Required(bool, default=False)
     is_active = Required(bool, default=False)
     ...
+    def __str__(self):
+      return self.username
 
 
 class Group(db.Entity):
     id = PrimaryKey(int, auto=True)
     name = Required(str)
     ...
+    def __str__(self):
+      return self.name
 
 
 db.generate_mapping()
@@ -579,14 +590,12 @@ db.generate_mapping()
 
 @register(User)
 class UserAdmin(PonyORMModelAdmin):
-    label_fields = ("username",)
     exclude = ("hash_password",)
     list_display = ("id", "username", "is_superuser", "is_active")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
 
-    @sync_to_async
     @db_session
     def authenticate(self, username, password):
         user = next((f for f in self.model_cls.select(username=username, password=password, is_superuser=True)), None)
@@ -599,7 +608,6 @@ class UserAdmin(PonyORMModelAdmin):
 
 @register(Tournament)
 class GroupAdmin(PonyORMModelAdmin):
-    label_fields = ("name",)
     list_display = ("id", "name")
     list_display_links = ("id",)
     list_filter = ("id", "name")
@@ -914,12 +922,6 @@ class PersonAdmin(TortoiseModelAdmin):
               <p class="lead">Specific options:</p>
               <pre>
                 <code class="language-python">
-  # Labels for model. We use them in select, autocomplete and other wigets where we represent model items.
-  # We user first from label_fields, if it is empty, we use the second and so on.
-  # If you don't set this attribute, we will use id attr as label.
-  # Example of usage: label_fields = ("name", "email", "id")
-  label_fields: Sequence[str] = ()
-
   # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.
   # Example of usage: list_display_links = ("id", "mobile_number", "email")
   list_display_links: Sequence[str] = ()
@@ -1235,7 +1237,6 @@ class BookInline(TortoiseInlineModelAdmin):
 
 @register(Author)
 class AuthorAdmin(TortoiseModelAdmin):
-  label_fields = ("name",)
   inlines = (
     BookInline,
   )
@@ -1355,15 +1356,24 @@ class PersonAdmin(TortoiseModelAdmin):
               <hr class="small-divider" />
               <!-- <p class="alert alert-info mb-5"> For Future Updates Follow Us <a target="_blank" href="http://themeforest.net/user/harnishdesign?ref=HarnishDesign">@themeforest</a> / <a target="_blank" href="http://facebook.com/harnishdesign">@facebook</a> / <a target="_blank" href="http://twitter.com/harnishdesign">@twitter</a> / <a target="_blank" href="https://dribbble.com/harnishdesign">@Dribbble</a></p> -->
 
+              <h3 id="v0_1_25">
+                Version 0.1.25
+                <small class="text-muted">(25 March, 2024)</small>
+              </h3>
+              <ul class="changelog">
+                <li>Fixed inlines api.</li>
+                <li>Fixed label fields.</li>
+                <li>Fixed inlines frontend side.</li>
+              </ul>
+              <hr class="small-divider" />
+
               <h3 id="v0_1_24">
                 Version 0.1.24
                 <small class="text-muted">(25 March, 2024)</small>
               </h3>
               <ul class="changelog">
-                <li>
-                  Fixed a bug with inline fk_name field. Added pydantic as
-                  dependency.
-                </li>
+                <li>Fixed a bug with inline fk_name field.</li>
+                <li>Added pydantic as dependency.</li>
               </ul>
               <hr class="small-divider" />
 

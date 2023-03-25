@@ -42,7 +42,7 @@ export const SignIn: React.FC = () => {
           <Col>
             <Space style={{ marginBottom: 20 }}>
               <Image
-                src={(window as any).SERVER_FOMAIN + configuration.site_sign_in_logo}
+                src={(window as any).SERVER_DOMAIN + configuration.site_sign_in_logo}
                 height={80}
                 alt={configuration.site_name}
                 preview={false}

@@ -34,5 +34,5 @@ except ModuleNotFoundError:  # pragma: no cover
 
 # models
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
-from fastadmin.models.decorators import action, display, register, sync_to_async
+from fastadmin.models.decorators import action, display, register
 from fastadmin.models.helpers import register_admin_model_class, unregister_admin_model_class

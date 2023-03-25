@@ -4,8 +4,8 @@ fastapi:
 
 .PHONY: flask
 flask:
-	poetry run flask --app flask.dev run --debug
+	poetry run flask --app flask.dev run --debug --host 0.0.0.0 --port 8090
 
 .PHONY: dev_django
 django:
-	poetry run python django/dev/manage.py runserver
+	poetry run python django/dev/manage.py runserver 0.0.0.0:8090

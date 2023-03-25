@@ -1,8 +1,11 @@
 import csv
+import inspect
 from collections.abc import Sequence
 from io import BytesIO, StringIO
 from typing import Any
 from uuid import UUID
+
+from asgiref.sync import sync_to_async
 
 from fastadmin.api.schemas import ExportFormat
 from fastadmin.models.schemas import ModelFieldWidgetSchema
@@ -285,7 +288,13 @@ class BaseModelAdmin:
         :params attributes_to_serizalize: a list of attributes to serialize.
         :return: A dict of serialized attributes.
         """
-        return {field.name: getattr(obj, field.column_name) for field in attributes_to_serizalize}
+        serialized_dict = {field.name: getattr(obj, field.column_name) for field in attributes_to_serizalize}
+        if inspect.iscoroutinefunction(obj.__str__):
+            str_fn = obj.__str__
+        else:
+            str_fn = sync_to_async(obj.__str__)
+        serialized_dict["__str__"] = await str_fn()
+        return serialized_dict
 
     async def serialize_obj(self, obj: Any, list_view: bool = False) -> dict:
         """Serialize orm model obj to dict.
@@ -315,7 +324,13 @@ class BaseModelAdmin:
             display_field_function = getattr(self, field_name, None)
             if not display_field_function or not hasattr(display_field_function, "is_display"):
                 continue
-            obj_dict[field_name] = await display_field_function(obj)
+
+            if inspect.iscoroutinefunction(display_field_function):
+                display_field_function_fn = display_field_function
+            else:
+                display_field_function_fn = sync_to_async(display_field_function)
+
+            obj_dict[field_name] = await display_field_function_fn(obj)
 
         return obj_dict
 
@@ -484,12 +499,6 @@ class InlineModelAdmin(BaseModelAdmin):
 
 class ModelAdmin(BaseModelAdmin):
     """This class is used to create admin model class."""
-
-    # Labels for model. We use them in select, autocomplete and other wigets where we represent model items.
-    # We user first from label_fields, if it is empty, we use the second and so on.
-    # If you don't set this attribute, we will use id attr as label.
-    # Example of usage: label_fields = ("name", "email", "id")
-    label_fields: Sequence[str] = ()
 
     # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.  # noqa: E501
     # Example of usage: list_display_links = ("id", "mobile_number", "email")

@@ -17,6 +17,7 @@ import { handleError } from 'helpers/forms';
 import { useIsMobile } from 'hooks/useIsMobile';
 import { useTableQuery } from 'hooks/useTableQuery';
 import { useTableColumns } from 'hooks/useTableColumns';
+import { getTitleFromModelClass } from 'helpers/title';
 
 export const List: React.FC = () => {
   const { configuration } = useContext(ConfigurationContext);
@@ -169,8 +170,7 @@ export const List: React.FC = () => {
         navigate(`/change/${model}/${record.id}`);
       },
       [model, navigate]
-    ),
-    []
+    )
   );
 
   return (
@@ -181,7 +181,7 @@ export const List: React.FC = () => {
           <Breadcrumb.Item>
             <Link to="/">{_t('Dashboard')}</Link>
           </Breadcrumb.Item>
-          <Breadcrumb.Item>{model}</Breadcrumb.Item>
+          <Breadcrumb.Item>{getTitleFromModelClass(model)}</Breadcrumb.Item>
         </Breadcrumb>
       }
       viewOnSite={modelConfiguration?.view_on_site}

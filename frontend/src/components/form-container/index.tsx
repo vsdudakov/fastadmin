@@ -13,7 +13,7 @@ import {
 } from 'interfaces/configuration';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
 import { getWidgetCls } from 'helpers/widgets';
-import { getTitleFromFieldName } from 'helpers/title';
+import { getTitleFromFieldName, getTitleFromModelClass } from 'helpers/title';
 import { InlineWidget } from 'components/inline-widget';
 
 interface IFormContainer {
@@ -155,7 +155,10 @@ export const FormContainer: React.FC<IFormContainer> = ({
     return (modelConfiguration?.inlines || []).map((inline: IInlineModel) => {
       return (
         <Form.Item
-          label={inline.verbose_name_plural || `${inline.verbose_name || inline.name}s`}
+          label={
+            inline.verbose_name_plural ||
+            `${inline.verbose_name || getTitleFromModelClass(inline.name)}s`
+          }
           key={inline.name}
         >
           <InlineWidget modelConfiguration={inline} />
