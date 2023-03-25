@@ -1,7 +1,8 @@
 import os
+import re
 
-from django.conf.urls.static import static
-from django.urls import path
+from django.urls import path, re_path
+from django.views.static import serve
 
 from fastadmin.settings import ROOT_DIR
 
@@ -24,8 +25,12 @@ def get_admin_urls():
             path("api/delete/<str:model>/<str:id>", delete),
             path("api/action/<str:model>/<str:action>", action),
             path("api/configuration", configuration),
-        ]
-        + static("static", document_root=os.path.join(ROOT_DIR, "static")),
+            re_path(
+                r"^%s(?P<path>.*)$" % re.escape("static"),
+                serve,
+                kwargs=dict(document_root=os.path.join(ROOT_DIR, "static")),
+            ),
+        ],
         "admin",
         "FastAdmin",
     )
