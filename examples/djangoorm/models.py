@@ -89,7 +89,6 @@ class DjangoUserModelAdmin(DjangoModelAdmin):
 class DjangoEventInlineModelAdmin(DjangoInlineModelAdmin):
     model = Event
     model_name_prefix = "django"
-    fk_name = "tournament"
 
 
 @register(Tournament)

@@ -130,7 +130,6 @@ class SqlAlchemyEventInlineModelAdmin(SqlAlchemyInlineModelAdmin):
     model_name_prefix = "sqlalchemy"
 
     model = Event
-    fk_name = "tournament"
 
 
 # NOTE: provide sqlalchemy_sessionmaker as second parameter for your usage

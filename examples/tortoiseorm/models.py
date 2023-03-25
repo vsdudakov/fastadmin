@@ -91,7 +91,6 @@ class TortoiseORMUserModelAdmin(TortoiseModelAdmin):
 class TortoiseORMEventInlineModelAdmin(TortoiseInlineModelAdmin):
     model = Event
     model_name_prefix = "tortoiseorm"
-    fk_name = "tournament"
 
 
 @register(Tournament)

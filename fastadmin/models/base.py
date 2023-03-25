@@ -465,7 +465,7 @@ class InlineModelAdmin(BaseModelAdmin):
     # The name of the foreign key on the model.
     # In most cases this will be dealt with automatically, but fk_name must be specified explicitly
     # if there are more than one foreign key to the same parent model.
-    fk_name: str
+    fk_name: str | None = None
 
     # This controls the maximum number of forms to show in the inline.
     # This doesn’t directly correlate to the number of objects, but can if the value is small enough.

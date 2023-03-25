@@ -111,7 +111,6 @@ class PonyORMUserModelAdmin(PonyORMModelAdmin):
 class PonyORMEventInlineModelAdmin(PonyORMInlineModelAdmin):
     model = Event
     model_name_prefix = "ponyorm"
-    fk_name = "tournament"
 
 
 @register(Tournament)
