@@ -154,7 +154,7 @@ export const useTableColumns = (
             {(modelConfiguration?.permissions || []).includes(EModelPermission.Delete) &&
               !withFormMode && (
                 <Popconfirm title={_t('Are you sure?')} onConfirm={onDelete}>
-                  <Button type={btnType} size="small" danger={true}>
+                  <Button size="small" danger={true}>
                     <DeleteOutlined />
                   </Button>
                 </Popconfirm>
