@@ -6,7 +6,6 @@ from asgiref.sync import sync_to_async
 from pony.orm import commit, db_session, delete, desc, flush, select
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
-from fastadmin.models.helpers import get_admin_model
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 from fastadmin.settings import settings
 

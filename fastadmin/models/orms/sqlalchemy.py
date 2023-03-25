@@ -5,7 +5,7 @@ from sqlalchemy import and_, func, inspect, or_, select, text
 from sqlalchemy.orm import selectinload
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
-from fastadmin.models.helpers import get_admin_model, getattrs
+from fastadmin.models.helpers import getattrs
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 from fastadmin.settings import settings
 
