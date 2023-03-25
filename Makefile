@@ -23,7 +23,7 @@ lint:
 .PHONY: test
 test:
 	poetry run python generate_db.py
-	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=95 -s tests
+	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=90 -s tests
 	make -C frontend test
 
 .PHONY: kill

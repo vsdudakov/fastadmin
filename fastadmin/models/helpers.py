@@ -79,7 +79,6 @@ def get_admin_or_admin_inline_model(orm_model_cls: str | Any) -> ModelAdmin | In
         return admin_model
     for _, admin_model in admin_models.items():
         for inline_model in admin_model.inlines:
-            print(inline_model.model.__name__)
             if inline_model.model.__name__ == orm_model_cls:
                 return inline_model(inline_model.model)
     return None
