@@ -11,6 +11,7 @@ import {
 } from 'antd';
 import { AsyncSelect } from 'components/async-select';
 import { AsyncTransfer } from 'components/async-transfer';
+import { TextEditor } from 'components/texteditor-field';
 import { EFieldWidgetType } from 'interfaces/configuration';
 
 export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any) => {
@@ -26,6 +27,8 @@ export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any) => {
       ];
     case EFieldWidgetType.TextArea:
       return [Input.TextArea, {}];
+    case EFieldWidgetType.RichTextArea:
+      return [TextEditor, {}];
     case EFieldWidgetType.Select:
       return [
         Select,

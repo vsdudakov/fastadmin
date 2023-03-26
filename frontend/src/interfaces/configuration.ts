@@ -2,6 +2,7 @@ export enum EFieldWidgetType {
   Input = 'Input',
   InputNumber = 'InputNumber',
   TextArea = 'TextArea',
+  RichTextArea = 'RichTextArea',
   Select = 'Select',
   AsyncSelect = 'AsyncSelect',
   AsyncTransfer = 'AsyncTransfer',
