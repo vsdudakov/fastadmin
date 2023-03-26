@@ -203,6 +203,7 @@ class SqlAlchemyMixin:
                                 filter_widget_type = WidgetType.AsyncSelect
                                 filter_widget_props["mode"] = "multiple"
 
+            form_widget_type, form_widget_props = self.form_fields_widgets.get(field_name, (form_widget_type, form_widget_props))
             fields.append(
                 ModelFieldWidgetSchema(
                     name=field_name,

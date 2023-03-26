@@ -8,13 +8,21 @@ from uuid import UUID
 from asgiref.sync import sync_to_async
 
 from fastadmin.api.schemas import ExportFormat
-from fastadmin.models.schemas import ModelFieldWidgetSchema
+from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 
 
 class BaseModelAdmin:
     """Base class for model admin"""
 
     model_name_prefix: str | None = None
+
+    # Widgets for fields. Overload widgets in your ModelAdmin class using this parameter.
+    # It contains widget type and default widget props for type.
+    # Example of usage:
+    # form_fields_widgets = {
+    #     "description": (WidgetType.RichTextArea, {})
+    # }
+    form_fields_widgets: dict[str, tuple[WidgetType, dict]] = {}
 
     # A list of actions to make available on the change list page.
     # You have to implement methods with names like <action_name> in your ModelAdmin class and decorate them with @action decorator.  # noqa: E501
