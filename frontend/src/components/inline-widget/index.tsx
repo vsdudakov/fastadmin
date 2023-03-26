@@ -1,32 +1,37 @@
 import React, { useCallback, useContext, useState } from 'react';
-import { Button, Col, Divider, Input, message, Modal, Row, Select, Tooltip } from 'antd';
-import { DownloadOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { Button, Col, Divider, Empty, Form, Input, message, Modal, Row, Select, Space } from 'antd';
+import { PlusCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import querystring from 'querystring';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import fileDownload from 'react-file-download';
-import { v4 as uuidv4 } from 'uuid';
+import { SaveOutlined } from '@ant-design/icons';
 
 import { TableOrCards } from 'components/table-or-cards';
 import { useTableQuery } from 'hooks/useTableQuery';
 import { useTableColumns } from 'hooks/useTableColumns';
 import { handleError } from 'helpers/forms';
-import { transformFiltersToServer } from 'helpers/transform';
-import { deleteFetcher, getFetcher, postFetcher } from 'fetchers/fetchers';
+import { transformDataFromServer, transformFiltersToServer } from 'helpers/transform';
+import { deleteFetcher, getFetcher, patchFetcher, postFetcher } from 'fetchers/fetchers';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
 import { EModelPermission, IInlineModel, IModelAction } from 'interfaces/configuration';
 import { getTitleFromModelClass } from 'helpers/title';
+import { ExportBtn } from 'components/export-btn';
+import { FormContainer } from 'components/form-container';
 
 export interface IInlineWidget {
   modelConfiguration: IInlineModel;
+  parentId: string;
 }
 
-export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) => {
+export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, parentId }) => {
   const { t: _t } = useTranslation('Inline');
   const { configuration } = useContext(ConfigurationContext);
+  const [openList, setOpenList] = useState<boolean>(false);
+  const [openAdd, setOpenAdd] = useState<boolean>(false);
+  const [openChange, setOpenChange] = useState<any | undefined>();
 
-  const [open, setOpen] = useState<boolean>(false);
-  const [rows, setRows] = useState<any[]>([]);
+  const [formAdd] = Form.useForm();
+  const [formChange] = Form.useForm();
 
   const {
     defaultPage,
@@ -50,15 +55,42 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
 
   const model = modelConfiguration.name;
 
-  const onOpen = () => {
-    setOpen(true);
-  };
+  const onOpenList = useCallback(() => {
+    setOpenList(true);
+  }, []);
 
-  const onClose = () => {
+  const onCloseList = useCallback(() => {
     resetTable();
-    setRows([]);
-    setOpen(false);
-  };
+    setOpenList(false);
+  }, [resetTable]);
+
+  const onOpenAdd = useCallback(() => {
+    formAdd.resetFields();
+    formAdd.setFieldsValue({ [modelConfiguration.fk_name]: parentId });
+    setOpenAdd(true);
+    setOpenChange(undefined);
+  }, [formAdd, parentId, modelConfiguration.fk_name]);
+
+  const onCloseAdd = useCallback(() => {
+    setOpenAdd(false);
+    setOpenChange(undefined);
+  }, []);
+
+  const onOpenChange = useCallback(
+    (item: any) => {
+      formChange.resetFields();
+      formChange.setFieldsValue({ [modelConfiguration.fk_name]: parentId });
+      formChange.setFieldsValue(transformDataFromServer(item));
+      setOpenChange(item);
+      setOpenAdd(false);
+    },
+    [formChange, parentId, modelConfiguration.fk_name]
+  );
+
+  const onCloseChange = useCallback(() => {
+    setOpenChange(undefined);
+    setOpenAdd(false);
+  }, []);
 
   const queryString = querystring.stringify({
     search,
@@ -72,20 +104,40 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     [`/list/${model}`, queryString],
     () => getFetcher(`/list/${model}?${queryString}`),
     {
-      enabled: open,
+      enabled: openList,
       refetchOnWindowFocus: false,
-      onSuccess: (response) => {
-        setRows(
-          (response.results || []).map((r: any) => ({
-            ...r,
-            _table_key: uuidv4(),
-            _form_mode: false,
-            _server_values: r,
-          }))
-        );
-      },
     }
   );
+
+  const {
+    mutate: mutateAdd,
+    isLoading: isLoadingAdd,
+    isError: isErrorAdd,
+  } = useMutation((payload: any) => postFetcher(`/add/${model}`, payload), {
+    onSuccess: () => {
+      message.success(_t('Succesfully added'));
+      refetch();
+      onCloseAdd();
+    },
+    onError: (error: Error) => {
+      handleError(error, formAdd);
+    },
+  });
+
+  const {
+    mutate: mutateChange,
+    isLoading: isLoadingChange,
+    isError: isErrorChange,
+  } = useMutation((payload: any) => patchFetcher(`/change/${model}/${openChange?.id}`, payload), {
+    onSuccess: () => {
+      message.success(_t('Succesfully changed'));
+      refetch();
+      onCloseChange();
+    },
+    onError: (error: Error) => {
+      handleError(error, formChange);
+    },
+  });
 
   const { mutate: mutateDelete } = useMutation(
     (id: string) => deleteFetcher(`/delete/${model}/${id}`),
@@ -97,30 +149,6 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
       },
       onError: (error) => {
         handleError(error);
-      },
-    }
-  );
-
-  const exportQueryString = querystring.stringify({
-    search,
-    sort_by: sortBy,
-    ...transformFiltersToServer(filters),
-  });
-
-  const { mutate: mutateExport, isLoading: isLoadingExport } = useMutation(
-    () =>
-      postFetcher(`/export/${model}?${exportQueryString}`, {
-        format: 'CSV',
-        offset: 0,
-        limit: 1000,
-      }),
-    {
-      onSuccess: (d) => {
-        fileDownload(d, `${model}.csv`);
-        message.success(_t('Successfully exported'));
-      },
-      onError: () => {
-        message.error(_t('Server error'));
       },
     }
   );
@@ -139,20 +167,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     }
   );
 
-  const { mutate: mutateSaveInline, isLoading: isLoadingSaveInline } = useMutation(
-    (payload: any) => postFetcher(`/save-inline/${model}`, payload),
-    {
-      onSuccess: () => {
-        onClose();
-      },
-      onError: () => {
-        message.error(_t('Server error'));
-      },
-    }
-  );
-
   const onSelectRow = (v: string[]) => setSelectedRowKeys(v);
-  const onExport = useCallback(() => mutateExport(), [mutateExport]);
   const onApplyAction = useCallback(
     () => mutateAction({ ids: selectedRowKeys }),
     [mutateAction, selectedRowKeys]
@@ -198,64 +213,23 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     useCallback(
       (record: any) => {
         // onChangeItem
-        setRows(
-          rows
-            .map((r) => {
-              const formMode = r._table_key === record._table_key ? !r._form_mode : r._form_mode;
-              if (formMode) {
-                return { ...r, _form_mode: formMode };
-              } else {
-                return {
-                  ...r._server_values,
-                  _table_key: r._table_key,
-                  _form_mode: false,
-                  _server_values: r._server_values,
-                };
-              }
-            })
-            .filter((r) => r._form_mode || r.id)
-        );
+        onOpenChange(record);
       },
-      [rows]
-    ),
-    rows,
-    useCallback(
-      // onChangeRowsFor
-      (record: any) => {
-        setRows(
-          rows.map((r) => {
-            if (r._table_key === record._table_key) {
-              return { ...r, ...record };
-            } else {
-              return r;
-            }
-          })
-        );
-      },
-      [rows]
+      [onOpenChange]
     )
   );
 
-  const onSave = () => {
-    mutateSaveInline(
-      rows
-        .filter((r) => r._form_mode)
-        .map((r) => ({
-          ...r,
-          _form_mode: undefined,
-          _server_values: undefined,
-          _table_key: undefined,
-        }))
-    );
+  const onFinishAdd = (payload: any) => {
+    mutateAdd(payload);
   };
 
-  const onAdd = useCallback(() => {
-    setRows([...rows, { _table_key: uuidv4(), _form_mode: true }]);
-  }, [rows]);
+  const onFinishChange = (payload: any) => {
+    mutateChange(payload);
+  };
 
   const tableHeader = useCallback(
     () => (
-      <Row justify="end">
+      <Row justify="end" gutter={[8, 8]}>
         {(modelConfiguration?.actions || []).length > 0 && modelConfiguration?.actions_on_top && (
           <Col>
             <Select
@@ -293,12 +267,13 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
         )}
         {modelConfiguration?.permissions?.includes(EModelPermission.Export) && (
           <Col>
-            <Button
-              style={{ marginRight: -10, marginLeft: 5 }}
-              loading={isLoadingExport}
-              onClick={onExport}
-            >
-              <DownloadOutlined /> {_t('Export CSV')}
+            <ExportBtn model={model} search={search} filters={filters} sortBy={sortBy} />
+          </Col>
+        )}
+        {modelConfiguration?.permissions?.includes(EModelPermission.Add) && (
+          <Col>
+            <Button onClick={onOpenAdd} style={{ marginRight: -10 }}>
+              <PlusCircleOutlined /> {_t('Add')}
             </Button>
           </Col>
         )}
@@ -306,19 +281,22 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     ),
     [
       _t,
-      action,
-      isLoadingAction,
-      isLoadingExport,
+      model,
       modelConfiguration?.actions,
       modelConfiguration?.actions_on_top,
       modelConfiguration?.permissions,
       modelConfiguration?.search_fields,
       modelConfiguration?.search_help_text,
-      onApplyAction,
-      onExport,
       selectedRowKeys.length,
+      action,
       setAction,
+      onApplyAction,
+      isLoadingAction,
+      search,
       setSearch,
+      filters,
+      sortBy,
+      onOpenAdd,
     ]
   );
 
@@ -355,13 +333,6 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
                   </div>
                 )}
             </Col>
-            <Col>
-              <Tooltip title={_t('Add a line')}>
-                <Button type="dashed" onClick={onAdd}>
-                  <PlusCircleOutlined /> {_t('Add')}
-                </Button>
-              </Tooltip>
-            </Col>
           </Row>
         )}
       </>
@@ -373,34 +344,29 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
     modelConfiguration?.actions,
     modelConfiguration?.actions_on_bottom,
     modelConfiguration?.permissions,
-    onAdd,
     onApplyAction,
     selectedRowKeys.length,
     setAction,
   ]);
 
-  const getRowClass = (row: any) =>
-    !!rows.find((r) => r._table_key === row._table_key) ? 'table-row-selected' : (undefined as any);
-
   return (
     <div>
-      <Button style={{ minWidth: 200 }} type="dashed" onClick={onOpen}>
+      <Button style={{ minWidth: 200 }} type="dashed" onClick={onOpenList}>
         {_t('Change')}
       </Button>
       <Modal
         width="100%"
-        open={open}
+        open={openList}
         title={
           modelConfiguration.verbose_name_plural ||
           `${modelConfiguration.verbose_name || getTitleFromModelClass(modelConfiguration.name)}s`
         }
-        onCancel={onClose}
+        onCancel={onCloseList}
         footer={null}
       >
         <Row>
           <Col xs={24}>
             <TableOrCards
-              rowClassName={getRowClass}
               title={tableHeader}
               footer={tableFooter}
               loading={isLoading}
@@ -415,8 +381,8 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
               }
               columns={columns}
               onChange={onTableChange}
-              rowKey="_table_key"
-              dataSource={rows}
+              rowKey="id"
+              dataSource={data?.results || []}
               pagination={{
                 current: page,
                 pageSize,
@@ -427,19 +393,66 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration }) =>
             />
           </Col>
         </Row>
+      </Modal>
+      <Modal
+        width={600}
+        open={openAdd}
+        title={`Add ${getTitleFromModelClass(modelConfiguration.name)}`}
+        onCancel={onCloseAdd}
+        footer={null}
+      >
         <Divider />
-        <Row justify="end">
-          <Col>
-            <Button
-              disabled={rows.filter((r) => r._form_mode).length === 0}
-              type="primary"
-              loading={isLoadingSaveInline}
-              onClick={onSave}
-            >
-              {_t('Save')}
-            </Button>
-          </Col>
-        </Row>
+        {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Add) ? (
+          <FormContainer
+            modelConfiguration={modelConfiguration}
+            form={formAdd}
+            onFinish={onFinishAdd}
+            mode="inline-add"
+            hasOperationError={isErrorAdd}
+          >
+            <Row justify="end">
+              <Col>
+                <Space>
+                  <Button loading={isLoadingAdd} htmlType="submit" type="primary">
+                    <SaveOutlined /> {_t('Add')}
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+          </FormContainer>
+        ) : (
+          <Empty description={_t('No permissions for model')} />
+        )}
+      </Modal>
+      <Modal
+        width={600}
+        open={!!openChange}
+        title={`Change ${getTitleFromModelClass(modelConfiguration.name)} ${openChange?.id}`}
+        onCancel={onCloseChange}
+        footer={null}
+      >
+        <Divider />
+        {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Change) ? (
+          <FormContainer
+            modelConfiguration={modelConfiguration}
+            form={formChange}
+            onFinish={onFinishChange}
+            mode="inline-change"
+            hasOperationError={isErrorChange}
+          >
+            <Row justify="end">
+              <Col>
+                <Space>
+                  <Button loading={isLoadingChange} htmlType="submit" type="primary">
+                    <SaveOutlined /> {_t('Save')}
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+          </FormContainer>
+        ) : (
+          <Empty description={_t('No permissions for model')} />
+        )}
       </Modal>
     </div>
   );

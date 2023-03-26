@@ -10,7 +10,7 @@ from asgiref.sync import sync_to_async
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import get_user_id_from_session_id, sanitize
-from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
+from fastadmin.api.schemas import ActionInputSchema, ExportFormat, ExportInputSchema, SignInInputSchema
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.helpers import (
     generate_models_schema,
@@ -181,7 +181,7 @@ class ApiService:
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict = {},
-    ) -> tuple[str, StringIO | BytesIO | None]:
+    ) -> tuple[str, str, StringIO | BytesIO | None]:
         current_user_id = await get_user_id_from_session_id(session_id)
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
@@ -191,14 +191,26 @@ class ApiService:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
         filters = {k: sanitize(v) for k, v in filters.items() if k not in ("search", "sort_by", "offset", "limit")}
-        file_name = f"{model}.{(payload.format or 'csv').lower()}"
-        return file_name, await admin_model.get_export(
-            payload.format,
-            search=search,
-            sort_by=sort_by,
-            filters=filters,
-            offset=payload.offset,
-            limit=payload.limit,
+
+        content_type = "text/plain"
+        file_name = f"{model}.txt"
+        if payload.format == ExportFormat.CSV:
+            content_type = "text/csv"
+            file_name = f"{model}.csv"
+        elif payload.format == ExportFormat.JSON:
+            content_type = "text/plain"
+            file_name = f"{model}.json"
+        return (
+            file_name,
+            content_type,
+            await admin_model.get_export(
+                payload.format,
+                search=search,
+                sort_by=sort_by,
+                filters=filters,
+                offset=payload.offset,
+                limit=payload.limit,
+            ),
         )
 
     async def delete(

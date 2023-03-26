@@ -182,6 +182,9 @@
               <a class="nav-link" href="#changelog">Changelog</a>
               <ul class="nav flex-column">
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_1_30">v0.1.30</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_1_29">v0.1.29</a>
                 </li>
                 <li class="nav-item">
@@ -227,7 +230,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.1.29</li>
+                    <li><strong>Version:</strong> 0.1.30</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank"
@@ -800,6 +803,14 @@ class PersonAdmin(TortoiseModelAdmin):
               <p class="lead">Base options:</p>
               <pre>
                 <code class="language-python">
+  # Widgets for fields. Overload widgets in your ModelAdmin class using this parameter.
+  # It contains widget type and default widget props for type.
+  # Example of usage:
+  # form_fields_widgets = {
+  #     "description": (WidgetType.RichTextArea, {})
+  # }
+  form_fields_widgets: dict[str, tuple[WidgetType, dict]] = {}
+
   # A list of actions to make available on the change list page.
   # You have to implement methods with names like action_name in your ModelAdmin class and decorate them with @action decorator.
   # Example of usage:
@@ -1367,6 +1378,38 @@ class PersonAdmin(TortoiseModelAdmin):
               </p>
               <hr class="small-divider" />
               <!-- <p class="alert alert-info mb-5"> For Future Updates Follow Us <a target="_blank" href="http://themeforest.net/user/harnishdesign?ref=HarnishDesign">@themeforest</a> / <a target="_blank" href="http://facebook.com/harnishdesign">@facebook</a> / <a target="_blank" href="http://twitter.com/harnishdesign">@twitter</a> / <a target="_blank" href="https://dribbble.com/harnishdesign">@Dribbble</a></p> -->
+              <h3 id="v0_1_30">
+                Version 0.1.30
+                <small class="text-muted">(26 March, 2024)</small>
+              </h3>
+              <ul class="changelog">
+                <li>Fixed frontend part of inlines.</li>
+                <li>Added wysiwig editor and RichTextArea widget type.</li>
+                <li>
+                  Added form_fields_widgets parameter to configure widgets fr
+                  fields easily.
+                </li>
+                <li>Bug fixes.</li>
+              </ul>
+              <hr class="small-divider" />
+
+              <h3 id="v0_1_29">
+                Version 0.1.29
+                <small class="text-muted">(26 March, 2024)</small>
+              </h3>
+              <ul class="changelog">
+                <li>Bug fixes.</li>
+              </ul>
+              <hr class="small-divider" />
+
+              <h3 id="v0_1_28">
+                Version 0.1.28
+                <small class="text-muted">(26 March, 2024)</small>
+              </h3>
+              <ul class="changelog">
+                <li>Bug fixes.</li>
+              </ul>
+              <hr class="small-divider" />
 
               <h3 id="v0_1_27">
                 Version 0.1.27
@@ -1383,7 +1426,9 @@ class PersonAdmin(TortoiseModelAdmin):
               </h3>
               <ul class="changelog">
                 <li>Fixed bugs.</li>
-                <li>Added RichTextArea WidgetType based on quill wysiwig editor.</li>
+                <li>
+                  Added RichTextArea WidgetType based on quill wysiwig editor.
+                </li>
               </ul>
               <hr class="small-divider" />
 

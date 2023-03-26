@@ -243,6 +243,8 @@ def generate_models_schema(
             )
         else:
             admin_model_obj = cast(InlineModelAdmin, admin_model_obj)
+            # TODO: replace parent on dynamic identification of fk name in inline model
+            fk_name = admin_model_obj.fk_name or "parent"
             models_schemas.append(
                 InlineModelSchema(
                     name=model_name,
@@ -259,7 +261,7 @@ def generate_models_schema(
                     list_max_show_all=admin_model_obj.list_max_show_all,
                     show_full_result_count=admin_model_obj.show_full_result_count,
                     # specific inline model fields
-                    fk_name=admin_model_obj.fk_name,
+                    fk_name=fk_name,
                     max_num=admin_model_obj.max_num,
                     min_num=admin_model_obj.min_num,
                     verbose_name=admin_model_obj.verbose_name,

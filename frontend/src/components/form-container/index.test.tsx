@@ -10,7 +10,12 @@ test('Renders FormContainer', () => {
   const onFinish = (data: any) => undefined;
   render(
     <TestProviders client={queryClient}>
-      <FormContainer form="test" onFinish={onFinish} mode="add">
+      <FormContainer
+        modelConfiguration={{ name: 'test', permissions: [], actions: [], fields: [] }}
+        form="test"
+        onFinish={onFinish}
+        mode="add"
+      >
         <div />
       </FormContainer>
     </TestProviders>

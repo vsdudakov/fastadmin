@@ -1,5 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Col, Collapse, Divider, Form, Row } from 'antd';
 
@@ -11,33 +10,30 @@ import {
   IModelField,
   IInlineModel,
 } from 'interfaces/configuration';
-import { ConfigurationContext } from 'providers/ConfigurationProvider';
 import { getWidgetCls } from 'helpers/widgets';
 import { getTitleFromFieldName, getTitleFromModelClass } from 'helpers/title';
 import { InlineWidget } from 'components/inline-widget';
 
 interface IFormContainer {
+  modelConfiguration: IModel;
+  id?: string;
   form: any;
   onFinish: (payload: any) => void;
   children: JSX.Element | JSX.Element[];
-  mode: 'add' | 'change';
+  mode: 'add' | 'change' | 'inline-add' | 'inline-change';
   hasOperationError?: boolean;
 }
 
 export const FormContainer: React.FC<IFormContainer> = ({
+  modelConfiguration,
+  id,
   form,
   onFinish,
   children,
   mode,
   hasOperationError,
 }) => {
-  const { configuration } = useContext(ConfigurationContext);
   const { t: _t } = useTranslation('FormContainer');
-  const { model } = useParams();
-
-  const modelConfiguration: IModel | undefined = configuration.models.find(
-    (item: IModel) => item.name === model
-  );
 
   const [activeKey, setActiveKey] = useState<string[]>(
     (modelConfiguration?.fieldsets || [])
@@ -66,7 +62,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
 
   const getConf = useCallback(
     (field: IModelField) => {
-      if (mode === 'change') {
+      if (mode === 'change' || mode === 'inline-change') {
         return field?.change_configuration || {};
       }
       return field?.add_configuration || {};
@@ -152,6 +148,9 @@ export const FormContainer: React.FC<IFormContainer> = ({
   ]);
 
   const inlineItems = useCallback(() => {
+    if (!id) {
+      return null;
+    }
     return (modelConfiguration?.inlines || []).map((inline: IInlineModel) => {
       return (
         <Form.Item
@@ -161,11 +160,11 @@ export const FormContainer: React.FC<IFormContainer> = ({
           }
           key={inline.name}
         >
-          <InlineWidget modelConfiguration={inline} />
+          <InlineWidget modelConfiguration={inline} parentId={id} />
         </Form.Item>
       );
     });
-  }, [modelConfiguration?.inlines]);
+  }, [modelConfiguration?.inlines, id]);
 
   return (
     <Form layout="vertical" form={form} onFinish={onFinish}>
@@ -176,7 +175,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
         </>
       )}
       <Row gutter={[32, 32]}>
-        <Col xs={24} xl={12}>
+        <Col xs={24} xl={mode === 'inline-add' || mode === 'inline-change' ? 24 : 12}>
           {formItems()}
         </Col>
         {mode === 'change' && (

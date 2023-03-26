@@ -3,9 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Breadcrumb, Button, Col, Empty, Input, message, Row, Select } from 'antd';
 import querystring from 'querystring';
-import { DownloadOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import fileDownload from 'react-file-download';
-
+import { PlusCircleOutlined } from '@ant-design/icons';
 import { CrudContainer } from 'components/crud-container';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
 import { EModelPermission, IModel, IModelAction } from 'interfaces/configuration';
@@ -18,6 +16,7 @@ import { useIsMobile } from 'hooks/useIsMobile';
 import { useTableQuery } from 'hooks/useTableQuery';
 import { useTableColumns } from 'hooks/useTableColumns';
 import { getTitleFromModelClass } from 'helpers/title';
+import { ExportBtn } from 'components/export-btn';
 
 export const List: React.FC = () => {
   const { configuration } = useContext(ConfigurationContext);
@@ -80,30 +79,6 @@ export const List: React.FC = () => {
     }
   );
 
-  const exportQueryString = querystring.stringify({
-    search,
-    sort_by: sortBy,
-    ...transformFiltersToServer(filters),
-  });
-
-  const { mutate: mutateExport, isLoading: isLoadingExport } = useMutation(
-    () =>
-      postFetcher(`/export/${model}?${exportQueryString}`, {
-        format: 'CSV',
-        offset: 0,
-        limit: 1000,
-      }),
-    {
-      onSuccess: (d) => {
-        fileDownload(d, `${model}.csv`);
-        message.success(_t('Successfully exported'));
-      },
-      onError: () => {
-        message.error(_t('Server error'));
-      },
-    }
-  );
-
   const { mutate: mutateAction, isLoading: isLoadingAction } = useMutation(
     (payload: any) => postFetcher(`/action/${model}/${action}`, payload),
     {
@@ -119,7 +94,6 @@ export const List: React.FC = () => {
   );
 
   const onSelectRow = (v: string[]) => setSelectedRowKeys(v);
-  const onExport = useCallback(() => mutateExport(), [mutateExport]);
   const onApplyAction = useCallback(
     () => mutateAction({ ids: selectedRowKeys }),
     [mutateAction, selectedRowKeys]
@@ -224,9 +198,7 @@ export const List: React.FC = () => {
           )}
           {modelConfiguration?.permissions?.includes(EModelPermission.Export) && (
             <Col>
-              <Button loading={isLoadingExport} onClick={onExport}>
-                <DownloadOutlined /> {_t('Export CSV')}
-              </Button>
+              <ExportBtn model={model} search={search} filters={filters} sortBy={sortBy} />
             </Col>
           )}
           {modelConfiguration?.permissions?.includes(EModelPermission.Add) && (

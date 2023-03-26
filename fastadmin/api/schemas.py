@@ -8,6 +8,7 @@ class ExportFormat(str, Enum):
     """Export format"""
 
     CSV = "CSV"
+    JSON = "JSON"
 
 
 class ListQuerySchema(BaseModel):
@@ -30,9 +31,9 @@ class SignInInputSchema(BaseModel):
 class ExportInputSchema(BaseModel):
     """Export input schema"""
 
-    format: ExportFormat | None
-    limit: int | None
-    offset: int | None
+    format: ExportFormat | None = ExportFormat.CSV
+    limit: int | None = 1000
+    offset: int | None = 0
 
 
 class ActionInputSchema(BaseModel):

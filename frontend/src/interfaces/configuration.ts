@@ -24,6 +24,11 @@ export enum EModelPermission {
   Export = 'Export',
 }
 
+export enum EExportFormat {
+  CSV = 'CSV',
+  JSON = 'JSON',
+}
+
 export interface IModelAction {
   name: string;
   description?: string;
@@ -77,7 +82,7 @@ interface IBaseModel {
 }
 
 export interface IInlineModel extends IBaseModel {
-  fk_name?: string;
+  fk_name: string;
   max_num?: number;
   min_num?: number;
   verbose_name?: string;

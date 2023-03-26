@@ -207,7 +207,7 @@ async def export(model: str) -> Response:
     try:
         request_payload: dict = request.json
         payload: ExportInputSchema = ExportInputSchema(**request_payload)
-        file_name, stream = await api_service.export(
+        file_name, content_type, stream = await api_service.export(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             payload,
@@ -215,7 +215,7 @@ async def export(model: str) -> Response:
             sort_by=sort_by,
             filters=filters,
         )
-        response = Response(stream, mimetype="text/csv")
+        response = Response(stream, mimetype=content_type)
         response.headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
         return response
     except AdminApiException as e:

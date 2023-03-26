@@ -10,11 +10,13 @@ test('Renders AsyncTransfer', () => {
   render(
     <TestProviders client={queryClient}>
       <InlineWidget
+        parentId="test"
         modelConfiguration={{
           name: 'Test',
           fields: [],
           permissions: [],
           actions: [],
+          fk_name: 'parent',
         }}
       />
     </TestProviders>

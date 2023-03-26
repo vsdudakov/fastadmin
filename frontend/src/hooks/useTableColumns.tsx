@@ -1,25 +1,12 @@
+import { useMemo } from 'react';
 import { Button, Popconfirm, Space, Tooltip } from 'antd';
-import { getTitleFromFieldName } from 'helpers/title';
-import {
-  EFieldWidgetType,
-  EModelPermission,
-  IAddConfigurationField,
-  IChangeConfigurationField,
-  IModel,
-  IModelField,
-} from 'interfaces/configuration';
-import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  FilterOutlined,
-  FilterFilled,
-  DeleteOutlined,
-  EditOutlined,
-  CloseCircleOutlined,
-} from '@ant-design/icons';
+import { FilterOutlined, FilterFilled, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+
+import { getTitleFromFieldName } from 'helpers/title';
+import { EFieldWidgetType, EModelPermission, IModel, IModelField } from 'interfaces/configuration';
 import { FilterColumn } from 'components/filter-column';
-import { transformColumnValueFromServer, transformValueFromServer } from 'helpers/transform';
-import { getWidgetCls } from 'helpers/widgets';
+import { transformColumnValueFromServer } from 'helpers/transform';
 
 export const useTableColumns = (
   modelConfiguration: IModel | undefined,
@@ -28,34 +15,10 @@ export const useTableColumns = (
   onApplyFilter: any,
   onResetFilter: any,
   onDeleteItem: any,
-  onChangeItem: any,
-  rowsFor?: any[],
-  onChangeRowsFor?: any
+  onChangeItem: any
 ): any => {
   const { t: _t } = useTranslation('List');
   const fields = (modelConfiguration || { fields: [] }).fields;
-
-  const getWidget = useCallback(
-    (
-      configurationField: IAddConfigurationField | IChangeConfigurationField,
-      value: any,
-      onChange: any
-    ) => {
-      if (!configurationField.form_widget_type) {
-        return null;
-      }
-      const [Widget, widgetProps]: any = getWidgetCls(configurationField.form_widget_type, _t);
-      return (
-        <Widget
-          defaultValue={value}
-          onChange={onChange}
-          {...(widgetProps || {})}
-          {...(configurationField.form_widget_props || {})}
-        />
-      );
-    },
-    [_t]
-  );
 
   return useMemo(() => {
     const columns = fields
@@ -104,18 +67,6 @@ export const useTableColumns = (
               }
             : undefined,
           render: (value: any, record: any) => {
-            const withFormMode = (rowsFor || []).find(
-              (row: any) => row._table_key === record._table_key && row._form_mode
-            );
-
-            if (withFormMode && field.change_configuration?.form_widget_type) {
-              const fieldValue = transformValueFromServer(value);
-              return getWidget(field.change_configuration, fieldValue, (newValue: any) => {
-                if (onChangeRowsFor)
-                  onChangeRowsFor({ ...record, [field.name]: newValue?.target?.value || newValue });
-              });
-            }
-
             if (value === undefined) {
               return field.list_configuration?.empty_value_display;
             }
@@ -145,34 +96,19 @@ export const useTableColumns = (
       render: (record: any) => {
         const onDelete = () => onDeleteItem(record);
         const onChange = () => onChangeItem(record);
-        const btnType = !!rowsFor ? 'dashed' : undefined;
-        const withFormMode = (rowsFor || []).find(
-          (row: any) => row._table_key === record._table_key && row._form_mode
-        );
         return (
           <Space>
-            {(modelConfiguration?.permissions || []).includes(EModelPermission.Delete) &&
-              !withFormMode && (
-                <Popconfirm title={_t('Are you sure?')} onConfirm={onDelete}>
-                  <Button size="small" danger={true}>
-                    <DeleteOutlined />
-                  </Button>
-                </Popconfirm>
-              )}
+            {(modelConfiguration?.permissions || []).includes(EModelPermission.Delete) && (
+              <Popconfirm title={_t('Are you sure?')} onConfirm={onDelete}>
+                <Button size="small" danger={true}>
+                  <DeleteOutlined />
+                </Button>
+              </Popconfirm>
+            )}
             {(modelConfiguration?.permissions || []).includes(EModelPermission.Change) && (
-              <>
-                {!withFormMode ? (
-                  <Button type={btnType} size="small" onClick={onChange}>
-                    <EditOutlined />
-                  </Button>
-                ) : (
-                  <Tooltip title={_t('Remove changes')}>
-                    <Button type={btnType} danger={true} size="small" onClick={onChange}>
-                      <CloseCircleOutlined />
-                    </Button>
-                  </Tooltip>
-                )}
-              </>
+              <Button size="small" onClick={onChange}>
+                <EditOutlined />
+              </Button>
             )}
           </Space>
         );
@@ -184,13 +120,10 @@ export const useTableColumns = (
     dateTimeFormat,
     fields,
     getFilterValue,
-    getWidget,
     modelConfiguration?.permissions,
     onApplyFilter,
     onChangeItem,
     onDeleteItem,
     onResetFilter,
-    rowsFor,
-    onChangeRowsFor,
   ]);
 };

@@ -54,11 +54,11 @@ class DjangoORMMixin:
                 is_pk or getattr(orm_model_field, "auto_now", False) or getattr(orm_model_field, "auto_now_add", False)
             ) and field_name not in self.readonly_fields
 
-            required = (
-                not getattr(orm_model_field, "null", False)
-                and not getattr(orm_model_field, "default", False)
-                and not is_m2m
-            )
+            has_default = getattr(orm_model_field, "default", False)
+            if hasattr(has_default, "__name__") and has_default.__name__ == "NOT_PROVIDED":
+                has_default = False
+
+            required = not getattr(orm_model_field, "null", False) and not has_default and not is_m2m
             choices = (
                 {item[0]: item[1] for item in orm_model_field.choices}
                 if getattr(orm_model_field, "choices", None)
@@ -97,6 +97,7 @@ class DjangoORMMixin:
                     filter_widget_type = WidgetType.TextArea
                 case "BooleanField":
                     form_widget_type = WidgetType.Switch
+                    form_widget_props["required"] = False
                     filter_widget_type = WidgetType.RadioGroup
                     filter_widget_props["options"] = [
                         {"label": "Yes", "value": True},

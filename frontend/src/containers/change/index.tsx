@@ -134,6 +134,8 @@ export const Change: React.FC = () => {
     >
       {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Change) ? (
         <FormContainer
+          modelConfiguration={modelConfiguration}
+          id={id}
           form={form}
           onFinish={onFinish}
           mode="change"

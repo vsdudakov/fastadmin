@@ -203,7 +203,7 @@ async def export(
     :return: A stream of export data.
     """
     try:
-        file_name, stream = await api_service.export(
+        file_name, content_type, stream = await api_service.export(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             payload,
@@ -215,7 +215,7 @@ async def export(
         return StreamingResponse(
             stream,  # type: ignore
             headers=headers,
-            media_type="text/csv",
+            media_type=content_type,
         )
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)

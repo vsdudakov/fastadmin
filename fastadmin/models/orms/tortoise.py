@@ -89,6 +89,7 @@ class TortoiseMixin:
                     filter_widget_type = WidgetType.TextArea
                 case "BooleanField":
                     form_widget_type = WidgetType.Switch
+                    form_widget_props["required"] = False
                     filter_widget_type = WidgetType.RadioGroup
                     filter_widget_props["options"] = [
                         {"label": "Yes", "value": True},

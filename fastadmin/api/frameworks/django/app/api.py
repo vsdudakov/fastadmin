@@ -254,7 +254,7 @@ async def export(request: HttpRequest, model: str) -> JsonResponse:
     sort_by = filters.get("sort_by", None)
     try:
         payload = ExportInputSchema(**json.loads(request.body))
-        file_name, stream = await api_service.export(
+        file_name, content_type, stream = await api_service.export(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             payload,
@@ -262,7 +262,7 @@ async def export(request: HttpRequest, model: str) -> JsonResponse:
             sort_by=sort_by,
             filters=filters,
         )
-        response = StreamingHttpResponse(stream, content_type="text/csv")
+        response = StreamingHttpResponse(stream, content_type=content_type)
         response.headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
         return response
 

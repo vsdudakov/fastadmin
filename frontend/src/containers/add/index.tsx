@@ -60,7 +60,13 @@ export const Add: React.FC = () => {
       }
     >
       {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Add) ? (
-        <FormContainer form={form} onFinish={onFinish} mode="add" hasOperationError={isError}>
+        <FormContainer
+          modelConfiguration={modelConfiguration}
+          form={form}
+          onFinish={onFinish}
+          mode="add"
+          hasOperationError={isError}
+        >
           <Row justify="end">
             <Col>
               <Space>

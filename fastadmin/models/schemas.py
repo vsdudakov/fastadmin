@@ -104,7 +104,7 @@ class BaseModelSchema(BaseModel):
 class InlineModelSchema(BaseModelSchema):
     """Inline model schema"""
 
-    fk_name: str | None
+    fk_name: str
     max_num: int | None
     min_num: int | None
     verbose_name: str | None

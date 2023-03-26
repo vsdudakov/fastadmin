@@ -11,23 +11,21 @@ interface ITableQuery {
   setPage: (page: number) => void;
   pageSize: number;
   setPageSize: (pageSize: number) => void;
-  search: string | undefined;
-  setSearch: (search: string | undefined) => void;
+  search?: string;
+  setSearch: (search?: string) => void;
   filters: any;
   setFilters: (filters: any) => void;
-  sortBy: string | undefined;
-  setSortBy: (sortBy: string | undefined) => void;
-  action: string | undefined;
-  setAction: (action: string | undefined) => void;
+  sortBy?: string;
+  setSortBy: (sortBy?: string) => void;
+  action?: string;
+  setAction: (action?: string) => void;
   selectedRowKeys: string[];
   setSelectedRowKeys: (selectedRowKeys: string[]) => void;
   onTableChange: (pagination: any, tableFilters: any, sorter: any) => void;
   resetTable: (preserveFilters?: boolean) => void;
 }
 
-export const useTableQuery = (
-  modelConfiguration: IModel | IInlineModel | undefined
-): ITableQuery => {
+export const useTableQuery = (modelConfiguration?: IModel | IInlineModel): ITableQuery => {
   const [action, setAction] = useState<string | undefined>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
 
