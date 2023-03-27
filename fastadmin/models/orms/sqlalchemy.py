@@ -251,10 +251,24 @@ class SqlAlchemyMixin:
 
             if filters:
                 q = []
-                for filter_condition, value in filters.items():
-                    if "__icontains" in filter_condition:
-                        field = filter_condition.replace("__icontains", "")
-                        q.append(getattr(self.model_cls, field).ilike(f"%{value}%"))
+                for field_with_condition, value in filters.items():
+                    field = field_with_condition[0]
+                    condition = field_with_condition[1]
+                    match condition:
+                        case "lte":
+                            q.append(getattr(self.model_cls, field) >= value)
+                        case "gte":
+                            q.append(getattr(self.model_cls, field) <= value)
+                        case "lt":
+                            q.append(getattr(self.model_cls, field) > value)
+                        case "gt":
+                            q.append(getattr(self.model_cls, field) < value)
+                        case "exact":
+                            q.append(getattr(self.model_cls, field) == value)
+                        case "contains":
+                            q.append(getattr(self.model_cls, field).like(f"%{value}%"))
+                        case "icontains":
+                            q.append(getattr(self.model_cls, field).ilike(f"%{value}%"))
                 qs = qs.filter(and_(*q))
 
             if search and self.search_fields:

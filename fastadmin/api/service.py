@@ -9,7 +9,7 @@ import jwt
 from asgiref.sync import sync_to_async
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.helpers import get_user_id_from_session_id, sanitize
+from fastadmin.api.helpers import get_user_id_from_session_id, sanitize_filter_key, sanitize_filter_value
 from fastadmin.api.schemas import (
     ActionInputSchema,
     ChangePasswordInputSchema,
@@ -88,8 +88,6 @@ class ApiService:
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
-        filters = {k: sanitize(v) for k, v in filters.items() if k not in ("search", "sort_by", "offset", "limit")}
-
         # validations
         fields = admin_model.get_fields_for_serialize()
 
@@ -98,11 +96,19 @@ class ApiService:
                 if field not in fields:
                     raise AdminApiException(422, detail=f"Search by {field} is not allowed")
 
+        exclude_filter_fields = ("search", "sort_by", "offset", "limit")
         if filters:
-            for filter_condition in filters.keys():
-                field = filter_condition.split("__", 1)[0]
+            for k in filters.keys():
+                if k in exclude_filter_fields:
+                    continue
+                field = k.split("__", 1)[0]
                 if field not in fields:
-                    raise AdminApiException(422, detail=f"Filter by {filter_condition} is not allowed")
+                    raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
+            filters = {
+                sanitize_filter_key(k, admin_model.get_model_fields_with_widget_types()): sanitize_filter_value(v)
+                for k, v in filters.items()
+                if k not in exclude_filter_fields
+            }
 
         if sort_by:
             if sort_by.strip("-") not in fields:
@@ -169,7 +175,7 @@ class ApiService:
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
-        admin_model = get_admin_or_admin_inline_model(settings.ADMIN_USER_MODEL)
+        admin_model = get_admin_model(settings.ADMIN_USER_MODEL)
         if not admin_model:
             raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} model is not registered.")
 
@@ -223,7 +229,35 @@ class ApiService:
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
-        filters = {k: sanitize(v) for k, v in filters.items() if k not in ("search", "sort_by", "offset", "limit")}
+        # validations
+        fields = admin_model.get_fields_for_serialize()
+
+        if search and admin_model.search_fields:
+            for field in admin_model.search_fields:
+                if field not in fields:
+                    raise AdminApiException(422, detail=f"Search by {field} is not allowed")
+
+        exclude_filter_fields = ("search", "sort_by", "offset", "limit")
+        if filters:
+            for k in filters.keys():
+                if k in exclude_filter_fields:
+                    continue
+                field = k.split("__", 1)[0]
+                if field not in fields:
+                    raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
+            filters = {
+                sanitize_filter_key(k, admin_model.get_model_fields_with_widget_types()): sanitize_filter_value(v)
+                for k, v in filters.items()
+                if k not in exclude_filter_fields
+            }
+
+        if sort_by:
+            if sort_by.strip("-") not in fields:
+                raise AdminApiException(422, detail=f"Sort by {sort_by} is not allowed")
+        elif admin_model.ordering:
+            for ordering_field in admin_model.ordering:
+                if ordering_field.strip("-") not in fields:
+                    raise AdminApiException(422, detail=f"Sort by {ordering_field} is not allowed")
 
         content_type = "text/plain"
         file_name = f"{model}.txt"

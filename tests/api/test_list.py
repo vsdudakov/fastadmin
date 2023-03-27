@@ -45,6 +45,22 @@ async def test_list_filters(session_id, event, client):
     )
     assert r.status_code == 422, r.text
 
+    r = await client.get(
+        f"/api/list/{event.get_model_name()}?tournament=-1",
+    )
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data
+    assert data["total"] == 0
+
+    r = await client.get(
+        f"/api/list/{event.get_model_name()}?tournament={event.tournament_id if hasattr(event, 'tournament_id') else event.tournament.id}",
+    )
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data
+    assert data["total"] > 0
+
 
 async def test_list_search(session_id, admin_models, event, client):
     assert session_id

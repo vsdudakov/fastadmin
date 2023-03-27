@@ -231,8 +231,10 @@ class TortoiseMixin:
         qs = self.model_cls.all()
 
         if filters:
-            for filter_condition, value in filters.items():
-                qs = qs.filter(**{filter_condition: value})
+            for field_with_condition, value in filters.items():
+                field = field_with_condition[0]
+                condition = field_with_condition[1]
+                qs = qs.filter(**{f"{field}__{condition}" if condition != "exact" else field: value})
 
         if search and self.search_fields:
             ids = []

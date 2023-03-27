@@ -4,10 +4,11 @@ from uuid import UUID
 import jwt
 
 from fastadmin.models.helpers import get_admin_model
+from fastadmin.models.schemas import ModelFieldWidgetSchema
 from fastadmin.settings import settings
 
 
-def sanitize(value: str) -> bool | None | str:
+def sanitize_filter_value(value: str) -> bool | None | str:
     """Sanitize value
 
     :params value: a value.
@@ -20,6 +21,23 @@ def sanitize(value: str) -> bool | None | str:
     elif value == "null":
         return None
     return value
+
+
+def sanitize_filter_key(key: str, fields: list[ModelFieldWidgetSchema]) -> tuple[str, str]:
+    """Sanitize key.
+
+    :param key: A key.
+    :param fields: A list of fields.
+    :return: A sanitized key.
+    """
+    if "__" not in key:
+        key = f"{key}__exact"
+    field_name = key.split("__", 1)[0]
+    condition = key.split("__", 1)[1]
+    field: ModelFieldWidgetSchema | None = next((field for field in fields if field.name == field_name), None)
+    if field and field.filter_widget_props.get("parentModel") and not field.is_m2m:
+        field_name = f"{field_name}_id"
+    return field_name, condition
 
 
 def is_valid_uuid(uuid_to_test: str) -> bool:

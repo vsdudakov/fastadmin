@@ -230,28 +230,29 @@ class PonyORMMixin:
         qs = select(m for m in self.model_cls)
 
         if filters:
-            for filter_condition, value in filters.items():
-                if "__" not in filter_condition:
-                    filter_condition = f"{filter_condition}__exact"
-                field = filter_condition.split("__")[0]
-                cond = filter_condition.split("__")[1]
-                pony_cond = "=="
-                match cond:
+            for field_with_condition, value in filters.items():
+                field = field_with_condition[0]
+                condition = field_with_condition[1]
+                model_pk_name = self.get_model_pk_name(self.model_cls)
+                if field.endswith(f"_{model_pk_name}"):
+                    field = field.replace(f"_{model_pk_name}", f".{model_pk_name}")
+                pony_condition = "=="
+                match condition:
                     case "lte":
-                        pony_cond = ">="
+                        pony_condition = ">="
                     case "gte":
-                        pony_cond = "<="
+                        pony_condition = "<="
                     case "lt":
-                        pony_cond = ">"
+                        pony_condition = ">"
                     case "gt":
-                        pony_cond = "<"
+                        pony_condition = "<"
                     case "exact":
-                        pony_cond = "=="
+                        pony_condition = "=="
                     case "contains":
-                        pony_cond = "in"
+                        pony_condition = "in"
                     case "icontains":
-                        pony_cond = "in"
-                filter_expr = f""""{value}" {pony_cond}  m.{field}"""
+                        pony_condition = "in"
+                filter_expr = f""""{value}" {pony_condition}  m.{field}"""
                 qs = qs.filter(filter_expr)
 
         if search and self.search_fields:

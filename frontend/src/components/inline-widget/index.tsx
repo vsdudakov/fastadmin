@@ -66,7 +66,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
 
   const onOpenAdd = useCallback(() => {
     formAdd.resetFields();
-    formAdd.setFieldsValue({ [modelConfiguration.fk_name]: parentId });
+    formAdd.setFieldValue(modelConfiguration.fk_name, parentId);
     setOpenAdd(true);
     setOpenChange(undefined);
   }, [formAdd, parentId, modelConfiguration.fk_name]);
@@ -79,7 +79,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
   const onOpenChange = useCallback(
     (item: any) => {
       formChange.resetFields();
-      formChange.setFieldsValue({ [modelConfiguration.fk_name]: parentId });
+      formChange.setFieldValue(modelConfiguration.fk_name, parentId);
       formChange.setFieldsValue(transformDataFromServer(item));
       setOpenChange(item);
       setOpenAdd(false);
@@ -97,6 +97,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
     sort_by: sortBy,
     offset: (page - 1) * pageSize,
     limit: pageSize,
+    [modelConfiguration.fk_name]: parentId,
     ...transformFiltersToServer(filters),
   });
 

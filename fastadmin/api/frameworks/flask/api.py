@@ -163,7 +163,7 @@ async def add(model: str) -> dict:
         raise http_exception
 
 
-@api_router.route("/change-password/<string:id>", methods=["PATCH"])
+@api_router.route("/change-password/<string:id>", methods=["PATCH"])  # type: ignore
 async def change_password(id: UUID | int) -> UUID | int:
     """This method is used to change password.
 

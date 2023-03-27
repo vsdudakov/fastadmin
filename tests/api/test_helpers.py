@@ -3,15 +3,21 @@ from datetime import datetime, timedelta
 
 import jwt
 
-from fastadmin.api.helpers import get_user_id_from_session_id, is_digit, is_valid_id, is_valid_uuid, sanitize
+from fastadmin.api.helpers import (
+    get_user_id_from_session_id,
+    is_digit,
+    is_valid_id,
+    is_valid_uuid,
+    sanitize_filter_value,
+)
 from fastadmin.settings import settings
 
 
-async def test_sanitize():
-    assert sanitize("true") is True
-    assert sanitize("false") is False
-    assert sanitize("null") is None
-    assert sanitize("foo") == "foo"
+async def test_sanitize_filter_value():
+    assert sanitize_filter_value("true") is True
+    assert sanitize_filter_value("false") is False
+    assert sanitize_filter_value("null") is None
+    assert sanitize_filter_value("foo") == "foo"
 
 
 async def test_is_valid_uuid():
