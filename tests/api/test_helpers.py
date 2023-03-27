@@ -3,13 +3,8 @@ from datetime import datetime, timedelta
 
 import jwt
 
-from fastadmin.api.helpers import (
-    get_user_id_from_session_id,
-    is_digit,
-    is_valid_id,
-    is_valid_uuid,
-    sanitize_filter_value,
-)
+from fastadmin.api.helpers import is_digit, is_valid_id, is_valid_uuid, sanitize_filter_value
+from fastadmin.api.service import get_user_id_from_session_id
 from fastadmin.settings import settings
 
 

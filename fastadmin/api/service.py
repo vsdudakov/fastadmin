@@ -9,7 +9,7 @@ import jwt
 from asgiref.sync import sync_to_async
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.helpers import get_user_id_from_session_id, sanitize_filter_key, sanitize_filter_value
+from fastadmin.api.helpers import sanitize_filter_key, sanitize_filter_value
 from fastadmin.api.schemas import (
     ActionInputSchema,
     ChangePasswordInputSchema,
@@ -26,6 +26,39 @@ from fastadmin.models.helpers import (
 )
 from fastadmin.models.schemas import ConfigurationSchema, ModelSchema
 from fastadmin.settings import settings
+
+
+async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | None:
+    """This method is used to get user id from session_id.
+
+    :param session_id: A session id.
+    :return: A user id or None.
+    """
+    if not session_id:
+        return None
+
+    admin_model = get_admin_model(settings.ADMIN_USER_MODEL)
+    if not admin_model:
+        return None
+
+    try:
+        token_payload = jwt.decode(session_id, settings.ADMIN_SECRET_KEY, algorithms=["HS256"])
+    except jwt.PyJWTError:
+        return None
+
+    session_expired_at = token_payload.get("session_expired_at")
+    if not session_expired_at:
+        return None
+
+    if datetime.fromisoformat(session_expired_at) < datetime.utcnow():
+        return None
+
+    user_id = token_payload.get("user_id")
+
+    if not user_id or not await admin_model.get_obj(user_id):
+        return None
+
+    return user_id
 
 
 class ApiService:

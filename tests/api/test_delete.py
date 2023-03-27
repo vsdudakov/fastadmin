@@ -1,4 +1,4 @@
-from fastadmin.api.helpers import get_user_id_from_session_id
+from fastadmin.api.service import get_user_id_from_session_id
 
 
 async def test_delete(session_id, event, client):

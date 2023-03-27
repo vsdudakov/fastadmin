@@ -6,9 +6,8 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import Response, StreamingResponse
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.helpers import get_user_id_from_session_id
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
-from fastadmin.api.service import ApiService
+from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.models.schemas import ConfigurationSchema
 from fastadmin.settings import settings
 

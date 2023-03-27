@@ -8,6 +8,7 @@ from uuid import UUID
 
 from asgiref.sync import sync_to_async
 
+from fastadmin.api.helpers import is_valid_base64
 from fastadmin.api.schemas import ExportFormat
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 
@@ -420,7 +421,7 @@ class BaseModelAdmin:
             return None
 
         for upload_field in upload_fields:
-            if upload_field.name in payload:
+            if upload_field.name in payload and is_valid_base64(payload[upload_field.name]):
                 await self.orm_save_upload_field(obj, upload_field.column_name, payload[upload_field.name])
 
         for m2m_field in m2m_fields:

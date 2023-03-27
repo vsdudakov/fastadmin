@@ -11,9 +11,9 @@ from django.http import StreamingHttpResponse
 from django.http.request import HttpRequest
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.helpers import get_user_id_from_session_id, is_valid_id
+from fastadmin.api.helpers import is_valid_id
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, ListQuerySchema, SignInInputSchema
-from fastadmin.api.service import ApiService
+from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.settings import settings
 
 logger = logging.getLogger(__name__)

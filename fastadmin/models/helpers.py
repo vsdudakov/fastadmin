@@ -284,6 +284,13 @@ def generate_models_schema(
 
 
 def getattrs(obj: Any, attrs: str, default: Any | None = None) -> Any:
+    """Get attributes from an object.
+
+    :param obj: An object.
+    :param attrs: A string of attributes separated by dots.
+    :param default: A default value to return if an attribute is not found.
+    :return: The value of the last attribute.
+    """
     try:
         return attrgetter(attrs)(obj)
     except (TypeError, AttributeError):

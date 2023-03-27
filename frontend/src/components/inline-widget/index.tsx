@@ -278,7 +278,12 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
         )}
         {modelConfiguration?.permissions?.includes(EModelPermission.Export) && (
           <Col>
-            <ExportBtn model={model} search={search} filters={filters} sortBy={sortBy} />
+            <ExportBtn
+              model={`inlines.${model}`}
+              search={search}
+              filters={{ ...filters, [modelConfiguration.fk_name]: parentId }}
+              sortBy={sortBy}
+            />
           </Col>
         )}
         {modelConfiguration?.permissions?.includes(EModelPermission.Add) && (
@@ -291,21 +296,23 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
       </Row>
     ),
     [
-      _t,
-      model,
       modelConfiguration?.actions,
       modelConfiguration?.actions_on_top,
-      modelConfiguration?.permissions,
       modelConfiguration?.search_fields,
       modelConfiguration?.search_help_text,
-      selectedRowKeys.length,
+      modelConfiguration?.permissions,
+      modelConfiguration.fk_name,
+      _t,
       action,
       setAction,
-      onApplyAction,
+      selectedRowKeys.length,
       isLoadingAction,
-      search,
+      onApplyAction,
       setSearch,
+      model,
+      search,
       filters,
+      parentId,
       sortBy,
       onOpenAdd,
     ]

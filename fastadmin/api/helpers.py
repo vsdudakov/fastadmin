@@ -1,11 +1,7 @@
-from datetime import datetime
+import base64
 from uuid import UUID
 
-import jwt
-
-from fastadmin.models.helpers import get_admin_model
 from fastadmin.models.schemas import ModelFieldWidgetSchema
-from fastadmin.settings import settings
 
 
 def sanitize_filter_value(value: str) -> bool | None | str:
@@ -75,34 +71,13 @@ def is_valid_id(id: UUID | int) -> bool:
     return is_digit(str(id)) or is_valid_uuid(str(id))
 
 
-async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | None:
-    """This method is used to get user id from session_id.
+def is_valid_base64(s: str) -> bool:
+    """Check if s is a valid base64.
 
-    :param session_id: A session id.
-    :return: A user id or None.
+    :param s: A string to test.
+    :return: True if s is a valid base64, False otherwise.
     """
-    if not session_id:
-        return None
-
-    admin_model = get_admin_model(settings.ADMIN_USER_MODEL)
-    if not admin_model:
-        return None
-
     try:
-        token_payload = jwt.decode(session_id, settings.ADMIN_SECRET_KEY, algorithms=["HS256"])
-    except jwt.PyJWTError:
-        return None
-
-    session_expired_at = token_payload.get("session_expired_at")
-    if not session_expired_at:
-        return None
-
-    if datetime.fromisoformat(session_expired_at) < datetime.utcnow():
-        return None
-
-    user_id = token_payload.get("user_id")
-
-    if not user_id or not await admin_model.get_obj(user_id):
-        return None
-
-    return user_id
+        return base64.b64encode(base64.b64decode(s)) == s
+    except Exception:
+        return False
