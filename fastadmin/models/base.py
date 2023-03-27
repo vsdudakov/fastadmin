@@ -25,7 +25,8 @@ class BaseModelAdmin:
     # }
     form_fields_widgets: dict[str, tuple[WidgetType, dict]] = {}
 
-    # A dictionary containing the field names and the corresponding widget type and column widths (px, %) for the list view.
+    # A dictionary containing the field names and the corresponding widget type and
+    # column widths (px, %) for the list view.
     # Example of usage:
     # table_fields_widths = {
     #     "id": "100px",
