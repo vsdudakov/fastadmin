@@ -1,5 +1,6 @@
-import sys
 import os
+import sys
+
 from tests.settings import ROOT_DIR
 
 sys.path.append(os.path.join(ROOT_DIR, "..", "examples", "django", "dev"))  # for dev.settings
