@@ -84,6 +84,14 @@ class DjangoUserModelAdmin(DjangoModelAdmin):
             return None
         return obj.id
 
+    def change_password(self, user_id, password):
+        user = self.model_cls.objects.filter(id=user_id).first()
+        if not user:
+            return
+        # direct saving password is only for tests - use hash
+        user.password = password
+        user.save()
+
 
 class DjangoEventInlineModelAdmin(DjangoInlineModelAdmin):
     model = Event

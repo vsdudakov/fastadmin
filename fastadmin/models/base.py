@@ -15,6 +15,7 @@ from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 class BaseModelAdmin:
     """Base class for model admin"""
 
+    # Use it only if you use several orms in your project.
     model_name_prefix: str | None = None
 
     # Widgets for fields. Overload widgets in your ModelAdmin class using this parameter.
@@ -565,6 +566,14 @@ class ModelAdmin(BaseModelAdmin):
         :params username: a value for user model settings.ADMIN_USER_MODEL_USERNAME_FIELD field.
         :params password: a password.
         :return: An user id or None.
+        """
+        raise NotImplementedError
+
+    async def change_password(self, id: UUID | int, password: str) -> None:
+        """This method is used to change user password.
+
+        :params id: An user id.
+        :params password: A new password.
         """
         raise NotImplementedError
 

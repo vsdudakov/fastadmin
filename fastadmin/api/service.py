@@ -10,7 +10,13 @@ from asgiref.sync import sync_to_async
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import get_user_id_from_session_id, sanitize
-from fastadmin.api.schemas import ActionInputSchema, ExportFormat, ExportInputSchema, SignInInputSchema
+from fastadmin.api.schemas import (
+    ActionInputSchema,
+    ChangePasswordInputSchema,
+    ExportFormat,
+    ExportInputSchema,
+    SignInInputSchema,
+)
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.helpers import (
     generate_models_schema,
@@ -152,6 +158,33 @@ class ApiService:
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
         return await admin_model.save_model(None, payload)  # type: ignore
+
+    async def change_password(
+        self,
+        session_id: str | None,
+        id: UUID | int,
+        payload: dict,
+    ) -> None:
+        current_user_id = await get_user_id_from_session_id(session_id)
+        if not current_user_id:
+            raise AdminApiException(401, detail="User is not authenticated.")
+
+        admin_model = get_admin_or_admin_inline_model(settings.ADMIN_USER_MODEL)
+        if not admin_model:
+            raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} model is not registered.")
+
+        payload = ChangePasswordInputSchema(**payload)
+
+        if not hasattr(admin_model, "change_password"):
+            raise AdminApiException(
+                404, detail=f"{settings.ADMIN_USER_MODEL} admin class has no change_password method."
+            )
+
+        if inspect.iscoroutinefunction(admin_model.change_password):
+            change_password_fn = admin_model.change_password
+        else:
+            change_password_fn = sync_to_async(admin_model.change_password)
+        await change_password_fn(id, payload.password)
 
     async def change(
         self,

@@ -182,6 +182,9 @@
               <a class="nav-link" href="#changelog">Changelog</a>
               <ul class="nav flex-column">
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_1_31">v0.1.31</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_1_30">v0.1.30</a>
                 </li>
                 <li class="nav-item">
@@ -230,7 +233,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.1.30</li>
+                    <li><strong>Version:</strong> 0.1.31</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank"
@@ -1226,6 +1229,15 @@ async def authenticate(self, username: str, password: str) -> UUID | int | None:
   :return: An user id or None.
   """
   ...
+
+
+async def change_password(self, id: UUID | int, password: str) -> None:
+  """This method is used to change user password.
+
+  :params id: An user id.
+  :params password: A new password.
+  """
+  ...
                 </code>
               </pre>
             </section>
@@ -1378,6 +1390,18 @@ class PersonAdmin(TortoiseModelAdmin):
               </p>
               <hr class="small-divider" />
               <!-- <p class="alert alert-info mb-5"> For Future Updates Follow Us <a target="_blank" href="http://themeforest.net/user/harnishdesign?ref=HarnishDesign">@themeforest</a> / <a target="_blank" href="http://facebook.com/harnishdesign">@facebook</a> / <a target="_blank" href="http://twitter.com/harnishdesign">@twitter</a> / <a target="_blank" href="https://dribbble.com/harnishdesign">@Dribbble</a></p> -->
+              <h3 id="v0_1_31">
+                Version 0.1.31
+                <small class="text-muted">(27 March, 2024)</small>
+              </h3>
+              <ul class="changelog">
+                <li>
+                  Added change password api and PasswordInput widget type.
+                </li>
+                <li>Fixed auto identifiction fk_name for inline models.</li>
+              </ul>
+              <hr class="small-divider" />
+
               <h3 id="v0_1_30">
                 Version 0.1.30
                 <small class="text-muted">(26 March, 2024)</small>

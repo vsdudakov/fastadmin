@@ -87,6 +87,14 @@ class TortoiseORMUserModelAdmin(TortoiseModelAdmin):
             return None
         return obj.id
 
+    async def change_password(self, user_id, password):
+        user = await self.model_cls.filter(id=user_id).first()
+        if not user:
+            return
+        # direct saving password is only for tests - use hash
+        user.password = password
+        await user.save()
+
 
 class TortoiseORMEventInlineModelAdmin(TortoiseInlineModelAdmin):
     model = Event

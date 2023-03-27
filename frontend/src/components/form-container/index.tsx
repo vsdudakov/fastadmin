@@ -55,9 +55,15 @@ export const FormContainer: React.FC<IFormContainer> = ({
         return null;
       }
       const [Widget, widgetProps]: any = getWidgetCls(configurationField.form_widget_type, _t);
-      return <Widget {...(widgetProps || {})} {...(configurationField.form_widget_props || {})} />;
+      return (
+        <Widget
+          {...(widgetProps || {})}
+          {...(configurationField.form_widget_props || {})}
+          parentId={id}
+        />
+      );
     },
-    [_t]
+    [_t, id]
   );
 
   const getConf = useCallback(
@@ -72,35 +78,33 @@ export const FormContainer: React.FC<IFormContainer> = ({
 
   const formItemWidgets = useCallback(
     (formFields: IModelField[]) => {
-      return formFields
-        .sort((a: IModelField, b: IModelField) => (getConf(a).index || 0) - (getConf(b).index || 0))
-        .map((field: IModelField) => (
-          <Form.Item
-            key={field.name}
-            name={field.name}
-            label={getTitleFromFieldName(field.name)}
-            rules={
-              getConf(field).required
-                ? [
-                    {
-                      required: true,
-                    },
-                  ]
-                : []
-            }
-            valuePropName={
-              [
-                EFieldWidgetType.Checkbox,
-                EFieldWidgetType.Switch,
-                EFieldWidgetType.CheckboxGroup,
-              ].includes(getConf(field).form_widget_type as EFieldWidgetType)
-                ? 'checked'
-                : undefined
-            }
-          >
-            {getWidget(getConf(field))}
-          </Form.Item>
-        ));
+      return formFields.map((field: IModelField) => (
+        <Form.Item
+          key={field.name}
+          name={field.name}
+          label={getTitleFromFieldName(field.name)}
+          rules={
+            getConf(field).required
+              ? [
+                  {
+                    required: true,
+                  },
+                ]
+              : []
+          }
+          valuePropName={
+            [
+              EFieldWidgetType.Checkbox,
+              EFieldWidgetType.Switch,
+              EFieldWidgetType.CheckboxGroup,
+            ].includes(getConf(field).form_widget_type as EFieldWidgetType)
+              ? 'checked'
+              : undefined
+          }
+        >
+          {getWidget(getConf(field))}
+        </Form.Item>
+      ));
     },
     [getConf, getWidget]
   );
@@ -128,7 +132,12 @@ export const FormContainer: React.FC<IFormContainer> = ({
                 key={JSON.stringify(collapseFields)}
               >
                 {formItemWidgets(
-                  fields.filter((field: IModelField) => (collapseFields || []).includes(field.name))
+                  fields
+                    .filter((field: IModelField) => (collapseFields || []).includes(field.name))
+                    .sort(
+                      (a: IModelField, b: IModelField) =>
+                        collapseFields.indexOf(a.name) - collapseFields.indexOf(b.name)
+                    )
                 )}
               </Collapse.Panel>
             );
@@ -136,8 +145,11 @@ export const FormContainer: React.FC<IFormContainer> = ({
         </Collapse>
       );
     }
-
-    return formItemWidgets(fields);
+    return formItemWidgets(
+      fields.sort(
+        (a: IModelField, b: IModelField) => (getConf(a).index || 0) - (getConf(b).index || 0)
+      )
+    );
   }, [
     _t,
     activeKey,

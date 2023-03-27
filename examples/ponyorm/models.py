@@ -115,6 +115,15 @@ class PonyORMUserModelAdmin(PonyORMModelAdmin):
             return None
         return obj.id
 
+    @db_session
+    def change_password(self, user_id, password):
+        obj = next((f for f in self.model_cls.select(id=user_id)), None)
+        if not obj:
+            return None
+        # direct saving password is only for tests - use hash
+        obj.password = password
+        commit()
+
 
 class PonyORMEventInlineModelAdmin(PonyORMInlineModelAdmin):
     model = Event

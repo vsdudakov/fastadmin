@@ -87,7 +87,7 @@ def get_admin_or_admin_inline_model(orm_model_cls: str | Any) -> ModelAdmin | In
 def generate_models_schema(
     admin_models: dict[Any, ModelAdmin | InlineModelAdmin],
     user_id: UUID | int | None = None,
-    is_inline_models: bool = False,
+    inline_parent_admin_modal: ModelAdmin | None = None,
 ) -> list[ModelSchema | InlineModelSchema]:
     """Generate models schema
 
@@ -211,7 +211,7 @@ def generate_models_schema(
         model_name_prefix = admin_model_obj.model_name_prefix
         if model_name_prefix:
             model_name = f"{model_name_prefix}.{model_name}"
-        if not is_inline_models:
+        if not inline_parent_admin_modal:
             admin_model_obj = cast(ModelAdmin, admin_model_obj)
             models_schemas.append(
                 ModelSchema(
@@ -236,15 +236,23 @@ def generate_models_schema(
                     view_on_site=admin_model_obj.view_on_site,
                     inlines=generate_models_schema(  # type: ignore
                         {inline.model: inline(inline.model) for inline in admin_model_obj.inlines},
-                        is_inline_models=True,
+                        inline_parent_admin_modal=admin_model_obj,
                         user_id=user_id,
                     ),
                 ),
             )
         else:
             admin_model_obj = cast(InlineModelAdmin, admin_model_obj)
-            # TODO: replace parent on dynamic identification of fk name in inline model
-            fk_name = admin_model_obj.fk_name or "parent"
+            fk_name = admin_model_obj.fk_name
+            if not fk_name:
+                parent_model = inline_parent_admin_modal.model_cls.__name__
+                fk_names = [f.name for f in orm_model_fields if f.form_widget_props.get("parentModel") == parent_model]
+                if len(fk_names) != 1:
+                    raise ValueError(
+                        f"Couldn't auto-identify fk_name. Please specify fk_name for inline model {admin_model_obj}."
+                    )
+                fk_name = fk_names[0]
+
             models_schemas.append(
                 InlineModelSchema(
                     name=model_name,

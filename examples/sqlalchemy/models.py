@@ -127,12 +127,20 @@ class SqlAlchemyUserModelAdmin(SqlAlchemyModelAdmin):
     async def authenticate(self, username, password):
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
-            query = select(User).filter_by(username=username, password=password, is_superuser=True)
+            query = select(self.model_cls).filter_by(username=username, password=password, is_superuser=True)
             result = await session.scalars(query)
             obj = result.first()
             if not obj:
                 return None
             return obj.id
+
+    async def change_password(self, user_id, password):
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            # direct saving password is only for tests - use hash
+            query = update(self.model_cls).where(User.id.in_([user_id])).values(password=password)
+            await session.execute(query)
+            await session.commit()
 
 
 class SqlAlchemyEventInlineModelAdmin(SqlAlchemyInlineModelAdmin):

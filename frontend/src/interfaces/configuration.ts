@@ -1,6 +1,7 @@
 export enum EFieldWidgetType {
   Input = 'Input',
   InputNumber = 'InputNumber',
+  PasswordInput = 'PasswordInput',
   TextArea = 'TextArea',
   RichTextArea = 'RichTextArea',
   Select = 'Select',

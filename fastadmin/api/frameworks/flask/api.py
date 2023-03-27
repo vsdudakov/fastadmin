@@ -163,6 +163,32 @@ async def add(model: str) -> dict:
         raise http_exception
 
 
+@api_router.route("/change-password/<string:id>", methods=["PATCH"])
+async def change_password(id: UUID | int) -> UUID | int:
+    """This method is used to change password.
+
+    :params id: an id of object.
+    :params payload: a payload object.
+    :return: An object.
+    """
+    if not is_valid_id(id):
+        http_exception = HTTPException("Invalid id. It must be a UUID or an integer.")
+        http_exception.code = 422
+        raise http_exception
+    try:
+        payload: dict = request.json
+        await api_service.change_password(
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            id,
+            payload,
+        )
+        return id
+    except AdminApiException as e:
+        http_exception = HTTPException(e.detail)
+        http_exception.code = e.status_code
+        raise http_exception
+
+
 @api_router.route("/change/<string:model>/<string:id>", methods=["PATCH"])
 async def change(model: str, id: UUID | int) -> dict:
     """This method is used to change an object.

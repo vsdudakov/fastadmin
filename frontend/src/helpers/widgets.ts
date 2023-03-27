@@ -11,6 +11,7 @@ import {
 } from 'antd';
 import { AsyncSelect } from 'components/async-select';
 import { AsyncTransfer } from 'components/async-transfer';
+import { PasswordInput } from 'components/password-input';
 import { TextEditor } from 'components/texteditor-field';
 import { EFieldWidgetType } from 'interfaces/configuration';
 
@@ -25,6 +26,8 @@ export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any) => {
           style: { width: '100%' },
         },
       ];
+    case EFieldWidgetType.PasswordInput:
+      return [PasswordInput, {}];
     case EFieldWidgetType.TextArea:
       return [Input.TextArea, {}];
     case EFieldWidgetType.RichTextArea:

@@ -25,6 +25,7 @@ async def sign_in(
 ) -> None:
     """This method is used to sign in.
 
+    :params request: a request object.
     :params response: a response object.
     :params payload: a payload object.
     :return: None.
@@ -49,6 +50,7 @@ async def sign_out(
 ) -> None:
     """This method is used to sign out.
 
+    :params request: a request object.
     :params response: a response object.
     :return: None.
     """
@@ -161,6 +163,25 @@ async def add(
             model,
             payload,
         )
+    except AdminApiException as e:
+        raise HTTPException(e.status_code, detail=e.detail)
+
+
+@router.patch("/change-password/{id}")
+async def change_password(
+    request: Request,
+    id: UUID | int,
+    payload: dict,
+) -> UUID | int:
+    """This method is used to change password.
+
+    :params id: an id of object.
+    :params payload: a payload object.
+    :return: An object.
+    """
+    try:
+        await api_service.change_password(request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), id, payload)
+        return id
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 

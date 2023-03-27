@@ -1,7 +1,9 @@
 from enum import Enum
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+
+from fastadmin.api.exceptions import AdminApiException
 
 
 class ExportFormat(str, Enum):
@@ -26,6 +28,19 @@ class SignInInputSchema(BaseModel):
 
     username: str
     password: str
+
+
+class ChangePasswordInputSchema(BaseModel):
+    """Change password input schema"""
+
+    password: str
+    confirm_password: str
+
+    @validator("confirm_password")
+    def passwords_match(cls, v, values, **kwargs):
+        if "password" in values and v != values["password"]:
+            raise AdminApiException(422, detail="Passwords do not match")
+        return v
 
 
 class ExportInputSchema(BaseModel):

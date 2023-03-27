@@ -211,6 +211,30 @@ async def add(request: HttpRequest, model: str) -> JsonResponse:
 
 
 @csrf_exempt
+async def change_password(request: HttpRequest, id: UUID | int) -> JsonResponse:
+    """This method is used to change a password.
+
+    :params id: an id of object.
+    :params payload: a payload object.
+    :return: An object.
+    """
+    if request.method != "PATCH":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not is_valid_id(id):
+        return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
+    try:
+        await api_service.change_password(
+            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            id,
+            json.loads(request.body),
+        )
+        return JsonResponse(id, safe=False)
+
+    except AdminApiException as e:
+        return JsonResponse({"detail": e.detail}, status=e.status_code)
+
+
+@csrf_exempt
 async def change(request: HttpRequest, model: str, id: UUID | int) -> JsonResponse:
     """This method is used to change an object.
 
