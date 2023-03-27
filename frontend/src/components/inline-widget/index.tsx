@@ -66,9 +66,9 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
 
   const onOpenAdd = useCallback(() => {
     formAdd.resetFields();
-    formAdd.setFieldValue(modelConfiguration.fk_name, parentId);
     setOpenAdd(true);
     setOpenChange(undefined);
+    formAdd.setFieldValue(modelConfiguration.fk_name, parentId);
   }, [formAdd, parentId, modelConfiguration.fk_name]);
 
   const onCloseAdd = useCallback(() => {
@@ -79,12 +79,10 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
   const onOpenChange = useCallback(
     (item: any) => {
       formChange.resetFields();
-      formChange.setFieldValue(modelConfiguration.fk_name, parentId);
-      formChange.setFieldsValue(transformDataFromServer(item));
-      setOpenChange(item);
+      setOpenChange(item?.id);
       setOpenAdd(false);
     },
-    [formChange, parentId, modelConfiguration.fk_name]
+    [formChange]
   );
 
   const onCloseChange = useCallback(() => {
@@ -102,10 +100,19 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
   });
 
   const { data, isLoading, refetch } = useQuery(
-    [`/list/${model}`, queryString],
-    () => getFetcher(`/list/${model}?${queryString}`),
+    [`/list/inlines.${model}`, queryString],
+    () => getFetcher(`/list/inlines.${model}?${queryString}`),
     {
       enabled: openList,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const { data: initialChangeValues, isLoading: isLoadingInitialValues } = useQuery(
+    [`/retrieve/inlines.${model}/${openChange}`],
+    () => getFetcher(`/retrieve/inlines.${model}/${openChange}`),
+    {
+      enabled: !!openChange,
       refetchOnWindowFocus: false,
     }
   );
@@ -114,7 +121,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
     mutate: mutateAdd,
     isLoading: isLoadingAdd,
     isError: isErrorAdd,
-  } = useMutation((payload: any) => postFetcher(`/add/${model}`, payload), {
+  } = useMutation((payload: any) => postFetcher(`/add/inlines.${model}`, payload), {
     onSuccess: () => {
       message.success(_t('Succesfully added'));
       refetch();
@@ -129,19 +136,22 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
     mutate: mutateChange,
     isLoading: isLoadingChange,
     isError: isErrorChange,
-  } = useMutation((payload: any) => patchFetcher(`/change/${model}/${openChange?.id}`, payload), {
-    onSuccess: () => {
-      message.success(_t('Succesfully changed'));
-      refetch();
-      onCloseChange();
-    },
-    onError: (error: Error) => {
-      handleError(error, formChange);
-    },
-  });
+  } = useMutation(
+    (payload: any) => patchFetcher(`/change/inlines.${model}/${openChange}`, payload),
+    {
+      onSuccess: () => {
+        message.success(_t('Succesfully changed'));
+        refetch();
+        onCloseChange();
+      },
+      onError: (error: Error) => {
+        handleError(error, formChange);
+      },
+    }
+  );
 
   const { mutate: mutateDelete } = useMutation(
-    (id: string) => deleteFetcher(`/delete/${model}/${id}`),
+    (id: string) => deleteFetcher(`/delete/inlines.${model}/${id}`),
     {
       onSuccess: () => {
         resetTable(modelConfiguration?.preserve_filters);
@@ -155,7 +165,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
   );
 
   const { mutate: mutateAction, isLoading: isLoadingAction } = useMutation(
-    (payload: any) => postFetcher(`/action/${model}/${action}`, payload),
+    (payload: any) => postFetcher(`/action/inlines.${model}/${action}`, payload),
     {
       onSuccess: () => {
         resetTable(modelConfiguration?.preserve_filters);
@@ -428,23 +438,30 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
       <Modal
         width={600}
         open={!!openChange}
-        title={`Change ${getTitleFromModelClass(modelConfiguration.name)} ${openChange?.id}`}
+        title={`Change ${getTitleFromModelClass(modelConfiguration.name)} ${openChange}`}
         onCancel={onCloseChange}
         footer={null}
       >
         <Divider />
-        {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Change) ? (
+        {initialChangeValues &&
+        modelConfiguration &&
+        modelConfiguration.permissions.includes(EModelPermission.Change) ? (
           <FormContainer
             modelConfiguration={modelConfiguration}
             form={formChange}
             onFinish={onFinishChange}
             mode="inline-change"
             hasOperationError={isErrorChange}
+            initialValues={transformDataFromServer(initialChangeValues)}
           >
             <Row justify="end">
               <Col>
                 <Space>
-                  <Button loading={isLoadingChange} htmlType="submit" type="primary">
+                  <Button
+                    loading={isLoadingChange || isLoadingInitialValues}
+                    htmlType="submit"
+                    type="primary"
+                  >
                     <SaveOutlined /> {_t('Save')}
                   </Button>
                 </Space>

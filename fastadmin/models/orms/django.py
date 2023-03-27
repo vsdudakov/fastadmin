@@ -1,3 +1,4 @@
+from base64 import b64decode
 from typing import Any
 from uuid import UUID
 
@@ -20,12 +21,12 @@ class DjangoORMMixin:
     def get_model_fields_with_widget_types(
         self,
         with_m2m: bool | None = None,
+        with_upload: bool | None = None,
     ) -> list[ModelFieldWidgetSchema]:
         """This method is used to get model fields with widget types.
 
         :params with_m2m: a flag to include m2m fields.
-        :params with_pk: a flag to include pk fields.
-        :params with_readonly: a flag to include readonly fields.
+        :params with_upload: a flag to include upload fields.
         :return: A list of ModelFieldWidgetSchema.
         """
         orm_model_fields = self.model_cls._meta.get_fields()
@@ -42,11 +43,14 @@ class DjangoORMMixin:
                 column_name = f"{field_name}_id"
 
             is_m2m = field_type in "ManyToManyField"
-
+            is_upload = field_type in ("FileField", "ImageField")
             if with_m2m is not None and not with_m2m and is_m2m:
                 continue
-
             if with_m2m is not None and with_m2m and not is_m2m:
+                continue
+            if with_upload is not None and not with_upload and is_upload:
+                continue
+            if with_upload is not None and with_upload and not is_upload:
                 continue
 
             is_pk = getattr(orm_model_field, "primary_key", False)
@@ -128,6 +132,8 @@ class DjangoORMMixin:
                     filter_widget_type = WidgetType.RangePicker
                     filter_widget_props["format"] = settings.ADMIN_TIME_FORMAT
                     filter_widget_props["showTime"] = True
+                case "FileField" | "ImageField":
+                    form_widget_type = WidgetType.Upload
 
             # relations
             if field_type in ("ForeignKey", "OneToOneField", "ManyToManyField"):
@@ -315,6 +321,7 @@ class DjangoORMMixin:
 
         :params obj: an object.
         :params field: a m2m field name.
+        :params ids: a list of ids.
 
         :return: A list of ids.
         """
@@ -322,6 +329,25 @@ class DjangoORMMixin:
             return
         m2m_rel = getattr(obj, field)
         m2m_rel.set(ids)
+
+    @sync_to_async
+    def orm_save_upload_field(self, obj: Any, field: str, base64: str) -> None:
+        """This method is used to save upload field.
+
+        :params obj: an object.
+        :params field: a m2m field name.
+        :params base64: a base64 string.
+
+        :return: A list of ids.
+        """
+        from django.core.files.base import ContentFile
+
+        _format, _img_str = base64.split(";base64,")
+        _name, ext = _format.split("/")
+        name = _name.split(":")[-1]
+        name = "{}.{}".format(name, ext)
+        data = ContentFile(b64decode(_img_str), name=name)
+        getattr(obj, field).save(name, data, save=True)
 
 
 class DjangoModelAdmin(DjangoORMMixin, ModelAdmin):  # type: ignore

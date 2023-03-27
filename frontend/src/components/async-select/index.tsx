@@ -9,12 +9,14 @@ export interface IAsyncSelect {
   parentModel: string;
   idField: string;
   labelFields: string[];
+  value?: any;
 }
 
 export const AsyncSelect: React.FC<IAsyncSelect> = ({
   parentModel,
   idField,
   labelFields,
+  value,
   ...props
 }) => {
   const [search, setSearch] = useState<string | undefined>();
@@ -49,10 +51,11 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
       options={(data?.results || []).map((item: any) => {
         const labelField = labelFields.filter((f) => item[f])[0];
         return {
-          value: item[idField],
+          value: `${item[idField]}`,
           label: item[labelField],
         };
       })}
+      value={value ? `${value}` : undefined}
       {...props}
     />
   );

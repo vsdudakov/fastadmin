@@ -26,6 +26,22 @@ export const App: React.FC = () => {
           colorLinkHover: configuration.primary_color,
         },
       }}
+      form={{
+        validateMessages: {
+          // eslint-disable-next-line no-template-curly-in-string
+          required: _t('${label} is required.') as string,
+          types: {
+            // eslint-disable-next-line no-template-curly-in-string
+            email: _t('${label} is not valid.') as string,
+            // eslint-disable-next-line no-template-curly-in-string
+            number: _t('${label} is not valid.') as string,
+          },
+          number: {
+            // eslint-disable-next-line no-template-curly-in-string
+            range: _t('${label} must be between ${min} and ${max}') as string,
+          },
+        },
+      }}
     >
       <Helmet titleTemplate="FastAPI Admin | %s" defaultTitle={_t('FastAPI Admin') as string}>
         <meta name="description" content={_t('FastAPI Admin') as string} />

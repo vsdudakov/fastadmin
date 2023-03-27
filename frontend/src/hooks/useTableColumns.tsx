@@ -6,7 +6,7 @@ import { FilterOutlined, FilterFilled, DeleteOutlined, EditOutlined } from '@ant
 import { getTitleFromFieldName } from 'helpers/title';
 import { EFieldWidgetType, EModelPermission, IModel, IModelField } from 'interfaces/configuration';
 import { FilterColumn } from 'components/filter-column';
-import { transformColumnValueFromServer } from 'helpers/transform';
+import { isString, transformColumnValueFromServer } from 'helpers/transform';
 
 export const useTableColumns = (
   modelConfiguration: IModel | undefined,
@@ -33,6 +33,7 @@ export const useTableColumns = (
           dataIndex: field.name,
           key: field.name,
           sorter: field.list_configuration?.sorter,
+          width: field.list_configuration?.width,
           filterIcon: !!field.list_configuration?.filter_widget_type ? (
             !!getFilterValue(field.name) ? (
               <Tooltip title={_t('Click to reset this filter')}>
@@ -81,6 +82,16 @@ export const useTableColumns = (
                 <Button style={{ padding: 0 }} type="link" onClick={onChange}>
                   {transformedValue}
                 </Button>
+              );
+            }
+            if (
+              isString(transformedValue) &&
+              (transformedValue.startsWith('http') || transformedValue.startsWith('/'))
+            ) {
+              return (
+                <a href={transformedValue} target="_blank" rel="noreferrer">
+                  {transformedValue}
+                </a>
               );
             }
 

@@ -18,13 +18,19 @@ class BaseModelAdmin:
     # Use it only if you use several orms in your project.
     model_name_prefix: str | None = None
 
-    # Widgets for fields. Overload widgets in your ModelAdmin class using this parameter.
-    # It contains widget type and default widget props for type.
+    # A dictionary containing the field names and the corresponding widget type and widget props for the form view.
     # Example of usage:
     # form_fields_widgets = {
     #     "description": (WidgetType.RichTextArea, {})
     # }
     form_fields_widgets: dict[str, tuple[WidgetType, dict]] = {}
+
+    # A dictionary containing the field names and the corresponding widget type and column widths (px, %) for the list view.
+    # Example of usage:
+    # table_fields_widths = {
+    #     "id": "100px",
+    # }
+    table_fields_widths: dict[str, str] = {}
 
     # A list of actions to make available on the change list page.
     # You have to implement methods with names like <action_name> in your ModelAdmin class and decorate them with @action decorator.  # noqa: E501
@@ -183,12 +189,12 @@ class BaseModelAdmin:
     def get_model_fields_with_widget_types(
         self,
         with_m2m: bool | None = None,
+        with_upload: bool | None = None,
     ) -> list[ModelFieldWidgetSchema]:
         """This method is used to get model fields with widget types.
 
         :params with_m2m: a flag to include m2m fields.
-        :params with_pk: a flag to include pk fields.
-        :params with_readonly: a flag to include readonly fields.
+        :params with_upload: a flag to include upload fields.
         :return: A list of ModelFieldWidgetSchema.
         """
         raise NotImplementedError
@@ -252,6 +258,18 @@ class BaseModelAdmin:
 
         :params obj: an object.
         :params field: a m2m field name.
+        :params ids: a list of ids.
+
+        :return: A list of ids.
+        """
+        raise NotImplementedError
+
+    async def orm_save_upload_field(self, obj: Any, field: str, base64: str) -> None:
+        """This method is used to save upload field.
+
+        :params obj: an object.
+        :params field: a m2m field name.
+        :params base64: a base64 string.
 
         :return: A list of ids.
         """
@@ -391,13 +409,18 @@ class BaseModelAdmin:
         :params payload: a payload from request.
         :return: A saved object or None.
         """
-        fields = self.get_model_fields_with_widget_types(with_m2m=False)
+        fields = self.get_model_fields_with_widget_types(with_m2m=False, with_upload=False)
         m2m_fields = self.get_model_fields_with_widget_types(with_m2m=True)
+        upload_fields = self.get_model_fields_with_widget_types(with_upload=True)
 
         fields_payload = {field.column_name: payload[field.name] for field in fields if field.name in payload}
         obj = await self.orm_save_obj(id, fields_payload)
         if not obj:
             return None
+
+        for upload_field in upload_fields:
+            if upload_field.name in payload:
+                await self.orm_save_upload_field(obj, upload_field.column_name, payload[upload_field.name])
 
         for m2m_field in m2m_fields:
             if m2m_field.name in payload:

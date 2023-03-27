@@ -18,12 +18,12 @@ class TortoiseMixin:
     def get_model_fields_with_widget_types(
         self,
         with_m2m: bool | None = None,
+        with_upload: bool | None = None,
     ) -> list[ModelFieldWidgetSchema]:
         """This method is used to get model fields with widget types.
 
         :params with_m2m: a flag to include m2m fields.
-        :params with_pk: a flag to include pk fields.
-        :params with_readonly: a flag to include readonly fields.
+        :params with_upload: a flag to include upload fields.
         :return: A list of ModelFieldWidgetSchema.
         """
         orm_model_fields = self.model_cls._meta.fields_map.items()
@@ -47,10 +47,14 @@ class TortoiseMixin:
                 column_name = f"{column_name}_id"
 
             is_m2m = field_type == "ManyToManyFieldInstance"
+            is_upload = False
             if with_m2m is not None and not with_m2m and is_m2m:
                 continue
-
             if with_m2m is not None and with_m2m and not is_m2m:
+                continue
+            if with_upload is not None and not with_upload and is_upload:
+                continue
+            if with_upload is not None and with_upload and not is_upload:
                 continue
 
             is_pk = getattr(orm_model_field, "index", False)
@@ -312,6 +316,7 @@ class TortoiseMixin:
 
         :params obj: an object.
         :params field: a m2m field name.
+        :params ids: a list of ids.
 
         :return: A list of ids.
         """
@@ -328,6 +333,17 @@ class TortoiseMixin:
             setattr(remote_model_obj, "_saved_in_db", True)
             remote_model_objs.append(remote_model_obj)
         await m2m_rel.add(*remote_model_objs)
+
+    async def orm_save_upload_field(self, obj: Any, field: str, base64: str) -> None:
+        """This method is used to save upload field.
+
+        :params obj: an object.
+        :params field: a m2m field name.
+        :params base64: a base64 string.
+
+        :return: A list of ids.
+        """
+        pass
 
 
 class TortoiseModelAdmin(TortoiseMixin, ModelAdmin):

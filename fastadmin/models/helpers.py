@@ -68,19 +68,23 @@ def get_admin_model(orm_model_cls: str | Any) -> ModelAdmin | None:
     return None
 
 
-def get_admin_or_admin_inline_model(orm_model_cls: str | Any) -> ModelAdmin | InlineModelAdmin | None:
+def get_admin_or_admin_inline_model(orm_model_cls: str) -> ModelAdmin | InlineModelAdmin | None:
     """This method is used to get an admin model class or an inline model class by orm model class name.
 
     :params orm_model_cls_name: a name of model.
     :return: An admin model class or an inline model class or None.
     """
+    if orm_model_cls.startswith("inlines."):
+        orm_model_cls = orm_model_cls.replace("inlines.", "")
+        for _, admin_model in admin_models.items():
+            for inline_model in admin_model.inlines:
+                if inline_model.model.__name__ == orm_model_cls:
+                    return inline_model(inline_model.model)
+        return None
+
     admin_model = get_admin_model(orm_model_cls)
     if admin_model:
         return admin_model
-    for _, admin_model in admin_models.items():
-        for inline_model in admin_model.inlines:
-            if inline_model.model.__name__ == orm_model_cls:
-                return inline_model(inline_model.model)
     return None
 
 
@@ -131,7 +135,7 @@ def generate_models_schema(
                     empty_value_display=admin_model_obj.empty_value_display,
                     filter_widget_type=filter_widget_type,
                     filter_widget_props=filter_widget_props,
-                    width=None,
+                    width=admin_model_obj.table_fields_widths.get(field_name, None),
                 )
 
             add_configuration = None

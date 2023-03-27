@@ -22,6 +22,7 @@ interface IFormContainer {
   children: JSX.Element | JSX.Element[];
   mode: 'add' | 'change' | 'inline-add' | 'inline-change';
   hasOperationError?: boolean;
+  initialValues?: Record<string, any>;
 }
 
 export const FormContainer: React.FC<IFormContainer> = ({
@@ -32,6 +33,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
   children,
   mode,
   hasOperationError,
+  initialValues,
 }) => {
   const { t: _t } = useTranslation('FormContainer');
 
@@ -54,14 +56,8 @@ export const FormContainer: React.FC<IFormContainer> = ({
       if (!configurationField.form_widget_type) {
         return null;
       }
-      const [Widget, widgetProps]: any = getWidgetCls(configurationField.form_widget_type, _t);
-      return (
-        <Widget
-          {...(widgetProps || {})}
-          {...(configurationField.form_widget_props || {})}
-          parentId={id}
-        />
-      );
+      const [Widget, widgetProps]: any = getWidgetCls(configurationField.form_widget_type, _t, id);
+      return <Widget {...(widgetProps || {})} {...(configurationField.form_widget_props || {})} />;
     },
     [_t, id]
   );
@@ -179,7 +175,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
   }, [modelConfiguration?.inlines, id]);
 
   return (
-    <Form layout="vertical" form={form} onFinish={onFinish}>
+    <Form initialValues={initialValues} layout="vertical" form={form} onFinish={onFinish}>
       {modelConfiguration?.save_on_top && (
         <>
           {children}

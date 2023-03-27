@@ -38,7 +38,7 @@ export interface IModelAction {
 export interface IListConfigurationField {
   index?: number;
   sorter?: boolean;
-  width?: number;
+  width?: string;
   is_link?: boolean;
   empty_value_display: string;
   filter_widget_type?: EFieldWidgetType;

@@ -48,7 +48,7 @@ class ListConfigurationFieldSchema(BaseModel):
     index: int | None
 
     sorter: bool | None
-    width: int | None
+    width: str | None
     is_link: bool | None
     empty_value_display: str
     filter_widget_type: WidgetType | None

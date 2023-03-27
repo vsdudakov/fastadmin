@@ -1,21 +1,12 @@
-import {
-  Checkbox,
-  DatePicker,
-  Input,
-  InputNumber,
-  Radio,
-  Select,
-  Switch,
-  TimePicker,
-  Upload,
-} from 'antd';
+import { Checkbox, DatePicker, Input, InputNumber, Radio, Select, Switch, TimePicker } from 'antd';
 import { AsyncSelect } from 'components/async-select';
 import { AsyncTransfer } from 'components/async-transfer';
 import { PasswordInput } from 'components/password-input';
 import { TextEditor } from 'components/texteditor-field';
+import { UploadInput } from 'components/upload-input';
 import { EFieldWidgetType } from 'interfaces/configuration';
 
-export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any) => {
+export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any, id?: string) => {
   switch (widgetType) {
     case EFieldWidgetType.Input:
       return [Input, {}];
@@ -27,7 +18,7 @@ export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any) => {
         },
       ];
     case EFieldWidgetType.PasswordInput:
-      return [PasswordInput, {}];
+      return [PasswordInput, { parentId: id }];
     case EFieldWidgetType.TextArea:
       return [Input.TextArea, {}];
     case EFieldWidgetType.RichTextArea:
@@ -78,7 +69,7 @@ export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any) => {
         { style: { width: '100%' }, placeholder: [_t('Start'), _t('End')] },
       ];
     case EFieldWidgetType.Upload:
-      return [Upload, {}];
+      return [UploadInput, { parentId: id }];
     default:
       return [Input, {}];
   }

@@ -22,6 +22,10 @@ export const isBoolean = (v: any): boolean => {
   return v === 'true' || v === 'false' || typeof v === 'boolean' || !!v === v;
 };
 
+export const isString = (v: any): boolean => {
+  return typeof v === 'string' || v instanceof String;
+};
+
 export const transformValueToServer = (value: any): any => {
   if (isArray(value)) {
     return value.map(transformValueToServer);

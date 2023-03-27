@@ -28,13 +28,10 @@ export const Change: React.FC = () => {
     (item: IModel) => item.name === model
   );
 
-  const { isLoading: isLoadingInitialValues } = useQuery(
+  const { data: initialChangeValues, isLoading: isLoadingInitialValues } = useQuery(
     [`/retrieve/${model}/${id}`],
     () => getFetcher(`/retrieve/${model}/${id}`),
     {
-      onSuccess: (data) => {
-        form.setFieldsValue(transformDataFromServer(data));
-      },
       refetchOnWindowFocus: false,
     }
   );
@@ -132,7 +129,9 @@ export const Change: React.FC = () => {
       }
       isLoading={isLoadingInitialValues}
     >
-      {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Change) ? (
+      {initialChangeValues &&
+      modelConfiguration &&
+      modelConfiguration.permissions.includes(EModelPermission.Change) ? (
         <FormContainer
           modelConfiguration={modelConfiguration}
           id={id}
@@ -140,6 +139,7 @@ export const Change: React.FC = () => {
           onFinish={onFinish}
           mode="change"
           hasOperationError={isError || isErrorAdd}
+          initialValues={transformDataFromServer(initialChangeValues)}
         >
           <Row gutter={[8, 8]} justify="space-between">
             <Col>
