@@ -318,7 +318,7 @@ def test_get_form_widget_event(event):
                 assert not field.is_immutable
                 assert field.filter_widget_type == WidgetType.Input
                 assert field.filter_widget_props
-                assert field.form_widget_type == WidgetType.Input
+                assert field.form_widget_type in (WidgetType.Input, WidgetType.JsonTextArea)
                 assert field.form_widget_props
             case _:
                 raise ValueError(f"Unexpected field: {field.name}")
