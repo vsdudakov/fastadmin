@@ -1,6 +1,6 @@
 import { Checkbox, Tag } from 'antd';
 import dayjs from 'dayjs';
-import slugify from '@sindresorhus/slugify';
+import slugify from 'slugify';
 
 export const isDayJs = (v: any): boolean => {
   return dayjs.isDayjs(v);

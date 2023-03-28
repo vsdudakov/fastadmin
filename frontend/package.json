@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@sindresorhus/slugify": "^2.2.0",
     "@tanstack/react-query": "^4.24.10",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -28,6 +27,7 @@
     "react-quill": "^2.0.0",
     "react-router-dom": "^6.8.1",
     "react-scripts": "5.0.1",
+    "slugify": "^1.6.6",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },

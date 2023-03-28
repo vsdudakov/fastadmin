@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Input, Space, Tooltip } from 'antd';
 import { SwapOutlined } from '@ant-design/icons';
 
-import slugify from '@sindresorhus/slugify';
+import slugify from 'slugify';
 import { useTranslation } from 'react-i18next';
 
 interface IJsonTextAreaProps {
