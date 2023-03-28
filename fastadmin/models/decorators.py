@@ -59,19 +59,34 @@ def register(*orm_model_classes, **kwargs):
     from fastadmin.models.base import ModelAdmin
     from fastadmin.models.helpers import register_admin_model_class
 
-    def wrapper(admin_model_class):
+    def wrapper(model_admin_cls):
         """Wrapper for register.
 
-        :param admin_class: A class to wrap.
+        :param model_admin_cls: A class to wrap.
         """
         if not orm_model_classes:
             raise ValueError("At least one model must be passed to register.")
 
-        if not issubclass(admin_model_class, ModelAdmin):
+        if not issubclass(model_admin_cls, ModelAdmin):
             raise ValueError("Wrapped class must subclass ModelAdmin.")
 
-        register_admin_model_class(admin_model_class, orm_model_classes, **kwargs)
+        register_admin_model_class(model_admin_cls, orm_model_classes, **kwargs)
 
-        return admin_model_class
+        return model_admin_cls
 
     return wrapper
+
+
+def register_widget(dashboard_widget_admin_cls):
+    """Wrapper for register dashboard widget.
+
+    :param admin_class: A class to wrap.
+    """
+    from fastadmin.models.base import DashboardWidgetAdmin, admin_dashboard_widgets
+
+    if not issubclass(dashboard_widget_admin_cls, DashboardWidgetAdmin):
+        raise ValueError("Wrapped class must subclass DashboardWidgetAdmin.")
+
+    admin_dashboard_widgets.append(dashboard_widget_admin_cls)
+
+    return dashboard_widget_admin_cls

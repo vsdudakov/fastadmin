@@ -19,6 +19,7 @@ from fastadmin.api.schemas import (
 )
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.helpers import (
+    generate_dashboard_widgets_schema,
     generate_models_schema,
     get_admin_model,
     get_admin_models,
@@ -371,10 +372,12 @@ class ApiService:
                 date_format=settings.ADMIN_DATE_FORMAT,
                 datetime_format=settings.ADMIN_DATETIME_FORMAT,
                 models=[],
+                dashboard_widgets=[],
             )
 
         admin_models = cast(dict[Any, ModelAdmin | InlineModelAdmin], get_admin_models())
         models = cast(Sequence[ModelSchema], generate_models_schema(admin_models, user_id=current_user_id))
+        dashboard_widgets = generate_dashboard_widgets_schema()
         return ConfigurationSchema(
             site_name=settings.ADMIN_SITE_NAME,
             site_sign_in_logo=settings.ADMIN_SITE_SIGN_IN_LOGO,
@@ -385,4 +388,5 @@ class ApiService:
             date_format=settings.ADMIN_DATE_FORMAT,
             datetime_format=settings.ADMIN_DATETIME_FORMAT,
             models=models,
+            dashboard_widgets=dashboard_widgets,
         )

@@ -2,10 +2,11 @@ from operator import attrgetter
 from typing import Any, cast
 from uuid import UUID
 
-from fastadmin.models.base import InlineModelAdmin, ModelAdmin, admin_models
+from fastadmin.models.base import InlineModelAdmin, ModelAdmin, admin_dashboard_widgets, admin_models
 from fastadmin.models.schemas import (
     AddConfigurationFieldSchema,
     ChangeConfigurationFieldSchema,
+    DashboardWidgetSchema,
     InlineModelSchema,
     ListConfigurationFieldSchema,
     ModelAction,
@@ -281,6 +282,22 @@ def generate_models_schema(
                 ),
             )
     return models_schemas
+
+
+def generate_dashboard_widgets_schema() -> list[DashboardWidgetSchema]:
+    """Generate dashboard widgets schema."""
+    dashboard_widgets_schemas: list[DashboardWidgetSchema] = []
+    for admin_dashboard_widget in admin_dashboard_widgets:
+        dashboard_widgets_schemas.append(
+            DashboardWidgetSchema(
+                title=admin_dashboard_widget.title,
+                dashboard_widget_type=admin_dashboard_widget.dashboard_widget_type,
+                x_field=admin_dashboard_widget.x_field,
+                y_field=admin_dashboard_widget.y_field,
+                series_field=admin_dashboard_widget.series_field,
+            ),
+        )
+    return dashboard_widgets_schemas
 
 
 def getattrs(obj: Any, attrs: str, default: Any | None = None) -> Any:

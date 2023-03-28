@@ -30,12 +30,12 @@ const { Title } = Typography;
 
 interface ICrudContainer {
   title: string;
-  breadcrumbs?: JSX.Element | JSX.Element[];
+  breadcrumbs?: React.ReactNode;
   viewOnSite?: string;
-  headerActions?: JSX.Element | JSX.Element[];
-  bottomActions?: JSX.Element | JSX.Element[];
+  headerActions?: React.ReactNode;
+  bottomActions?: React.ReactNode;
   isLoading?: boolean;
-  children: JSX.Element | JSX.Element[];
+  children: React.ReactNode;
 }
 
 export const CrudContainer: React.FC<ICrudContainer> = ({

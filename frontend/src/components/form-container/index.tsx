@@ -20,7 +20,7 @@ interface IFormContainer {
   id?: string;
   form: any;
   onFinish: (payload: any) => void;
-  children: JSX.Element | JSX.Element[];
+  children: React.ReactNode;
   mode: 'add' | 'change' | 'inline-add' | 'inline-change';
   hasOperationError?: boolean;
   initialValues?: Record<string, any>;
