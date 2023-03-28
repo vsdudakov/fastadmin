@@ -1,4 +1,4 @@
-name: CI
+name: fastadmin ci
 on:
   workflow_dispatch:
   release:
@@ -6,7 +6,7 @@ on:
   pull_request:
     types: [ opened, synchronize, reopened ]
 jobs:
-  ci:
+  fastadmin-ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
