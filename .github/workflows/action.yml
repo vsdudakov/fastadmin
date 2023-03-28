@@ -1,5 +1,10 @@
 name: CI
-on: [create, push]
+on:
+  workflow_dispatch:
+  release:
+    types: [ edited, published ]
+  pull_request:
+    types: [ opened, synchronize, reopened ]
 jobs:
   ci:
     runs-on: ubuntu-latest
