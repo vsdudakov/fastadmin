@@ -1,5 +1,6 @@
 import { Checkbox, Tag } from 'antd';
 import dayjs from 'dayjs';
+import slugify from '@sindresorhus/slugify';
 
 export const isDayJs = (v: any): boolean => {
   return dayjs.isDayjs(v);
@@ -24,6 +25,31 @@ export const isBoolean = (v: any): boolean => {
 
 export const isString = (v: any): boolean => {
   return typeof v === 'string' || v instanceof String;
+};
+
+export const isJson = (v: any): boolean => {
+  if (!isString(v)) {
+    try {
+      v = JSON.stringify(v);
+    } catch (e) {
+      return false;
+    }
+  }
+  try {
+    JSON.parse(v);
+  } catch (e) {
+    return false;
+  }
+  return true;
+};
+
+export const isSlug = (v: any): boolean => {
+  if (!isString(v)) return false;
+  try {
+    return slugify(v) === v;
+  } catch (e) {
+    return false;
+  }
 };
 
 export const transformValueToServer = (value: any): any => {

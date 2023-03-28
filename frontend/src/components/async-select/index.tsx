@@ -99,45 +99,43 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
   };
 
   return (
-    <Row gutter={[8, 8]}>
-      <Col xs={4} md={2}>
+    <>
+      <Modal
+        width={600}
+        open={openAdd}
+        title={_t(`Add ${getTitleFromModelClass(parentModel)}`)}
+        onCancel={onCloseAdd}
+        footer={null}
+      >
+        <Divider />
+        {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Add) ? (
+          <FormContainer
+            modelConfiguration={modelConfiguration}
+            form={formAdd}
+            onFinish={onFinishAdd}
+            mode="inline-add"
+            hasOperationError={isErrorAdd}
+          >
+            <Row justify="end">
+              <Col>
+                <Space>
+                  <Button loading={isLoadingAdd} htmlType="submit" type="primary">
+                    <SaveOutlined /> {_t('Add')}
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+          </FormContainer>
+        ) : (
+          <Empty description={_t('No permissions for model')} />
+        )}
+      </Modal>
+      <Space.Compact style={{ width: '100%' }}>
         <Tooltip title={_t(`Add ${getTitleFromModelClass(parentModel)}`)}>
-          <Button type="dashed" style={{ width: '100%', padding: 'unset' }} onClick={onOpenAdd}>
+          <Button onClick={onOpenAdd}>
             <PlusCircleOutlined />
           </Button>
         </Tooltip>
-        <Modal
-          width={600}
-          open={openAdd}
-          title={_t(`Add ${getTitleFromModelClass(parentModel)}`)}
-          onCancel={onCloseAdd}
-          footer={null}
-        >
-          <Divider />
-          {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Add) ? (
-            <FormContainer
-              modelConfiguration={modelConfiguration}
-              form={formAdd}
-              onFinish={onFinishAdd}
-              mode="inline-add"
-              hasOperationError={isErrorAdd}
-            >
-              <Row justify="end">
-                <Col>
-                  <Space>
-                    <Button loading={isLoadingAdd} htmlType="submit" type="primary">
-                      <SaveOutlined /> {_t('Add')}
-                    </Button>
-                  </Space>
-                </Col>
-              </Row>
-            </FormContainer>
-          ) : (
-            <Empty description={_t('No permissions for model')} />
-          )}
-        </Modal>
-      </Col>
-      <Col xs={20} md={22}>
         <Select
           showSearch={true}
           loading={isLoading}
@@ -153,7 +151,7 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
           value={value ? `${value}` : undefined}
           {...props}
         />
-      </Col>
-    </Row>
+      </Space.Compact>
+    </>
   );
 };

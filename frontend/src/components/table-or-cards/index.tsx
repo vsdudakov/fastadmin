@@ -12,5 +12,11 @@ export const TableOrCards = (props: ITableOrCards) => {
   if (isMobile) {
     return <Cards {...props} />;
   }
-  return <Table {...props} />;
+  return (
+    <Table
+      sticky={true}
+      scroll={{ x: (props.columns?.length || 0) > 7 ? 1800 : 1200 }}
+      {...props}
+    />
+  );
 };

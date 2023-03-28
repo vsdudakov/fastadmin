@@ -1,7 +1,10 @@
 import { Checkbox, DatePicker, Input, InputNumber, Radio, Select, Switch, TimePicker } from 'antd';
 import { AsyncSelect } from 'components/async-select';
 import { AsyncTransfer } from 'components/async-transfer';
+import { JsonTextArea } from 'components/json-textarea';
 import { PasswordInput } from 'components/password-input';
+import { PhoneNumberInput } from 'components/phone-number-input';
+import { SlugInput } from 'components/slug-input';
 import { TextEditor } from 'components/texteditor-field';
 import { UploadInput } from 'components/upload-input';
 import { EFieldWidgetType } from 'interfaces/configuration';
@@ -17,12 +20,22 @@ export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any, id?: string)
           style: { width: '100%' },
         },
       ];
+    case EFieldWidgetType.EmailInput:
+      return [Input, {}];
+    case EFieldWidgetType.PhoneInput:
+      return [PhoneNumberInput, {}];
+    case EFieldWidgetType.SlugInput:
+      return [SlugInput, {}];
+    case EFieldWidgetType.UrlInput:
+      return [Input, {}];
     case EFieldWidgetType.PasswordInput:
       return [PasswordInput, { parentId: id }];
     case EFieldWidgetType.TextArea:
       return [Input.TextArea, {}];
     case EFieldWidgetType.RichTextArea:
       return [TextEditor, {}];
+    case EFieldWidgetType.JsonTextArea:
+      return [JsonTextArea, {}];
     case EFieldWidgetType.Select:
       return [
         Select,

@@ -13,6 +13,7 @@ import {
 import { getWidgetCls } from 'helpers/widgets';
 import { getTitleFromFieldName, getTitleFromModelClass } from 'helpers/title';
 import { InlineWidget } from 'components/inline-widget';
+import { isJson, isSlug } from 'helpers/transform';
 
 interface IFormContainer {
   modelConfiguration: IModel;
@@ -80,13 +81,55 @@ export const FormContainer: React.FC<IFormContainer> = ({
           name={field.name}
           label={getTitleFromFieldName(field.name)}
           rules={
-            getConf(field).required
-              ? [
-                  {
-                    required: true,
-                  },
-                ]
-              : []
+            [
+              ...(getConf(field).required
+                ? [
+                    {
+                      required: true,
+                    },
+                  ]
+                : []),
+              ...(getConf(field).form_widget_type === EFieldWidgetType.EmailInput
+                ? [
+                    {
+                      type: 'email',
+                    },
+                  ]
+                : []),
+              ...(getConf(field).form_widget_type === EFieldWidgetType.UrlInput
+                ? [
+                    {
+                      type: 'url',
+                    },
+                  ]
+                : []),
+              ...(getConf(field).form_widget_type === EFieldWidgetType.JsonTextArea
+                ? [
+                    {
+                      validator: async (_: any, value: string) => {
+                        if (!isJson(value)) {
+                          throw new Error(_t('Invalid JSON') as string);
+                        }
+                      },
+                    },
+                  ]
+                : []),
+              ...(getConf(field).form_widget_type === EFieldWidgetType.SlugInput
+                ? [
+                    {
+                      validator: async (_: any, value: string) => {
+                        if (!isSlug(value)) {
+                          throw new Error(
+                            _t(
+                              'Invalid Slug. Please use lowercase letters, numbers, and hyphens.'
+                            ) as string
+                          );
+                        }
+                      },
+                    },
+                  ]
+                : []),
+            ] as any
           }
           valuePropName={
             [
@@ -102,7 +145,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
         </Form.Item>
       ));
     },
-    [getConf, getWidget]
+    [_t, getConf, getWidget]
   );
 
   const formItems = useCallback(() => {

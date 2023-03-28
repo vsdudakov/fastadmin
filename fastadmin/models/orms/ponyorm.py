@@ -45,7 +45,8 @@ class PonyORMMixin:
                     field_type = "fk"
 
             is_m2m = field_type in "m2m"
-            is_upload = False
+            w_type, _ = self.form_fields_widgets.get(field_name, (None, None))
+            is_upload = w_type == WidgetType.Upload
             if with_m2m is not None and not with_m2m and is_m2m:
                 continue
             if with_m2m is not None and with_m2m and not is_m2m:
@@ -129,6 +130,8 @@ class PonyORMMixin:
                         form_widget_type = WidgetType.Select
                         filter_widget_type = WidgetType.Select
                         filter_widget_props["mode"] = "multiple"
+                case "Json":
+                    form_widget_type = WidgetType.JsonTextArea
 
             # relations
             if field_type in ("fk", "o2o", "m2m"):

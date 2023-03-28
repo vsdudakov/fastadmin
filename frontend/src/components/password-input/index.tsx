@@ -1,4 +1,4 @@
-import { Button, Divider, Form, Input, message, Modal, Tooltip } from 'antd';
+import { Button, Divider, Form, Input, message, Modal, Space, Tooltip } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { EditOutlined } from '@ant-design/icons';
@@ -52,16 +52,14 @@ export const PasswordInput: React.FC<IPasswordInput> = ({
   }
   return (
     <>
-      <Input.Password
-        prefix={
-          <Tooltip title={_t('Change Password')}>
-            <Button size="small" onClick={onOpen}>
-              <EditOutlined />
-            </Button>
-          </Tooltip>
-        }
-        {...props}
-      />
+      <Space.Compact style={{ width: '100%' }}>
+        <Tooltip title={_t('Change Password')}>
+          <Button onClick={onOpen}>
+            <EditOutlined />
+          </Button>
+        </Tooltip>
+        <Input.Password {...props} />
+      </Space.Compact>
       <Modal open={open} title={_t('Change Password')} onCancel={onClose} footer={null}>
         <Divider />
         <Form form={form} layout="vertical" onFinish={onChangePassword}>

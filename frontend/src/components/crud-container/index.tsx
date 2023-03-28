@@ -193,7 +193,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
         </Header>
         <Layout>
           {!isMobile && (
-            <Sider style={{ background: colorBgContainer, height: '100%' }}>
+            <Sider style={{ background: colorBgContainer, borderRadius: 8 }}>
               <div style={{ padding: 10 }}>
                 <Input
                   value={search}
@@ -208,7 +208,6 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                 defaultSelectedKeys={[model || 'dashboard']}
                 style={{
                   borderRight: 0,
-                  height: 'calc(100% - 70px)',
                   overflowY: 'scroll',
                 }}
                 items={items}
@@ -232,7 +231,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                 <Row justify="space-between">
                   <Col>
                     <Title style={{ margin: 0, marginTop: 15 }} level={5}>
-                      {getTitleFromModelClass(title)}
+                      {title}
                     </Title>
                   </Col>
                   {headerActions ? <Col>{headerActions}</Col> : null}

@@ -34,6 +34,7 @@ export const useTableColumns = (
           key: field.name,
           sorter: field.list_configuration?.sorter,
           width: field.list_configuration?.width,
+          ellipsis: true,
           filterIcon: !!field.list_configuration?.filter_widget_type ? (
             !!getFilterValue(field.name) ? (
               <Tooltip title={_t('Click to reset this filter')}>

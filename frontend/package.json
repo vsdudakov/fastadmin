@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@sindresorhus/slugify": "^2.2.0",
     "@tanstack/react-query": "^4.24.10",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -23,6 +24,7 @@
     "react-file-download": "^0.3.5",
     "react-helmet-async": "^1.3.0",
     "react-i18next": "^12.1.5",
+    "react-phone-input-2": "^2.15.1",
     "react-quill": "^2.0.0",
     "react-router-dom": "^6.8.1",
     "react-scripts": "5.0.1",
@@ -55,6 +57,7 @@
   },
   "devDependencies": {
     "@types/lodash.debounce": "^4.0.7",
+    "@types/react-json-editor-ajrm": "^2.5.3",
     "@types/uuid": "^9.0.1",
     "prettier": "^2.8.4",
     "pretty-quick": "^3.1.3",

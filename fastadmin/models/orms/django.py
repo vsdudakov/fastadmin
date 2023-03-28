@@ -43,7 +43,8 @@ class DjangoORMMixin:
                 column_name = f"{field_name}_id"
 
             is_m2m = field_type in "ManyToManyField"
-            is_upload = field_type in ("FileField", "ImageField")
+            w_type, _ = self.form_fields_widgets.get(field_name, (None, None))
+            is_upload = field_type in ("FileField", "ImageField") or w_type == WidgetType.Upload
             if with_m2m is not None and not with_m2m and is_m2m:
                 continue
             if with_m2m is not None and with_m2m and not is_m2m:
@@ -134,6 +135,14 @@ class DjangoORMMixin:
                     filter_widget_props["showTime"] = True
                 case "FileField" | "ImageField":
                     form_widget_type = WidgetType.Upload
+                case "URLField":
+                    form_widget_type = WidgetType.UrlInput
+                case "EmailField":
+                    form_widget_type = WidgetType.EmailInput
+                case "JSONField":
+                    form_widget_type = WidgetType.JsonTextArea
+                case "SlugField":
+                    form_widget_type = WidgetType.SlugInput
 
             # relations
             if field_type in ("ForeignKey", "OneToOneField", "ManyToManyField"):

@@ -17,7 +17,6 @@ code {
 .quill {
   background-color: white !important;
 }
-
 .ql-snow.ql-toolbar button:hover,
 .ql-snow .ql-toolbar button:hover,
 .ql-snow.ql-toolbar button:focus,
@@ -34,7 +33,6 @@ code {
 .ql-snow .ql-toolbar .ql-picker-item.ql-selected {
   color: #009485 !important;
 }
-
 .ql-snow.ql-toolbar button:hover .ql-stroke,
 .ql-snow .ql-toolbar button:hover .ql-stroke,
 .ql-snow.ql-toolbar button:focus .ql-stroke,
@@ -65,16 +63,13 @@ code {
 .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter {
   stroke: #009485 !important;
 }
-
 .ql-snow a {
   color: #009485 !important;
 }
-
 .ql-toolbar {
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
 }
-
 .ql-container {
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;

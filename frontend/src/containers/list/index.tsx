@@ -252,7 +252,6 @@ export const List: React.FC = () => {
                 }
               : undefined
           }
-          sticky={true}
           columns={columns}
           onChange={onTableChange}
           rowKey="id"
@@ -263,7 +262,6 @@ export const List: React.FC = () => {
             total: data?.total,
             showSizeChanger: true,
           }}
-          scroll={{ x: 1000 }}
         />
       ) : (
         <Empty description={_t('No permissions for model')} />
