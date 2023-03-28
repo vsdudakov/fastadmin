@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     ADMIN_SITE_FAVICON: str = "/admin/static/images/favicon.png"
 
     # This value is the primary color for FastAdmin.
-    ADMIN_PRIMARY_COLOR: str = "#009485"
+    ADMIN_PRIMARY_COLOR: str = "red"
 
     # This value is the session id key to store session id in http only cookies.
     ADMIN_SESSION_ID_KEY: str = "admin_session_id"

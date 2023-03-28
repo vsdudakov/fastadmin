@@ -791,15 +791,15 @@ class AuthorAdmin(TortoiseModelAdmin):
               </p>
 
               <pre>
-<code class="language-python">
+                <code class="language-python">
 from fastadmin import register, TortoiseModelAdmin
 from .models import Author, Editor, Reader
 
 @register(Author, Reader, Editor)
 class PersonAdmin(TortoiseModelAdmin):
     pass
-  </code>
-</pre>
+                </code>
+              </pre>
 
               <p class="alert alert-warning">
                 Note: You can't use this decorator if you have to reference your
@@ -815,180 +815,203 @@ class PersonAdmin(TortoiseModelAdmin):
               <p class="lead">Base options:</p>
               <pre>
                 <code class="language-python">
-  # Widgets for fields. Overload widgets in your ModelAdmin class using this parameter.
-  # It contains widget type and default widget props for type.
-  # Example of usage:
-  # form_fields_widgets = {
-  #     "description": (WidgetType.RichTextArea, {})
-  # }
-  form_fields_widgets: dict[str, tuple[WidgetType, dict]] = {}
+# Use it only if you use several orms in your project.
+model_name_prefix: str | None = None
 
-  # A list of actions to make available on the change list page.
-  # You have to implement methods with names like action_name in your ModelAdmin class and decorate them with @action decorator.
-  # Example of usage:
-  #
-  # actions = ("make_published",)
-  # @action(
-  #     description="Mark selected stories as published",
-  # )
-  # async def make_published(self, objs: list[Any]) -> None:
-  #     ...
-  actions: Sequence[str] = ()
+# A list of actions to make available on the change list page.
+# You have to implement methods with names like action_name in your ModelAdmin class and decorate them with @action decorator.  # noqa: E501
+# Example of usage:
+#
+# actions = ("make_published",)
+# @action(
+#     description="Mark selected stories as published",
+# )
+# async def make_published(self, objs: list[Any]) -> None:
+#     ...
+actions: Sequence[str] = ()
 
-  # Controls where on the page the actions bar appears.
-  # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).
-  # Example of usage: actions_on_top = True
-  actions_on_top: bool = False
+# Controls where on the page the actions bar appears.
+# By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).  # noqa: E501
+# Example of usage: actions_on_top = True
+actions_on_top: bool = False
 
-  # Controls where on the page the actions bar appears.
-  # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).
-  # Example of usage: actions_on_bottom = False
-  actions_on_bottom: bool = True
+# Controls where on the page the actions bar appears.
+# By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).  # noqa: E501
+# Example of usage: actions_on_bottom = False
+actions_on_bottom: bool = True
 
-  # Controls whether a selection counter is displayed next to the action dropdown. By default, the admin changelist will display it
-  # Example of usage: actions_selection_counter = False
-  actions_selection_counter: bool = True
+# Controls whether a selection counter is displayed next to the action dropdown. By default, the admin changelist will display it  # noqa: E501
+# Example of usage: actions_selection_counter = False
+actions_selection_counter: bool = True
 
-  # This attribute overrides the default display value for record's fields that are empty (None, empty string, etc.). The default value is - (a dash).
-  # Example of usage: empty_value_display = "N/A"
-  empty_value_display: str = "-"
+# Not supported setting
+# date_hierarchy
 
-  # This attribute, if given, should be a list of field names to exclude from the form.
-  # Example of usage: exclude = ("password", "otp")
-  exclude: Sequence[str] = ()
+# This attribute overrides the default display value for record's fields that are empty (None, empty string, etc.). The default value is - (a dash).  # noqa: E501
+# Example of usage: empty_value_display = "N/A"
+empty_value_display: str = "-"
 
-  # Use the fields option to make simple layout changes in the forms on the “add” and “change” pages
-  # such as showing only a subset of available fields, modifying their order, or grouping them into rows.
-  # For more complex layout needs, see the fieldsets option.
-  # Example of usage: fields = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
-  fields: Sequence[str] = ()
+# This attribute, if given, should be a list of field names to exclude from the form.
+# Example of usage: exclude = ("password", "otp")
+exclude: Sequence[str] = ()
 
-  # By default, a ManyToManyField is displayed in the admin dashboard with a multiply select.
-  # However, multiple-select boxes can be difficult to use when selecting many items.
-  # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.
-  # The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.
-  # Example of usage: filter_horizontal = ("groups", "user_permissions")
-  filter_horizontal: Sequence[str] = ()
+# Use the fields option to make simple layout changes in the forms on the “add” and “change” pages
+# such as showing only a subset of available fields, modifying their order, or grouping them into rows.
+# For more complex layout needs, see the fieldsets option.
+# Example of usage: fields = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
+fields: Sequence[str] = ()
 
-  # Same as filter_horizontal, but uses a vertical display of the filter interface with the box of unselected options appearing above the box of selected options.
-  # Example of usage: filter_vertical = ("groups", "user_permissions")
-  filter_vertical: Sequence[str] = ()
+# Set fieldsets to control the layout of admin “add” and “change” pages.
+# fieldsets is a list of two-tuples, in which each two-tuple represents a fieldset on the admin form page. (A fieldset is a “section” of the form.)  # noqa: E501
+fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
 
-  # Set list_display to control which fields are displayed on the list page of the admin.
-  # If you don't set list_display, the admin site will display a single column that displays the __str__() representation of each object
-  # Example of usage: list_display = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
-  list_display: Sequence[str] = ()
+# By default, a ManyToManyField is displayed in the admin dashboard with a select multiple.
+# However, multiple-select boxes can be difficult to use when selecting many items.
+# Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.  # noqa: E501
+# The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.  # noqa: E501
+# Example of usage: filter_horizontal = ("groups", "user_permissions")
+filter_horizontal: Sequence[str] = ()
 
-  # Set list_filter to activate filters in the tabel columns of the list page of the admin.
-  # Example of usage: list_filter = ("is_superuser", "is_active", "created_at")
-  list_filter: Sequence[str] = ()
+# Same as filter_horizontal, but uses a vertical display of the filter interface with the box of unselected options appearing above the box of selected options.  # noqa: E501
+# Example of usage: filter_vertical = ("groups", "user_permissions")
+filter_vertical: Sequence[str] = ()
 
-  # By default, applied filters are preserved on the list view after creating, editing, or deleting an object.
-  # You can have filters cleared by setting this attribute to False.
-  # Example of usage: preserve_filters = False
-  preserve_filters: bool = True
+# Not supported setting
+# form
 
-  # Set list_max_show_all to control how many items can appear on a “Show all” admin change list page.
-  # The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.
-  # Example of usage: list_max_show_all = 100
-  list_max_show_all: int = 200
+# This provides a quick-and-dirty way to override some of the Field options for use in the admin.
+# formfield_overrides is a dictionary mapping a field class to a dict
+# of arguments to pass to the field at construction time.
+# Example of usage:
+# formfield_overrides = {
+#     "description": (WidgetType.RichTextArea, {})
+# }
+formfield_overrides: dict[str, tuple[WidgetType, dict]] = {}
 
-  # Set list_per_page to control how many items appear on each paginated admin list page. By default, this is set to 10.
-  # Example of usage: list_per_page = 50
-  list_per_page = 10
+# Set list_display to control which fields are displayed on the list page of the admin.
+# If you don't set list_display, the admin site will display a single column that displays the __str__() representation of each object  # noqa: E501
+# Example of usage: list_display = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
+list_display: Sequence[str] = ()
 
-  # Set list_select_related to tell ORM to use select_related() in retrieving the list of objects on the admin list page.
-  # This can save you a bunch of database queries.
-  # Example of usage: list_select_related = ("user",)
-  list_select_related: Sequence[str] = ()
+# Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.  # noqa: E501
+# Example of usage: list_display_links = ("id", "mobile_number", "email")
+list_display_links: Sequence[str] = ()
 
-  # Set ordering to specify how lists of objects should be ordered in the admin views.
-  # This should be a list or tuple in the same format as a model's ordering parameter.
-  # Example of usage: ordering = ("-created_at",)
-  ordering: Sequence[str] = ()
+# A dictionary containing the field names and the corresponding widget type and
+# column widths (px, %) for the list view.
+# Example of usage:
+# list_display_widths = {
+#     "id": "100px",
+# }
+list_display_widths: dict[str, str] = {}
 
-  # When set, the given fields will use a bit of JavaScript to populate from the fields assigned.
-  # The main use for this functionality is
-  # to automatically generate the value for SlugField fields from one or more other fields.
-  # The generated value is produced by concatenating the values of the source fields,
-  # and then by transforming that result into a valid slug
-  # (e.g. substituting dashes for spaces and lowercasing ASCII letters).
-  # prepopulated_fields: dict[str, Sequence[str]] = {}
+# Set list_filter to activate filters in the tabel columns of the list page of the admin.
+# Example of usage: list_filter = ("is_superuser", "is_active", "created_at")
+list_filter: Sequence[str] = ()
 
-  # By default, FastAPI admin uses a select-box interface for fields that are ForeignKey or have choices set.
-  # If a field is present in radio_fields, FastAPI admin will use a radio-button interface instead.
-  # Example of usage: radio_fields = ("user",)
-  radio_fields: Sequence[str] = ()
+# By default, applied filters are preserved on the list view after creating, editing, or deleting an object.
+# You can have filters cleared by setting this attribute to False.
+# Example of usage: preserve_filters = False
+preserve_filters: bool = True
 
-  # By default, FastAPI admin uses a select-box interface for fields that are ForeignKey.
-  # Sometimes you don't want to incur the overhead of having to select all the related instances to display in the drop-down.
-  # raw_id_fields is a list of fields you would like to change into an Input widget for either a ForeignKey or ManyToManyField.
-  # Example of usage: raw_id_fields = ("user",)
-  raw_id_fields: Sequence[str] = ()
+# Set list_max_show_all to control how many items can appear on a “Show all” admin change list page.
+# The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.  # noqa: E501
+# Example of usage: list_max_show_all = 100
+list_max_show_all: int = 200
 
-  # By default the admin shows all fields as editable.
-  # Any fields in this option (which should be a list or tuple) will display its data as-is and non-editable.
-  # Example of usage: readonly_fields = ("created_at",)
-  readonly_fields: Sequence[str] = ()
+# Set list_per_page to control how many items appear on each paginated admin list page. By default, this is set to 10.  # noqa: E501
+# Example of usage: list_per_page = 50
+list_per_page = 10
 
-  # Set search_fields to enable a search box on the admin list page.
-  # This should be set to a list of field names that will be searched whenever somebody submits a search query in that text box.
-  # Example of usage: search_fields = ("mobile_number", "email")
-  search_fields: Sequence[str] = ()
+# Set list_select_related to tell ORM to use select_related() in retrieving the list of objects on the admin list page.  # noqa: E501
+# This can save you a bunch of database queries.
+# Example of usage: list_select_related = ("user",)
+list_select_related: Sequence[str] = ()
 
-  # Set search_help_text to specify a descriptive text for the search box which will be displayed below it.
-  # Example of usage: search_help_text = "Search by mobile number or email"
-  search_help_text: str = ""
+# Set ordering to specify how lists of objects should be ordered in the admin views.
+# This should be a list or tuple in the same format as a model’s ordering parameter.
+# Example of usage: ordering = ("-created_at",)
+ordering: Sequence[str] = ()
 
-  # Set show_full_result_count to control whether the full count of objects should be displayed
-  # on a filtered admin page (e.g. 99 results (103 total)).
-  # If this option is set to False, a text like 99 results (Show all) is displayed instead.
-  # Example of usage: show_full_result_count = True
-  show_full_result_count: bool = False
+# Not supported setting
+# paginator
 
-  # By default, the list page allows sorting by all model fields
-  # If you want to disable sorting for some columns, set sortable_by to a collection (e.g. list, tuple, or set)
-  # of the subset of list_display that you want to be sortable.
-  # An empty collection disables sorting for all columns.
-  # Example of usage: sortable_by = ("mobile_number", "email")
-  sortable_by: Sequence[str] = ()
+# When set, the given fields will use a bit of JavaScript to populate from the fields assigned.
+# The main use for this functionality is
+# to automatically generate the value for SlugField fields from one or more other fields.
+# The generated value is produced by concatenating the values of the source fields,
+# and then by transforming that result into a valid slug
+# (e.g. substituting dashes for spaces and lowercasing ASCII letters).
+# prepopulated_fields: dict[str, Sequence[str]] = {}
+
+# By default, FastAPI admin uses a select-box interface (select) for fields that are ForeignKey or have choices set.  # noqa: E501
+# If a field is present in radio_fields, FastAPI admin will use a radio-button interface instead.
+# Example of usage: radio_fields = ("user",)
+radio_fields: Sequence[str] = ()
+
+# Not supported setting (all fk, m2m uses select js widget as default)
+# autocomplete_fields
+
+# By default, FastAPI admin uses a select-box interface (select) for fields that are ForeignKey.
+# Sometimes you don't want to incur the overhead of having to select all the related instances to display in the drop-down.  # noqa: E501
+# raw_id_fields is a list of fields you would like to change into an Input widget for either a ForeignKey or ManyToManyField.  # noqa: E501
+# Example of usage: raw_id_fields = ("user",)
+raw_id_fields: Sequence[str] = ()
+
+# By default the admin shows all fields as editable.
+# Any fields in this option (which should be a list or tuple) will display its data as-is and non-editable.
+# Example of usage: readonly_fields = ("created_at",)
+readonly_fields: Sequence[str] = ()
+
+# Set search_fields to enable a search box on the admin list page.
+# This should be set to a list of field names that will be searched whenever somebody submits a search query in that text box.  # noqa: E501
+# Example of usage: search_fields = ("mobile_number", "email")
+search_fields: Sequence[str] = ()
+
+# Set search_help_text to specify a descriptive text for the search box which will be displayed below it.
+# Example of usage: search_help_text = "Search by mobile number or email"
+search_help_text: str = ""
+
+# Set show_full_result_count to control whether the full count of objects should be displayed
+# on a filtered admin page (e.g. 99 results (103 total)).
+# If this option is set to False, a text like 99 results (Show all) is displayed instead.
+# Example of usage: show_full_result_count = True
+show_full_result_count: bool = False
+
+# By default, the list page allows sorting by all model fields
+# If you want to disable sorting for some columns, set sortable_by to a collection (e.g. list, tuple, or set)
+# of the subset of list_display that you want to be sortable.
+# An empty collection disables sorting for all columns.
+# Example of usage: sortable_by = ("mobile_number", "email")
+sortable_by: Sequence[str] = ()
                 </code>
               </pre>
               <p class="lead">Specific options:</p>
               <pre>
                 <code class="language-python">
-  # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.
-  # Example of usage: list_display_links = ("id", "mobile_number", "email")
-  list_display_links: Sequence[str] = ()
+# Normally, objects have three save options: “Save”, “Save and continue editing”, and “Save and add another”.
+# If save_as is True, “Save and add another” will be replaced
+# by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.
+# Example of usage: save_as = True
+save_as: bool = False
 
-  # Set fieldsets to control the layout of admin “add” and “change” pages.
-  # fieldsets is a list of two-tuples, in which each two-tuple represents a fieldset on the admin form page.
-  fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
+# When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.  # noqa: E501
+# If you set save_as_continue=False, the redirect will be to the changelist view.
+# Example of usage: save_as_continue = False
+save_as_continue: bool = False
 
-  # Normally, objects have three save options: “Save”, “Save and continue editing”, and “Save and add another”.
-  # If save_as is True, “Save and add another” will be replaced
-  # by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.
-  # Example of usage: save_as = True
-  save_as: bool = False
+# Normally, the save buttons appear only at the bottom of the forms.
+# If you set save_on_top, the buttons will appear both on the top and the bottom.
+# Example of usage: save_on_top = True
+save_on_top: bool = False
 
-  # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.
-  # If you set save_as_continue=False, the redirect will be to the changelist view.
-  # Example of usage: save_as_continue = False
-  save_as_continue: bool = False
+# Set view_on_site to control whether or not to display the “View on site” link.
+# This link should bring you to a URL where you can display the saved object.
+# Example of usage: view_on_site = "http://example.com"
+view_on_site: str | None = None
 
-  # Normally, the save buttons appear only at the bottom of the forms.
-  # If you set save_on_top, the buttons will appear both on the top and the bottom.
-  # Example of usage: save_on_top = True
-  save_on_top: bool = False
-
-  # Set view_on_site to control whether or not to display the “View on site” link.
-  # This link should bring you to a URL where you can display the saved object.
-  # Example of usage: view_on_site = "http://example.com"
-  view_on_site: str | None = None
-
-  # See InlineModelAdmin section for more details.
-  inlines: Sequence[type[InlineModelAdmin]] = ()
-
+# Inlines
+inlines: Sequence[type[InlineModelAdmin]] = ()
               </code>
             </pre>
             </section>
@@ -1309,27 +1332,27 @@ class AuthorAdmin(TortoiseModelAdmin):
               <p class="lead">Specific options:</p>
               <pre>
                 <code class="language-python">
-  # The model class which the inline is using. This is required.
-  model: Any
+# The model class which the inline is using. This is required.
+model: Any
 
-  # The name of the foreign key on the model.
-  # In most cases this will be dealt with automatically, but fk_name must be specified explicitly
-  # if there are more than one foreign key to the same parent model.
-  fk_name: str | None = None
+# The name of the foreign key on the model.
+# In most cases this will be dealt with automatically, but fk_name must be specified explicitly
+# if there are more than one foreign key to the same parent model.
+fk_name: str | None = None
 
-  # This controls the maximum number of forms to show in the inline.
-  # This doesn't directly correlate to the number of objects, but can if the value is small enough.
-  # See Limiting the number of editable objects for more information.
-  max_num: int = 10
+# This controls the maximum number of forms to show in the inline.
+# This doesn't directly correlate to the number of objects, but can if the value is small enough.
+# See Limiting the number of editable objects for more information.
+max_num: int = 10
 
-  # This controls the minimum number of forms to show in the inline.
-  min_num: int = 1
+# This controls the minimum number of forms to show in the inline.
+min_num: int = 1
 
-  # An override to the verbose_name from the model's inner Meta class.
-  verbose_name: str | None = None
+# An override to the verbose_name from the model's inner Meta class.
+verbose_name: str | None = None
 
-  # An override to the verbose_name_plural from the model's inner Meta class.
-  verbose_name_plural: str | None = None
+# An override to the verbose_name_plural from the model's inner Meta class.
+verbose_name_plural: str | None = None
                 </code>
               </pre>
             </section>
@@ -1415,7 +1438,8 @@ class PersonAdmin(TortoiseModelAdmin):
               </h3>
               <ul class="changelog">
                 <li>
-                  Added: SlugInput, EmailInput, PhoneInput, UrlInput, PasswordInput, JsonTextArea
+                  Added: SlugInput, EmailInput, PhoneInput, UrlInput,
+                  PasswordInput, JsonTextArea
                 </li>
               </ul>
               <hr class="small-divider" />
@@ -1426,7 +1450,8 @@ class PersonAdmin(TortoiseModelAdmin):
               </h3>
               <ul class="changelog">
                 <li>
-                  Bug Fixes. And possibility to setup column width and widgets on fields in admin class.
+                  Bug Fixes. And possibility to setup column width and widgets
+                  on fields in admin class.
                 </li>
               </ul>
               <hr class="small-divider" />
@@ -1463,7 +1488,7 @@ class PersonAdmin(TortoiseModelAdmin):
                 <li>Fixed frontend part of inlines.</li>
                 <li>Added wysiwig editor and RichTextArea widget type.</li>
                 <li>
-                  Added form_fields_widgets parameter to configure widgets fr
+                  Added formfield_overrides parameter to configure widgets fr
                   fields easily.
                 </li>
                 <li>Bug fixes.</li>
@@ -1493,7 +1518,7 @@ class PersonAdmin(TortoiseModelAdmin):
                 <small class="text-muted">(26 March, 2023)</small>
               </h3>
               <ul class="changelog">
-                <li>Added form_fields_widgets to configure widgets.</li>
+                <li>Added formfield_overrides to configure widgets.</li>
               </ul>
               <hr class="small-divider" />
 

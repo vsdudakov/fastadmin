@@ -19,21 +19,6 @@ class BaseModelAdmin:
     # Use it only if you use several orms in your project.
     model_name_prefix: str | None = None
 
-    # A dictionary containing the field names and the corresponding widget type and widget props for the form view.
-    # Example of usage:
-    # form_fields_widgets = {
-    #     "description": (WidgetType.RichTextArea, {})
-    # }
-    form_fields_widgets: dict[str, tuple[WidgetType, dict]] = {}
-
-    # A dictionary containing the field names and the corresponding widget type and
-    # column widths (px, %) for the list view.
-    # Example of usage:
-    # table_fields_widths = {
-    #     "id": "100px",
-    # }
-    table_fields_widths: dict[str, str] = {}
-
     # A list of actions to make available on the change list page.
     # You have to implement methods with names like <action_name> in your ModelAdmin class and decorate them with @action decorator.  # noqa: E501
     # Example of usage:
@@ -77,6 +62,10 @@ class BaseModelAdmin:
     # Example of usage: fields = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
     fields: Sequence[str] = ()
 
+    # Set fieldsets to control the layout of admin “add” and “change” pages.
+    # fieldsets is a list of two-tuples, in which each two-tuple represents a <fieldset> on the admin form page. (A <fieldset> is a “section” of the form.)  # noqa: E501
+    fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
+
     # By default, a ManyToManyField is displayed in the admin dashboard with a <select multiple>.
     # However, multiple-select boxes can be difficult to use when selecting many items.
     # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.  # noqa: E501
@@ -88,10 +77,34 @@ class BaseModelAdmin:
     # Example of usage: filter_vertical = ("groups", "user_permissions")
     filter_vertical: Sequence[str] = ()
 
+    # Not supported setting
+    # form
+
+    # This provides a quick-and-dirty way to override some of the Field options for use in the admin.
+    # formfield_overrides is a dictionary mapping a field class to a dict
+    # of arguments to pass to the field at construction time.
+    # Example of usage:
+    # formfield_overrides = {
+    #     "description": (WidgetType.RichTextArea, {})
+    # }
+    formfield_overrides: dict[str, tuple[WidgetType, dict]] = {}
+
     # Set list_display to control which fields are displayed on the list page of the admin.
     # If you don’t set list_display, the admin site will display a single column that displays the __str__() representation of each object  # noqa: E501
     # Example of usage: list_display = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
     list_display: Sequence[str] = ()
+
+    # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.  # noqa: E501
+    # Example of usage: list_display_links = ("id", "mobile_number", "email")
+    list_display_links: Sequence[str] = ()
+
+    # A dictionary containing the field names and the corresponding widget type and
+    # column widths (px, %) for the list view.
+    # Example of usage:
+    # list_display_widths = {
+    #     "id": "100px",
+    # }
+    list_display_widths: dict[str, str] = {}
 
     # Set list_filter to activate filters in the tabel columns of the list page of the admin.
     # Example of usage: list_filter = ("is_superuser", "is_active", "created_at")
@@ -545,23 +558,6 @@ class InlineModelAdmin(BaseModelAdmin):
 class ModelAdmin(BaseModelAdmin):
     """This class is used to create admin model class."""
 
-    # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.  # noqa: E501
-    # Example of usage: list_display_links = ("id", "mobile_number", "email")
-    list_display_links: Sequence[str] = ()
-
-    # Set fieldsets to control the layout of admin “add” and “change” pages.
-    # fieldsets is a list of two-tuples, in which each two-tuple represents a <fieldset> on the admin form page. (A <fieldset> is a “section” of the form.)  # noqa: E501
-    fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
-
-    # Not supported setting
-    # form
-
-    # Not supported setting
-    # inlines
-
-    # Not supported setting
-    # formfield_overrides
-
     # Normally, objects have three save options: “Save”, “Save and continue editing”, and “Save and add another”.
     # If save_as is True, “Save and add another” will be replaced
     # by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.
@@ -583,6 +579,7 @@ class ModelAdmin(BaseModelAdmin):
     # Example of usage: view_on_site = "http://example.com"
     view_on_site: str | None = None
 
+    # Inlines
     inlines: Sequence[type[InlineModelAdmin]] = ()
 
     async def authenticate(self, username: str, password: str) -> UUID | int | None:

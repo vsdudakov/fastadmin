@@ -43,7 +43,7 @@ class DjangoORMMixin:
                 column_name = f"{field_name}_id"
 
             is_m2m = field_type in "ManyToManyField"
-            w_type, _ = self.form_fields_widgets.get(field_name, (None, None))
+            w_type, _ = self.formfield_overrides.get(field_name, (None, None))
             is_upload = field_type in ("FileField", "ImageField") or w_type == WidgetType.Upload
             if with_m2m is not None and not with_m2m and is_m2m:
                 continue
@@ -206,7 +206,7 @@ class DjangoORMMixin:
                                 filter_widget_type = WidgetType.AsyncSelect
                                 filter_widget_props["mode"] = "multiple"
 
-            form_widget_type, form_widget_props = self.form_fields_widgets.get(
+            form_widget_type, form_widget_props = self.formfield_overrides.get(
                 field_name, (form_widget_type, form_widget_props)
             )
             fields.append(

@@ -135,7 +135,7 @@ def generate_models_schema(
                     empty_value_display=admin_model_obj.empty_value_display,
                     filter_widget_type=filter_widget_type,
                     filter_widget_props=filter_widget_props,
-                    width=admin_model_obj.table_fields_widths.get(field_name, None),
+                    width=admin_model_obj.list_display_widths.get(field_name, None),
                 )
 
             add_configuration = None
