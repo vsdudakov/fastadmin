@@ -1439,7 +1439,7 @@ class PersonAdmin(TortoiseModelAdmin):
               <ul class="changelog">
                 <li>
                   Added: SlugInput, EmailInput, PhoneInput, UrlInput,
-                  PasswordInput, JsonTextArea
+                  PasswordInput, JsonTextArea widget types.
                 </li>
               </ul>
               <hr class="small-divider" />
@@ -1450,8 +1450,7 @@ class PersonAdmin(TortoiseModelAdmin):
               </h3>
               <ul class="changelog">
                 <li>
-                  Bug Fixes. And possibility to setup column width and widgets
-                  on fields in admin class.
+                  Added list_display_widths parameter.
                 </li>
               </ul>
               <hr class="small-divider" />
@@ -1462,8 +1461,7 @@ class PersonAdmin(TortoiseModelAdmin):
               </h3>
               <ul class="changelog">
                 <li>
-                  Added upload widget. Now you can upload files from admin
-                  panel.
+                  Added Upload widget type.
                 </li>
               </ul>
               <hr class="small-divider" />
@@ -1473,10 +1471,9 @@ class PersonAdmin(TortoiseModelAdmin):
                 <small class="text-muted">(27 March, 2023)</small>
               </h3>
               <ul class="changelog">
-                <li>
-                  Added change password api and PasswordInput widget type.
-                </li>
-                <li>Fixed auto identifiction fk_name for inline models.</li>
+                <li>Added api logic for changing password.</li>
+                <li>Added PasswordInput widget type.</li>
+                <li>Fixed fk_name for inline models.</li>
               </ul>
               <hr class="small-divider" />
 
@@ -1485,12 +1482,6 @@ class PersonAdmin(TortoiseModelAdmin):
                 <small class="text-muted">(26 March, 2023)</small>
               </h3>
               <ul class="changelog">
-                <li>Fixed frontend part of inlines.</li>
-                <li>Added wysiwig editor and RichTextArea widget type.</li>
-                <li>
-                  Added formfield_overrides parameter to configure widgets fr
-                  fields easily.
-                </li>
                 <li>Bug fixes.</li>
               </ul>
               <hr class="small-divider" />
@@ -1518,7 +1509,7 @@ class PersonAdmin(TortoiseModelAdmin):
                 <small class="text-muted">(26 March, 2023)</small>
               </h3>
               <ul class="changelog">
-                <li>Added formfield_overrides to configure widgets.</li>
+                <li>Added formfield_overrides parameter.</li>
               </ul>
               <hr class="small-divider" />
 
@@ -1529,7 +1520,7 @@ class PersonAdmin(TortoiseModelAdmin):
               <ul class="changelog">
                 <li>Fixed bugs.</li>
                 <li>
-                  Added RichTextArea WidgetType based on quill wysiwig editor.
+                  Added RichTextArea widget type.
                 </li>
               </ul>
               <hr class="small-divider" />
@@ -1544,63 +1535,6 @@ class PersonAdmin(TortoiseModelAdmin):
                 <li>Fixed inlines frontend side.</li>
               </ul>
               <hr class="small-divider" />
-
-              <h3 id="v0_1_24">
-                Version 0.1.24
-                <small class="text-muted">(25 March, 2023)</small>
-              </h3>
-              <ul class="changelog">
-                <li>Fixed a bug with inline fk_name field.</li>
-                <li>Added pydantic as dependency.</li>
-              </ul>
-              <hr class="small-divider" />
-
-              <h3 id="v0_1_23">
-                Version 0.1.23
-                <small class="text-muted">(16 March, 2023)</small>
-              </h3>
-              <ul class="changelog">
-                <li>Fixed a bug with form fields.</li>
-              </ul>
-              <hr class="small-divider" />
-
-              <h3 id="v0_1_22">
-                Version 0.1.22
-                <small class="text-muted">(16 March, 2023)</small>
-              </h3>
-              <ul class="changelog">
-                <li>Added support for Pony ORM and SQLAlchemy.</li>
-                <li>Updated documentation.</li>
-              </ul>
-              <hr class="small-divider" />
-
-              <h3 id="v0_1_21">
-                Version 0.1.21
-                <small class="text-muted">(13 March, 2023)</small>
-              </h3>
-              <ul class="changelog">
-                <li>Added support for Django ORM.</li>
-                <li>Added modular structure for bakend unit tests.</li>
-              </ul>
-              <hr class="small-divider" />
-
-              <h3 id="v0_1_20">
-                Version 0.1.20
-                <small class="text-muted">(11 March, 2023)</small>
-              </h3>
-              <ul class="changelog">
-                <li>Added support for Django, Flask frameworks.</li>
-                <li>Added modular architecture for backend API.</li>
-                <li>Fixed some minor bugs.</li>
-              </ul>
-              <hr class="small-divider" />
-
-              <h3 id="v0_1_19">
-                Version 0.1.19 <small class="text-muted">(9 March, 2023)</small>
-              </h3>
-              <ul class="changelog">
-                <li>Fixed some minor bugs.</li>
-              </ul>
             </section>
           </div>
         </div>
