@@ -89,26 +89,27 @@ async def me(
 async def dashboard_widget(
     request: Request,
     model: str,
-    min: str | None = None,
-    max: str | None = None,
+    min_x_field: str | None = None,
+    max_x_field: str | None = None,
+    period_x_field: str | None = None,
 ):
     """This method is used to get a dashboard widget data.
 
     :params model: a dashboard widget model.
-    :params min: a min x field value.
-    :params max: a max x field value.
+    :params min_x_field: a min x field value.
+    :params max_x_field: a max x field value.
+    :params period_x_field: a period x field value.
     :return: A list of objects.
     """
     try:
-        objs = await api_service.dashboard_widget(
+        data = await api_service.dashboard_widget(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
-            min=min,
-            max=max,
+            min_x_field=min_x_field,
+            max_x_field=max_x_field,
+            period_x_field=period_x_field,
         )
-        return {
-            "results": objs,
-        }
+        return data
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail)
 

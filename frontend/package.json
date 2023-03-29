@@ -68,16 +68,12 @@
     "tslint-react": "^5.0.0"
   },
   "jest": {
-    "moduleNameMapper": {
-      "axios": "axios/dist/node/axios.cjs"
-    },
+    "transformIgnorePatterns": [
+      "<rootDir>/node_modules/(?!d3)/",
+      "<rootDir>/node_modules/(?!axios)/"
+    ],
     "collectCoverageFrom": [
-      "<rootDir>/src/components/**/*.{ts,tsx}",
-      "<rootDir>/src/containers/**/*.{ts,tsx}",
-      "<rootDir>/src/providers/**/*.{ts,tsx}",
-      "<rootDir>/src/hooks/**/*.{ts,tsx}",
-      "<rootDir>/src/helpers/**/*.{ts,tsx}",
-      "<rootDir>/src/fetchers/**/*.{ts,tsx}"
+      "<rootDir>/src/**/*.{ts,tsx}"
     ]
   }
 }

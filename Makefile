@@ -37,9 +37,7 @@ collectstatic:
 	rm -rf ./fastadmin/static/css
 	cp -rf ./frontend/build/static/js/ ./fastadmin/static/js/
 	cp -rf ./frontend/build/static/css/ ./fastadmin/static/css/
-	mv fastadmin/static/js/main*.js.map fastadmin/static/js/main.min.js.map
 	mv fastadmin/static/js/main*.js fastadmin/static/js/main.min.js
-	mv fastadmin/static/css/main*.css.map fastadmin/static/css/main.min.css.map
 	mv fastadmin/static/css/main*.css fastadmin/static/css/main.min.css
 	rm fastadmin/static/js/*.txt
 
@@ -50,6 +48,7 @@ install:
 
 .PHONY: build
 build:
+	make -C docs build
 	make -C frontend build
 	make collectstatic
 

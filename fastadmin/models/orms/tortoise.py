@@ -290,7 +290,7 @@ class TortoiseMixin:
                 setattr(obj, k, v)
         else:
             obj = self.model_cls(**payload)
-        await obj.save(update_fields=payload.keys() if obj.id else None)
+        await obj.save(update_fields=payload.keys() if id else None)
         return obj
 
     async def orm_delete_obj(self, id: UUID | int) -> None:

@@ -298,6 +298,7 @@ def generate_dashboard_widgets_schema() -> list[DashboardWidgetSchema]:
                 series_field=admin_dashboard_widget.series_field,
                 x_field_filter_widget_type=admin_dashboard_widget.x_field_filter_widget_type,
                 x_field_filter_widget_props=admin_dashboard_widget.x_field_filter_widget_props,
+                x_field_periods=admin_dashboard_widget.x_field_periods,
             ),
         )
     return dashboard_widgets_schemas

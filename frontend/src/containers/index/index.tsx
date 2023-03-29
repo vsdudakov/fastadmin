@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Breadcrumb, Col, Empty, Row } from 'antd';
-import { Link } from 'react-router-dom';
+import { Col, Empty, Row } from 'antd';
 
 import { CrudContainer } from 'components/crud-container';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
@@ -12,16 +11,7 @@ export const Index: React.FC = () => {
   const { t: _t } = useTranslation('Dashboard');
   const { configuration } = useContext(ConfigurationContext);
   return (
-    <CrudContainer
-      title={_t('Dashboard')}
-      breadcrumbs={
-        <Breadcrumb>
-          <Breadcrumb.Item>
-            <Link to="/">{_t('Dashboard')}</Link>
-          </Breadcrumb.Item>
-        </Breadcrumb>
-      }
-    >
+    <CrudContainer title={_t('Dashboard')}>
       <Row gutter={[16, 16]}>
         {configuration.dashboard_widgets.map((widget: IDashboardWidget) => (
           <Col xs={24} md={12} key={widget.title}>

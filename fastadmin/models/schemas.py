@@ -149,6 +149,7 @@ class DashboardWidgetSchema(BaseModel):
     series_field: str | None = None
     x_field_filter_widget_type: WidgetType | None = None
     x_field_filter_widget_props: dict | None = None
+    x_field_periods: list[str] | None = None
 
 
 class ConfigurationSchema(BaseModel):

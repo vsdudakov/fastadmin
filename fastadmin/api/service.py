@@ -13,6 +13,7 @@ from fastadmin.api.helpers import sanitize_filter_key, sanitize_filter_value
 from fastadmin.api.schemas import (
     ActionInputSchema,
     ChangePasswordInputSchema,
+    DashboardWidgetDataOutputSchema,
     DashboardWidgetQuerySchema,
     ExportFormat,
     ExportInputSchema,
@@ -110,25 +111,31 @@ class ApiService:
         self,
         session_id: str | None,
         model: str,
-        min: str | None = None,
-        max: str | None = None,
-    ) -> list[dict[str, int | float]]:
+        min_x_field: str | None = None,
+        max_x_field: str | None = None,
+        period_x_field: str | None = None,
+    ) -> dict[str, str | int | float]:
         current_user_id = await get_user_id_from_session_id(session_id)
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
         query_params = DashboardWidgetQuerySchema(
-            **dict(
-                min=min,
-                max=max,
-            )
+            min_x_field=min_x_field,
+            max_x_field=max_x_field,
+            period_x_field=period_x_field,
         )
 
         dashboard_widget_model = admin_dashboard_widgets.get(model)
         if not dashboard_widget_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
-        return []
+        data = await dashboard_widget_model.get_data(
+            min_x_field=query_params.min_x_field,
+            max_x_field=query_params.max_x_field,
+            period_x_field=query_params.period_x_field,
+        )
+        DashboardWidgetDataOutputSchema(**data)
+        return data
 
     async def list(
         self,
@@ -145,13 +152,11 @@ class ApiService:
             raise AdminApiException(401, detail="User is not authenticated.")
 
         query_params = ListQuerySchema(
-            **dict(
-                search=search,
-                sort_by=sort_by,
-                filters=filters,
-                offset=offset,
-                limit=limit,
-            )
+            search=search,
+            sort_by=sort_by,
+            filters=filters,
+            offset=offset,
+            limit=limit,
         )
 
         admin_model = get_admin_or_admin_inline_model(model)

@@ -121,6 +121,7 @@ export interface IDashboardWidget {
   series_field?: string;
   x_field_filter_widget_type?: EFieldWidgetType;
   x_field_filter_widget_props?: Record<string, any>;
+  x_field_periods?: string[];
 }
 
 export interface IConfiguration {

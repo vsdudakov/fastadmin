@@ -12,13 +12,7 @@ from django.http.request import HttpRequest
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import is_valid_id
-from fastadmin.api.schemas import (
-    ActionInputSchema,
-    DashboardWidgetQuerySchema,
-    ExportInputSchema,
-    ListQuerySchema,
-    SignInInputSchema,
-)
+from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.settings import settings
 
@@ -129,29 +123,27 @@ async def dashboard_widget(request: HttpRequest, model: str) -> JsonResponse:
     """This method is used to get a dashboard widget data.
 
     :params model: a dashboard widget model.
-    :params min: a min x field value.
-    :params max: a max x field value.
+    :params min_x_field: a min x field value.
+    :params max_x_field: a max x field value.
+    :params period_x_field: a period x field value.
     :return: A list of objects.
     """
     if request.method != "GET":
         return JsonResponse({"error": "Method not allowed"}, status=405)
     filters = request.GET.dict()
-    min = filters.get("min", None)
-    max = filters.get("max", None)
+    min_x_field = filters.get("min_x_field", None)
+    max_x_field = filters.get("max_x_field", None)
+    period_x_field = filters.get("period_x_field", None)
 
     try:
-        objs = await api_service.dashboard_widget(
+        data = await api_service.dashboard_widget(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
-            min=min,
-            max=max,
+            min_x_field=min_x_field,
+            max_x_field=max_x_field,
+            period_x_field=period_x_field,
         )
-        return JsonResponse(
-            {
-                "results": objs,
-            }
-        )
-
+        return JsonResponse(data)
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
