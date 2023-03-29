@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface ISignInContainer {
   title: string;
-  children: JSX.Element | JSX.Element[];
+  children: React.ReactNode;
 }
 
 export const SignInContainer: React.FC<ISignInContainer> = ({ title, children }) => {

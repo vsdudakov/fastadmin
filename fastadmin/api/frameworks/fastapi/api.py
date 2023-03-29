@@ -85,6 +85,35 @@ async def me(
         raise HTTPException(e.status_code, detail=e.detail)
 
 
+@router.get("/dashboard-widget/{model}")
+async def dashboard_widget(
+    request: Request,
+    model: str,
+    min_x_field: str | None = None,
+    max_x_field: str | None = None,
+    period_x_field: str | None = None,
+):
+    """This method is used to get a dashboard widget data.
+
+    :params model: a dashboard widget model.
+    :params min_x_field: a min x field value.
+    :params max_x_field: a max x field value.
+    :params period_x_field: a period x field value.
+    :return: A list of objects.
+    """
+    try:
+        data = await api_service.dashboard_widget(
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
+            min_x_field=min_x_field,
+            max_x_field=max_x_field,
+            period_x_field=period_x_field,
+        )
+        return data
+    except AdminApiException as e:
+        raise HTTPException(e.status_code, detail=e.detail)
+
+
 @router.get("/list/{model}")
 async def list(
     request: Request,

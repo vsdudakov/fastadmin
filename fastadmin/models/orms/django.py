@@ -298,7 +298,7 @@ class DjangoORMMixin:
                 setattr(obj, k, v)
         else:
             obj = self.model_cls(**payload)
-        obj.save(update_fields=payload.keys() if obj.id else None)
+        obj.save(update_fields=payload.keys() if id else None)
         return obj
 
     @sync_to_async

@@ -1,4 +1,5 @@
 import base64
+import binascii
 from uuid import UUID
 
 from fastadmin.models.schemas import ModelFieldWidgetSchema
@@ -24,7 +25,7 @@ def sanitize_filter_key(key: str, fields: list[ModelFieldWidgetSchema]) -> tuple
 
     :param key: A key.
     :param fields: A list of fields.
-    :return: A sanitized key.
+    :return: A tuple of sanitized key and condition.
     """
     if "__" not in key:
         key = f"{key}__exact"
@@ -71,13 +72,14 @@ def is_valid_id(id: UUID | int) -> bool:
     return is_digit(str(id)) or is_valid_uuid(str(id))
 
 
-def is_valid_base64(s: str) -> bool:
+def is_valid_base64(value: str) -> bool:
     """Check if s is a valid base64.
 
     :param s: A string to test.
     :return: True if s is a valid base64, False otherwise.
     """
     try:
-        return base64.b64encode(base64.b64decode(s)) == s
-    except Exception:
+        base64.decodebytes(value.encode("ascii"))
+        return True
+    except binascii.Error:
         return False

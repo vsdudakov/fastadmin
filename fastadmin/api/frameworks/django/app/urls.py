@@ -6,7 +6,21 @@ from django.views.static import serve
 
 from fastadmin.settings import ROOT_DIR
 
-from .api import action, add, change, change_password, configuration, delete, export, get, list, me, sign_in, sign_out
+from .api import (
+    action,
+    add,
+    change,
+    change_password,
+    configuration,
+    dashboard_widget,
+    delete,
+    export,
+    get,
+    list,
+    me,
+    sign_in,
+    sign_out,
+)
 from .views import index
 
 
@@ -17,6 +31,7 @@ def get_admin_urls():
             path("api/sign-in", sign_in),
             path("api/sign-out", sign_out),
             path("api/me", me),
+            path("api/dashboard-widget/<str:model>", dashboard_widget),
             path("api/list/<str:model>", list),
             path("api/retrieve/<str:model>/<str:id>", get),
             path("api/add/<str:model>", add),

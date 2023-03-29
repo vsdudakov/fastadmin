@@ -20,7 +20,7 @@ interface IFormContainer {
   id?: string;
   form: any;
   onFinish: (payload: any) => void;
-  children: JSX.Element | JSX.Element[];
+  children: React.ReactNode;
   mode: 'add' | 'change' | 'inline-add' | 'inline-change';
   hasOperationError?: boolean;
   initialValues?: Record<string, any>;
@@ -149,9 +149,18 @@ export const FormContainer: React.FC<IFormContainer> = ({
   );
 
   const formItems = useCallback(() => {
-    const fields = (modelConfiguration?.fields || []).filter(
-      (field: IModelField) => !!getConf(field).form_widget_type
-    );
+    const fields = (modelConfiguration?.fields || [])
+      .filter((field: IModelField) => !!getConf(field).form_widget_type)
+      .filter((field: IModelField) => {
+        if (mode === 'add' || mode === 'inline-add') {
+          // exclude readonly fields from add form
+          return (
+            !field.add_configuration?.form_widget_props?.disabled &&
+            !field.add_configuration?.form_widget_props?.readOnly
+          );
+        }
+        return true;
+      });
     const fieldsets = modelConfiguration?.fieldsets || [];
     if (fieldsets.length > 0) {
       const onChange = (key: string[]) => setActiveKey(key);
@@ -196,6 +205,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
     getConf,
     modelConfiguration?.fields,
     modelConfiguration?.fieldsets,
+    mode,
   ]);
 
   const inlineItems = useCallback(() => {
