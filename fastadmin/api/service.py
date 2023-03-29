@@ -172,6 +172,7 @@ class ApiService:
                     raise AdminApiException(422, detail=f"Search by {field} is not allowed")
 
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
+        query_filters: dict[tuple[str, str], bool | str | None] | None = None
         if query_params.filters:
             for k in query_params.filters.keys():
                 if k in exclude_filter_fields:
@@ -179,9 +180,9 @@ class ApiService:
                 field = k.split("__", 1)[0]
                 if field not in fields:
                     raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
-            query_params.filters = {
+            query_filters = {
                 sanitize_filter_key(k, admin_model.get_model_fields_with_widget_types()): sanitize_filter_value(v)
-                for k, v in filters.items()
+                for k, v in query_params.filters.items()
                 if k not in exclude_filter_fields
             }
 
@@ -203,7 +204,7 @@ class ApiService:
             limit=query_params.limit,
             search=query_params.search,
             sort_by=query_params.sort_by,
-            filters=query_params.filters,
+            filters=query_filters,
         )
 
     async def get(
@@ -321,6 +322,7 @@ class ApiService:
                     raise AdminApiException(422, detail=f"Search by {field} is not allowed")
 
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
+        query_filters: dict[tuple[str, str], bool | str | None] | None = None
         if query_params.filters:
             for k in query_params.filters.keys():
                 if k in exclude_filter_fields:
@@ -328,7 +330,7 @@ class ApiService:
                 field = k.split("__", 1)[0]
                 if field not in fields:
                     raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
-            query_params.filters = {
+            query_filters = {
                 sanitize_filter_key(k, admin_model.get_model_fields_with_widget_types()): sanitize_filter_value(v)
                 for k, v in query_params.filters.items()
                 if k not in exclude_filter_fields
@@ -355,11 +357,11 @@ class ApiService:
             content_type,
             await admin_model.get_export(
                 payload.format,
-                search=query_params.search,
-                sort_by=query_params.sort_by,
-                filters=query_params.filters,
                 offset=query_params.offset,
                 limit=query_params.limit,
+                search=query_params.search,
+                sort_by=query_params.sort_by,
+                filters=query_filters,
             ),
         )
 

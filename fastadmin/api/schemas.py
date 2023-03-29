@@ -37,7 +37,7 @@ class ListQuerySchema(BaseModel):
     offset: int | None = 0
     sort_by: str | None = None
     search: str | None = None
-    filters: dict[str | tuple[str, str], bool | str | None] | None = None
+    filters: dict[str, str] | None = None
 
 
 class SignInInputSchema(BaseModel):
