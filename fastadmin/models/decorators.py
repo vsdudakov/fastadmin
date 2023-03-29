@@ -87,6 +87,6 @@ def register_widget(dashboard_widget_admin_cls):
     if not issubclass(dashboard_widget_admin_cls, DashboardWidgetAdmin):
         raise ValueError("Wrapped class must subclass DashboardWidgetAdmin.")
 
-    admin_dashboard_widgets.append(dashboard_widget_admin_cls)
+    admin_dashboard_widgets[dashboard_widget_admin_cls.__name__] = dashboard_widget_admin_cls()
 
     return dashboard_widget_admin_cls

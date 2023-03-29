@@ -13,11 +13,13 @@ from fastadmin.api.helpers import sanitize_filter_key, sanitize_filter_value
 from fastadmin.api.schemas import (
     ActionInputSchema,
     ChangePasswordInputSchema,
+    DashboardWidgetQuerySchema,
     ExportFormat,
     ExportInputSchema,
+    ListQuerySchema,
     SignInInputSchema,
 )
-from fastadmin.models.base import InlineModelAdmin, ModelAdmin
+from fastadmin.models.base import InlineModelAdmin, ModelAdmin, admin_dashboard_widgets
 from fastadmin.models.helpers import (
     generate_dashboard_widgets_schema,
     generate_models_schema,
@@ -104,6 +106,30 @@ class ApiService:
 
         return True
 
+    async def dashboard_widget(
+        self,
+        session_id: str | None,
+        model: str,
+        min: str | None = None,
+        max: str | None = None,
+    ) -> list[dict[str, int | float]]:
+        current_user_id = await get_user_id_from_session_id(session_id)
+        if not current_user_id:
+            raise AdminApiException(401, detail="User is not authenticated.")
+
+        query_params = DashboardWidgetQuerySchema(
+            **dict(
+                min=min,
+                max=max,
+            )
+        )
+
+        dashboard_widget_model = admin_dashboard_widgets.get(model)
+        if not dashboard_widget_model:
+            raise AdminApiException(404, detail=f"{model} model is not registered.")
+
+        return []
+
     async def list(
         self,
         session_id: str | None,
@@ -118,6 +144,16 @@ class ApiService:
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
+        query_params = ListQuerySchema(
+            **dict(
+                search=search,
+                sort_by=sort_by,
+                filters=filters,
+                offset=offset,
+                limit=limit,
+            )
+        )
+
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
@@ -125,28 +161,28 @@ class ApiService:
         # validations
         fields = admin_model.get_fields_for_serialize()
 
-        if search and admin_model.search_fields:
+        if query_params.search and admin_model.search_fields:
             for field in admin_model.search_fields:
                 if field not in fields:
                     raise AdminApiException(422, detail=f"Search by {field} is not allowed")
 
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
-        if filters:
-            for k in filters.keys():
+        if query_params.filters:
+            for k in query_params.filters.keys():
                 if k in exclude_filter_fields:
                     continue
                 field = k.split("__", 1)[0]
                 if field not in fields:
                     raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
-            filters = {
+            query_params.filters = {
                 sanitize_filter_key(k, admin_model.get_model_fields_with_widget_types()): sanitize_filter_value(v)
                 for k, v in filters.items()
                 if k not in exclude_filter_fields
             }
 
-        if sort_by:
-            if sort_by.strip("-") not in fields:
-                raise AdminApiException(422, detail=f"Sort by {sort_by} is not allowed")
+        if query_params.sort_by:
+            if query_params.sort_by.strip("-") not in fields:
+                raise AdminApiException(422, detail=f"Sort by {query_params.sort_by} is not allowed")
         elif admin_model.ordering:
             for ordering_field in admin_model.ordering:
                 if ordering_field.strip("-") not in fields:
@@ -158,11 +194,11 @@ class ApiService:
                     raise AdminApiException(422, detail=f"Select related by {field} is not allowed")
 
         return await admin_model.get_list(
-            offset=offset,
-            limit=limit,
-            search=search,
-            sort_by=sort_by,
-            filters=filters,
+            offset=query_params.offset,
+            limit=query_params.limit,
+            search=query_params.search,
+            sort_by=query_params.sort_by,
+            filters=query_params.filters,
         )
 
     async def get(

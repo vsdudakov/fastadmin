@@ -141,11 +141,14 @@ class ModelSchema(BaseModelSchema):
 class DashboardWidgetSchema(BaseModel):
     """Dashboard widget schema"""
 
+    key: str
     title: str
     dashboard_widget_type: DashboardWidgetType
     x_field: str
     y_field: str | None = None
     series_field: str | None = None
+    x_field_filter_widget_type: WidgetType | None = None
+    x_field_filter_widget_props: dict | None = None
 
 
 class ConfigurationSchema(BaseModel):

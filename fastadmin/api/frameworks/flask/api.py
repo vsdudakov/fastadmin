@@ -6,7 +6,13 @@ from werkzeug.exceptions import HTTPException
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import is_valid_id
-from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
+from fastadmin.api.schemas import (
+    ActionInputSchema,
+    DashboardWidgetQuerySchema,
+    ExportInputSchema,
+    ListQuerySchema,
+    SignInInputSchema,
+)
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.settings import settings
 
@@ -75,6 +81,35 @@ async def me() -> dict:
         return await api_service.get(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), settings.ADMIN_USER_MODEL, user_id
         )
+    except AdminApiException as e:
+        http_exception = HTTPException(e.detail)
+        http_exception.code = e.status_code
+        raise http_exception
+
+
+@api_router.route("/dashboard-widge/<string:model>", methods=["GET"])
+async def dashboard_widget(model: str) -> dict:
+    """This method is used to get a dashboard widget data.
+
+    :params model: a dashboard widget model.
+    :params min: a min x field value.
+    :params max: a max x field value.
+    :return: A list of objects.
+    """
+    filters = request.args.to_dict()
+    min = filters.get("min", None)
+    max = filters.get("max", None)
+
+    try:
+        objs = await api_service.dashboard_widget(
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
+            min=min,
+            max=max,
+        )
+        return {
+            "results": objs,
+        }
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code

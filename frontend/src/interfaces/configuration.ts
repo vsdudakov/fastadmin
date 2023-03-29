@@ -113,11 +113,14 @@ export interface IModel extends IBaseModel {
 }
 
 export interface IDashboardWidget {
+  key: string;
   title: string;
   dashboard_widget_type: EDashboardWidgetType;
   x_field: string;
   y_field?: string;
   series_field?: string;
+  x_field_filter_widget_type?: EFieldWidgetType;
+  x_field_filter_widget_props?: Record<string, any>;
 }
 
 export interface IConfiguration {

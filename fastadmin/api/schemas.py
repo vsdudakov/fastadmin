@@ -13,6 +13,13 @@ class ExportFormat(str, Enum):
     JSON = "JSON"
 
 
+class DashboardWidgetQuerySchema(BaseModel):
+    """DashboardWidge query schema"""
+
+    min: str | None = None
+    max: str | None = None
+
+
 class ListQuerySchema(BaseModel):
     """List query schema"""
 

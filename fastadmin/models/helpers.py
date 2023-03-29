@@ -287,14 +287,17 @@ def generate_models_schema(
 def generate_dashboard_widgets_schema() -> list[DashboardWidgetSchema]:
     """Generate dashboard widgets schema."""
     dashboard_widgets_schemas: list[DashboardWidgetSchema] = []
-    for admin_dashboard_widget in admin_dashboard_widgets:
+    for admin_dashboard_widget in admin_dashboard_widgets.values():
         dashboard_widgets_schemas.append(
             DashboardWidgetSchema(
+                key=admin_dashboard_widget.__class__.__name__,
                 title=admin_dashboard_widget.title,
                 dashboard_widget_type=admin_dashboard_widget.dashboard_widget_type,
                 x_field=admin_dashboard_widget.x_field,
                 y_field=admin_dashboard_widget.y_field,
                 series_field=admin_dashboard_widget.series_field,
+                x_field_filter_widget_type=admin_dashboard_widget.x_field_filter_widget_type,
+                x_field_filter_widget_props=admin_dashboard_widget.x_field_filter_widget_props,
             ),
         )
     return dashboard_widgets_schemas

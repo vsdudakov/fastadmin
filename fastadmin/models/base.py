@@ -606,14 +606,20 @@ class DashboardWidgetAdmin:
     x_field: str
     y_field: str | None = None
     series_field: str | None = None
+    x_field_filter_widget_type: WidgetType | None = None
+    x_field_filter_widget_props: dict[str, Any] | None = None
 
-    async def get_data(self) -> list[dict]:
+    async def get_data(
+        self, min_x_field: str | None = None, max_x_field: str | None = None
+    ) -> list[dict[str, int | float]]:
         """This method is used to get data for dashboard widget.
 
+        :params min_x_field: A minimum value for x_field.
+        :params max_x_field: A maximum value for x_field.
         :return: A list of dicts with x_field, y_field, series_field values.
         """
         raise NotImplementedError
 
 
 admin_models: dict[Any, ModelAdmin] = {}
-admin_dashboard_widgets: list[DashboardWidgetAdmin] = []
+admin_dashboard_widgets: dict[str, DashboardWidgetAdmin] = {}

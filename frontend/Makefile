@@ -8,7 +8,7 @@ remove-cache:
 
 .PHONY: dev
 dev:
-	PORT=3030 yarn run start
+	GENERATE_SOURCEMAP=false PORT=3030 yarn run start
 
 .PHONY: fix
 fix:
@@ -30,7 +30,7 @@ install:
 
 .PHONY: build
 build:
-	yarn run build
+	GENERATE_SOURCEMAP=false yarn run build
 
 .PHONY: kill
 kill:

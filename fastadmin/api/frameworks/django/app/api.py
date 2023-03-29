@@ -12,7 +12,13 @@ from django.http.request import HttpRequest
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import is_valid_id
-from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, ListQuerySchema, SignInInputSchema
+from fastadmin.api.schemas import (
+    ActionInputSchema,
+    DashboardWidgetQuerySchema,
+    ExportInputSchema,
+    ListQuerySchema,
+    SignInInputSchema,
+)
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.settings import settings
 
@@ -119,6 +125,38 @@ async def me(request: HttpRequest) -> JsonResponse:
 
 
 @csrf_exempt
+async def dashboard_widget(request: HttpRequest, model: str) -> JsonResponse:
+    """This method is used to get a dashboard widget data.
+
+    :params model: a dashboard widget model.
+    :params min: a min x field value.
+    :params max: a max x field value.
+    :return: A list of objects.
+    """
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    filters = request.GET.dict()
+    min = filters.get("min", None)
+    max = filters.get("max", None)
+
+    try:
+        objs = await api_service.dashboard_widget(
+            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
+            min=min,
+            max=max,
+        )
+        return JsonResponse(
+            {
+                "results": objs,
+            }
+        )
+
+    except AdminApiException as e:
+        return JsonResponse({"detail": e.detail}, status=e.status_code)
+
+
+@csrf_exempt
 async def list(request: HttpRequest, model: str) -> JsonResponse:
     """This method is used to get a list of objects.
 
@@ -137,22 +175,15 @@ async def list(request: HttpRequest, model: str) -> JsonResponse:
     sort_by = filters.get("sort_by", None)
     offset = filters.get("offset", 0)
     limit = filters.get("limit", 10)
-
-    query_params = ListQuerySchema(
-        **dict(
+    try:
+        objs, total = await api_service.list(
+            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
             search=search,
             sort_by=sort_by,
             filters=filters,
             offset=offset,
             limit=limit,
-        )
-    )
-
-    try:
-        objs, total = await api_service.list(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
-            model,
-            **query_params.dict(),
         )
         return JsonResponse(
             {
