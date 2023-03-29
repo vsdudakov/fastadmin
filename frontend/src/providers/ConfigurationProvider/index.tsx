@@ -19,6 +19,7 @@ const defaultConfiguration = {
   site_name: 'API Administration',
   username_field: 'username',
   models: [],
+  dashboard_widgets: [],
 };
 
 export const ConfigurationContext = React.createContext<IConfigurationContext>({

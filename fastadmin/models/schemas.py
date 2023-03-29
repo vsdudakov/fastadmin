@@ -31,6 +31,16 @@ class WidgetType(str, Enum):
     Upload = "Upload"
 
 
+class DashboardWidgetType(str, Enum):
+    """Dashboard Widget type"""
+
+    ChartLine = "ChartLine"
+    ChartArea = "ChartArea"
+    ChartColumn = "ChartColumn"
+    ChartBar = "ChartBar"
+    ChartPie = "ChartPie"
+
+
 class ModelPermission(str, Enum):
     """Model permission"""
 
@@ -128,6 +138,20 @@ class ModelSchema(BaseModelSchema):
     inlines: Sequence[InlineModelSchema] | None
 
 
+class DashboardWidgetSchema(BaseModel):
+    """Dashboard widget schema"""
+
+    key: str
+    title: str
+    dashboard_widget_type: DashboardWidgetType
+    x_field: str
+    y_field: str | None = None
+    series_field: str | None = None
+    x_field_filter_widget_type: WidgetType | None = None
+    x_field_filter_widget_props: dict | None = None
+    x_field_periods: list[str] | None = None
+
+
 class ConfigurationSchema(BaseModel):
     """Configuration schema"""
 
@@ -137,9 +161,10 @@ class ConfigurationSchema(BaseModel):
     site_favicon: str
     primary_color: str
     username_field: str
-    models: Sequence[ModelSchema]
     date_format: str
     datetime_format: str
+    models: Sequence[ModelSchema]
+    dashboard_widgets: Sequence[DashboardWidgetSchema]
 
 
 class ModelFieldWidgetSchema(BaseModel):

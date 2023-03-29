@@ -13,6 +13,23 @@ class ExportFormat(str, Enum):
     JSON = "JSON"
 
 
+class DashboardWidgetQuerySchema(BaseModel):
+    """DashboardWidge query schema"""
+
+    min_x_field: str | None = None
+    max_x_field: str | None = None
+    period_x_field: str | None = None
+
+
+class DashboardWidgetDataOutputSchema(BaseModel):
+    """Dashboard widget data output schema"""
+
+    results: list[dict[str, str | int | float]]
+    min_x_field: str | None = None
+    max_x_field: str | None = None
+    period_x_field: str | None = None
+
+
 class ListQuerySchema(BaseModel):
     """List query schema"""
 
@@ -20,7 +37,7 @@ class ListQuerySchema(BaseModel):
     offset: int | None = 0
     sort_by: str | None = None
     search: str | None = None
-    filters: dict[str, str] | None = None
+    filters: dict[tuple[str, str], bool | str | None] | None = None
 
 
 class SignInInputSchema(BaseModel):

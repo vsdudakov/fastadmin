@@ -33,7 +33,7 @@ except ModuleNotFoundError:  # pragma: no cover
     logging.info("TortoiseORM is not installed")  # pragma: no cover
 
 # models
-from fastadmin.models.base import InlineModelAdmin, ModelAdmin
-from fastadmin.models.decorators import action, display, register
+from fastadmin.models.base import DashboardWidgetAdmin, InlineModelAdmin, ModelAdmin
+from fastadmin.models.decorators import action, display, register, register_widget
 from fastadmin.models.helpers import register_admin_model_class, unregister_admin_model_class
-from fastadmin.models.schemas import WidgetType
+from fastadmin.models.schemas import DashboardWidgetType, WidgetType

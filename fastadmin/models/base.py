@@ -10,7 +10,7 @@ from asgiref.sync import sync_to_async
 
 from fastadmin.api.helpers import is_valid_base64
 from fastadmin.api.schemas import ExportFormat
-from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
+from fastadmin.models.schemas import DashboardWidgetType, ModelFieldWidgetSchema, WidgetType
 
 
 class BaseModelAdmin:
@@ -600,4 +600,31 @@ class ModelAdmin(BaseModelAdmin):
         raise NotImplementedError
 
 
+class DashboardWidgetAdmin:
+    title: str
+    dashboard_widget_type: DashboardWidgetType
+    x_field: str
+    y_field: str | None = None
+    series_field: str | None = None
+    x_field_filter_widget_type: WidgetType | None = None
+    x_field_filter_widget_props: dict[str, Any] | None = None
+    x_field_periods: list[str] | None = None
+
+    async def get_data(
+        self,
+        min_x_field: str | None = None,
+        max_x_field: str | None = None,
+        period_x_field: str | None = None,
+    ) -> dict:
+        """This method is used to get data for dashboard widget.
+
+        :params min_x_field: A minimum value for x_field.
+        :params max_x_field: A maximum value for x_field.
+        :params period_x_field: A period value for x_field.
+        :return: A list of dicts with x_field, y_field, series_field values.
+        """
+        raise NotImplementedError
+
+
 admin_models: dict[Any, ModelAdmin] = {}
+admin_dashboard_widgets: dict[str, DashboardWidgetAdmin] = {}

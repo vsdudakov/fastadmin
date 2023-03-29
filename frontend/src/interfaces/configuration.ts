@@ -23,6 +23,14 @@ export enum EFieldWidgetType {
   Upload = 'Upload',
 }
 
+export enum EDashboardWidgetType {
+  ChartLine = 'ChartLine',
+  ChartArea = 'ChartArea',
+  ChartColumn = 'ChartColumn',
+  ChartBar = 'ChartBar',
+  ChartPie = 'ChartPie',
+}
+
 export enum EModelPermission {
   Add = 'Add',
   Change = 'Change',
@@ -104,6 +112,18 @@ export interface IModel extends IBaseModel {
   inlines?: IInlineModel[];
 }
 
+export interface IDashboardWidget {
+  key: string;
+  title: string;
+  dashboard_widget_type: EDashboardWidgetType;
+  x_field: string;
+  y_field?: string;
+  series_field?: string;
+  x_field_filter_widget_type?: EFieldWidgetType;
+  x_field_filter_widget_props?: Record<string, any>;
+  x_field_periods?: string[];
+}
+
 export interface IConfiguration {
   site_name: string;
   site_sign_in_logo?: string;
@@ -114,4 +134,5 @@ export interface IConfiguration {
   date_format?: string;
   datetime_format?: string;
   models: IModel[];
+  dashboard_widgets: IDashboardWidget[];
 }
