@@ -300,6 +300,14 @@ class ApiService:
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
+        query_params = ListQuerySchema(
+            search=search,
+            sort_by=sort_by,
+            filters=filters,
+            offset=payload.offset,
+            limit=payload.limit,
+        )
+
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
@@ -307,28 +315,28 @@ class ApiService:
         # validations
         fields = admin_model.get_fields_for_serialize()
 
-        if search and admin_model.search_fields:
+        if query_params.search and admin_model.search_fields:
             for field in admin_model.search_fields:
                 if field not in fields:
                     raise AdminApiException(422, detail=f"Search by {field} is not allowed")
 
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
-        if filters:
-            for k in filters.keys():
+        if query_params.filters:
+            for k in query_params.filters.keys():
                 if k in exclude_filter_fields:
                     continue
                 field = k.split("__", 1)[0]
                 if field not in fields:
                     raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
-            filters = {
+            query_params.filters = {
                 sanitize_filter_key(k, admin_model.get_model_fields_with_widget_types()): sanitize_filter_value(v)
-                for k, v in filters.items()
+                for k, v in query_params.filters.items()
                 if k not in exclude_filter_fields
             }
 
-        if sort_by:
-            if sort_by.strip("-") not in fields:
-                raise AdminApiException(422, detail=f"Sort by {sort_by} is not allowed")
+        if query_params.sort_by:
+            if query_params.sort_by.strip("-") not in fields:
+                raise AdminApiException(422, detail=f"Sort by {query_params.sort_by} is not allowed")
         elif admin_model.ordering:
             for ordering_field in admin_model.ordering:
                 if ordering_field.strip("-") not in fields:
@@ -347,11 +355,11 @@ class ApiService:
             content_type,
             await admin_model.get_export(
                 payload.format,
-                search=search,
-                sort_by=sort_by,
-                filters=filters,
-                offset=payload.offset,
-                limit=payload.limit,
+                search=query_params.search,
+                sort_by=query_params.sort_by,
+                filters=query_params.filters,
+                offset=query_params.offset,
+                limit=query_params.limit,
             ),
         )
 

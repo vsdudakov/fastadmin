@@ -183,7 +183,6 @@ async def list(request: HttpRequest, model: str) -> JsonResponse:
                 "results": objs,
             }
         )
-
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
