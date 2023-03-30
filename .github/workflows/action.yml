@@ -1,10 +1,5 @@
 name: fastadmin ci
-on:
-  workflow_dispatch:
-  release:
-    types: [ edited, published ]
-  pull_request:
-    types: [ opened, synchronize, reopened ]
+on: [create, push]
 jobs:
   fastadmin-ci:
     runs-on: ubuntu-latest
