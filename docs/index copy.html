@@ -15,7 +15,7 @@
     <title>FastAdmin | Documentation</title>
     <meta
       name="description"
-      content="FastAdmin is an easy-to-use Admin Dashboard App for FastAPI inspired by Django Admin."
+      content="FastAdmin is an easy-to-use Admin Dashboard App for FastAP/Django/Flask inspired by Django Admin."
     />
     <meta name="author" content="vsdudakov@gmail.com" />
 
@@ -100,115 +100,147 @@
       <div id="content" role="main">
         <div class="app-navigation bg-light">
           <ul class="nav flex-column">
+
             <li class="nav-item">
               <a class="nav-link" href="#introduction">Introduction</a>
+
             </li>
+
             <li class="nav-item">
-              <a class="nav-link" href="#getting_started"> Getting Started </a>
+              <a class="nav-link" href="#getting_started">Getting Started</a>
+
               <ul class="nav flex-column">
+
                 <li class="nav-item">
-                  <a class="nav-link" href="#installation">Installation</a>
+                  <a class="nav-link" href="#instalation">Installation</a>
                 </li>
+
                 <li class="nav-item">
                   <a class="nav-link" href="#quick_tutorial">Quick Tutorial</a>
                 </li>
+
               </ul>
+
             </li>
+
             <li class="nav-item">
               <a class="nav-link" href="#settings">Settings</a>
+
             </li>
+
             <li class="nav-item">
-              <a class="nav-link" href="#orms">ORMs</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#model_admin_objects">
-                ModelAdmin objects
-              </a>
+              <a class="nav-link" href="#dashboard-widget-admins">Dashboard Widget Admins</a>
+
               <ul class="nav flex-column">
+
                 <li class="nav-item">
-                  <a
-                    class="nav-link"
-                    href="#model_admin_the_register_decorator"
-                  >
-                    The register decorator
-                  </a>
+                  <a class="nav-link" href="#registering-widgets">Registering Widgets</a>
                 </li>
+
                 <li class="nav-item">
-                  <a class="nav-link" href="#model_admin_options">
-                    ModelAdmin options
-                  </a>
+                  <a class="nav-link" href="#widget-methods-and-attributes">Methods and Attributes</a>
                 </li>
+
                 <li class="nav-item">
-                  <a class="nav-link" href="#model_admin_methods">
-                    ModelAdmin methods
-                  </a>
+                  <a class="nav-link" href="#examples">Examples</a>
                 </li>
+
               </ul>
+
             </li>
+
             <li class="nav-item">
-              <a class="nav-link" href="#inline_model_admin_objects">
-                InlineModelAdmin objects
-              </a>
+              <a class="nav-link" href="#model-admins">Model Admins</a>
+
               <ul class="nav flex-column">
+
                 <li class="nav-item">
-                  <a class="nav-link" href="#inline_model_admin_options">
-                    InlineModelAdmin options
-                  </a>
+                  <a class="nav-link" href="#registering-models">Registering Models</a>
                 </li>
+
                 <li class="nav-item">
-                  <a class="nav-link" href="#inline_model_admin_methods">
-                    InlineModelAdmin methods
-                  </a>
+                  <a class="nav-link" href="#authentication">Authentication</a>
                 </li>
+
                 <li class="nav-item">
-                  <a class="nav-link" href="#inline_model_admin_fk">
-                    ForeignKey fields
-                  </a>
+                  <a class="nav-link" href="#model-methods-and-attributes">Methods and Attributes</a>
                 </li>
+
                 <li class="nav-item">
-                  <a class="nav-link" href="#inline_model_admin_m2m">
-                    ManyToMany fields
-                  </a>
+                  <a class="nav-link" href="#examples">Examples</a>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#inline_model_admin_json">
-                    JSON fields
-                  </a>
-                </li>
+
               </ul>
+
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="#inline-model-admins">Inline Model Admins</a>
+
+              <ul class="nav flex-column">
+
+                <li class="nav-item">
+                  <a class="nav-link" href="#registering-inlines">Registering Inlines</a>
+                </li>
+
+                <li class="nav-item">
+                  <a class="nav-link" href="#inline-methods-and-attributes">Methods and Attributes</a>
+                </li>
+
+                <li class="nav-item">
+                  <a class="nav-link" href="#examples">Examples</a>
+                </li>
+
+              </ul>
+
             </li>
 
             <li class="nav-item">
               <a class="nav-link" href="#changelog">Changelog</a>
+
               <ul class="nav flex-column">
-                {% for version in versions %}
+
                 <li class="nav-item">
-                  <a
-                    class="nav-link"
-                    href="#v{{version.version | replace('.', '_')}}"
-                    >v{{version.version}}</a
-                  >
+                  <a class="nav-link" href="#v0_1_35">v0.1.35</a>
                 </li>
-                {% endfor %}
+
+                <li class="nav-item">
+                  <a class="nav-link" href="#v0_1_34">v0.1.34</a>
+                </li>
+
+                <li class="nav-item">
+                  <a class="nav-link" href="#v0_1_33">v0.1.33</a>
+                </li>
+
+                <li class="nav-item">
+                  <a class="nav-link" href="#v0_1_32">v0.1.32</a>
+                </li>
+
+                <li class="nav-item">
+                  <a class="nav-link" href="#v0_1_31">v0.1.31</a>
+                </li>
+
               </ul>
+
             </li>
+
           </ul>
         </div>
 
         <div class="app-content">
           <div class="container">
             <section id="index">
-              <h1>Documentation</h1>
+              <h1>FastAdmin | Documentation</h1>
 
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> {{versions[0].version }}</li>
+                    <li><strong>Version:</strong> 0.1.35</li>
                     <li>
                       <strong>Author:</strong>
-                      <a href="mailto:vsdudakov@gmail.com" target="_blank"
-                        >Seva D</a
-                      >
+                      <a href="mailto:vsdudakov@gmail.com" target="_blank">
+                        Seva D.
+                      </a>
                     </li>
                   </ul>
                 </div>
@@ -216,9 +248,12 @@
                   <ul class="list-unstyled">
                     <li>
                       <strong class="font-weight-700">Created:</strong>
-                      {{created_date}}
+                      7 March 2023
                     </li>
-                    <li><strong>Updated:</strong> {{updated_date}}</li>
+                    <li>
+                      <strong>Updated:</strong>
+                      30 March 2023
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -1393,18 +1428,62 @@ class PersonAdmin(TortoiseModelAdmin):
               </p>
               <hr class="small-divider" />
               <!-- <p class="alert alert-info mb-5"> For Future Updates Follow Us <a target="_blank" href="http://themeforest.net/user/harnishdesign?ref=HarnishDesign">@themeforest</a> / <a target="_blank" href="http://facebook.com/harnishdesign">@facebook</a> / <a target="_blank" href="http://twitter.com/harnishdesign">@twitter</a> / <a target="_blank" href="https://dribbble.com/harnishdesign">@Dribbble</a></p> -->
-              {% for version in versions %}
 
-              <h3 id="v{{version.version | replace('.', '_')}}">
-                Version {{version.version}}
+
+              <h3 id="v0_1_35">
+                Version 0.1.35
               </h3>
               <ul class="changelog">
-                {% for change in version.changes %}
-                <li>{{change}}</li>
-                {% endfor %}
+
+                <li>Added DashboardWidgetAdmin class and charts for dashboard.</li>
+
               </ul>
               <hr class="small-divider" />
-              {% endfor %}
+
+
+              <h3 id="v0_1_34">
+                Version 0.1.34
+              </h3>
+              <ul class="changelog">
+
+                <li>Added SlugInput, EmailInput, PhoneInput, UrlInput, JsonTextArea widget types.</li>
+
+              </ul>
+              <hr class="small-divider" />
+
+
+              <h3 id="v0_1_33">
+                Version 0.1.33
+              </h3>
+              <ul class="changelog">
+
+                <li>Added list_display_widths parameter.</li>
+
+              </ul>
+              <hr class="small-divider" />
+
+
+              <h3 id="v0_1_32">
+                Version 0.1.32
+              </h3>
+              <ul class="changelog">
+
+                <li>Added Upload widget type.</li>
+
+              </ul>
+              <hr class="small-divider" />
+
+
+              <h3 id="v0_1_31">
+                Version 0.1.31
+              </h3>
+              <ul class="changelog">
+
+                <li>Added PasswordInput widget type.</li>
+
+              </ul>
+              <hr class="small-divider" />
+
             </section>
           </div>
         </div>

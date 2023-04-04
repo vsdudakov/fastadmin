@@ -1,11 +1,7 @@
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from fastadmin import fastapi_app as admin_app
-from fastadmin.settings import settings
+from .app import app
 
-app = FastAPI()
-app.mount(f"/{settings.ADMIN_PREFIX}", admin_app)
 # CORS
 origins = [
     "http://localhost:3030",

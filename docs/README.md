@@ -1,9 +1,166 @@
-<!DOCTYPE html><html lang=en> <head><meta charset=UTF-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no"><meta name=google-site-verification content=c45rQ5FmAgrb6scHcK2hORmVz_8MwX6HRXrKpYu3vMw><link href=assets/images/favicon.png rel=icon><title>FastAdmin | Documentation</title><meta name=description content="FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin."><meta name=author content=vsdudakov@gmail.com><link rel=stylesheet type=text/css href=https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css><link rel=stylesheet type=text/css href=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css><link rel=stylesheet type=text/css href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css><link rel=stylesheet type=text/css href=assets/css/stylesheet.css></head> <body data-spy=scroll data-target=.app-navigation data-offset=125> <div class=preloader> <div class=lds-ellipsis> <div></div> <div></div> <div></div> <div></div> </div> </div> <div id=main-wrapper> <header id=header class=sticky-top> <nav class="primary-menu navbar navbar-expand-lg navbar-dropdown-dark"> <div class=container-fluid> <button id=sidebarCollapse class="navbar-toggler d-block d-md-none" type=button> <span></span><span class=w-75></span><span class=w-50></span> </button> <a class="logo ml-md-3" href=index.html title=FastAdmin> <img src=assets/images/header-logo.svg alt=FastAdmin width=50> <h4 class=title>FastAdmin</h4> </a> <ul class="social-icons social-icons-sm ml-lg-2 mr-2"> <li class=social-icons-github> <a href=https://pypi.org/project/fastadmin/ target=_blank title data-original-title=github><i class="fa-solid fa-house"></i></a> </li> <li class=social-icons-github> <a href=https://github.com/vsdudakov/fastadmin target=_blank title data-original-title=github><i class="fab fa-github"></i></a> </li> <!--
-                <li class="social-icons-twitter"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Twitter"><i class="fab fa-twitter"></i></a></li>
-                <li class="social-icons-facebook"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Facebook"><i class="fab fa-facebook-f"></i></a></li>
-                <li class="social-icons-dribbble"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Dribbble"><i class="fab fa-dribbble"></i></a></li>
-              --> </ul> </div> </nav> </header> <div id=content role=main> <div class="app-navigation bg-light"> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#introduction>Introduction</a> </li> <li class=nav-item> <a class=nav-link href=#getting_started>Getting Started</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#installation>Installation</a> </li> <li class=nav-item> <a class=nav-link href=#quick_tutorial>Quick Tutorial</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#settings>Settings</a> </li> <li class=nav-item> <a class=nav-link href=#dashboard-widget-admins>Dashboard Widget Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-widgets>Registering Widgets</a> </li> <li class=nav-item> <a class=nav-link href=#widget-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#widget-examples>Examples</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#model-admins>Model Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-models>Registering Models</a> </li> <li class=nav-item> <a class=nav-link href=#authentication>Authentication</a> </li> <li class=nav-item> <a class=nav-link href=#model-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#model-examples>Examples</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#inline-model-admins>Inline Model Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-inlines>Registering Inlines</a> </li> <li class=nav-item> <a class=nav-link href=#inline-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#inline-examples>Examples</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#changelog>Changelog</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#v0_1_35>v0.1.35</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_34>v0.1.34</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_33>v0.1.33</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_32>v0.1.32</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_31>v0.1.31</a> </li> </ul> </li> </ul> </div> <div class=app-content> <div class=container> <section id=index> <h1>FastAdmin | Documentation</h1> <div class=row> <div class="col-sm-6 col-lg-4"> <ul class=list-unstyled> <li><strong>Version:</strong> 0.1.35</li> <li> <strong>Author:</strong> <a href=mailto:vsdudakov@gmail.com target=_blank> Seva D. </a> </li> </ul> </div> <div class="col-sm-6 col-lg-4"> <ul class=list-unstyled> <li> <strong class=font-weight-700>Created:</strong> 7 March 2023 </li> <li> <strong>Updated:</strong> 04 April 2023 </li> </ul> </div> </div> </section> <hr class=divider> <section id=introduction> <h2>Introduction</h2> <p class=text-4> <a href=https://github.com/vsdudakov/fastadmin target=_blank>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin. </p> <p class=text-4> FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way. </p> <p class=text-4> FastAdmin is designed to be minimalistic, functional and yet familiar. </p> </section> <hr class=small-divider> <section id=getting_started> <h2>Getting Started</h2> <p class="alert alert-info"> If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href=mailto:vsdudakov@gmail.com target=_blank>us</a>. </p> <section id=installation> <h3>Installation</h3> <p class=lead> Follow the steps below to setup FastAdmin: </p> <p class=text-4> Install the package using pip: </p> <p class="alert alert-info"> Note: For zsh and macos use: <code>pip install fastadmin\[fastapi,django\]</code> </p> <pre>
-  <code class=language-bash>
+## Admin Dashboard App for FastAPI/Flask/Django
+
+[![Build Status](https://github.com/vsdudakov/fastadmin/workflows/CI/badge.svg?branch=main)](https://github.com/vsdudakov/fastadmin/workflows/CI/badge.svg?branch=main)
+[![codecov](https://codecov.io/gh/vsdudakov/fastadmin/branch/main/graph/badge.svg?token=RNGX5HOW3T)](https://codecov.io/gh/vsdudakov/fastadmin)
+[![License](https://img.shields.io/github/license/vsdudakov/fastadmin)](https://github.com/vsdudakov/fastadmin/blob/master/LICENSE)
+[![PyPi](https://badgen.net/pypi/v/fastadmin)](https://pypi.org/project/fastadmin/)
+[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
+
+## Screenshots
+
+![SignIn View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/signin.png)
+![List View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/list.png)
+![Change View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/change.png)
+
+<p align="center">
+  <a href="https://twitter.com/intent/tweet?text=Admin%20Dashboard%20For%20FastAPI&url=https://github.com/vsdudakov/fastadmin&hashtags=FastAPI,AdminDashboard">
+    <img alt="tweet" src="https://img.shields.io/twitter/url/https/twitter?label=Share%20on%20twitter&style=social" target="_blank" />
+  </a>
+</p>
+
+
+
+
+## Introduction
+
+
+
+<a href='https://github.com/vsdudakov/fastadmin' target='_blank'>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FastAdmin is designed to be minimalistic, functional and yet familiar.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Getting Started
+
+
+
+
+
+
+
+If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href='mailto:vsdudakov@gmail.com' target='_blank'>us</a>.
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Installation
+
+
+
+
+
+Follow the steps below to setup FastAdmin:
+
+
+
+
+
+
+
+
+
+
+
+
+
+Install the package using pip:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Note: For zsh and macos use: <code>pip install fastadmin\[fastapi,django\]</code>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```bash
 
 pip install fastadmin[fastapi,django]  # for fastapi with django orm
 pip install fastadmin[fastapi,tortoise-orm]  # for fastapi with tortoise orm
@@ -13,9 +170,39 @@ pip install fastadmin[django]  # for django with django orm
 pip install fastadmin[django,pony]  # for django with pony orm
 pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
 
-  </code>
-</pre> <p class=text-4> Install the package using poetry: </p> <pre>
-  <code class=language-bash>
+```
+
+
+
+
+
+
+
+Install the package using poetry:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```bash
 
 poetry add 'fastadmin[fastapi,django]'  # for fastapi with django orm
 poetry add 'fastadmin[fastapi,tortoise-orm]'  # for fastapi with tortoise orm
@@ -25,17 +212,117 @@ poetry add 'fastadmin[django]'  # for django with django orm
 poetry add 'fastadmin[django,pony]'  # for django with pony orm
 poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
 
-  </code>
-</pre> <p class=text-4> Configure required settings using virtual environment variables: </p> <p class="alert alert-info"> Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href=#settings>here</a> </p> <pre>
-  <code class=language-bash>
+```
+
+
+
+
+
+
+
+Configure required settings using virtual environment variables:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href='#settings'>here</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```bash
 
 export ADMIN_USER_MODEL=User
 export ADMIN_USER_MODEL_USERNAME_FIELD=username
 export ADMIN_SECRET_KEY=secret_key
 
-  </code>
-</pre> </section> <section id=quick_tutorial> <h3>Quick Tutorial</h3> <p class=lead> Setup FastAdmin for a framework </p> <ul class="nav nav-tabs" id="Setup FastAdmin for a framework" role=tablist> <li class=nav-item role=presentation> <button class="nav-link active" id=FastAPI data-bs-toggle=tab data-bs-target=#FastAPI-pane type=button role=tab aria-controls=FastAPI aria-selected=true>FastAPI</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=Django data-bs-toggle=tab data-bs-target=#Django-pane type=button role=tab aria-controls=Django aria-selected=false>Django</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=Flask data-bs-toggle=tab data-bs-target=#Flask-pane type=button role=tab aria-controls=Flask aria-selected=false>Flask</button> </li> </ul> <div class=tab-content id="Setup FastAdmin for a framework-content"> <div class="tab-pane fade show active" id=FastAPI-pane role=tabpanel aria-labelledby=FastAPI tabindex=0> <pre>
-  <code class=language-python>
+```
+
+
+
+
+
+
+
+
+### Quick Tutorial
+
+
+
+
+
+Setup FastAdmin for a framework
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### FastAPI
+
+
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
 from fastapi import FastAPI
 
 from fastadmin import fastapi_app as admin_app
@@ -46,8 +333,27 @@ app = FastAPI()
 app.mount(f"/{settings.ADMIN_PREFIX}", admin_app)
 
   </code>
-</pre> </div> <div class="tab-pane fade " id=Django-pane role=tabpanel aria-labelledby=Django tabindex=0> <pre>
-  <code class=language-python>
+</pre>
+
+
+
+
+
+### Django
+
+
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
 from django.urls import path
 
 from fastadmin import get_django_admin_urls as get_admin_urls
@@ -58,8 +364,27 @@ urlpatterns = [
 ]
 
   </code>
-</pre> </div> <div class="tab-pane fade " id=Flask-pane role=tabpanel aria-labelledby=Flask tabindex=0> <pre>
-  <code class=language-python>
+</pre>
+
+
+
+
+
+### Flask
+
+
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
 from flask import Flask
 
 from fastadmin import flask_app as admin_app
@@ -72,8 +397,59 @@ app.json = JSONProvider(app)
 app.register_blueprint(admin_app, url_prefix=f"/{settings.ADMIN_PREFIX}")
 
   </code>
-</pre> </div> </div> <p class=lead> Register ORM models </p> <ul class="nav nav-tabs" id="Register ORM models" role=tablist> <li class=nav-item role=presentation> <button class="nav-link active" id="Tortoise ORM" data-bs-toggle=tab data-bs-target="#Tortoise ORM-pane" type=button role=tab aria-controls="Tortoise ORM" aria-selected=true>Tortoise ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id="Django ORM" data-bs-toggle=tab data-bs-target="#Django ORM-pane" type=button role=tab aria-controls="Django ORM" aria-selected=false>Django ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id="SQL Alchemy" data-bs-toggle=tab data-bs-target="#SQL Alchemy-pane" type=button role=tab aria-controls="SQL Alchemy" aria-selected=false>SQL Alchemy</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id="Pony ORM" data-bs-toggle=tab data-bs-target="#Pony ORM-pane" type=button role=tab aria-controls="Pony ORM" aria-selected=false>Pony ORM</button> </li> </ul> <div class=tab-content id="Register ORM models-content"> <div class="tab-pane fade show active" id="Tortoise ORM-pane" role=tabpanel aria-labelledby="Tortoise ORM" tabindex=0> <pre>
-  <code class=language-python>
+</pre>
+
+
+
+
+
+
+
+
+
+
+Register ORM models
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Tortoise ORM
+
+
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
 from enum import Enum
 
 from tortoise import fields
@@ -209,8 +585,27 @@ class TortoiseORMEventModelAdmin(TortoiseModelAdmin):
         return f"{obj.name} - {obj.price}"
 
   </code>
-</pre> </div> <div class="tab-pane fade " id="Django ORM-pane" role=tabpanel aria-labelledby="Django ORM" tabindex=0> <pre>
-  <code class=language-python>
+</pre>
+
+
+
+
+
+### Django ORM
+
+
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
 from django.db import models
 
 from fastadmin import DjangoInlineModelAdmin, DjangoModelAdmin, action, display, register
@@ -343,8 +738,27 @@ class DjangoEventModelAdmin(DjangoModelAdmin):
         return f"{obj.name} - {obj.price}"
 
   </code>
-</pre> </div> <div class="tab-pane fade " id="SQL Alchemy-pane" role=tabpanel aria-labelledby="SQL Alchemy" tabindex=0> <pre>
-  <code class=language-python>
+</pre>
+
+
+
+
+
+### SQL Alchemy
+
+
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
 import datetime
 from decimal import Decimal
 from enum import Enum
@@ -543,8 +957,27 @@ class SqlAlchemyEventModelAdmin(SqlAlchemyModelAdmin):
         return f"{obj.name} - {obj.price}"
 
   </code>
-</pre> </div> <div class="tab-pane fade " id="Pony ORM-pane" role=tabpanel aria-labelledby="Pony ORM" tabindex=0> <pre>
-  <code class=language-python>
+</pre>
+
+
+
+
+
+### Pony ORM
+
+
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
 from datetime import date, datetime, time
 from decimal import Decimal
 from enum import Enum
@@ -719,60 +1152,35 @@ class PonyORMEventModelAdmin(PonyORMModelAdmin):
         return f"{obj.name} - {obj.price}"
 
   </code>
-</pre> </div> </div> </section> </section> <hr class=small-divider> <section id=settings> <h2>Settings</h2> <p class=text-4> There are settings with default values: </p> <p class="alert alert-info"> Note: Export virtual environment variables or create <code>.env</code> file with variables and use <code>python-dotenv</code> package. </p> <pre>
-  <code class=language-python>
-class Settings(BaseSettings):
-    """Settings"""
+</pre>
 
-    # This value is the prefix you used for mounting FastAdmin app for FastAPI.
-    ADMIN_PREFIX: str = "admin"
 
-    # This value is the site name on sign-in page and on header.
-    ADMIN_SITE_NAME: str = "FastAdmin"
 
-    # This value is the logo path on sign-in page.
-    ADMIN_SITE_SIGN_IN_LOGO: str = "/admin/static/images/sign-in-logo.svg"
 
-    # This value is the logo path on header.
-    ADMIN_SITE_HEADER_LOGO: str = "/admin/static/images/header-logo.svg"
 
-    # This value is the favicon path.
-    ADMIN_SITE_FAVICON: str = "/admin/static/images/favicon.png"
 
-    # This value is the primary color for FastAdmin.
-    ADMIN_PRIMARY_COLOR: str = "#009485"
 
-    # This value is the session id key to store session id in http only cookies.
-    ADMIN_SESSION_ID_KEY: str = "admin_session_id"
 
-    # This value is the expired_at period (in sec) for session id.
-    ADMIN_SESSION_EXPIRED_AT: int = 144000  # in sec
 
-    # This value is the name for User db/orm model class for authentication.
-    ADMIN_USER_MODEL: str
 
-    # This value is the username field for User db/orm model for for authentication.
-    ADMIN_USER_MODEL_USERNAME_FIELD: str
 
-    # This value is the key to securing signed data - it is vital you keep this secure,
-    # or attackers could use it to generate their own signed values.
-    ADMIN_SECRET_KEY: str
 
-    # This value is the date format for JS widgets.
-    ADMIN_DATE_FORMAT: str = "YYYY-MM-DD"
 
-    # This value is the datetime format for JS widgets.
-    ADMIN_DATETIME_FORMAT: str = "YYYY-MM-DD HH:mm"
 
-    # This value is the time format for JS widgets.
-    ADMIN_TIME_FORMAT: str = "HH:mm:ss"
 
-  </code>
-</pre> <p class="alert alert-warning"> Note: Settings without default values are required. </p> </section> <hr class=small-divider> <section id=dashboard-widget-admins> <h2>Dashboard Widget Admins</h2> <section id=registering-widgets> <h3>Registering Widgets</h3> </section> <section id=widget-methods-and-attributes> <h3>Methods and Attributes</h3> </section> <section id=widget-examples> <h3>Examples</h3> </section> </section> <hr class=small-divider> <section id=model-admins> <h2>Model Admins</h2> <section id=registering-models> <h3>Registering Models</h3> </section> <section id=authentication> <h3>Authentication</h3> </section> <section id=model-methods-and-attributes> <h3>Methods and Attributes</h3> </section> <section id=model-examples> <h3>Examples</h3> </section> </section> <hr class=small-divider> <section id=inline-model-admins> <h2>Inline Model Admins</h2> <section id=registering-inlines> <h3>Registering Inlines</h3> </section> <section id=inline-methods-and-attributes> <h3>Methods and Attributes</h3> </section> <section id=inline-examples> <h3>Examples</h3> </section> </section> <hr class=small-divider> <section id=changelog> <h2>Changelog</h2> <p class="alert alert-info"> See what's new added, changed, fixed, improved or updated in the latest versions. </p> <section id=v0_1_35> <h3>v0.1.35</h3> <p class=text-4> Added DashboardWidgetAdmin class and charts for dashboard. </p> </section> <section id=v0_1_34> <h3>v0.1.34</h3> <p class=text-4> Added SlugInput, EmailInput, PhoneInput, UrlInput, JsonTextArea widget types. </p> </section> <section id=v0_1_33> <h3>v0.1.33</h3> <p class=text-4> Added list_display_widths parameter. </p> </section> <section id=v0_1_32> <h3>v0.1.32</h3> <p class=text-4> Added Upload widget type. </p> </section> <section id=v0_1_31> <h3>v0.1.31</h3> <p class=text-4> Added PasswordInput widget type. </p> </section> </section> <hr class=small-divider> </div> </div> </div> <footer id=footer class="section bg-dark footer-text-light"> <div class=container> <!--
-            <ul class="social-icons social-icons-lg social-icons-muted justify-content-center mb-3">
-              <li><a data-toggle="tooltip" href="https://twitter.com/harnishdesign/" target="_blank" title="" data-original-title="Twitter"><i class="fab fa-twitter"></i></a></li>
-              <li><a data-toggle="tooltip" href="http://www.facebook.com/harnishdesign/" target="_blank" title="" data-original-title="Facebook"><i class="fab fa-facebook-f"></i></a></li>
-              <li><a data-toggle="tooltip" href="http://www.dribbble.com/harnishdesign/" target="_blank" title="" data-original-title="Dribbble"><i class="fab fa-dribbble"></i></a></li>
-              <li><a data-toggle="tooltip" href="http://www.github.com/" target="_blank" title="" data-original-title="GitHub"><i class="fab fa-github"></i></a></li>
-            </ul>
-          --> <p class=text-center> Copyright &copy; 2023 FastAdmin. All Rights Reserved. </p> </div> </footer> </div> <a id=back-to-top data-toggle=tooltip title="Back to Top" href=#> ^ </a> <script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js></script> <script src=https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js></script> <script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js></script> <script src=assets/js/theme.js></script> </body> </html>
+
+
+
+
+
+
+
+
+
+## Documentation
+
+See full documentation [here](https://vsdudakov.github.io/fastadmin).
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE) file for details.
