@@ -30,7 +30,8 @@
 {% for tab in section_block.content %}
 ### {{tab.name}}
 {% for section_block in tab.content %}
-{% include "templates/block.html" %}
+{% include "templates/block.md" %}
 {% endfor %}
+
 {% endfor %}
 {% endif %}

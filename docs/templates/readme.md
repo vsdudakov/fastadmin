@@ -18,33 +18,24 @@
   </a>
 </p>
 
-
 {% for section in sections %}
 {% if section.url == '#introduction' or section.url == '#getting_started' %}
 ## {{section.name}}
-
 {% for section_block in get_page_context(section.url) %}
   {% include "templates/block.md" %}
 {% endfor %}
-
 {% if section.children %}
 {% for subsection in section.children %}
 ### {{subsection.name}}
-
 {% for section_block in get_page_context(subsection.url) %}
   {% include "templates/block.md" %}
 {% endfor %}
-
 {% endfor %}
 {% endif %}
-
 {% endif %}
 {% endfor %}
-
 ## Documentation
-
 See full documentation [here](https://vsdudakov.github.io/fastadmin).
 
 ## License
-
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE) file for details.

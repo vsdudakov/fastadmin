@@ -2,8 +2,7 @@ import django
 import pytest
 from django.db import connections
 
-from examples.djangoorm import models
-from fastadmin.models.helpers import get_admin_model
+from tests.environment.djangoorm import models
 
 
 @pytest.fixture(scope="session", autouse=True)

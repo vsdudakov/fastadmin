@@ -2,7 +2,7 @@
                 <li class="social-icons-twitter"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Twitter"><i class="fab fa-twitter"></i></a></li>
                 <li class="social-icons-facebook"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Facebook"><i class="fab fa-facebook-f"></i></a></li>
                 <li class="social-icons-dribbble"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Dribbble"><i class="fab fa-dribbble"></i></a></li>
-              --> </ul> </div> </nav> </header> <div id=content role=main> <div class="app-navigation bg-light"> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#introduction>Introduction</a> </li> <li class=nav-item> <a class=nav-link href=#getting_started>Getting Started</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#installation>Installation</a> </li> <li class=nav-item> <a class=nav-link href=#quick_tutorial>Quick Tutorial</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#settings>Settings</a> </li> <li class=nav-item> <a class=nav-link href=#dashboard-widget-admins>Dashboard Widget Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-widgets>Registering Widgets</a> </li> <li class=nav-item> <a class=nav-link href=#widget-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#widget-examples>Examples</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#model-admins>Model Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-models>Registering Models</a> </li> <li class=nav-item> <a class=nav-link href=#authentication>Authentication</a> </li> <li class=nav-item> <a class=nav-link href=#model-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#model-examples>Examples</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#inline-model-admins>Inline Model Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-inlines>Registering Inlines</a> </li> <li class=nav-item> <a class=nav-link href=#inline-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#inline-examples>Examples</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#changelog>Changelog</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#v0_1_35>v0.1.35</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_34>v0.1.34</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_33>v0.1.33</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_32>v0.1.32</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_31>v0.1.31</a> </li> </ul> </li> </ul> </div> <div class=app-content> <div class=container> <section id=index> <h1>FastAdmin | Documentation</h1> <div class=row> <div class="col-sm-6 col-lg-4"> <ul class=list-unstyled> <li><strong>Version:</strong> 0.1.35</li> <li> <strong>Author:</strong> <a href=mailto:vsdudakov@gmail.com target=_blank> Seva D. </a> </li> </ul> </div> <div class="col-sm-6 col-lg-4"> <ul class=list-unstyled> <li> <strong class=font-weight-700>Created:</strong> 7 March 2023 </li> <li> <strong>Updated:</strong> 04 April 2023 </li> </ul> </div> </div> </section> <hr class=divider> <section id=introduction> <h2>Introduction</h2> <p class=text-4> <a href=https://github.com/vsdudakov/fastadmin target=_blank>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin. </p> <p class=text-4> FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way. </p> <p class=text-4> FastAdmin is designed to be minimalistic, functional and yet familiar. </p> </section> <hr class=small-divider> <section id=getting_started> <h2>Getting Started</h2> <p class="alert alert-info"> If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href=mailto:vsdudakov@gmail.com target=_blank>us</a>. </p> <section id=installation> <h3>Installation</h3> <p class=lead> Follow the steps below to setup FastAdmin: </p> <p class=text-4> Install the package using pip: </p> <p class="alert alert-info"> Note: For zsh and macos use: <code>pip install fastadmin\[fastapi,django\]</code> </p> <pre>
+              --> </ul> </div> </nav> </header> <div id=content role=main> <div class="app-navigation bg-light"> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#introduction>Introduction</a> </li> <li class=nav-item> <a class=nav-link href=#getting_started>Getting Started</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#installation>Installation</a> </li> <li class=nav-item> <a class=nav-link href=#quick_tutorial>Quick Tutorial</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#settings>Settings</a> </li> <li class=nav-item> <a class=nav-link href=#dashboard-widget-admins>Dashboard Widget Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-widgets>Registering Widgets</a> </li> <li class=nav-item> <a class=nav-link href=#widget-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#widget-examples>Examples</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#model-admins>Model Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-models>Registering Models</a> </li> <li class=nav-item> <a class=nav-link href=#authentication>Authentication</a> </li> <li class=nav-item> <a class=nav-link href=#model-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#model-examples>Examples</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#inline-model-admins>Inline Model Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-inlines>Registering Inlines</a> </li> <li class=nav-item> <a class=nav-link href=#inline-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#inline-examples>Examples</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#changelog>Changelog</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#v0_1_35>v0.1.35</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_34>v0.1.34</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_33>v0.1.33</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_32>v0.1.32</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_31>v0.1.31</a> </li> </ul> </li> </ul> </div> <div class=app-content> <div class=container> <section id=index> <h1>FastAdmin | Documentation</h1> <div class=row> <div class="col-sm-6 col-lg-4"> <ul class=list-unstyled> <li><strong>Version:</strong> 0.1.35</li> <li> <strong>Author:</strong> <a href=mailto:vsdudakov@gmail.com target=_blank> Seva D. </a> </li> </ul> </div> <div class="col-sm-6 col-lg-4"> <ul class=list-unstyled> <li> <strong class=font-weight-700>Created:</strong> 7 March 2023 </li> <li> <strong>Updated:</strong> 18 April 2023 </li> </ul> </div> </div> </section> <hr class=divider> <section id=introduction> <h2>Introduction</h2> <p class=text-4> <a href=https://github.com/vsdudakov/fastadmin target=_blank>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin. </p> <p class=text-4> FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way. </p> <p class=text-4> FastAdmin is designed to be minimalistic, functional and yet familiar. </p> </section> <hr class=small-divider> <section id=getting_started> <h2>Getting Started</h2> <p class="alert alert-info"> If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href=mailto:vsdudakov@gmail.com target=_blank>us</a>. </p> <section id=installation> <h3>Installation</h3> <p class=lead> Follow the steps below to setup FastAdmin: </p> <p class=text-4> Install the package using pip: </p> <p class="alert alert-info"> Note: For zsh and macos use: <code>pip install fastadmin\[fastapi,django\]</code> </p> <pre>
   <code class=language-bash>
 
 pip install fastadmin[fastapi,django]  # for fastapi with django orm
@@ -37,13 +37,12 @@ export ADMIN_SECRET_KEY=secret_key
 </pre> </section> <section id=quick_tutorial> <h3>Quick Tutorial</h3> <p class=lead> Setup FastAdmin for a framework </p> <ul class="nav nav-tabs" id="Setup FastAdmin for a framework" role=tablist> <li class=nav-item role=presentation> <button class="nav-link active" id=FastAPI data-bs-toggle=tab data-bs-target=#FastAPI-pane type=button role=tab aria-controls=FastAPI aria-selected=true>FastAPI</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=Django data-bs-toggle=tab data-bs-target=#Django-pane type=button role=tab aria-controls=Django aria-selected=false>Django</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=Flask data-bs-toggle=tab data-bs-target=#Flask-pane type=button role=tab aria-controls=Flask aria-selected=false>Flask</button> </li> </ul> <div class=tab-content id="Setup FastAdmin for a framework-content"> <div class="tab-pane fade show active" id=FastAPI-pane role=tabpanel aria-labelledby=FastAPI tabindex=0> <pre>
   <code class=language-python>
 from fastapi import FastAPI
-
 from fastadmin import fastapi_app as admin_app
-from fastadmin.settings import settings
 
 
 app = FastAPI()
-app.mount(f"/{settings.ADMIN_PREFIX}", admin_app)
+
+app.mount("/admin", admin_app)
 
   </code>
 </pre> </div> <div class="tab-pane fade " id=Django-pane role=tabpanel aria-labelledby=Django tabindex=0> <pre>
@@ -61,662 +60,250 @@ urlpatterns = [
 </pre> </div> <div class="tab-pane fade " id=Flask-pane role=tabpanel aria-labelledby=Flask tabindex=0> <pre>
   <code class=language-python>
 from flask import Flask
-
 from fastadmin import flask_app as admin_app
-from fastadmin.api.frameworks.flask.app import JSONProvider
-from fastadmin.settings import settings
+
 
 app = Flask(__name__)
-# TODO: works only here not on blueprint
-app.json = JSONProvider(app)
-app.register_blueprint(admin_app, url_prefix=f"/{settings.ADMIN_PREFIX}")
+
+app.register_blueprint(admin_app, url_prefix="/admin")
 
   </code>
 </pre> </div> </div> <p class=lead> Register ORM models </p> <ul class="nav nav-tabs" id="Register ORM models" role=tablist> <li class=nav-item role=presentation> <button class="nav-link active" id="Tortoise ORM" data-bs-toggle=tab data-bs-target="#Tortoise ORM-pane" type=button role=tab aria-controls="Tortoise ORM" aria-selected=true>Tortoise ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id="Django ORM" data-bs-toggle=tab data-bs-target="#Django ORM-pane" type=button role=tab aria-controls="Django ORM" aria-selected=false>Django ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id="SQL Alchemy" data-bs-toggle=tab data-bs-target="#SQL Alchemy-pane" type=button role=tab aria-controls="SQL Alchemy" aria-selected=false>SQL Alchemy</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id="Pony ORM" data-bs-toggle=tab data-bs-target="#Pony ORM-pane" type=button role=tab aria-controls="Pony ORM" aria-selected=false>Pony ORM</button> </li> </ul> <div class=tab-content id="Register ORM models-content"> <div class="tab-pane fade show active" id="Tortoise ORM-pane" role=tabpanel aria-labelledby="Tortoise ORM" tabindex=0> <pre>
   <code class=language-python>
-from enum import Enum
+import bcrypt
+from uuid import UUID
 
-from tortoise import fields
 from tortoise.models import Model
+from tortoise import fields
 
-from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, action, display, register
-
-
-class EventTypeEnum(str, Enum):
-    PRIVATE = "PRIVATE"
-    PUBLIC = "PUBLIC"
+from fastadmin import register, TortoiseModelAdmin
 
 
-class BaseModel(Model):
-    id = fields.IntField(pk=True)
-    created_at = fields.DatetimeField(auto_now_add=True)
-    updated_at = fields.DatetimeField(auto_now=True)
-
-    @classmethod
-    def get_model_name(cls):
-        return f"tortoiseorm.{cls.__name__}"
-
-    class Meta:
-        abstract = True
-
-
-class User(BaseModel):
-    username = fields.CharField(max_length=255)
-    password = fields.CharField(max_length=255)
+class User(Model):
+    username = fields.CharField(max_length=255, unique=True)
+    hash_password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
+    is_active = fields.BooleanField(default=False)
 
-    async def __str__(self):
-        return self.username
-
-    class Meta:
-        table = "user"
+    def __str__(self):
+      return self.username
 
 
-class Tournament(BaseModel):
+class Group(Model):
     name = fields.CharField(max_length=255)
 
-    async def __str__(self):
-        return self.name
-
-    class Meta:
-        table = "tournament"
-
-
-class BaseEvent(BaseModel):
-    class Meta:
-        table = "base_event"
-
-
-class Event(BaseModel):
-    base = fields.OneToOneField("models.BaseEvent", related_name="event", null=True, on_delete=fields.SET_NULL)
-    name = fields.CharField(max_length=255)
-
-    tournament = fields.ForeignKeyField("models.Tournament", related_name="events", on_delete=fields.CASCADE)
-    participants = fields.ManyToManyField("models.User", related_name="events", through="event_participants")
-
-    rating = fields.IntField(default=0)
-    description = fields.TextField(null=True)
-    event_type = fields.CharEnumField(EventTypeEnum, max_length=255, default=EventTypeEnum.PUBLIC)
-    is_active = fields.BooleanField(default=True)
-    start_time = fields.TimeField(null=True)
-    date = fields.DateField(null=True)
-    latitude = fields.FloatField(null=True)
-    longitude = fields.FloatField(null=True)
-    price = fields.DecimalField(max_digits=10, decimal_places=2, null=True)
-
-    json = fields.JSONField(null=True)
-
-    async def __str__(self):
-        return self.name
-
-    class Meta:
-        table = "event"
+    def __str__(self):
+      return self.name
 
 
 @register(User)
-class TortoiseORMUserModelAdmin(TortoiseModelAdmin):
-    model_name_prefix = "tortoiseorm"
+class UserAdmin(TortoiseModelAdmin):
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
 
-    async def authenticate(self, username, password):
-        obj = await self.model_cls.filter(username=username, password=password, is_superuser=True).first()
-        if not obj:
-            return None
-        return obj.id
-
-    async def change_password(self, user_id, password):
-        user = await self.model_cls.filter(id=user_id).first()
+    async def authenticate(self, username: str, password: str) -> UUID | int | None:
+        user = await User.filter(username=username, is_superuser=True).first()
         if not user:
-            return
-        # direct saving password is only for tests - use hash
-        user.password = password
-        await user.save()
+            return None
+        if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
+            return None
+        return user.id
 
 
-class TortoiseORMEventInlineModelAdmin(TortoiseInlineModelAdmin):
-    model = Event
-    model_name_prefix = "tortoiseorm"
-
-
-@register(Tournament)
-class TortoiseORMTournamentModelAdmin(TortoiseModelAdmin):
-    inlines = (TortoiseORMEventInlineModelAdmin,)
-    model_name_prefix = "tortoiseorm"
-
-
-@register(BaseEvent)
-class TortoiseORMBaseEventModelAdmin(TortoiseModelAdmin):
-    model_name_prefix = "tortoiseorm"
-
-
-@register(Event)
-class TortoiseORMEventModelAdmin(TortoiseModelAdmin):
-    model_name_prefix = "tortoiseorm"
-
-    @action(description="Make user active")
-    async def make_is_active(self, ids):
-        await self.model_cls.filter(id__in=ids).update(is_active=True)
-
-    @action
-    async def make_is_not_active(self, ids):
-        await self.model_cls.filter(id__in=ids).update(is_active=False)
-
-    @display
-    async def started(self, obj):
-        return bool(obj.start_time)
-
-    @display()
-    async def name_with_price(self, obj):
-        return f"{obj.name} - {obj.price}"
+@register(Group)
+class GroupAdmin(TortoiseModelAdmin):
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
 
   </code>
 </pre> </div> <div class="tab-pane fade " id="Django ORM-pane" role=tabpanel aria-labelledby="Django ORM" tabindex=0> <pre>
   <code class=language-python>
 from django.db import models
 
-from fastadmin import DjangoInlineModelAdmin, DjangoModelAdmin, action, display, register
-
-EventTypeEnum = (
-    ("PRIVATE", "PRIVATE"),
-    ("PUBLIC", "PUBLIC"),
-)
+from fastadmin import DjangoModelAdmin, register
 
 
-class BaseModel(models.Model):
-    id = models.AutoField(primary_key=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    @classmethod
-    def get_model_name(cls):
-        return f"django.{cls.__name__}"
-
-    class Meta:
-        abstract = True
-
-
-class User(BaseModel):
-    username = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)
+class User(models.Model):
+    username = models.CharField(max_length=255, unique=True)
+    hash_password = models.CharField(max_length=255)
     is_superuser = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.username
-
-    class Meta:
-        db_table = "user"
+      return self.username
 
 
-class Tournament(BaseModel):
+class Group(models.Model):
     name = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "tournament"
-
-
-class BaseEvent(BaseModel):
-    class Meta:
-        db_table = "base_event"
-
-
-class Event(BaseModel):
-    base = models.OneToOneField(BaseEvent, related_name="event", null=True, on_delete=models.SET_NULL)
-    name = models.CharField(max_length=255)
-
-    tournament = models.ForeignKey(Tournament, related_name="events", on_delete=models.CASCADE)
-    participants = models.ManyToManyField(User, related_name="events")
-
-    rating = models.IntegerField(default=0)
-    description = models.TextField(null=True)
-    event_type = models.CharField(max_length=255, default="PUBLIC", choices=EventTypeEnum)
-    is_active = models.BooleanField(default=True)
-    start_time = models.TimeField(null=True)
-    date = models.DateField(null=True)
-    latitude = models.FloatField(null=True)
-    longitude = models.FloatField(null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-
-    json = models.JSONField(null=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "event"
+      return self.name
 
 
 @register(User)
-class DjangoUserModelAdmin(DjangoModelAdmin):
-    model_name_prefix = "django"
+class UserAdmin(DjangoModelAdmin):
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
 
     def authenticate(self, username, password):
-        obj = self.model_cls.objects.filter(username=username, password=password, is_superuser=True).first()
+        obj = User.objects.filter(username=username, is_superuser=True).first()
         if not obj:
+            return None
+        if not obj.check_password(password):
             return None
         return obj.id
 
-    def change_password(self, user_id, password):
-        user = self.model_cls.objects.filter(id=user_id).first()
-        if not user:
-            return
-        # direct saving password is only for tests - use hash
-        user.password = password
-        user.save()
 
-
-class DjangoEventInlineModelAdmin(DjangoInlineModelAdmin):
-    model = Event
-    model_name_prefix = "django"
-
-
-@register(Tournament)
-class DjangoTournamentModelAdmin(DjangoModelAdmin):
-    model_name_prefix = "django"
-    inlines = (DjangoEventInlineModelAdmin,)
-
-
-@register(BaseEvent)
-class DjangoBaseEventModelAdmin(DjangoModelAdmin):
-    model_name_prefix = "django"
-
-
-@register(Event)
-class DjangoEventModelAdmin(DjangoModelAdmin):
-    model_name_prefix = "django"
-
-    @action(description="Make user active")
-    def make_is_active(self, ids):
-        self.model_cls.objects.filter(id__in=ids).update(is_active=True)
-
-    @action
-    def make_is_not_active(self, ids):
-        self.model_cls.objects.filter(id__in=ids).update(is_active=False)
-
-    @display
-    def started(self, obj):
-        return bool(obj.start_time)
-
-    @display()
-    def name_with_price(self, obj):
-        return f"{obj.name} - {obj.price}"
+@register(Group)
+class GroupAdmin(DjangoModelAdmin):
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
 
   </code>
 </pre> </div> <div class="tab-pane fade " id="SQL Alchemy-pane" role=tabpanel aria-labelledby="SQL Alchemy" tabindex=0> <pre>
   <code class=language-python>
-import datetime
-from decimal import Decimal
-from enum import Enum
-from typing import List, Optional
-
+import bcrypt
 from sqlalchemy import (
-    JSON,
     Boolean,
-    Column,
-    Date,
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
     String,
-    Table,
-    Text,
-    Time,
+    Integer,
     select,
-    update,
 )
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from fastadmin import SqlAlchemyInlineModelAdmin, SqlAlchemyModelAdmin, action, display, register
+from fastadmin import SqlAlchemyModelAdmin, register
 
 
-class EventTypeEnum(str, Enum):
-    PRIVATE = "PRIVATE"
-    PUBLIC = "PUBLIC"
+sqlalchemy_engine = create_async_engine(
+    f"sqlite+aiosqlite:///db.sqlite",
+    echo=True,
+)
+sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
 
 
 class Base(DeclarativeBase):
     pass
 
 
-class BaseModel(Base):
-    __abstract__ = True
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime, nullable=False, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
-    )
-    updated_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime, nullable=False, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
-    )
-
-    @classmethod
-    def get_model_name(cls):
-        return f"sqlalchemy.{cls.__name__}"
-
-
-user_m2m_event = Table(
-    "event_participants",
-    Base.metadata,
-    Column("event_id", ForeignKey("event.id"), primary_key=True),
-    Column("user_id", ForeignKey("user.id"), primary_key=True),
-)
-
-
-class User(BaseModel):
+class User(Base):
     __tablename__ = "user"
 
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     username: Mapped[str] = mapped_column(String(length=255), nullable=False)
-    password: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    hash_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-
-    events: Mapped[List["Event"]] = relationship(secondary=user_m2m_event, back_populates="participants")
-
-    async def __str__(self):
-        return self.username
-
-
-class Tournament(BaseModel):
-    __tablename__ = "tournament"
-
-    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
-
-    events: Mapped[List["Event"]] = relationship(back_populates="tournament")
-
-    async def __str__(self):
-        return self.name
-
-
-class BaseEvent(BaseModel):
-    __tablename__ = "base_event"
-
-    event: Mapped[Optional["Event"]] = relationship(back_populates="base")
-
-
-class Event(BaseModel):
-    __tablename__ = "event"
-
-    base_id: Mapped[Optional[int]] = mapped_column(ForeignKey("base_event.id"), nullable=True)
-    base: Mapped[Optional["BaseEvent"]] = relationship(back_populates="event")
-
-    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
-
-    tournament_id: Mapped[Optional[int]] = mapped_column(ForeignKey("tournament.id"), nullable=False)
-    tournament: Mapped[Optional["Tournament"]] = relationship(back_populates="events")
-
-    participants: Mapped[list["User"]] = relationship(secondary=user_m2m_event, back_populates="events")
-
-    rating: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=False)
-    event_type: Mapped[EventTypeEnum] = mapped_column(default=EventTypeEnum.PUBLIC)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    start_time: Mapped[Optional[datetime.time]] = mapped_column(Time, nullable=True)
-    date: Mapped[Optional[datetime.date]] = mapped_column(Date, nullable=True)
-    latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    price: Mapped[Optional[Decimal]] = mapped_column(
-        Float(asdecimal=True), nullable=True
-    )  # max_digits=10, decimal_places=2
 
-    json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
-
-    async def __str__(self):
-        return self.name
+    def __str__(self):
+      return self.username
 
 
-# NOTE: provide sqlalchemy_sessionmaker as second parameter for your usage
-# @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
-@register(User)
-class SqlAlchemyUserModelAdmin(SqlAlchemyModelAdmin):
-    model_name_prefix = "sqlalchemy"
+class Group(Base):
+    __tablename__ = "group"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
+
+    def __str__(self):
+      return self.name
+
+
+@register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class UserAdmin(SqlAlchemyModelAdmin):
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
 
     async def authenticate(self, username, password):
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
-            query = select(self.model_cls).filter_by(username=username, password=password, is_superuser=True)
+            query = select(User).filter_by(username=username, password=password, is_superuser=True)
             result = await session.scalars(query)
-            obj = result.first()
-            if not obj:
+            user = result.first()
+            if not user:
                 return None
-            return obj.id
-
-    async def change_password(self, user_id, password):
-        sessionmaker = self.get_sessionmaker()
-        async with sessionmaker() as session:
-            # direct saving password is only for tests - use hash
-            query = update(self.model_cls).where(User.id.in_([user_id])).values(password=password)
-            await session.execute(query)
-            await session.commit()
+            if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
+                return None
+            return user.id
 
 
-class SqlAlchemyEventInlineModelAdmin(SqlAlchemyInlineModelAdmin):
-    model_name_prefix = "sqlalchemy"
-
-    model = Event
-
-
-# NOTE: provide sqlalchemy_sessionmaker as second parameter for your usage
-# @register(Tournament, sqlalchemy_sessionmaker)
-@register(Tournament)
-class SqlAlchemyTournamentModelAdmin(SqlAlchemyModelAdmin):
-    model_name_prefix = "sqlalchemy"
-
-    inlines = (SqlAlchemyEventInlineModelAdmin,)
-
-
-# NOTE: provide sqlalchemy_sessionmaker as second parameter for your usage
-# @register(BaseEvent, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
-@register(BaseEvent)
-class SqlAlchemyBaseEventModelAdmin(SqlAlchemyModelAdmin):
-    model_name_prefix = "sqlalchemy"
-
-
-# NOTE: provide sqlalchemy_sessionmaker as second parameter for your usage
-# @register(Event, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
-@register(Event)
-class SqlAlchemyEventModelAdmin(SqlAlchemyModelAdmin):
-    model_name_prefix = "sqlalchemy"
-
-    @action(description="Make user active")
-    async def make_is_active(self, ids):
-        sessionmaker = self.get_sessionmaker()
-        async with sessionmaker() as session:
-            query = update(Event).where(Event.id.in_(ids)).values(is_active=True)
-            await session.execute(query)
-            await session.commit()
-
-    @action
-    async def make_is_not_active(self, ids):
-        sessionmaker = self.get_sessionmaker()
-        async with sessionmaker() as session:
-            query = update(Event).where(Event.id.in_(ids)).values(is_active=False)
-            await session.execute(query)
-            await session.commit()
-
-    @display
-    async def started(self, obj):
-        return bool(obj.start_time)
-
-    @display()
-    async def name_with_price(self, obj):
-        return f"{obj.name} - {obj.price}"
+@register(Group, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class GroupAdmin(SqlAlchemyModelAdmin):
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
 
   </code>
 </pre> </div> <div class="tab-pane fade " id="Pony ORM-pane" role=tabpanel aria-labelledby="Pony ORM" tabindex=0> <pre>
   <code class=language-python>
-from datetime import date, datetime, time
-from decimal import Decimal
-from enum import Enum
+import bcrypt
+from pony.orm import Database, PrimaryKey, Required, db_session
 
-from pony.orm import Database, Json, LongStr, Optional, PrimaryKey, Required, Set, commit, db_session
-from pony.orm.dbapiprovider import StrConverter
-
-from fastadmin import PonyORMInlineModelAdmin, PonyORMModelAdmin, action, display, register
+from fastadmin import PonyORMModelAdmin, register
 
 db = Database()
+db.bind(provider="sqlite", filename="db.sqlite", create_db=True)
 
 
-class EnumConverter(StrConverter):
-    def validate(self, val):
-        if not isinstance(val, Enum):
-            raise ValueError("Must be an Enum. Got {}".format(type(val)))
-        return val
-
-    def py2sql(self, val):
-        return val.name
-
-    def sql2py(self, value):
-        return self.py_type[value]
-
-
-class EventTypeEnum(str, Enum):
-    PRIVATE = "PRIVATE"
-    PUBLIC = "PUBLIC"
-
-
-class BaseModel:
-    @classmethod
-    def get_model_name(cls):
-        return f"ponyorm.{cls.__name__}"
-
-
-class User(BaseModel, db.Entity):
+class User(db.Entity):
     _table_ = "user"
-
     id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime, default=datetime.utcnow, hidden=True)
-    updated_at = Required(datetime, default=datetime.utcnow, hidden=True)
-
     username = Required(str)
-    password = Required(str)
+    hash_password = Required(str)
     is_superuser = Required(bool, default=False)
-
-    events = Set("Event", table="event_participants", column="event_id")
+    is_active = Required(bool, default=False)
 
     def __str__(self):
-        return self.username
+      return self.username
 
 
-class Tournament(BaseModel, db.Entity):
-    _table_ = "tournament"
-
+class Group(db.Entity):
+    _table_ = "group"
     id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime, default=datetime.utcnow, hidden=True)
-    updated_at = Required(datetime, default=datetime.utcnow, hidden=True)
-
     name = Required(str)
 
-    events = Set("Event")
-
     def __str__(self):
-        return self.name
-
-
-class BaseEvent(BaseModel, db.Entity):
-    _table_ = "base_event"
-    id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime, default=datetime.utcnow, hidden=True)
-    updated_at = Required(datetime, default=datetime.utcnow, hidden=True)
-
-    event = Optional("Event")
-
-
-class Event(BaseModel, db.Entity):
-    _table_ = "event"
-
-    id = PrimaryKey(int, auto=True)
-    created_at = Required(datetime, default=datetime.utcnow, hidden=True)
-    updated_at = Required(datetime, default=datetime.utcnow, hidden=True)
-
-    base = Optional(BaseEvent, column="base_id")
-    name = Required(str)
-
-    tournament = Required(Tournament, column="tournament_id")
-    participants = Set(User, table="event_participants", column="user_id")
-
-    rating = Required(int, default=0)
-    description = Optional(LongStr)
-    event_type = Required(EventTypeEnum, default=EventTypeEnum.PUBLIC)
-    is_active = Required(bool, default=True)
-    start_time = Optional(time)
-    date = Optional(date)
-    latitude = Optional(float)
-    longitude = Optional(float)
-    price = Optional(Decimal)
-
-    json = Optional(Json)
-
-    def __str__(self):
-        return self.name
+      return self.name
 
 
 @register(User)
-class PonyORMUserModelAdmin(PonyORMModelAdmin):
-    model_name_prefix = "ponyorm"
+class UserAdmin(PonyORMModelAdmin):
+    exclude = ("hash_password",)
+    list_display = ("id", "username", "is_superuser", "is_active")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
 
     @db_session
     def authenticate(self, username, password):
-        obj = next((f for f in self.model_cls.select(username=username, password=password, is_superuser=True)), None)
-        if not obj:
+        user = next((f for f in self.model_cls.select(username=username, password=password, is_superuser=True)), None)
+        if not user:
             return None
-        return obj.id
-
-    @db_session
-    def change_password(self, user_id, password):
-        obj = next((f for f in self.model_cls.select(id=user_id)), None)
-        if not obj:
+        if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
             return None
-        # direct saving password is only for tests - use hash
-        obj.password = password
-        commit()
+        return user.id
 
 
-class PonyORMEventInlineModelAdmin(PonyORMInlineModelAdmin):
-    model = Event
-    model_name_prefix = "ponyorm"
-
-
-@register(Tournament)
-class PonyORMTournamentModelAdmin(PonyORMModelAdmin):
-    inlines = (PonyORMEventInlineModelAdmin,)
-    model_name_prefix = "ponyorm"
-
-
-@register(BaseEvent)
-class PonyORMBaseEventModelAdmin(PonyORMModelAdmin):
-    model_name_prefix = "ponyorm"
-
-
-@register(Event)
-class PonyORMEventModelAdmin(PonyORMModelAdmin):
-    model_name_prefix = "ponyorm"
-
-    @action(description="Make user active")
-    @db_session
-    def make_is_active(self, ids):
-        # update(o.set(is_active=True) for o in self.model_cls if o.id in ids)
-        objs = self.model_cls.select(lambda o: o.id in ids)
-        for obj in objs:
-            obj.is_active = True
-        commit()
-
-    @action
-    @db_session
-    def make_is_not_active(self, ids):
-        # update(o.set(is_active=False) for o in self.model_cls if o.id in ids)
-        objs = self.model_cls.select(lambda o: o.id in ids)
-        for obj in objs:
-            obj.is_active = False
-        commit()
-
-    @display
-    async def started(self, obj):
-        return bool(obj.start_time)
-
-    @display()
-    async def name_with_price(self, obj):
-        return f"{obj.name} - {obj.price}"
+@register(Group)
+class GroupAdmin(PonyORMModelAdmin):
+    list_display = ("id", "name")
+    list_display_links = ("id",)
+    list_filter = ("id", "name")
+    search_fields = ("name",)
 
   </code>
 </pre> </div> </div> </section> </section> <hr class=small-divider> <section id=settings> <h2>Settings</h2> <p class=text-4> There are settings with default values: </p> <p class="alert alert-info"> Note: Export virtual environment variables or create <code>.env</code> file with variables and use <code>python-dotenv</code> package. </p> <pre>

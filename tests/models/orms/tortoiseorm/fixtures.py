@@ -1,14 +1,13 @@
 import pytest
 from tortoise import Tortoise
 
-from examples.tortoiseorm import models
-from fastadmin.models.helpers import get_admin_model
+from tests.environment.tortoiseorm import models
 from tests.settings import DB_SQLITE
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def tortoiseorm_session():
-    await Tortoise.init(db_url=f"sqlite://{DB_SQLITE}", modules={"models": ["examples.tortoiseorm.models"]})
+    await Tortoise.init(db_url=f"sqlite://{DB_SQLITE}", modules={"models": ["tests.environment.tortoiseorm.models"]})
     session = Tortoise.get_connection("default")
     yield session
     await Tortoise.close_connections()

@@ -3,8 +3,8 @@ from datetime import datetime
 import pytest
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from examples.sqlalchemy import models
 from fastadmin.models.helpers import get_admin_model
+from tests.environment.sqlalchemy import models
 from tests.settings import DB_SQLITE
 
 

@@ -2,7 +2,7 @@ import pytest
 from asgiref.wsgi import WsgiToAsgi
 from httpx import AsyncClient as TestClient
 
-from examples.flask.dev import app
+from tests.environment.flask.dev import app
 
 
 @pytest.fixture

@@ -14,16 +14,16 @@ sys.path.append(os.path.join(ROOT_DIR, "..", "examples"))  # for djangoorm
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dev.settings")
 os.environ.setdefault("ADMIN_ENV_FILE", os.path.join(os.path.dirname(__file__), "..", "example.env"))
 
-django.setup(set_prefix=False)
+# django.setup(set_prefix=False)
 
 from fastadmin.settings import Settings
-from examples.fastapi import app as fastapi_app
-from examples.django.dev.dev import urls as django_app
-from examples.flask import app as flask_app
-from examples.tortoiseorm import models as tortoise_models
-from examples.djangoorm import models as django_models
-from examples.sqlalchemy import models as sqlalchemy_models
-from examples.ponyorm import models as pony_models
+from examples.quick_tutorial import fastapi as quick_tutorial_fastapi
+from examples.quick_tutorial.django.dev.dev import urls as quick_tutorial_django
+from examples.quick_tutorial import flask as quick_tutorial_flask
+from examples.quick_tutorial import tortoise as quick_tutorial_tortoise
+from examples.quick_tutorial.djangoorm import models as quick_tutorial_djangoorm
+from examples.quick_tutorial import sqlalchemy as quick_tutorial_sqlalchemy
+from examples.quick_tutorial import ponyorm as quick_tutorial_ponyorm
 
 
 GITHUB_URL = "https://github.com/vsdudakov/fastadmin"
@@ -270,7 +270,7 @@ export ADMIN_SECRET_KEY=secret_key
                             "content": [
                                 {
                                     "type": "code-python",
-                                    "content": inspect.getsource(fastapi_app)
+                                    "content": inspect.getsource(quick_tutorial_fastapi)
                                 }
                             ]
                         },
@@ -279,7 +279,7 @@ export ADMIN_SECRET_KEY=secret_key
                             "content": [
                                 {
                                     "type": "code-python",
-                                    "content": inspect.getsource(django_app)
+                                    "content": inspect.getsource(quick_tutorial_django)
                                 }
                             ]
                         },
@@ -288,7 +288,7 @@ export ADMIN_SECRET_KEY=secret_key
                             "content": [
                                 {
                                     "type": "code-python",
-                                    "content": inspect.getsource(flask_app)
+                                    "content": inspect.getsource(quick_tutorial_flask)
                                 }
                             ]
                         }
@@ -307,7 +307,7 @@ export ADMIN_SECRET_KEY=secret_key
                             "content": [
                                 {
                                     "type": "code-python",
-                                    "content": inspect.getsource(tortoise_models)
+                                    "content": inspect.getsource(quick_tutorial_tortoise)
                                 }
                             ]
                         },
@@ -316,7 +316,7 @@ export ADMIN_SECRET_KEY=secret_key
                             "content": [
                                 {
                                     "type": "code-python",
-                                    "content": inspect.getsource(django_models)
+                                    "content": inspect.getsource(quick_tutorial_djangoorm)
                                 }
                             ]
                         },
@@ -325,7 +325,7 @@ export ADMIN_SECRET_KEY=secret_key
                             "content": [
                                 {
                                     "type": "code-python",
-                                    "content": inspect.getsource(sqlalchemy_models)
+                                    "content": inspect.getsource(quick_tutorial_sqlalchemy)
                                 }
                             ]
                         },
@@ -334,7 +334,7 @@ export ADMIN_SECRET_KEY=secret_key
                             "content": [
                                 {
                                     "type": "code-python",
-                                    "content": inspect.getsource(pony_models)
+                                    "content": inspect.getsource(quick_tutorial_ponyorm)
                                 }
                             ]
                         }
