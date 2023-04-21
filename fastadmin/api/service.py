@@ -1,4 +1,5 @@
 import inspect
+import re
 from collections.abc import Sequence
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
@@ -32,6 +33,26 @@ from fastadmin.models.schemas import ConfigurationSchema, ModelSchema
 from fastadmin.settings import settings
 
 
+def convert_id(id: str) -> int | UUID:
+    """Convert the given id to int or UUID.
+
+    :param id: A string value.
+    :return: An int or UUID value.
+    """
+    if isinstance(id, int) or isinstance(id, UUID):
+        return id
+
+    # Check if the input_str is an integer
+    if re.fullmatch(r"\d+", id):
+        return int(id)
+
+    # Check if the input_str is a valid UUID
+    if re.fullmatch(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", id):
+        return UUID(id)
+
+    raise ValueError("Invalid id %s." % id)
+
+
 async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | None:
     """This method is used to get user id from session_id.
 
@@ -58,8 +79,11 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
         return None
 
     user_id = token_payload.get("user_id")
+    if not user_id:
+        return None
 
-    if not user_id or not await admin_model.get_obj(user_id):
+    user_id = convert_id(user_id)
+    if not await admin_model.get_obj(user_id):
         return None
 
     return user_id
