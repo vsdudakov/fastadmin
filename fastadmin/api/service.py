@@ -6,6 +6,7 @@ from io import BytesIO, StringIO
 from typing import Any, cast
 from uuid import UUID
 
+import logging
 import jwt
 from asgiref.sync import sync_to_async
 
@@ -33,11 +34,14 @@ from fastadmin.models.schemas import ConfigurationSchema, ModelSchema
 from fastadmin.settings import settings
 
 
-def convert_id(id: str) -> int | UUID:
+logger  = logging.getLogger(__name__)
+
+
+def convert_id(id: str | int | UUID) -> int | UUID | None:
     """Convert the given id to int or UUID.
 
     :param id: A string value.
-    :return: An int or UUID value.
+    :return: An int or UUID value. Or None if the given id is invalid.
     """
     if isinstance(id, int) or isinstance(id, UUID):
         return id
@@ -50,7 +54,8 @@ def convert_id(id: str) -> int | UUID:
     if re.fullmatch(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", id):
         return UUID(id)
 
-    raise ValueError("Invalid id %s." % id)
+    logger.error(f"Invalid id: {id}")
+    return None
 
 
 async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | None:
@@ -83,7 +88,7 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
         return None
 
     user_id = convert_id(user_id)
-    if not await admin_model.get_obj(user_id):
+    if not user_id or not await admin_model.get_obj(user_id):
         return None
 
     return user_id
