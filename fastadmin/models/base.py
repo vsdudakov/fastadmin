@@ -615,13 +615,13 @@ class DashboardWidgetAdmin:
         min_x_field: str | None = None,
         max_x_field: str | None = None,
         period_x_field: str | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> dict[str, Any]:
         """This method is used to get data for dashboard widget.
 
         :params min_x_field: A minimum value for x_field.
         :params max_x_field: A maximum value for x_field.
         :params period_x_field: A period value for x_field.
-        :return: A list of dicts with x_field, y_field, series_field values.
+        :return: A dict with data.
         """
         raise NotImplementedError
 
