@@ -42,13 +42,13 @@
 <ul class="nav nav-tabs" id="{{section_block.id}}" role="tablist">
     {% for tab in section_block.content %}
     <li class="nav-item" role="presentation">
-        <button class="nav-link {% if loop.index == 1 %}active{% endif %}" id="{{tab.name}}" data-bs-toggle="tab" data-bs-target="#{{tab.name}}-pane" type="button" role="tab" aria-controls="{{tab.name}}" aria-selected="{% if loop.index == 1 %}true{% else %}false{% endif %}">{{tab.name}}</button>
+        <button class="nav-link {% if loop.index == 1 %}active{% endif %}" id="{{tab.id}}" data-bs-toggle="tab" data-bs-target="#{{tab.id}}-pane" type="button" role="tab" aria-controls="{{tab.id}}" aria-selected="{% if loop.index == 1 %}true{% else %}false{% endif %}">{{tab.name}}</button>
     </li>
     {% endfor %}
 </ul>
 <div class="tab-content" id="{{section_block.id}}-content">
     {% for tab in section_block.content %}
-    <div class="tab-pane fade {% if loop.index == 1 %}show active{% endif %}" id="{{tab.name}}-pane" role="tabpanel" aria-labelledby="{{tab.name}}" tabindex="0">
+    <div class="tab-pane fade {% if loop.index == 1 %}show active{% endif %}" id="{{tab.id}}-pane" role="tabpanel" aria-labelledby="{{tab.id}}" tabindex="0">
         {% for section_block in tab.content %}
         {% include "templates/block.html" %}
         {% endfor %}

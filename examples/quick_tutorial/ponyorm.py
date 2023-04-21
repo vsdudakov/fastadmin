@@ -4,7 +4,7 @@ from pony.orm import Database, PrimaryKey, Required, db_session
 from fastadmin import PonyORMModelAdmin, register
 
 db = Database()
-db.bind(provider="sqlite", filename="db.sqlite", create_db=True)
+db.bind(provider="sqlite", filename=":memory:", create_db=True)
 
 
 class User(db.Entity):
@@ -17,15 +17,6 @@ class User(db.Entity):
 
     def __str__(self):
       return self.username
-
-
-class Group(db.Entity):
-    _table_ = "group"
-    id = PrimaryKey(int, auto=True)
-    name = Required(str)
-
-    def __str__(self):
-      return self.name
 
 
 @register(User)
@@ -44,11 +35,3 @@ class UserAdmin(PonyORMModelAdmin):
         if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
             return None
         return user.id
-
-
-@register(Group)
-class GroupAdmin(PonyORMModelAdmin):
-    list_display = ("id", "name")
-    list_display_links = ("id",)
-    list_filter = ("id", "name")
-    search_fields = ("name",)

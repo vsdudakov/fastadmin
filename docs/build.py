@@ -2,28 +2,25 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from datetime import date
 from htmlmin import minify
 import inspect
-import django
-
 import os
 import sys
+
 from tests.settings import ROOT_DIR
 
-sys.path.append(os.path.join(ROOT_DIR, "..", "examples", "django", "dev"))  # for dev.settings
-sys.path.append(os.path.join(ROOT_DIR, "..", "examples"))  # for djangoorm
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dev.settings")
+# Settings
 os.environ.setdefault("ADMIN_ENV_FILE", os.path.join(os.path.dirname(__file__), "..", "example.env"))
-
-# django.setup(set_prefix=False)
-
 from fastadmin.settings import Settings
-from examples.quick_tutorial import fastapi as quick_tutorial_fastapi
-from examples.quick_tutorial.django.dev.dev import urls as quick_tutorial_django
-from examples.quick_tutorial import flask as quick_tutorial_flask
-from examples.quick_tutorial import tortoise as quick_tutorial_tortoise
-from examples.quick_tutorial.djangoorm import models as quick_tutorial_djangoorm
-from examples.quick_tutorial import sqlalchemy as quick_tutorial_sqlalchemy
-from examples.quick_tutorial import ponyorm as quick_tutorial_ponyorm
+
+# FAKE Django
+sys.path.append(os.path.join(ROOT_DIR, "environment", "django", "dev"))  # for dev.settings
+from django.apps.registry import Apps
+from django.apps import apps
+from django.conf import settings
+settings.configure()
+Apps.check_apps_ready = lambda x: None
+class App:
+    label = "app"
+apps.get_containing_app_config = lambda x: App()
 
 
 GITHUB_URL = "https://github.com/vsdudakov/fastadmin"
@@ -39,6 +36,12 @@ def read_cls_docstring(cls):
 
 def get_versions():
     return [
+        {
+            "version": "0.1.36",
+            "changes": [
+                "Added autogeneration of documentation and examples.",
+            ],
+        },
         {
             "version": "0.1.35",
             "changes": [
@@ -110,8 +113,8 @@ def get_sections():
                     "url": "#widget-methods-and-attributes",
                 },
                 {
-                    "name": "Examples",
-                    "url": "#widget-examples",
+                    "name": "Chart Types",
+                    "url": "#widget-chart-types",
                 },
             ]
         },
@@ -132,14 +135,14 @@ def get_sections():
                     "url": "#model-methods-and-attributes",
                 },
                 {
-                    "name": "Examples",
-                    "url": "#model-examples",
+                    "name": "Form Field Types",
+                    "url": "#model-form-field-types",
                 },
             ]
         },
         {
             "name": "Inline Model Admins",
-            "url": "#inline-model-admins",
+            "url": "#inline-admins",
             "children": [
                 {
                     "name": "Registering Inlines",
@@ -148,10 +151,6 @@ def get_sections():
                 {
                     "name": "Methods and Attributes",
                     "url": "#inline-methods-and-attributes",
-                },
-                {
-                    "name": "Examples",
-                    "url": "#inline-examples",
                 },
             ]
         },
@@ -170,6 +169,21 @@ def get_sections():
 
 
 def get_page_context(page_url):
+    from examples.quick_tutorial import fastapi as quick_tutorial_fastapi
+    from examples.quick_tutorial import django as quick_tutorial_django
+    from examples.quick_tutorial import flask as quick_tutorial_flask
+    from examples.quick_tutorial import tortoise as quick_tutorial_tortoise
+    from examples.quick_tutorial import djangoorm as quick_tutorial_djangoorm
+    from examples.quick_tutorial import sqlalchemy as quick_tutorial_sqlalchemy
+    from examples.quick_tutorial import ponyorm as quick_tutorial_ponyorm
+    from examples.dashboard import tortoise as dashboard_tortoise
+    from examples.dashboard import djangoorm as dashboard_djangoorm
+    from examples.models import tortoise as models_tortoise
+    from examples.inlines import tortoise as inlines_tortoise
+
+    from fastadmin.models.base import BaseModelAdmin
+    from fastadmin import DashboardWidgetAdmin, DashboardWidgetType, ModelAdmin, InlineModelAdmin, WidgetType
+
     match page_url:
         case "#introduction":
             return [
@@ -263,10 +277,11 @@ export ADMIN_SECRET_KEY=secret_key
                 },
                 {
                     "type": "tabs",
-                    "id": f"Setup {NAME} for a framework",
+                    "id": "setup_framework",
                     "content": [
                         {
                             "name": "FastAPI",
+                            "id": "fastapi",
                             "content": [
                                 {
                                     "type": "code-python",
@@ -276,6 +291,7 @@ export ADMIN_SECRET_KEY=secret_key
                         },
                         {
                             "name": "Django",
+                            "id": "django",
                             "content": [
                                 {
                                     "type": "code-python",
@@ -285,6 +301,7 @@ export ADMIN_SECRET_KEY=secret_key
                         },
                         {
                             "name": "Flask",
+                            "id": "flask",
                             "content": [
                                 {
                                     "type": "code-python",
@@ -300,10 +317,11 @@ export ADMIN_SECRET_KEY=secret_key
                 },
                 {
                     "type": "tabs",
-                    "id": "Register ORM models",
+                    "id": "register_orm_models",
                     "content": [
                         {
                             "name": "Tortoise ORM",
+                            "id": "tortoise_orm",
                             "content": [
                                 {
                                     "type": "code-python",
@@ -313,6 +331,7 @@ export ADMIN_SECRET_KEY=secret_key
                         },
                         {
                             "name": "Django ORM",
+                            "id": "django_orm",
                             "content": [
                                 {
                                     "type": "code-python",
@@ -322,6 +341,7 @@ export ADMIN_SECRET_KEY=secret_key
                         },
                         {
                             "name": "SQL Alchemy",
+                            "id": "sql_alchemy",
                             "content": [
                                 {
                                     "type": "code-python",
@@ -331,6 +351,7 @@ export ADMIN_SECRET_KEY=secret_key
                         },
                         {
                             "name": "Pony ORM",
+                            "id": "pony_orm",
                             "content": [
                                 {
                                     "type": "code-python",
@@ -362,34 +383,249 @@ export ADMIN_SECRET_KEY=secret_key
                 },
             ]
         # widgets
-        case "#dashboard-widget-admins":
-            return []
         case "#registering-widgets":
-            return []
+            return [
+                {
+                    "type": "text-lead",
+                    "content": "Register Dashboard widgets",
+                },
+                {
+                    "type": "tabs",
+                    "id": "register_dashboard_widgets",
+                    "content": [
+                        {
+                            "name": "Tortoise ORM",
+                            "id": "dashboard_tortoise_orm",
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": inspect.getsource(dashboard_tortoise)
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Django ORM",
+                            "id": "dashboard_django_orm",
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": inspect.getsource(dashboard_djangoorm)
+                                }
+                            ]
+                        },
+                        {
+                            "name": "SQL Alchemy",
+                            "id": "dashboard_sql_alchemy",
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": "See example for Tortoise ORM"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Pony ORM",
+                            "id": "dashboard_pony_orm",
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": "See example for Tortoise ORM"
+                                }
+                            ]
+                        }
+                    ]
+                },
+            ]
         case "#widget-methods-and-attributes":
-            return []
-        case "#widget-examples":
-            return []
+            return [
+                {
+                    "type": "text",
+                    "content": "There are methods and attributes for Dashboard Widget Admin:",
+                },
+                {
+                    "type": "code-python",
+                    "content": inspect.getsource(DashboardWidgetAdmin)
+                },
+                {
+                    "type": "alert-warning",
+                    "content": "Note: Please see <a href='https://charts.ant.design/en/examples' target='_blank'>antd charts</a> for <code>x_field_filter_widget_props</code>.",
+                },
+            ]
+        case "#widget-chart-types":
+            return [
+                {
+                    "type": "text",
+                    "content": "There are widget types which fastadmin dashboard supports:",
+                },
+                {
+                    "type": "code-python",
+                    "content": inspect.getsource(DashboardWidgetType)
+                },
+                {
+                    "type": "alert-warning",
+                    "content": "Note: Please see <a href='https://charts.ant.design/en/examples' target='_blank'>antd charts</a> for more details (e.g. to see how they look like).",
+                },
+            ]
         # models
-        case "#model-admins":
-            return []
         case "#registering-models":
-            return []
+            return [
+                {
+                    "type": "tabs",
+                    "id": "register_models",
+                    "content": [
+                        {
+                            "name": "Tortoise ORM",
+                            "id": "models_tortoise_orm",
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": inspect.getsource(models_tortoise)
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Django ORM",
+                            "id": "models_django_orm",
+                            "content": [
+                                {
+                                    "type": "alert-info",
+                                    "content": "See example for Tortoise ORM"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "SQL Alchemy",
+                            "id": "models_sql_alchemy",
+                            "content": [
+                                {
+                                    "type": "alert-info",
+                                    "content": "See example for Tortoise ORM"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Pony ORM",
+                            "id": "models_pony_orm",
+                            "content": [
+                                {
+                                    "type": "alert-info",
+                                    "content": "See example for Tortoise ORM"
+                                }
+                            ]
+                        }
+                    ]
+                },
+            ]
         case "#authentication":
-            return []
+            return [
+                {
+                    "type": "alert-info",
+                    "content": "You have to implement methods authenticate and change_password in Modal Admin for User model. See example above.",
+                },
+            ]
         case "#model-methods-and-attributes":
-            return []
-        case "#model-examples":
-            return []
+            return [
+                {
+                    "type": "text",
+                    "content": "There are methods and attributes for Model Admin:",
+                },
+                {
+                    "type": "code-python",
+                    "content": inspect.getsource(BaseModelAdmin)
+                },
+                {
+                    "type": "text",
+                    "content": "Specific methods and attributes for Model Admin:",
+                },
+                {
+                    "type": "code-python",
+                    "content": inspect.getsource(ModelAdmin)
+                },
+            ]
+        case "#model-form-field-types":
+            return [
+                {
+                    "type": "text",
+                    "content": "There are form field types for model admin:",
+                },
+                {
+                    "type": "code-python",
+                    "content": inspect.getsource(WidgetType)
+                },
+                {
+                    "type": "alert-warning",
+                    "content": "Note: Please see <a href='https://ant.design/components/overview' target='_blank'>antd components</a> for more details (e.g. to see how they look like).",
+                },
+            ]
         # inlines
-        case "#inline-admins":
-            return []
         case "#registering-inlines":
-            return []
+            return [
+                {
+                    "type": "tabs",
+                    "id": "register_inlines",
+                    "content": [
+                        {
+                            "name": "Tortoise ORM",
+                            "id": "inlines_tortoise_orm",
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": inspect.getsource(inlines_tortoise)
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Django ORM",
+                            "id": "inlines_django_orm",
+                            "content": [
+                                {
+                                    "type": "alert-info",
+                                    "content": "See example for Tortoise ORM"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "SQL Alchemy",
+                            "id": "inlines_sql_alchemy",
+                            "content": [
+                                {
+                                    "type": "alert-info",
+                                    "content": "See example for Tortoise ORM"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Pony ORM",
+                            "id": "inlines_pony_orm",
+                            "content": [
+                                {
+                                    "type": "alert-info",
+                                    "content": "See example for Tortoise ORM"
+                                }
+                            ]
+                        }
+                    ]
+                },
+            ]
         case "#inline-methods-and-attributes":
-            return []
-        case "#inline-examples":
-            return []
+            return [
+                {
+                    "type": "text",
+                    "content": "There are methods and attributes for Inline Model Admin:",
+                },
+                {
+                    "type": "alert-info",
+                    "content": "See BaseModelAdmin class methods and attributes in model admin section.",
+                },
+                {
+                    "type": "text",
+                    "content": "Specific methods and attributes for Inline Model Admin:",
+                },
+                {
+                    "type": "code-python",
+                    "content": inspect.getsource(InlineModelAdmin)
+                },
+            ]
         # changelog
         case "#changelog":
             return [

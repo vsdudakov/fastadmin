@@ -18,94 +18,25 @@
   </a>
 </p>
 
-
-
 ## Introduction
-
 
 <a href='https://github.com/vsdudakov/fastadmin' target='_blank'>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin.
 
-
-
-
-
-
-
-
-
 FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way.
-
-
-
-
-
-
-
-
 
 FastAdmin is designed to be minimalistic, functional and yet familiar.
 
-
-
-
-
-
-
-
-
-
-
-
 ## Getting Started
-
-
-
 
 If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href='mailto:vsdudakov@gmail.com' target='_blank'>us</a>.
 
-
-
-
-
-
-
-
 ### Installation
-
-
 
 Follow the steps below to setup FastAdmin:
 
-
-
-
-
-
-
-
 Install the package using pip:
 
-
-
-
-
-
-
-
-
-
-
 Note: For zsh and macos use: <code>pip install fastadmin\[fastapi,django\]</code>
-
-
-
-
-
-
-
-
-
-
 
 ```bash
 
@@ -119,23 +50,7 @@ pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
 
 ```
 
-
-
-
-
 Install the package using poetry:
-
-
-
-
-
-
-
-
-
-
-
-
 
 ```bash
 
@@ -149,33 +64,9 @@ poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
 
 ```
 
-
-
-
-
 Configure required settings using virtual environment variables:
 
-
-
-
-
-
-
-
-
-
-
 Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href='#settings'>here</a>
-
-
-
-
-
-
-
-
-
-
 
 ```bash
 
@@ -185,37 +76,11 @@ export ADMIN_SECRET_KEY=secret_key
 
 ```
 
-
-
-
-
 ### Quick Tutorial
-
-
 
 Setup FastAdmin for a framework
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### FastAPI
-
-
-
-
-
-
 
 ```python
 from fastapi import FastAPI
@@ -228,16 +93,7 @@ app.mount("/admin", admin_app)
 
 ```
 
-
-
-
 ### Django
-
-
-
-
-
-
 
 ```python
 from django.urls import path
@@ -251,16 +107,7 @@ urlpatterns = [
 
 ```
 
-
-
-
 ### Flask
-
-
-
-
-
-
 
 ```python
 from flask import Flask
@@ -273,36 +120,9 @@ app.register_blueprint(admin_app, url_prefix="/admin")
 
 ```
 
-
-
-
-
-
-
-
 Register ORM models
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### Tortoise ORM
-
-
-
-
-
-
 
 ```python
 import bcrypt
@@ -324,13 +144,6 @@ class User(Model):
       return self.username
 
 
-class Group(Model):
-    name = fields.CharField(max_length=255)
-
-    def __str__(self):
-      return self.name
-
-
 @register(User)
 class UserAdmin(TortoiseModelAdmin):
     exclude = ("hash_password",)
@@ -347,26 +160,9 @@ class UserAdmin(TortoiseModelAdmin):
             return None
         return user.id
 
-
-@register(Group)
-class GroupAdmin(TortoiseModelAdmin):
-    list_display = ("id", "name")
-    list_display_links = ("id",)
-    list_filter = ("id", "name")
-    search_fields = ("name",)
-
 ```
 
-
-
-
 ### Django ORM
-
-
-
-
-
-
 
 ```python
 from django.db import models
@@ -382,13 +178,6 @@ class User(models.Model):
 
     def __str__(self):
       return self.username
-
-
-class Group(models.Model):
-    name = models.CharField(max_length=255)
-
-    def __str__(self):
-      return self.name
 
 
 @register(User)
@@ -407,26 +196,9 @@ class UserAdmin(DjangoModelAdmin):
             return None
         return obj.id
 
-
-@register(Group)
-class GroupAdmin(DjangoModelAdmin):
-    list_display = ("id", "name")
-    list_display_links = ("id",)
-    list_filter = ("id", "name")
-    search_fields = ("name",)
-
 ```
 
-
-
-
 ### SQL Alchemy
-
-
-
-
-
-
 
 ```python
 import bcrypt
@@ -443,7 +215,7 @@ from fastadmin import SqlAlchemyModelAdmin, register
 
 
 sqlalchemy_engine = create_async_engine(
-    f"sqlite+aiosqlite:///db.sqlite",
+    f"sqlite+aiosqlite:///:memory:",
     echo=True,
 )
 sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
@@ -466,16 +238,6 @@ class User(Base):
       return self.username
 
 
-class Group(Base):
-    __tablename__ = "group"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
-
-    def __str__(self):
-      return self.name
-
-
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 class UserAdmin(SqlAlchemyModelAdmin):
     exclude = ("hash_password",)
@@ -496,26 +258,9 @@ class UserAdmin(SqlAlchemyModelAdmin):
                 return None
             return user.id
 
-
-@register(Group, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
-class GroupAdmin(SqlAlchemyModelAdmin):
-    list_display = ("id", "name")
-    list_display_links = ("id",)
-    list_filter = ("id", "name")
-    search_fields = ("name",)
-
 ```
 
-
-
-
 ### Pony ORM
-
-
-
-
-
-
 
 ```python
 import bcrypt
@@ -524,7 +269,7 @@ from pony.orm import Database, PrimaryKey, Required, db_session
 from fastadmin import PonyORMModelAdmin, register
 
 db = Database()
-db.bind(provider="sqlite", filename="db.sqlite", create_db=True)
+db.bind(provider="sqlite", filename=":memory:", create_db=True)
 
 
 class User(db.Entity):
@@ -537,15 +282,6 @@ class User(db.Entity):
 
     def __str__(self):
       return self.username
-
-
-class Group(db.Entity):
-    _table_ = "group"
-    id = PrimaryKey(int, auto=True)
-    name = Required(str)
-
-    def __str__(self):
-      return self.name
 
 
 @register(User)
@@ -565,37 +301,12 @@ class UserAdmin(PonyORMModelAdmin):
             return None
         return user.id
 
-
-@register(Group)
-class GroupAdmin(PonyORMModelAdmin):
-    list_display = ("id", "name")
-    list_display_links = ("id",)
-    list_filter = ("id", "name")
-    search_fields = ("name",)
-
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Documentation
+
 See full documentation [here](https://vsdudakov.github.io/fastadmin).
 
 ## License
+
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE) file for details.

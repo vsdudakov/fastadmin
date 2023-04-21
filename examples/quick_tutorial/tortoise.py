@@ -17,13 +17,6 @@ class User(Model):
       return self.username
 
 
-class Group(Model):
-    name = fields.CharField(max_length=255)
-
-    def __str__(self):
-      return self.name
-
-
 @register(User)
 class UserAdmin(TortoiseModelAdmin):
     exclude = ("hash_password",)
@@ -39,11 +32,3 @@ class UserAdmin(TortoiseModelAdmin):
         if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
             return None
         return user.id
-
-
-@register(Group)
-class GroupAdmin(TortoiseModelAdmin):
-    list_display = ("id", "name")
-    list_display_links = ("id",)
-    list_filter = ("id", "name")
-    search_fields = ("name",)

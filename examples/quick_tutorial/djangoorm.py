@@ -13,13 +13,6 @@ class User(models.Model):
       return self.username
 
 
-class Group(models.Model):
-    name = models.CharField(max_length=255)
-
-    def __str__(self):
-      return self.name
-
-
 @register(User)
 class UserAdmin(DjangoModelAdmin):
     exclude = ("hash_password",)
@@ -35,11 +28,3 @@ class UserAdmin(DjangoModelAdmin):
         if not obj.check_password(password):
             return None
         return obj.id
-
-
-@register(Group)
-class GroupAdmin(DjangoModelAdmin):
-    list_display = ("id", "name")
-    list_display_links = ("id",)
-    list_filter = ("id", "name")
-    search_fields = ("name",)

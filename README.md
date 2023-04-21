@@ -20,26 +20,26 @@
 
 ## Introduction
 
-FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin.
+<a href='https://github.com/vsdudakov/fastadmin' target='_blank'>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin.
 
-FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin.
-It's engraved in its design that you may configure your admin dashboard for FastAPI/Flask/Django easiest way.
+FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way.
 
 FastAdmin is designed to be minimalistic, functional and yet familiar.
 
 ## Getting Started
 
+If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href='mailto:vsdudakov@gmail.com' target='_blank'>us</a>.
+
 ### Installation
 
-#### Install the package using pip:
+Follow the steps below to setup FastAdmin:
 
-frameworks:
-fastapi, django, flask
+Install the package using pip:
 
-orms:
-django, tortoise-orm, pony, sqlalchemy
+Note: For zsh and macos use: <code>pip install fastadmin\[fastapi,django\]</code>
 
 ```bash
+
 pip install fastadmin[fastapi,django]  # for fastapi with django orm
 pip install fastadmin[fastapi,tortoise-orm]  # for fastapi with tortoise orm
 pip install fastadmin[fastapi,pony]  # for fastapi with pony orm
@@ -47,18 +47,13 @@ pip install fastadmin[fastapi,sqlalchemy]  # for fastapi with sqlalchemy orm
 pip install fastadmin[django]  # for django with django orm
 pip install fastadmin[django,pony]  # for django with pony orm
 pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
-...
+
 ```
 
-for (macos) zsh use
+Install the package using poetry:
 
 ```bash
-pip install fastadmin\[fastapi,django\]
-```
 
-or using poetry
-
-```bash
 poetry add 'fastadmin[fastapi,django]'  # for fastapi with django orm
 poetry add 'fastadmin[fastapi,tortoise-orm]'  # for fastapi with tortoise orm
 poetry add 'fastadmin[fastapi,pony]'  # for fastapi with pony orm
@@ -66,105 +61,76 @@ poetry add 'fastadmin[fastapi,sqlalchemy]'  # for fastapi with sqlalchemy orm
 poetry add 'fastadmin[django]'  # for django with django orm
 poetry add 'fastadmin[django,pony]'  # for django with pony orm
 poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
-...
+
 ```
 
-#### Setup ENV variables
+Configure required settings using virtual environment variables:
+
+Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href='#settings'>here</a>
 
 ```bash
+
 export ADMIN_USER_MODEL=User
 export ADMIN_USER_MODEL_USERNAME_FIELD=username
 export ADMIN_SECRET_KEY=secret_key
-```
 
-For additional information see [Settings](https://vsdudakov.github.io/fastadmin#settings) documentation.
+```
 
 ### Quick Tutorial
 
-### Setup with your framework:
+Setup FastAdmin for a framework
 
-#### For FastAPI:
+### FastAPI
 
 ```python
 from fastapi import FastAPI
 from fastadmin import fastapi_app as admin_app
 
-...
 
 app = FastAPI()
 
-...
-
 app.mount("/admin", admin_app)
 
-...
 ```
 
-Run your project (see [https://fastapi.tiangolo.com/tutorial/first-steps/](https://fastapi.tiangolo.com/tutorial/first-steps/)):
+### Django
 
-```bash
-uvicorn ...
+```python
+from django.urls import path
+
+from fastadmin import get_django_admin_urls as get_admin_urls
+from fastadmin.settings import settings
+
+urlpatterns = [
+    path(f"{settings.ADMIN_PREFIX}/", get_admin_urls()),
+]
+
 ```
 
-Go to [http://localhost:8000/admin](http://localhost:8000/admin).
-
-#### For Flask:
+### Flask
 
 ```python
 from flask import Flask
 from fastadmin import flask_app as admin_app
 
-...
 
 app = Flask(__name__)
 
-...
-
 app.register_blueprint(admin_app, url_prefix="/admin")
 
-...
 ```
 
-Run your project (see [https://flask.palletsprojects.com/en/2.2.x/quickstart/](https://flask.palletsprojects.com/en/2.2.x/quickstart/)):
+Register ORM models
 
-```bash
-flask ...
-```
-
-Go to [http://localhost:5000/admin](http://localhost:5000/admin).
-
-#### For Django:
-
-In root urls.py
-
-```python
-from django.urls import path
-from fastadmin import get_django_admin_urls as get_admin_urls
-
-...
-
-urlpatterns = [
-    path("admin/", get_admin_urls()),
-]
-```
-
-Run your project (see [https://docs.djangoproject.com/en/4.1/intro/](https://docs.djangoproject.com/en/4.1/intro/)):
-
-```bash
-python manage.py runserver
-```
-
-Go to [http://localhost:8000/admin](http://localhost:8000/admin).
-
-### Register ORM models:
-
-You have to implement authenticate method for FastAdmin authentication on AdminModel class which is registered for ADMIN_USER_MODEL.
-
-#### For Tortoise ORM:
+### Tortoise ORM
 
 ```python
 import bcrypt
+from uuid import UUID
+
 from tortoise.models import Model
+from tortoise import fields
+
 from fastadmin import register, TortoiseModelAdmin
 
 
@@ -173,16 +139,9 @@ class User(Model):
     hash_password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
     is_active = fields.BooleanField(default=False)
-    ...
-    async def __str__(self):
-        return self.username
 
-
-class Group(Model):
-    name = fields.CharField(max_length=255)
-    ...
-    async def __str__(self):
-        return self.name
+    def __str__(self):
+      return self.username
 
 
 @register(User)
@@ -201,16 +160,9 @@ class UserAdmin(TortoiseModelAdmin):
             return None
         return user.id
 
-
-@register(Group)
-class GroupAdmin(TortoiseModelAdmin):
-    list_display = ("id", "name")
-    list_display_links = ("id",)
-    list_filter = ("id", "name")
-    search_fields = ("name",)
 ```
 
-#### For Django ORM:
+### Django ORM
 
 ```python
 from django.db import models
@@ -219,20 +171,13 @@ from fastadmin import DjangoModelAdmin, register
 
 
 class User(models.Model):
-    username = fields.CharField(max_length=255, unique=True)
-    hash_password = fields.CharField(max_length=255)
-    is_superuser = fields.BooleanField(default=False)
-    is_active = fields.BooleanField(default=False)
-    ...
-    def __str__(self):
-        return self.username
+    username = models.CharField(max_length=255, unique=True)
+    hash_password = models.CharField(max_length=255)
+    is_superuser = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
 
-
-class Group(models.Model):
-    name = fields.CharField(max_length=255)
-    ...
     def __str__(self):
-        return self.name
+      return self.username
 
 
 @register(User)
@@ -251,31 +196,26 @@ class UserAdmin(DjangoModelAdmin):
             return None
         return obj.id
 
-
-@register(Group)
-class GroupAdmin(DjangoModelAdmin):
-    list_display = ("id", "name")
-    list_display_links = ("id",)
-    list_filter = ("id", "name")
-    search_fields = ("name",)
 ```
 
-#### For SQLAlchemy:
+### SQL Alchemy
 
 ```python
 import bcrypt
 from sqlalchemy import (
     Boolean,
     String,
+    Integer,
     select,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from fastadmin import SqlAlchemyModelAdmin, register
 
 
 sqlalchemy_engine = create_async_engine(
-    f"sqlite+aiosqlite://db.sqlite",
+    f"sqlite+aiosqlite:///:memory:",
     echo=True,
 )
 sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
@@ -286,20 +226,16 @@ class Base(DeclarativeBase):
 
 
 class User(Base):
+    __tablename__ = "user"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     username: Mapped[str] = mapped_column(String(length=255), nullable=False)
     hash_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    ...
-    async def __str__(self):
-        return self.username
 
-
-class Group(Base):
-    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
-    ...
-    async def __str__(self):
-        return self.name
+    def __str__(self):
+      return self.username
 
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
@@ -322,46 +258,30 @@ class UserAdmin(SqlAlchemyModelAdmin):
                 return None
             return user.id
 
-
-@register(Group, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
-class GroupAdmin(SqlAlchemyModelAdmin):
-    list_display = ("id", "name")
-    list_display_links = ("id",)
-    list_filter = ("id", "name")
-    search_fields = ("name",)
 ```
 
-#### For PonyORM:
+### Pony ORM
 
 ```python
 import bcrypt
-from pony.orm import Database, PrimaryKey
+from pony.orm import Database, PrimaryKey, Required, db_session
 
 from fastadmin import PonyORMModelAdmin, register
 
 db = Database()
-db.bind(provider="sqlite", filename="db.sqlite", create_db=True)
+db.bind(provider="sqlite", filename=":memory:", create_db=True)
+
 
 class User(db.Entity):
+    _table_ = "user"
     id = PrimaryKey(int, auto=True)
     username = Required(str)
     hash_password = Required(str)
     is_superuser = Required(bool, default=False)
     is_active = Required(bool, default=False)
-    ...
+
     def __str__(self):
-        return self.username
-
-
-class Group(db.Entity):
-    id = PrimaryKey(int, auto=True)
-    name = Required(str)
-    ...
-    def __str__(self):
-        return self.name
-
-
-db.generate_mapping()
+      return self.username
 
 
 @register(User)
@@ -381,16 +301,7 @@ class UserAdmin(PonyORMModelAdmin):
             return None
         return user.id
 
-
-@register(Tournament)
-class GroupAdmin(PonyORMModelAdmin):
-    list_display = ("id", "name")
-    list_display_links = ("id",)
-    list_filter = ("id", "name")
-    search_fields = ("name",)
 ```
-
-For additional information see [ModelAdmin](https://vsdudakov.github.io/fastadmin#model_admin_objects) and [InlineModelAdmin](https://vsdudakov.github.io/fastadmin#inline_model_admin_objects) documentation.
 
 ## Documentation
 
