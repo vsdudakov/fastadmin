@@ -20,7 +20,7 @@ class BaseModelAdmin:
     model_name_prefix: str | None = None
 
     # A list of actions to make available on the change list page.
-    # You have to implement methods with names like <action_name> in your ModelAdmin class and decorate them with @action decorator.  # noqa: E501
+    # You have to implement methods with names like action_name in your ModelAdmin class and decorate them with @action decorator.  # noqa: E501
     # Example of usage:
     #
     # actions = ("make_published",)
@@ -63,10 +63,10 @@ class BaseModelAdmin:
     fields: Sequence[str] = ()
 
     # Set fieldsets to control the layout of admin “add” and “change” pages.
-    # fieldsets is a list of two-tuples, in which each two-tuple represents a <fieldset> on the admin form page. (A <fieldset> is a “section” of the form.)  # noqa: E501
+    # fieldsets is a list of two-tuples, in which each two-tuple represents a fieldset on the admin form page. (A fieldset is a “section” of the form.)  # noqa: E501
     fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
 
-    # By default, a ManyToManyField is displayed in the admin dashboard with a <select multiple>.
+    # By default, a ManyToManyField is displayed in the admin dashboard with a select multiple.
     # However, multiple-select boxes can be difficult to use when selecting many items.
     # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.  # noqa: E501
     # The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.  # noqa: E501
@@ -145,7 +145,7 @@ class BaseModelAdmin:
     # (e.g. substituting dashes for spaces and lowercasing ASCII letters).
     # prepopulated_fields: dict[str, Sequence[str]] = {}
 
-    # By default, FastAPI admin uses a select-box interface (<select>) for fields that are ForeignKey or have choices set.  # noqa: E501
+    # By default, FastAPI admin uses a select-box interface (select) for fields that are ForeignKey or have choices set.  # noqa: E501
     # If a field is present in radio_fields, FastAPI admin will use a radio-button interface instead.
     # Example of usage: radio_fields = ("user",)
     radio_fields: Sequence[str] = ()
@@ -153,7 +153,7 @@ class BaseModelAdmin:
     # Not supported setting (all fk, m2m uses select js widget as default)
     # autocomplete_fields
 
-    # By default, FastAPI admin uses a select-box interface (<select>) for fields that are ForeignKey.
+    # By default, FastAPI admin uses a select-box interface (select) for fields that are ForeignKey.
     # Sometimes you don’t want to incur the overhead of having to select all the related instances to display in the drop-down.  # noqa: E501
     # raw_id_fields is a list of fields you would like to change into an Input widget for either a ForeignKey or ManyToManyField.  # noqa: E501
     # Example of usage: raw_id_fields = ("user",)
@@ -615,13 +615,13 @@ class DashboardWidgetAdmin:
         min_x_field: str | None = None,
         max_x_field: str | None = None,
         period_x_field: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """This method is used to get data for dashboard widget.
 
         :params min_x_field: A minimum value for x_field.
         :params max_x_field: A maximum value for x_field.
         :params period_x_field: A period value for x_field.
-        :return: A list of dicts with x_field, y_field, series_field values.
+        :return: A dict with data.
         """
         raise NotImplementedError
 

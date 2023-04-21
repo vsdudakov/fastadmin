@@ -1,0 +1,58 @@
+{% if section_block.type == 'text' %}
+<p class="text-4">
+  {{section_block.content | safe}}
+</p>
+{% endif %}
+
+{% if section_block.type == 'text-lead' %}
+<p class="lead">
+  {{section_block.content | safe}}
+</p>
+{% endif %}
+
+{% if section_block.type == 'alert-info' %}
+<p class="alert alert-info">
+  {{section_block.content | safe}}
+</p>
+{% endif %}
+
+{% if section_block.type == 'alert-warning' %}
+<p class="alert alert-warning">
+  {{section_block.content | safe}}
+</p>
+{% endif %}
+
+{% if section_block.type == 'code-bash' %}
+<pre>
+  <code class="language-bash">
+{{section_block.content | safe}}
+  </code>
+</pre>
+{% endif %}
+
+{% if section_block.type == 'code-python' %}
+<pre>
+  <code class="language-python">
+{{section_block.content | safe}}
+  </code>
+</pre>
+{% endif %}
+
+{% if section_block.type == 'tabs' %}
+<ul class="nav nav-tabs" id="{{section_block.id}}" role="tablist">
+    {% for tab in section_block.content %}
+    <li class="nav-item" role="presentation">
+        <button class="nav-link {% if loop.index == 1 %}active{% endif %}" id="{{tab.id}}" data-bs-toggle="tab" data-bs-target="#{{tab.id}}-pane" type="button" role="tab" aria-controls="{{tab.id}}" aria-selected="{% if loop.index == 1 %}true{% else %}false{% endif %}">{{tab.name}}</button>
+    </li>
+    {% endfor %}
+</ul>
+<div class="tab-content" id="{{section_block.id}}-content">
+    {% for tab in section_block.content %}
+    <div class="tab-pane fade {% if loop.index == 1 %}show active{% endif %}" id="{{tab.id}}-pane" role="tabpanel" aria-labelledby="{{tab.id}}" tabindex="0">
+        {% for section_block in tab.content %}
+        {% include "templates/block.html" %}
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

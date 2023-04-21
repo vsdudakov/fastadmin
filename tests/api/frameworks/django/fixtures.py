@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient as TestClient
 
-from examples.django.dev.dev.asgi import application
+from tests.environment.django.dev.dev.asgi import application
 
 
 @pytest.fixture

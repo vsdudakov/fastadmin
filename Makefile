@@ -10,7 +10,7 @@ fix:
 	poetry run pyupgrade --exit-zero-even-if-changed --py39-plus fastadmin/**/*.py tests/**/*.py
 	poetry run isort --settings-path pyproject.toml fastadmin tests
 	poetry run black --config pyproject.toml fastadmin tests
-	make -C frontend fix
+	cd frontend && make fix
 
 .PHONY: lint
 lint:
@@ -18,13 +18,13 @@ lint:
 	poetry run black --diff --check --config pyproject.toml fastadmin tests
 	poetry run flake8 --show-source --config .flake8 fastadmin tests
 	poetry run mypy --show-error-code --install-types --non-interactive --namespace-packages --show-traceback --config-file pyproject.toml fastadmin
-	make -C frontend lint
+	cd frontend && make lint
 
 .PHONY: test
 test:
 	poetry run python generate_db.py
 	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=90 -s tests
-	make -C frontend test
+	cd frontend && make test
 
 .PHONY: kill
 kill:
@@ -46,9 +46,16 @@ install:
 	poetry install --all-extras
 	make -C frontend install
 
+
+.PHONY: docs
+docs:
+	make -C docs build
+	cp ./docs/README.md ./README.md
+
+
 .PHONY: build
 build:
-	make -C docs build
+	make docs
 	make -C frontend build
 	make collectstatic
 

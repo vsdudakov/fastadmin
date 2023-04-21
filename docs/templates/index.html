@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no"
+    />
+    <meta
+      name="google-site-verification"
+      content="c45rQ5FmAgrb6scHcK2hORmVz_8MwX6HRXrKpYu3vMw"
+    />
+    <link href="assets/images/favicon.png" rel="icon" />
+    <title>{{title}}</title>
+    <meta
+      name="description"
+      content="{{description}}"
+    />
+    <meta name="author" content="{{author.email}}" />
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="assets/css/stylesheet.css" />
+  </head>
+
+  <body data-spy="scroll" data-target=".app-navigation" data-offset="125">
+    <div class="preloader">
+      <div class="lds-ellipsis">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
+    <div id="main-wrapper">
+      <header id="header" class="sticky-top">
+        <nav class="primary-menu navbar navbar-expand-lg navbar-dropdown-dark">
+          <div class="container-fluid">
+            <button
+              id="sidebarCollapse"
+              class="navbar-toggler d-block d-md-none"
+              type="button"
+            >
+              <span></span><span class="w-75"></span><span class="w-50"></span>
+            </button>
+
+            <a class="logo ml-md-3" href="index.html" title="FastAdmin">
+              <img
+                src="assets/images/header-logo.svg"
+                alt="FastAdmin"
+                width="50"
+              />
+              <h4 class="title">{{name}}</h4>
+            </a>
+
+            <ul class="social-icons social-icons-sm ml-lg-2 mr-2">
+              <li class="social-icons-github">
+                <a
+                  href="{{pypi_url}}"
+                  target="_blank"
+                  title=""
+                  data-original-title="github"
+                  ><i class="fa-solid fa-house"></i
+                ></a>
+              </li>
+              <li class="social-icons-github">
+                <a
+                  href="{{github_url}}"
+                  target="_blank"
+                  title=""
+                  data-original-title="github"
+                  ><i class="fab fa-github"></i
+                ></a>
+              </li>
+              <!--
+                <li class="social-icons-twitter"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Twitter"><i class="fab fa-twitter"></i></a></li>
+                <li class="social-icons-facebook"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Facebook"><i class="fab fa-facebook-f"></i></a></li>
+                <li class="social-icons-dribbble"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Dribbble"><i class="fab fa-dribbble"></i></a></li>
+              -->
+            </ul>
+          </div>
+        </nav>
+      </header>
+
+      <div id="content" role="main">
+        <div class="app-navigation bg-light">
+          <ul class="nav flex-column">
+            {% for section in sections %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{section.url}}">{{section.name}}</a>
+              {% if section.children %}
+              <ul class="nav flex-column">
+                {% for subsection in section.children %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{{subsection.url}}">{{subsection.name}}</a>
+                </li>
+                {% endfor %}
+              </ul>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="app-content">
+          <div class="container">
+            <section id="index">
+              <h1>{{title}}</h1>
+
+              <div class="row">
+                <div class="col-sm-6 col-lg-4">
+                  <ul class="list-unstyled">
+                    <li><strong>Version:</strong> {{versions[0].version}}</li>
+                    <li>
+                      <strong>Author:</strong>
+                      <a href="mailto:{{author.email}}" target="_blank">
+                        {{author.name}}
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="col-sm-6 col-lg-4">
+                  <ul class="list-unstyled">
+                    <li>
+                      <strong class="font-weight-700">Created:</strong>
+                      {{created_date}}
+                    </li>
+                    <li>
+                      <strong>Updated:</strong>
+                      {{updated_date}}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+            <hr class="divider" />
+            {% for section in sections %}
+            <section id="{{section.url | replace('#', '')}}">
+              <h2>{{section.name}}</h2>
+
+              {% for section_block in get_page_context(section.url) %}
+                {% include "templates/block.html" %}
+              {% endfor %}
+
+              {% if section.children %}
+              {% for subsection in section.children %}
+                <section id="{{subsection.url | replace('#', '')}}">
+                <h3>{{subsection.name}}</h3>
+
+                {% for section_block in get_page_context(subsection.url) %}
+                  {% include "templates/block.html" %}
+                {% endfor %}
+                </section>
+
+              {% endfor %}
+              {% endif %}
+
+            </section>
+            <hr class="small-divider" />
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <footer id="footer" class="section bg-dark footer-text-light">
+        <div class="container">
+          <!--
+            <ul class="social-icons social-icons-lg social-icons-muted justify-content-center mb-3">
+              <li><a data-toggle="tooltip" href="https://twitter.com/harnishdesign/" target="_blank" title="" data-original-title="Twitter"><i class="fab fa-twitter"></i></a></li>
+              <li><a data-toggle="tooltip" href="http://www.facebook.com/harnishdesign/" target="_blank" title="" data-original-title="Facebook"><i class="fab fa-facebook-f"></i></a></li>
+              <li><a data-toggle="tooltip" href="http://www.dribbble.com/harnishdesign/" target="_blank" title="" data-original-title="Dribbble"><i class="fab fa-dribbble"></i></a></li>
+              <li><a data-toggle="tooltip" href="http://www.github.com/" target="_blank" title="" data-original-title="GitHub"><i class="fab fa-github"></i></a></li>
+            </ul>
+          -->
+          <p class="text-center">
+            Copyright &copy; {{year}} {{name}}. All Rights Reserved.
+          </p>
+        </div>
+      </footer>
+    </div>
+
+    <a id="back-to-top" data-toggle="tooltip" title="Back to Top" href="#">
+      ^
+    </a>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="assets/js/theme.js"></script>
+  </body>
+</html>

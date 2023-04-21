@@ -4,8 +4,7 @@ from enum import Enum
 import pytest
 from pony.orm import commit, db_session
 
-from examples.ponyorm import models
-from fastadmin.models.helpers import get_admin_model
+from tests.environment.ponyorm import models
 from tests.settings import DB_SQLITE
 
 

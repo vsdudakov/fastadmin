@@ -129,11 +129,16 @@ class ApiService:
         if not dashboard_widget_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
-        data = await dashboard_widget_model.get_data(
+        if inspect.iscoroutinefunction(dashboard_widget_model.get_data):
+            get_data = dashboard_widget_model.get_data
+        else:
+            get_data = sync_to_async(dashboard_widget_model.get_data)
+        data = await get_data(
             min_x_field=query_params.min_x_field,
             max_x_field=query_params.max_x_field,
             period_x_field=query_params.period_x_field,
         )
+
         DashboardWidgetDataOutputSchema(**data)
         return data
 

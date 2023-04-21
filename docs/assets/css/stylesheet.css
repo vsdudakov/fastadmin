@@ -207,13 +207,17 @@ h2 {
   font-size: 2.2rem;
 }
 
+h3 {
+  margin-top: 2rem;
+}
+
 dl,
 ol,
 ul,
 pre,
 blockquote,
 .table {
-  margin-bottom: 0rem;
+  margin: 0rem;
 }
 
 /*=== Highlight Js ===*/
@@ -3112,5 +3116,10 @@ input:-internal-autofill-selected {
 
 .social-icons-github i {
   font-size: 24px;
+}
 
+.tab-pane {
+  background-color: #f6f6f6 !important;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
