@@ -1,4 +1,5 @@
 import inspect
+import logging
 import re
 from collections.abc import Sequence
 from datetime import datetime, timedelta
@@ -6,7 +7,6 @@ from io import BytesIO, StringIO
 from typing import Any, cast
 from uuid import UUID
 
-import logging
 import jwt
 from asgiref.sync import sync_to_async
 
@@ -33,8 +33,7 @@ from fastadmin.models.helpers import (
 from fastadmin.models.schemas import ConfigurationSchema, ModelSchema
 from fastadmin.settings import settings
 
-
-logger  = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def convert_id(id: str | int | UUID) -> int | UUID | None:
