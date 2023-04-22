@@ -37,6 +37,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.1.37",
+            "changes": [
+                "Bug fixes.",
+            ],
+        },
+        {
             "version": "0.1.36",
             "changes": [
                 "Added autogeneration of documentation and examples.",
