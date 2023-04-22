@@ -116,9 +116,11 @@ class ApiService:
 
         now = datetime.utcnow()
         session_expired_at = now + timedelta(seconds=settings.ADMIN_SESSION_EXPIRED_AT)
+        if isinstance(user_id, UUID):
+            user_id = str(user_id)
         return jwt.encode(
             {
-                "user_id": str(user_id),
+                "user_id": user_id,
                 "session_expired_at": session_expired_at.isoformat(),
             },
             settings.ADMIN_SECRET_KEY,
