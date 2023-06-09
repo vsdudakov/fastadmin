@@ -2,7 +2,7 @@ import inspect
 import logging
 import re
 from collections.abc import Sequence
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from io import BytesIO, StringIO
 from typing import Any, cast
 from uuid import UUID
@@ -42,7 +42,7 @@ def convert_id(id: str | int | UUID) -> int | UUID | None:
     :param id: A string value.
     :return: An int or UUID value. Or None if the given id is invalid.
     """
-    if isinstance(id, int) or isinstance(id, UUID):
+    if isinstance(id, int | UUID):
         return id
 
     # Check if the input_str is an integer
@@ -53,7 +53,7 @@ def convert_id(id: str | int | UUID) -> int | UUID | None:
     if re.fullmatch(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", id):
         return UUID(id)
 
-    logger.error(f"Invalid id: {id}")
+    logger.error("Invalid id: %s", id)
     return None
 
 
@@ -79,7 +79,7 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
     if not session_expired_at:
         return None
 
-    if datetime.fromisoformat(session_expired_at) < datetime.utcnow():
+    if datetime.fromisoformat(session_expired_at) < datetime.now(timezone.utc):
         return None
 
     user_id = token_payload.get("user_id")
@@ -111,10 +111,10 @@ class ApiService:
 
         user_id = await authenticate_fn(payload.username, payload.password)
 
-        if not user_id or not (isinstance(user_id, int) or isinstance(user_id, UUID)):
+        if not user_id or not isinstance(user_id, int | UUID):
             raise AdminApiException(401, detail="Invalid credentials.")
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         session_expired_at = now + timedelta(seconds=settings.ADMIN_SESSION_EXPIRED_AT)
         if isinstance(user_id, UUID):
             user_id = str(user_id)
@@ -178,7 +178,7 @@ class ApiService:
         model: str,
         search: str | None = None,
         sort_by: str | None = None,
-        filters: dict = {},
+        filters: dict = None,
         offset: int | None = 0,
         limit: int | None = 10,
     ) -> tuple[list[dict], int]:
@@ -189,7 +189,7 @@ class ApiService:
         query_params = ListQuerySchema(
             search=search,
             sort_by=sort_by,
-            filters=filters,
+            filters=filters or {},
             offset=offset,
             limit=limit,
         )
@@ -209,7 +209,7 @@ class ApiService:
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
         query_filters: dict[tuple[str, str], bool | str | None] | None = None
         if query_params.filters:
-            for k in query_params.filters.keys():
+            for k in query_params.filters:
                 if k in exclude_filter_fields:
                     continue
                 field = k.split("__", 1)[0]
@@ -274,7 +274,7 @@ class ApiService:
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
-        return await admin_model.save_model(None, payload)  # type: ignore
+        return await admin_model.save_model(None, payload)  # type: ignore [return-value]
 
     async def change_password(
         self,
@@ -291,6 +291,8 @@ class ApiService:
             raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} model is not registered.")
 
         payload = ChangePasswordInputSchema(**payload)
+        if payload.password != payload.confirm_password:
+            raise AdminApiException(422, detail="Passwords do not match")
 
         if not hasattr(admin_model, "change_password"):
             raise AdminApiException(
@@ -330,7 +332,7 @@ class ApiService:
         payload: ExportInputSchema,
         search: str | None = None,
         sort_by: str | None = None,
-        filters: dict = {},
+        filters: dict = None,
     ) -> tuple[str, str, StringIO | BytesIO | None]:
         current_user_id = await get_user_id_from_session_id(session_id)
         if not current_user_id:
@@ -339,7 +341,7 @@ class ApiService:
         query_params = ListQuerySchema(
             search=search,
             sort_by=sort_by,
-            filters=filters,
+            filters=filters or {},
             offset=payload.offset,
             limit=payload.limit,
         )
@@ -359,7 +361,7 @@ class ApiService:
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
         query_filters: dict[tuple[str, str], bool | str | None] | None = None
         if query_params.filters:
-            for k in query_params.filters.keys():
+            for k in query_params.filters:
                 if k in exclude_filter_fields:
                     continue
                 field = k.split("__", 1)[0]
@@ -475,4 +477,4 @@ class ApiService:
             datetime_format=settings.ADMIN_DATETIME_FORMAT,
             models=models,
             dashboard_widgets=dashboard_widgets,
-        )
+        )  # type: ignore [call-arg]

@@ -13,7 +13,7 @@ db = Database()
 class EnumConverter(StrConverter):
     def validate(self, val):
         if not isinstance(val, Enum):
-            raise ValueError("Must be an Enum. Got {}".format(type(val)))
+            raise ValueError(f"Must be an Enum. Got {type(val)}")
         return val
 
     def py2sql(self, val):
@@ -34,7 +34,7 @@ class BaseModel:
         return f"ponyorm.{cls.__name__}"
 
 
-class User(BaseModel, db.Entity):
+class User(BaseModel, db.Entity):  # type: ignore [name-defined]
     _table_ = "user"
 
     id = PrimaryKey(int, auto=True)
@@ -51,7 +51,7 @@ class User(BaseModel, db.Entity):
         return self.username
 
 
-class Tournament(BaseModel, db.Entity):
+class Tournament(BaseModel, db.Entity):   # type: ignore [name-defined]
     _table_ = "tournament"
 
     id = PrimaryKey(int, auto=True)
@@ -66,7 +66,7 @@ class Tournament(BaseModel, db.Entity):
         return self.name
 
 
-class BaseEvent(BaseModel, db.Entity):
+class BaseEvent(BaseModel, db.Entity):  # type: ignore [name-defined]
     _table_ = "base_event"
     id = PrimaryKey(int, auto=True)
     created_at = Required(datetime, default=datetime.utcnow, hidden=True)
@@ -75,7 +75,7 @@ class BaseEvent(BaseModel, db.Entity):
     event = Optional("Event")
 
 
-class Event(BaseModel, db.Entity):
+class Event(BaseModel, db.Entity):  # type: ignore [name-defined]
     _table_ = "event"
 
     id = PrimaryKey(int, auto=True)
@@ -119,7 +119,7 @@ class PonyORMUserModelAdmin(PonyORMModelAdmin):
     def change_password(self, user_id, password):
         obj = next((f for f in self.model_cls.select(id=user_id)), None)
         if not obj:
-            return None
+            return
         # direct saving password is only for tests - use hash
         obj.password = password
         commit()

@@ -1,4 +1,3 @@
-import os
 import re
 
 from django.urls import path, re_path
@@ -16,7 +15,7 @@ from .api import (
     delete,
     export,
     get,
-    list,
+    list_objs,
     me,
     sign_in,
     sign_out,
@@ -32,7 +31,7 @@ def get_admin_urls():
             path("api/sign-out", sign_out),
             path("api/me", me),
             path("api/dashboard-widget/<str:model>", dashboard_widget),
-            path("api/list/<str:model>", list),
+            path("api/list/<str:model>", list_objs),
             path("api/retrieve/<str:model>/<str:id>", get),
             path("api/add/<str:model>", add),
             path("api/change-password/<str:id>", change_password),
@@ -44,7 +43,7 @@ def get_admin_urls():
             re_path(
                 r"^%s(?P<path>.*)$" % re.escape("static"),
                 serve,
-                kwargs=dict(document_root=os.path.join(ROOT_DIR, "static")),
+                kwargs={"document_root": ROOT_DIR / "static"},
             ),
         ],
         "admin",

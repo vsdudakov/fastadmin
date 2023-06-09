@@ -112,7 +112,7 @@ async def dashboard_widget(model: str) -> dict:
 
 
 @api_router.route("/list/<string:model>", methods=["GET"])
-async def list(model: str) -> dict:
+async def list_objs(model: str) -> dict:
     """This method is used to get a list of objects.
 
     :params request: a request object.
@@ -193,7 +193,7 @@ async def add(model: str) -> dict:
         raise http_exception
 
 
-@api_router.route("/change-password/<string:id>", methods=["PATCH"])  # type: ignore
+@api_router.route("/change-password/<string:id>", methods=["PATCH"])  # type: ignore [type-var]
 async def change_password(id: UUID | int) -> UUID | int:
     """This method is used to change password.
 
@@ -280,7 +280,7 @@ async def export(model: str) -> Response:
         raise http_exception
 
 
-@api_router.route("/delete/<string:model>/<string:id>", methods=["DELETE"])  # type: ignore
+@api_router.route("/delete/<string:model>/<string:id>", methods=["DELETE"])  # type: ignore [type-var]
 async def delete(
     model: str,
     id: UUID | int,
@@ -307,7 +307,7 @@ async def delete(
         raise http_exception
 
 
-@api_router.route("/action/<string:model>/<string:action>", methods=["POST"])  # type: ignore
+@api_router.route("/action/<string:model>/<string:action>", methods=["POST"])
 async def action(
     model: str,
     action: str,

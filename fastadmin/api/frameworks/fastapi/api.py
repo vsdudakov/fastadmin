@@ -37,9 +37,8 @@ async def sign_in(
         )
 
         response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
-        return None
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.post("/sign-out")
@@ -58,9 +57,8 @@ async def sign_out(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
         ):
             response.delete_cookie(settings.ADMIN_SESSION_ID_KEY)
-        return None
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.get("/me")
@@ -82,7 +80,7 @@ async def me(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), settings.ADMIN_USER_MODEL, user_id
         )
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.get("/dashboard-widget/{model}")
@@ -111,11 +109,11 @@ async def dashboard_widget(
         )
         return data
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.get("/list/{model}")
-async def list(
+async def list_objs(
     request: Request,
     model: str,
     search: str | None = None,
@@ -148,7 +146,7 @@ async def list(
             "results": objs,
         }
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.get("/retrieve/{model}/{id}")
@@ -170,7 +168,7 @@ async def get(
             id,
         )
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.post("/add/{model}")
@@ -192,7 +190,7 @@ async def add(
             payload,
         )
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.patch("/change-password/{id}")
@@ -211,7 +209,7 @@ async def change_password(
         await api_service.change_password(request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), id, payload)
         return id
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.patch("/change/{model}/{id}")
@@ -231,7 +229,7 @@ async def change(
     try:
         return await api_service.change(request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), model, id, payload)
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.post("/export/{model}")
@@ -262,12 +260,12 @@ async def export(
         )
         headers = {"Content-Disposition": f'attachment; filename="{file_name}"'}
         return StreamingResponse(
-            stream,  # type: ignore
+            stream,  # type: ignore [arg-type]
             headers=headers,
             media_type=content_type,
         )
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.delete("/delete/{model}/{id}")
@@ -289,7 +287,7 @@ async def delete(
             id,
         )
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.post("/action/{model}/{action}")
@@ -314,7 +312,7 @@ async def action(
             payload,
         )
     except AdminApiException as e:
-        raise HTTPException(e.status_code, detail=e.detail)
+        raise HTTPException(e.status_code, detail=e.detail) from None
 
 
 @router.get("/configuration")

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
@@ -6,7 +7,7 @@ from pydantic import BaseSettings
 load_dotenv(os.getenv("ADMIN_ENV_FILE") or ".env")
 
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = Path(__file__).resolve().parent
 
 
 class Settings(BaseSettings):
@@ -56,4 +57,4 @@ class Settings(BaseSettings):
     ADMIN_TIME_FORMAT: str = "HH:mm:ss"
 
 
-settings = Settings()  # type: ignore
+settings = Settings()  # type: ignore [call-arg]

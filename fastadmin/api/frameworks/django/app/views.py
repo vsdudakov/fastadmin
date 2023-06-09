@@ -1,4 +1,3 @@
-import os
 import typing
 
 import jinja2
@@ -12,7 +11,7 @@ def _create_env(directory: str, **env_options: typing.Any) -> "jinja2.Environmen
     env_options.setdefault("loader", loader)
     env_options.setdefault("autoescape", True)
 
-    return jinja2.Environment(**env_options)
+    return jinja2.Environment(**env_options)  # noqa: S701
 
 
 async def index(request):
@@ -21,7 +20,7 @@ async def index(request):
     :params request: a request object.
     :return: A response object.
     """
-    env = _create_env(os.path.join(ROOT_DIR, "templates"))
+    env = _create_env(ROOT_DIR / "templates")
     template = env.get_template("index.html")
     content = template.render({"request": request, "settings": settings})
 

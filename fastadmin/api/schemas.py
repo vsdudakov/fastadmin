@@ -1,9 +1,6 @@
+from dataclasses import dataclass
 from enum import Enum
 from uuid import UUID
-
-from pydantic import BaseModel, validator
-
-from fastadmin.api.exceptions import AdminApiException
 
 
 class ExportFormat(str, Enum):
@@ -13,7 +10,8 @@ class ExportFormat(str, Enum):
     JSON = "JSON"
 
 
-class DashboardWidgetQuerySchema(BaseModel):
+@dataclass
+class DashboardWidgetQuerySchema:
     """DashboardWidge query schema"""
 
     min_x_field: str | None = None
@@ -21,7 +19,8 @@ class DashboardWidgetQuerySchema(BaseModel):
     period_x_field: str | None = None
 
 
-class DashboardWidgetDataOutputSchema(BaseModel):
+@dataclass
+class DashboardWidgetDataOutputSchema:
     """Dashboard widget data output schema"""
 
     results: list[dict[str, str | int | float]]
@@ -30,7 +29,8 @@ class DashboardWidgetDataOutputSchema(BaseModel):
     period_x_field: str | None = None
 
 
-class ListQuerySchema(BaseModel):
+@dataclass
+class ListQuerySchema:
     """List query schema"""
 
     limit: int | None = 10
@@ -40,27 +40,24 @@ class ListQuerySchema(BaseModel):
     filters: dict[str, str] | None = None
 
 
-class SignInInputSchema(BaseModel):
+@dataclass
+class SignInInputSchema:
     """Sign in input schema"""
 
     username: str
     password: str
 
 
-class ChangePasswordInputSchema(BaseModel):
+@dataclass
+class ChangePasswordInputSchema:
     """Change password input schema"""
 
     password: str
     confirm_password: str
 
-    @validator("confirm_password")
-    def passwords_match(cls, v, values, **kwargs):
-        if "password" in values and v != values["password"]:
-            raise AdminApiException(422, detail="Passwords do not match")
-        return v
 
-
-class ExportInputSchema(BaseModel):
+@dataclass
+class ExportInputSchema:
     """Export input schema"""
 
     format: ExportFormat | None = ExportFormat.CSV
@@ -68,7 +65,8 @@ class ExportInputSchema(BaseModel):
     offset: int | None = 0
 
 
-class ActionInputSchema(BaseModel):
+@dataclass
+class ActionInputSchema:
     """Action input schema"""
 
     ids: list[int | UUID]

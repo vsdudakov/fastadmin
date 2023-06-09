@@ -59,8 +59,8 @@ def validate_configuration_response_data(response_data, is_auth=True):
         assert model["show_full_result_count"] == admin_model.show_full_result_count
 
         list_fields = [f for f in model["fields"] if f["list_configuration"] is not None]
-        add_fields = [f for f in model["fields"] if f["add_configuration"] is not None]
-        change_fields = [f for f in model["fields"] if f["change_configuration"] is not None]
+        # add_fields = [f for f in model["fields"] if f["add_configuration"] is not None]
+        # change_fields = [f for f in model["fields"] if f["change_configuration"] is not None]
 
         list_display = admin_model.list_display or ["id"]
 
@@ -79,7 +79,8 @@ def validate_configuration_response_data(response_data, is_auth=True):
             if model_field.name not in list_display:
                 assert not list_field
                 continue
-            assert list_field and list_field["list_configuration"], model_field.name
+            assert list_field, model_field.name
+            assert list_field["list_configuration"], model_field.name
             assert list_field["list_configuration"]["index"] == list_display.index(model_field.name)
             sorter = not admin_model.sortable_by or model_field.name in admin_model.sortable_by
             if hasattr(admin_model, model_field.name):
@@ -98,7 +99,7 @@ async def test_configuration(session_id, event, client):
     assert session_id
 
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -108,14 +109,14 @@ async def test_configuration(session_id, event, client):
 async def test_configuration_405(session_id, client):
     assert session_id
     r = await client.post(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 405, r.text
 
 
 async def test_configuration_not_auth(client):
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -128,7 +129,7 @@ async def test_configuration_list_display(session_id, admin_models, event, clien
 
     event_admin_model.list_display = LIST_EVENT_FIELDS
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -142,7 +143,7 @@ async def test_configuration_list_display_display_fields(session_id, admin_model
 
     event_admin_model.list_display = ("started", "name_with_price")  # see EventAdmin display methods
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -157,7 +158,7 @@ async def test_configuration_list_filter(session_id, admin_models, event, client
     event_admin_model.list_display = LIST_EVENT_FIELDS
     event_admin_model.list_filter = LIST_EVENT_FIELDS
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -173,7 +174,7 @@ async def test_configuration_sortable_by(session_id, admin_models, event, client
     event_admin_model.list_filter = LIST_EVENT_FIELDS
     event_admin_model.sortable_by = ("name",)
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -189,7 +190,7 @@ async def test_configuration_radio_fields(session_id, admin_models, event, clien
     event_admin_model.list_filter = LIST_EVENT_FIELDS
     event_admin_model.radio_fields = ("event_type",)
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -205,7 +206,7 @@ async def test_configuration_filter_horizontal_vertical(session_id, admin_models
     event_admin_model.list_filter = LIST_EVENT_FIELDS
     event_admin_model.filter_horizontal = ("participants",)
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -214,7 +215,7 @@ async def test_configuration_filter_horizontal_vertical(session_id, admin_models
 
     event_admin_model.filter_vertical = ["participants"]
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -230,7 +231,7 @@ async def test_configuration_raw_id_fields(session_id, admin_models, event, clie
     event_admin_model.list_filter = LIST_EVENT_FIELDS
     event_admin_model.raw_id_fields = ("participants", "tournament", "base")
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -244,7 +245,7 @@ async def test_configuration_fields(session_id, admin_models, event, client):
 
     event_admin_model.fields = LIST_EVENT_FIELDS
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -258,7 +259,7 @@ async def test_configuration_actions(session_id, admin_models, event, client):
 
     event_admin_model.actions = ("make_is_active",)
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -267,7 +268,7 @@ async def test_configuration_actions(session_id, admin_models, event, client):
 
     event_admin_model.actions = ("test_action",)
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -297,7 +298,7 @@ async def test_configuration_fieldsets(session_id, admin_models, event, client):
         ),
     ]
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
@@ -309,7 +310,7 @@ async def test_configuration_inlines(session_id, client):
     assert session_id
 
     r = await client.get(
-        f"/api/configuration",
+        "/api/configuration",
     )
     assert r.status_code == 200, r.text
     response_data = r.json()

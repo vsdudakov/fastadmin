@@ -26,7 +26,7 @@ class JsonEncoder(DjangoJSONEncoder):
             return o.isoformat()
         if isinstance(o, UUID):
             return str(o)
-        if isinstance(o, ImageFieldFile) or isinstance(o, FieldFile):
+        if isinstance(o, ImageFieldFile | FieldFile):
             try:
                 return o.url
             except ValueError:
@@ -149,7 +149,7 @@ async def dashboard_widget(request: HttpRequest, model: str) -> JsonResponse:
 
 
 @csrf_exempt
-async def list(request: HttpRequest, model: str) -> JsonResponse:
+async def list_objs(request: HttpRequest, model: str) -> JsonResponse:
     """This method is used to get a list of objects.
 
     :params request: a request object.

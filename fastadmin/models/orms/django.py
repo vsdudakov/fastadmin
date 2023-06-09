@@ -113,7 +113,7 @@ class DjangoORMMixin:
                     form_widget_props["mode"] = "tags"
                     filter_widget_type = WidgetType.Select
                     filter_widget_props["mode"] = "tags"
-                case "SmallAutoField" | "AutoField" | "BigAutoField" | "SmallIntegerField" | "BigIntegerField" | "PositiveIntegerField" | "PositiveSmallIntegerField" | "IntegerField" | "FloatField" | "DecimalField":  # noqa: E501
+                case "SmallAutoField" | "AutoField" | "BigAutoField" | "SmallIntegerField" | "BigIntegerField" | "PositiveIntegerField" | "PositiveSmallIntegerField" | "IntegerField" | "FloatField" | "DecimalField":
                     form_widget_type = WidgetType.InputNumber
                     filter_widget_type = WidgetType.InputNumber
                 case "DateField":
@@ -354,14 +354,14 @@ class DjangoORMMixin:
         _format, _img_str = base64.split(";base64,")
         _name, ext = _format.split("/")
         name = _name.split(":")[-1]
-        name = "{}.{}".format(name, ext)
+        name = f"{name}.{ext}"
         data = ContentFile(b64decode(_img_str), name=name)
         getattr(obj, field).save(name, data, save=True)
 
 
-class DjangoModelAdmin(DjangoORMMixin, ModelAdmin):  # type: ignore
+class DjangoModelAdmin(DjangoORMMixin, ModelAdmin):
     pass
 
 
-class DjangoInlineModelAdmin(DjangoORMMixin, InlineModelAdmin):  # type: ignore
+class DjangoInlineModelAdmin(DjangoORMMixin, InlineModelAdmin):
     pass

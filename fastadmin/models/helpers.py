@@ -28,7 +28,6 @@ def register_admin_model_class(admin_model_class: type[ModelAdmin], orm_model_cl
         if sqlalchemy_sessionmaker:
             admin_model_class.set_sessionmaker(sqlalchemy_sessionmaker)
         admin_models[orm_model_class] = admin_model_class(orm_model_class)
-    return None
 
 
 def unregister_admin_model_class(orm_model_classes: list[Any]) -> None:
@@ -40,7 +39,6 @@ def unregister_admin_model_class(orm_model_classes: list[Any]) -> None:
     for orm_model_class in orm_model_classes:
         if orm_model_class in admin_models:
             del admin_models[orm_model_class]
-    return None
 
 
 def get_admin_models() -> dict[Any, ModelAdmin]:
@@ -239,11 +237,11 @@ def generate_models_schema(
                     save_as=admin_model_obj.save_as,
                     save_as_continue=admin_model_obj.save_as_continue,
                     view_on_site=admin_model_obj.view_on_site,
-                    inlines=generate_models_schema(  # type: ignore
+                    inlines=generate_models_schema(
                         {inline.model: inline(inline.model) for inline in admin_model_obj.inlines},
                         inline_parent_admin_modal=admin_model_obj,
                         user_id=user_id,
-                    ),
+                    ),  # type: ignore [arg-type]
                 ),
             )
         else:

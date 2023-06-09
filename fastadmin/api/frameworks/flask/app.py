@@ -1,5 +1,4 @@
 import logging
-import os
 from datetime import date
 
 from flask import Blueprint
@@ -25,8 +24,8 @@ app = Blueprint(
     __name__,
     url_prefix="/parent",
     static_url_path="/static",
-    static_folder=os.path.join(ROOT_DIR, "static"),
-    template_folder=os.path.join(ROOT_DIR, "templates"),
+    static_folder=ROOT_DIR / "static",
+    template_folder=ROOT_DIR / "templates",
 )
 app.register_blueprint(views_router)
 app.register_blueprint(api_router)

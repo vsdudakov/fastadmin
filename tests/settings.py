@@ -1,11 +1,11 @@
 import logging
-import os
+from pathlib import Path
 
 logging.disable(logging.WARNING)
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = Path(__file__).parent
 
-DB_SQLITE = os.path.join(ROOT_DIR, "environment", "db.sqlite3")
+DB_SQLITE = str(ROOT_DIR / "environment" / "db.sqlite3")
 
 
 FRAMEWORKS = [

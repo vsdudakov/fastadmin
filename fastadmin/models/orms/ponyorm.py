@@ -264,7 +264,7 @@ class PonyORMMixin:
         if search and self.search_fields:
             ids = []
             for f in self.search_fields:
-                qs_ids = qs.filter(lambda m: search.lower() in getattr(m, f).lower())
+                qs_ids = qs.filter(lambda m: search.lower() in getattr(m, f).lower())  # noqa: B023
                 ids += [o.id for o in qs_ids]
             qs = qs.filter(lambda m: m.id in set(ids))
 
@@ -362,7 +362,7 @@ class PonyORMMixin:
         key_id = self.get_model_pk_name(self.model_cls)
         obj = next((i for i in self.model_cls.select(**{key_id: getattr(obj, key_id)})), None)
         if not obj:
-            return None
+            return
         rel_model_cls = getattr(self.model_cls, field).py_type
         rel_key_id = self.get_model_pk_name(rel_model_cls)
         rel_objs = list(rel_model_cls.select(lambda o: getattr(o, rel_key_id) in ids))
@@ -382,7 +382,7 @@ class PonyORMMixin:
 
         :return: A list of ids.
         """
-        pass
+        ...
 
     @sync_to_async
     @db_session

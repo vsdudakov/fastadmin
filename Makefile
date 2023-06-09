@@ -1,84 +1,95 @@
 .PHONY: clean
 clean:
-	find . -type d -name "__pycache__" -exec rm -rf {} + > /dev/null 2>&1
-	find . -type f -name "*.pyc" -exec rm -rf {} + > /dev/null 2>&1
-	rm -rf htmlcov
-	rm -rf .coverage
+	@exec find . -type d -name "__pycache__" -exec rm -rf {} + > /dev/null 2>&1
+	@exec find . -type f -name "*.pyc" -exec rm -rf {} + > /dev/null 2>&1
+	@exec rm -rf htmlcov
+	@exec rm -rf .coverage
 
 .PHONY: fix
 fix:
-	poetry run pyupgrade --exit-zero-even-if-changed --py39-plus fastadmin/**/*.py tests/**/*.py
-	poetry run isort --settings-path pyproject.toml fastadmin tests
-	poetry run black --config pyproject.toml fastadmin tests
-	cd frontend && make fix
+	@echo "Run ruff"
+	@exec ruff --fix fastadmin tests
+	@echo "Run isort"
+	@exec isort fastadmin tests
+	@echo "Run black"
+	@exec black fastadmin tests
+	@echo "Run mypy"
+	@exec mypy -p fastadmin -p tests
+	@echo "Run frontend linters"
+	@exec cd frontend && make fix
 
 .PHONY: lint
 lint:
-	poetry run isort --diff --check-only --settings-path pyproject.toml fastadmin tests
-	poetry run black --diff --check --config pyproject.toml fastadmin tests
-	poetry run flake8 --show-source --config .flake8 fastadmin tests
-	poetry run mypy --show-error-code --install-types --non-interactive --namespace-packages --show-traceback --config-file pyproject.toml fastadmin
-	cd frontend && make lint
+	@echo "Run ruff"
+	@exec ruff fastadmin tests
+	@echo "Run isort"
+	@exec isort --check-only fastadmin tests
+	@echo "Run black"
+	@exec black --check --diff fastadmin tests
+	@echo "Run mypy"
+	@exec mypy -p fastadmin -p tests
+	@echo "Run frontend linters"
+	@exec cd frontend && make lint
 
 .PHONY: test
 test:
 	poetry run python generate_db.py
 	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=90 -s tests
-	cd frontend && make test
+	@exec cd frontend && make test
 
 .PHONY: kill
 kill:
-	kill -9 $$(lsof -t -i:8090)
-	kill -9 $$(lsof -t -i:3030)
+	@exec kill -9 $$(lsof -t -i:8090)
+	@exec kill -9 $$(lsof -t -i:3030)
 
 .PHONY: collectstatic
 collectstatic:
-	rm -rf ./fastadmin/static/js
-	rm -rf ./fastadmin/static/css
-	cp -rf ./frontend/build/static/js/ ./fastadmin/static/js/
-	cp -rf ./frontend/build/static/css/ ./fastadmin/static/css/
-	mv fastadmin/static/js/main*.js fastadmin/static/js/main.min.js
-	mv fastadmin/static/css/main*.css fastadmin/static/css/main.min.css
-	rm fastadmin/static/js/*.txt
+	@exec rm -rf ./fastadmin/static/js
+	@exec rm -rf ./fastadmin/static/css
+	@exec cp -rf ./frontend/build/static/js/ ./fastadmin/static/js/
+	@exec cp -rf ./frontend/build/static/css/ ./fastadmin/static/css/
+	@exec mv fastadmin/static/js/main*.js fastadmin/static/js/main.min.js
+	@exec mv fastadmin/static/css/main*.css fastadmin/static/css/main.min.css
+	@exec rm fastadmin/static/js/*.txt
 
 .PHONY: install
 install:
-	poetry install --all-extras
-	make -C frontend install
+	@exec poetry install --all-extras
+	@exec make -C frontend install
 
 
 .PHONY: docs
 docs:
-	make -C docs build
-	cp ./docs/README.md ./README.md
+	@exec make -C docs build
+	@exec cp ./docs/README.md ./README.md
 
 
 .PHONY: build
 build:
-	make docs
-	make -C frontend build
-	make collectstatic
+	@exec make docs
+	@exec make -C frontend build
+	@exec make collectstatic
 
 .PHONY: pre-commit-install
 pre-commit-install:
-	poetry run pip install pre-commit
-	poetry run pre-commit install
+	@exec poetry run pip install pre-commit
+	@exec poetry run pre-commit install
 
 .PHONY: pre-commit
 pre-commit:
-	poetry run pre-commit run --all-files
+	@exec poetry run pre-commit run --all-files
 
 .PHONY: push
 push:
-	make fix
-	make lint
-	make test
-	make build
-	make pre-commit
-	git stash
-	git checkout main
-	git pull origin main
-	git stash pop
-	git add .
-	git commit -am "$(message)"
-	git push origin main
+	@exec make fix
+	@exec make lint
+	@exec make test
+	@exec make build
+	@exec make pre-commit
+	@exec git stash
+	@exec git checkout main
+	@exec git pull origin main
+	@exec git stash pop
+	@exec git add .
+	@exec git commit -am "$(message)"
+	@exec git push origin main

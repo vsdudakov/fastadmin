@@ -1,7 +1,6 @@
 from collections.abc import Sequence
+from dataclasses import dataclass
 from enum import Enum
-
-from pydantic import BaseModel
 
 
 class WidgetType(str, Enum):
@@ -50,14 +49,16 @@ class ModelPermission(str, Enum):
     Export = "Export"
 
 
-class ModelAction(BaseModel):
+@dataclass
+class ModelAction:
     """Action"""
 
     name: str
     description: str | None
 
 
-class ListConfigurationFieldSchema(BaseModel):
+@dataclass
+class ListConfigurationFieldSchema:
     """List configuration field schema"""
 
     index: int | None
@@ -70,7 +71,8 @@ class ListConfigurationFieldSchema(BaseModel):
     filter_widget_props: dict | None
 
 
-class AddConfigurationFieldSchema(BaseModel):
+@dataclass
+class AddConfigurationFieldSchema:
     """Add configuration field schema"""
 
     index: int | None
@@ -80,7 +82,8 @@ class AddConfigurationFieldSchema(BaseModel):
     required: bool | None
 
 
-class ChangeConfigurationFieldSchema(BaseModel):
+@dataclass
+class ChangeConfigurationFieldSchema:
     """Change configuration field schema"""
 
     index: int | None
@@ -90,7 +93,8 @@ class ChangeConfigurationFieldSchema(BaseModel):
     required: bool | None
 
 
-class ModelFieldSchema(BaseModel):
+@dataclass
+class ModelFieldSchema:
     """Model field schema"""
 
     name: str
@@ -99,7 +103,8 @@ class ModelFieldSchema(BaseModel):
     change_configuration: ChangeConfigurationFieldSchema | None
 
 
-class BaseModelSchema(BaseModel):
+@dataclass
+class BaseModelSchema:
     """Base Model schema"""
 
     name: str
@@ -117,6 +122,7 @@ class BaseModelSchema(BaseModel):
     show_full_result_count: bool | None
 
 
+@dataclass
 class InlineModelSchema(BaseModelSchema):
     """Inline model schema"""
 
@@ -127,6 +133,7 @@ class InlineModelSchema(BaseModelSchema):
     verbose_name_plural: str | None
 
 
+@dataclass
 class ModelSchema(BaseModelSchema):
     """Model schema"""
 
@@ -138,7 +145,8 @@ class ModelSchema(BaseModelSchema):
     inlines: Sequence[InlineModelSchema] | None
 
 
-class DashboardWidgetSchema(BaseModel):
+@dataclass
+class DashboardWidgetSchema:
     """Dashboard widget schema"""
 
     key: str
@@ -152,7 +160,8 @@ class DashboardWidgetSchema(BaseModel):
     x_field_periods: list[str] | None = None
 
 
-class ConfigurationSchema(BaseModel):
+@dataclass
+class ConfigurationSchema:
     """Configuration schema"""
 
     site_name: str
@@ -167,7 +176,8 @@ class ConfigurationSchema(BaseModel):
     dashboard_widgets: Sequence[DashboardWidgetSchema]
 
 
-class ModelFieldWidgetSchema(BaseModel):
+@dataclass
+class ModelFieldWidgetSchema:
     """Orm model field schema"""
 
     name: str

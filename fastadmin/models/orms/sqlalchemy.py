@@ -31,7 +31,7 @@ class SqlAlchemyMixin:
         :return: A list of ModelFieldWidgetSchema.
         """
         mapper = inspect(self.model_cls)
-        orm_model_fields = [f for f in mapper.c if not f.foreign_keys] + [f for f in mapper.relationships]
+        orm_model_fields = [f for f in mapper.c if not f.foreign_keys] + mapper.relationships
 
         fields = []
         for orm_model_field in orm_model_fields:
@@ -290,7 +290,7 @@ class SqlAlchemyMixin:
                 sort_by_text = ", ".join([convert_sort_by(f) for f in self.ordering])
                 qs = qs.order_by(text(sort_by_text))
 
-            objs = await session.execute(select(func.count()).select_from(qs))  # type: ignore
+            objs = await session.execute(select(func.count()).select_from(qs))  # type: ignore [arg-type]
             total = objs.scalar()
 
             if self.list_select_related:
@@ -392,10 +392,10 @@ class SqlAlchemyMixin:
                 getattrs(orm_model_field.secondary, f"c.{obj_field_name}") == obj_id
             )
             await session.execute(qs)
-            for id in ids:
+            for rel_id in ids:
                 values.append(
                     {
-                        rel_field_name: id,
+                        rel_field_name: rel_id,
                         obj_field_name: obj_id,
                     }
                 )
@@ -411,7 +411,7 @@ class SqlAlchemyMixin:
 
         :return: A list of ids.
         """
-        pass
+        ...
 
 
 class SqlAlchemyModelAdmin(SqlAlchemyMixin, ModelAdmin):

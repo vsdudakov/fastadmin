@@ -23,8 +23,8 @@ async def test_register_error():
     class MyModelAdmin(ModelAdmin):
         pass
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="ModelAdmin must be subclass of ModelAdmin"):
         register()(MyModelAdmin)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="ModelAdmin must be subclass of ModelAdmin"):
         register(Model)(InvalidModelAdmin)
