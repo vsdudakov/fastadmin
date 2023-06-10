@@ -16,7 +16,7 @@ fix:
 	@echo "Run mypy"
 	@exec poetry run mypy -p fastadmin -p tests -p examples -p docs
 	@echo "Run frontend linters"
-	@exec cd frontend && make fix
+	@exec make -C frontend fix
 
 .PHONY: lint
 lint:
@@ -29,13 +29,13 @@ lint:
 	@echo "Run mypy"
 	@exec poetry run mypy -p fastadmin -p tests -p examples -p docs
 	@echo "Run frontend linters"
-	@exec cd frontend && make lint
+	@exec make -C frontend lint
 
 .PHONY: test
 test:
 	@exec poetry run python generate_db.py
 	@exec env ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=90 -s tests
-	@exec cd frontend && make test
+	@exec make -C frontend test
 
 .PHONY: kill
 kill:
@@ -44,13 +44,13 @@ kill:
 
 .PHONY: collectstatic
 collectstatic:
-	@exec rm -rf ./fastadmin/static/js
-	@exec rm -rf ./fastadmin/static/css
-	@exec cp -rf ./frontend/build/static/js/ ./fastadmin/static/js/
-	@exec cp -rf ./frontend/build/static/css/ ./fastadmin/static/css/
-	@exec mv fastadmin/static/js/main*.js fastadmin/static/js/main.min.js
-	@exec mv fastadmin/static/css/main*.css fastadmin/static/css/main.min.css
-	@exec rm fastadmin/static/js/*.txt
+	rm -rf ./fastadmin/static/js
+	rm -rf ./fastadmin/static/css
+	cp -rf ./frontend/build/static/js/ ./fastadmin/static/js/
+	cp -rf ./frontend/build/static/css/ ./fastadmin/static/css/
+	mv fastadmin/static/js/main*.js fastadmin/static/js/main.min.js
+	mv fastadmin/static/css/main*.css fastadmin/static/css/main.min.css
+	rm fastadmin/static/js/*.txt
 
 .PHONY: install
 install:
