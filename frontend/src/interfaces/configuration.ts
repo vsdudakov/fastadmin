@@ -93,14 +93,14 @@ interface IBaseModel {
   preserve_filters?: boolean;
   list_max_show_all?: number;
   show_full_result_count?: boolean;
+  verbose_name?: string;
+  verbose_name_plural?: string;
 }
 
 export interface IInlineModel extends IBaseModel {
   fk_name: string;
   max_num?: number;
   min_num?: number;
-  verbose_name?: string;
-  verbose_name_plural?: string;
 }
 
 export interface IModel extends IBaseModel {

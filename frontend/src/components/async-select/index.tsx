@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { getFetcher, postFetcher } from 'fetchers/fetchers';
 import { FormContainer } from 'components/form-container';
 import { handleError } from 'helpers/forms';
-import { getTitleFromModelClass } from 'helpers/title';
+import { getTitleFromModel } from 'helpers/title';
 import { EModelPermission, IModel } from 'interfaces/configuration';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
 
@@ -103,7 +103,7 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
       <Modal
         width={600}
         open={openAdd}
-        title={_t(`Add ${getTitleFromModelClass(parentModel)}`)}
+        title={_t(`Add ${modelConfiguration && getTitleFromModel(modelConfiguration)}`)}
         onCancel={onCloseAdd}
         footer={null}
       >
@@ -131,7 +131,7 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
         )}
       </Modal>
       <Space.Compact style={{ width: '100%' }}>
-        <Tooltip title={_t(`Add ${getTitleFromModelClass(parentModel)}`)}>
+        <Tooltip title={_t(`Add ${modelConfiguration && getTitleFromModel(modelConfiguration)}`)}>
           <Button onClick={onOpenAdd}>
             <PlusCircleOutlined />
           </Button>

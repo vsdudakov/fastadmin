@@ -231,6 +231,8 @@ def generate_models_schema(
                     preserve_filters=admin_model_obj.preserve_filters,
                     list_max_show_all=admin_model_obj.list_max_show_all,
                     show_full_result_count=admin_model_obj.show_full_result_count,
+                    verbose_name=admin_model_obj.verbose_name,
+                    verbose_name_plural=admin_model_obj.verbose_name_plural,
                     # specific model fields
                     fieldsets=admin_model_obj.fieldsets,
                     save_on_top=admin_model_obj.save_on_top,
@@ -271,12 +273,12 @@ def generate_models_schema(
                     preserve_filters=admin_model_obj.preserve_filters,
                     list_max_show_all=admin_model_obj.list_max_show_all,
                     show_full_result_count=admin_model_obj.show_full_result_count,
+                    verbose_name=admin_model_obj.verbose_name,
+                    verbose_name_plural=admin_model_obj.verbose_name_plural,
                     # specific inline model fields
                     fk_name=fk_name,
                     max_num=admin_model_obj.max_num,
                     min_num=admin_model_obj.min_num,
-                    verbose_name=admin_model_obj.verbose_name,
-                    verbose_name_plural=admin_model_obj.verbose_name_plural,
                 ),
             )
     return models_schemas

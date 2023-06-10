@@ -11,7 +11,7 @@ import {
   IInlineModel,
 } from 'interfaces/configuration';
 import { getWidgetCls } from 'helpers/widgets';
-import { getTitleFromFieldName, getTitleFromModelClass } from 'helpers/title';
+import { getTitleFromFieldName, getTitleFromModel } from 'helpers/title';
 import { InlineWidget } from 'components/inline-widget';
 import { isJson, isSlug } from 'helpers/transform';
 
@@ -214,13 +214,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
     }
     return (modelConfiguration?.inlines || []).map((inline: IInlineModel) => {
       return (
-        <Form.Item
-          label={
-            inline.verbose_name_plural ||
-            `${inline.verbose_name || getTitleFromModelClass(inline.name)}s`
-          }
-          key={inline.name}
-        >
+        <Form.Item label={getTitleFromModel(inline, true)} key={inline.name}>
           <InlineWidget modelConfiguration={inline} parentId={id} />
         </Form.Item>
       );

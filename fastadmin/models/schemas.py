@@ -120,6 +120,8 @@ class BaseModelSchema:
     preserve_filters: bool | None
     list_max_show_all: int | None
     show_full_result_count: bool | None
+    verbose_name: str | None
+    verbose_name_plural: str | None
 
 
 @dataclass
@@ -129,8 +131,6 @@ class InlineModelSchema(BaseModelSchema):
     fk_name: str
     max_num: int | None
     min_num: int | None
-    verbose_name: str | None
-    verbose_name_plural: str | None
 
 
 @dataclass

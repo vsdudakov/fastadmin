@@ -79,7 +79,7 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
     if not session_expired_at:
         return None
 
-    if datetime.fromisoformat(session_expired_at) < datetime.now(timezone.utc):
+    if datetime.fromisoformat(session_expired_at).replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
         return None
 
     user_id = token_payload.get("user_id")

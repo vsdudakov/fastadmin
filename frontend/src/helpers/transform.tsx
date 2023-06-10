@@ -3,12 +3,8 @@ import dayjs from 'dayjs';
 import slugify from 'slugify';
 
 export const isDayJs = (v: any): boolean => {
-  return dayjs.isDayjs(v);
-};
-
-export const isIsoDate = (v: any): boolean => {
-  const date = dayjs(v);
-  return date.isValid();
+  const parsedDate = dayjs(v);
+  return parsedDate.isValid() && v.includes(parsedDate.toISOString().replace('Z', ''));
 };
 
 export const isNumeric = (v: any): boolean => {
@@ -70,7 +66,7 @@ export const transformFiltersToServer = (data: any) => {
   const filters = transformDataToServer(data);
   const filtersData: Record<string, string> = {};
   Object.entries(filters).forEach(([k, v]) => {
-    if (isArray(v) && v.length === 2 && v.every(isIsoDate)) {
+    if (isArray(v) && v.length === 2 && v.every(isDayJs)) {
       filtersData[`${k}__gte`] = v[0];
       filtersData[`${k}__lte`] = v[1];
       return;
@@ -79,7 +75,7 @@ export const transformFiltersToServer = (data: any) => {
       filtersData[`${k}__in`] = v;
       return;
     }
-    if (isIsoDate(v) || isNumeric(v) || isBoolean(v)) {
+    if (isDayJs(v) || isNumeric(v) || isBoolean(v)) {
       filtersData[k] = v;
       return;
     }
@@ -101,7 +97,7 @@ export const transformValueFromServer = (value: any): any => {
   if (isBoolean(value)) {
     return value !== 'false' && !!value;
   }
-  if (isIsoDate(value)) {
+  if (isDayJs(value)) {
     return dayjs(value);
   }
   return value;
@@ -116,14 +112,8 @@ export const transformColumnValueFromServer = (
   emptyValue?: string,
   dateTimeFormat?: string
 ) => {
-  if (isBoolean(value)) {
-    return <Checkbox checked={value} />;
-  }
-  if (isNumeric(value)) {
-    return value;
-  }
-  if (isIsoDate(value) && dateTimeFormat) {
-    return dayjs(value).format(dateTimeFormat);
+  if (value === null || value === undefined) {
+    return emptyValue || '-';
   }
   if (isArray(value)) {
     const colors = [
@@ -150,5 +140,14 @@ export const transformColumnValueFromServer = (
       );
     });
   }
-  return value || emptyValue || '-';
+  if (isNumeric(value)) {
+    return value;
+  }
+  if (isBoolean(value)) {
+    return <Checkbox checked={value} />;
+  }
+  if (isDayJs(value)) {
+    return dayjs(value).format(dateTimeFormat);
+  }
+  return value;
 };

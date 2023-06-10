@@ -39,6 +39,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.1.41",
+            "changes": [
+                "Fixed bug with datetime. Added verbose name logic for models and inlines. Updated frontend libraries.",
+            ],
+        },
+        {
             "version": "0.1.40",
             "changes": [
                 "Added RUFF linter. Cleaned up code. Removed pydantic dependency.",

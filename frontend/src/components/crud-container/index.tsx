@@ -23,7 +23,7 @@ import { SignInUserContext } from 'providers/SignInUserProvider';
 import { postFetcher } from 'fetchers/fetchers';
 import { IModel } from 'interfaces/configuration';
 import { useIsMobile } from 'hooks/useIsMobile';
-import { getTitleFromModelClass } from 'helpers/title';
+import { getTitleFromModel } from 'helpers/title';
 
 const { Header, Sider } = Layout;
 const { Title } = Typography;
@@ -108,7 +108,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
       .map((m: IModel) => {
         return {
           key: m.name,
-          label: getTitleFromModelClass(m.name),
+          label: getTitleFromModel(m),
         };
       }),
   ];

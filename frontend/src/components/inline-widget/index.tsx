@@ -14,7 +14,7 @@ import { transformDataFromServer, transformFiltersToServer } from 'helpers/trans
 import { deleteFetcher, getFetcher, patchFetcher, postFetcher } from 'fetchers/fetchers';
 import { ConfigurationContext } from 'providers/ConfigurationProvider';
 import { EModelPermission, IInlineModel, IModelAction } from 'interfaces/configuration';
-import { getTitleFromModelClass } from 'helpers/title';
+import { getTitleFromModel } from 'helpers/title';
 import { ExportBtn } from 'components/export-btn';
 import { FormContainer } from 'components/form-container';
 
@@ -375,10 +375,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
       <Modal
         width="100%"
         open={openList}
-        title={
-          modelConfiguration.verbose_name_plural ||
-          `${modelConfiguration.verbose_name || getTitleFromModelClass(modelConfiguration.name)}s`
-        }
+        title={getTitleFromModel(modelConfiguration, true)}
         onCancel={onCloseList}
         footer={null}
       >
@@ -415,7 +412,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
       <Modal
         width={600}
         open={openAdd}
-        title={`Add ${getTitleFromModelClass(modelConfiguration.name)}`}
+        title={`Add ${getTitleFromModel(modelConfiguration)}`}
         onCancel={onCloseAdd}
         footer={null}
       >
@@ -445,7 +442,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
       <Modal
         width={600}
         open={!!openChange}
-        title={`Change ${getTitleFromModelClass(modelConfiguration.name)} ${openChange}`}
+        title={`Change ${getTitleFromModel(modelConfiguration)} ${openChange}`}
         onCancel={onCloseChange}
         footer={null}
       >

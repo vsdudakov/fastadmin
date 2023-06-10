@@ -15,7 +15,7 @@ import { handleError } from 'helpers/forms';
 import { useIsMobile } from 'hooks/useIsMobile';
 import { useTableQuery } from 'hooks/useTableQuery';
 import { useTableColumns } from 'hooks/useTableColumns';
-import { getTitleFromModelClass } from 'helpers/title';
+import { getTitleFromModel } from 'helpers/title';
 import { ExportBtn } from 'components/export-btn';
 
 export const List: React.FC = () => {
@@ -155,7 +155,9 @@ export const List: React.FC = () => {
           <Breadcrumb.Item>
             <Link to="/">{_t('Dashboard')}</Link>
           </Breadcrumb.Item>
-          <Breadcrumb.Item>{getTitleFromModelClass(model)}</Breadcrumb.Item>
+          <Breadcrumb.Item>
+            {modelConfiguration && getTitleFromModel(modelConfiguration)}
+          </Breadcrumb.Item>
         </Breadcrumb>
       }
       viewOnSite={modelConfiguration?.view_on_site}
