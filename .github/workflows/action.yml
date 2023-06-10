@@ -19,8 +19,7 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: 'frontend/yarn.lock'
       - name: Install Dependencies
-        run: |
-          make install
+        run: make install
       - name: Run Lint
         run: make lint
       - name: Run Tests
