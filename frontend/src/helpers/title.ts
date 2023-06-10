@@ -1,8 +1,9 @@
 import { IModel } from 'interfaces/configuration';
 
 export const getTitleFromFieldName = (value: string) => {
-  const str = value.replace('_', ' ');
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  return value.replace('_', ' ').replace(/\b\w/g, function(match: string) {
+    return match.toUpperCase();
+  });
 };
 
 export const getTitleFromModel = (model: IModel, plural: boolean = false) => {
