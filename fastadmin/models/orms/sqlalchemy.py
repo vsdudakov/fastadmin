@@ -31,7 +31,7 @@ class SqlAlchemyMixin:
         :return: A list of ModelFieldWidgetSchema.
         """
         mapper = inspect(self.model_cls)
-        orm_model_fields = [f for f in mapper.c if not f.foreign_keys] + mapper.relationships
+        orm_model_fields = [f for f in mapper.c if not f.foreign_keys] + list(mapper.relationships)
 
         fields = []
         for orm_model_field in orm_model_fields:

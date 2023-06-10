@@ -1,6 +1,6 @@
 from flask import Flask
-from fastadmin import flask_app as admin_app
 
+from fastadmin import flask_app as admin_app
 
 app = Flask(__name__)
 

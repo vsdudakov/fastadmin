@@ -8,33 +8,33 @@ clean:
 .PHONY: fix
 fix:
 	@echo "Run ruff"
-	@exec ruff --fix fastadmin tests
+	@exec ruff --fix fastadmin tests examples docs
 	@echo "Run isort"
-	@exec isort fastadmin tests
+	@exec isort fastadmin tests examples docs
 	@echo "Run black"
-	@exec black fastadmin tests
+	@exec black fastadmin tests examples docs
 	@echo "Run mypy"
-	@exec mypy -p fastadmin -p tests
+	@exec mypy -p fastadmin -p tests -p examples -p docs
 	@echo "Run frontend linters"
 	@exec cd frontend && make fix
 
 .PHONY: lint
 lint:
 	@echo "Run ruff"
-	@exec ruff fastadmin tests
+	@exec ruff fastadmin tests examples docs
 	@echo "Run isort"
-	@exec isort --check-only fastadmin tests
+	@exec isort --check-only fastadmin tests examples docs
 	@echo "Run black"
-	@exec black --check --diff fastadmin tests
+	@exec black --check --diff fastadmin tests examples docs
 	@echo "Run mypy"
-	@exec mypy -p fastadmin -p tests
+	@exec mypy -p fastadmin -p tests -p examples -p docs
 	@echo "Run frontend linters"
 	@exec cd frontend && make lint
 
 .PHONY: test
 test:
-	poetry run python generate_db.py
-	ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=90 -s tests
+	@exec poetry run python generate_db.py
+	@exec env ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=90 -s tests
 	@exec cd frontend && make test
 
 .PHONY: kill
@@ -61,7 +61,6 @@ install:
 .PHONY: docs
 docs:
 	@exec make -C docs build
-	@exec cp ./docs/README.md ./README.md
 
 
 .PHONY: build
@@ -80,16 +79,10 @@ pre-commit:
 	@exec poetry run pre-commit run --all-files
 
 .PHONY: push
-push:
+pre-push:
 	@exec make fix
 	@exec make lint
-	@exec make test
-	@exec make build
+	@exec make pre-commit-install
 	@exec make pre-commit
-	@exec git stash
-	@exec git checkout main
-	@exec git pull origin main
-	@exec git stash pop
-	@exec git add .
-	@exec git commit -am "$(message)"
-	@exec git push origin main
+	@exec make docs
+	@exec make build

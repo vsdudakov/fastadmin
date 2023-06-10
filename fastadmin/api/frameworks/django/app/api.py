@@ -1,5 +1,6 @@
 import json
 import logging
+from dataclasses import asdict
 from datetime import datetime
 from functools import wraps
 from uuid import UUID
@@ -162,12 +163,13 @@ async def list_objs(request: HttpRequest, model: str) -> JsonResponse:
     """
     if request.method != "GET":
         return JsonResponse({"error": "Method not allowed"}, status=405)
-    filters = request.GET.dict()
-    search = filters.get("search", None)
-    sort_by = filters.get("sort_by", None)
-    offset = filters.get("offset", 0)
-    limit = filters.get("limit", 10)
     try:
+        filters = request.GET.dict()
+        search = filters.get("search", None)
+        sort_by = filters.get("sort_by", None)
+        offset = int(filters.get("offset", 0))
+        limit = int(filters.get("limit", 10))
+
         objs, total = await api_service.list(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
@@ -183,6 +185,8 @@ async def list_objs(request: HttpRequest, model: str) -> JsonResponse:
                 "results": objs,
             }
         )
+    except ValueError:
+        return JsonResponse({"detail": "Invalid format of get parameters"}, status=422)
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
@@ -386,4 +390,4 @@ async def configuration(request: HttpRequest) -> JsonResponse:
     obj = await api_service.get_configuration(
         request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
     )
-    return JsonResponse(obj.dict())
+    return JsonResponse(asdict(obj))

@@ -2,7 +2,7 @@
                 <li class="social-icons-twitter"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Twitter"><i class="fab fa-twitter"></i></a></li>
                 <li class="social-icons-facebook"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Facebook"><i class="fab fa-facebook-f"></i></a></li>
                 <li class="social-icons-dribbble"><a data-toggle="tooltip" href="" target="_blank" title="" data-original-title="Dribbble"><i class="fab fa-dribbble"></i></a></li>
-              --> </ul> </div> </nav> </header> <div id=content role=main> <div class="app-navigation bg-light"> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#introduction>Introduction</a> </li> <li class=nav-item> <a class=nav-link href=#getting_started>Getting Started</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#installation>Installation</a> </li> <li class=nav-item> <a class=nav-link href=#quick_tutorial>Quick Tutorial</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#settings>Settings</a> </li> <li class=nav-item> <a class=nav-link href=#dashboard-widget-admins>Dashboard Widget Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-widgets>Registering Widgets</a> </li> <li class=nav-item> <a class=nav-link href=#widget-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#widget-chart-types>Chart Types</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#model-admins>Model Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-models>Registering Models</a> </li> <li class=nav-item> <a class=nav-link href=#authentication>Authentication</a> </li> <li class=nav-item> <a class=nav-link href=#model-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#model-form-field-types>Form Field Types</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#inline-admins>Inline Model Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-inlines>Registering Inlines</a> </li> <li class=nav-item> <a class=nav-link href=#inline-methods-and-attributes>Methods and Attributes</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#changelog>Changelog</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#v0_1_37>v0.1.37</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_36>v0.1.36</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_35>v0.1.35</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_34>v0.1.34</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_33>v0.1.33</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_32>v0.1.32</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_31>v0.1.31</a> </li> </ul> </li> </ul> </div> <div class=app-content> <div class=container> <section id=index> <h1>FastAdmin | Documentation</h1> <div class=row> <div class="col-sm-6 col-lg-4"> <ul class=list-unstyled> <li><strong>Version:</strong> 0.1.37</li> <li> <strong>Author:</strong> <a href=mailto:vsdudakov@gmail.com target=_blank> Seva D. </a> </li> </ul> </div> <div class="col-sm-6 col-lg-4"> <ul class=list-unstyled> <li> <strong class=font-weight-700>Created:</strong> 7 March 2023 </li> <li> <strong>Updated:</strong> 22 April 2023 </li> </ul> </div> </div> </section> <hr class=divider> <section id=introduction> <h2>Introduction</h2> <p class=text-4> <a href=https://github.com/vsdudakov/fastadmin target=_blank>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin. </p> <p class=text-4> FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way. </p> <p class=text-4> FastAdmin is designed to be minimalistic, functional and yet familiar. </p> </section> <hr class=small-divider> <section id=getting_started> <h2>Getting Started</h2> <p class="alert alert-info"> If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href=mailto:vsdudakov@gmail.com target=_blank>us</a>. </p> <section id=installation> <h3>Installation</h3> <p class=lead> Follow the steps below to setup FastAdmin: </p> <p class=text-4> Install the package using pip: </p> <p class="alert alert-info"> Note: For zsh and macos use: <code>pip install fastadmin\[fastapi,django\]</code> </p> <pre>
+              --> </ul> </div> </nav> </header> <div id=content role=main> <div class="app-navigation bg-light"> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#introduction>Introduction</a> </li> <li class=nav-item> <a class=nav-link href=#getting_started>Getting Started</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#installation>Installation</a> </li> <li class=nav-item> <a class=nav-link href=#quick_tutorial>Quick Tutorial</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#settings>Settings</a> </li> <li class=nav-item> <a class=nav-link href=#dashboard-widget-admins>Dashboard Widget Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-widgets>Registering Widgets</a> </li> <li class=nav-item> <a class=nav-link href=#widget-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#widget-chart-types>Chart Types</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#model-admins>Model Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-models>Registering Models</a> </li> <li class=nav-item> <a class=nav-link href=#authentication>Authentication</a> </li> <li class=nav-item> <a class=nav-link href=#model-methods-and-attributes>Methods and Attributes</a> </li> <li class=nav-item> <a class=nav-link href=#model-form-field-types>Form Field Types</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#inline-admins>Inline Model Admins</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#registering-inlines>Registering Inlines</a> </li> <li class=nav-item> <a class=nav-link href=#inline-methods-and-attributes>Methods and Attributes</a> </li> </ul> </li> <li class=nav-item> <a class=nav-link href=#changelog>Changelog</a> <ul class="nav flex-column"> <li class=nav-item> <a class=nav-link href=#v0_1_39>v0.1.39</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_38>v0.1.38</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_37>v0.1.37</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_36>v0.1.36</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_35>v0.1.35</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_34>v0.1.34</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_33>v0.1.33</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_32>v0.1.32</a> </li> <li class=nav-item> <a class=nav-link href=#v0_1_31>v0.1.31</a> </li> </ul> </li> </ul> </div> <div class=app-content> <div class=container> <section id=index> <h1>FastAdmin | Documentation</h1> <div class=row> <div class="col-sm-6 col-lg-4"> <ul class=list-unstyled> <li><strong>Version:</strong> 0.1.39</li> <li> <strong>Author:</strong> <a href=mailto:vsdudakov@gmail.com target=_blank> Seva D. </a> </li> </ul> </div> <div class="col-sm-6 col-lg-4"> <ul class=list-unstyled> <li> <strong class=font-weight-700>Created:</strong> 7 March 2023 </li> <li> <strong>Updated:</strong> 10 June 2023 </li> </ul> </div> </div> </section> <hr class=divider> <section id=introduction> <h2>Introduction</h2> <p class=text-4> <a href=https://github.com/vsdudakov/fastadmin target=_blank>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin. </p> <p class=text-4> FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way. </p> <p class=text-4> FastAdmin is designed to be minimalistic, functional and yet familiar. </p> </section> <hr class=small-divider> <section id=getting_started> <h2>Getting Started</h2> <p class="alert alert-info"> If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href=mailto:vsdudakov@gmail.com target=_blank>us</a>. </p> <section id=installation> <h3>Installation</h3> <p class=lead> Follow the steps below to setup FastAdmin: </p> <p class=text-4> Install the package using pip: </p> <p class="alert alert-info"> Note: For zsh and macos use: <code>pip install fastadmin[fastapi,django]</code> </p> <pre>
   <code class=language-bash>
 
 pip install fastadmin[fastapi,django]  # for fastapi with django orm
@@ -37,8 +37,8 @@ export ADMIN_SECRET_KEY=secret_key
 </pre> </section> <section id=quick_tutorial> <h3>Quick Tutorial</h3> <p class=lead> Setup FastAdmin for a framework </p> <ul class="nav nav-tabs" id=setup_framework role=tablist> <li class=nav-item role=presentation> <button class="nav-link active" id=fastapi data-bs-toggle=tab data-bs-target=#fastapi-pane type=button role=tab aria-controls=fastapi aria-selected=true>FastAPI</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=django data-bs-toggle=tab data-bs-target=#django-pane type=button role=tab aria-controls=django aria-selected=false>Django</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=flask data-bs-toggle=tab data-bs-target=#flask-pane type=button role=tab aria-controls=flask aria-selected=false>Flask</button> </li> </ul> <div class=tab-content id=setup_framework-content> <div class="tab-pane fade show active" id=fastapi-pane role=tabpanel aria-labelledby=fastapi tabindex=0> <pre>
   <code class=language-python>
 from fastapi import FastAPI
-from fastadmin import fastapi_app as admin_app
 
+from fastadmin import fastapi_app as admin_app
 
 app = FastAPI()
 
@@ -60,8 +60,8 @@ urlpatterns = [
 </pre> </div> <div class="tab-pane fade " id=flask-pane role=tabpanel aria-labelledby=flask tabindex=0> <pre>
   <code class=language-python>
 from flask import Flask
-from fastadmin import flask_app as admin_app
 
+from fastadmin import flask_app as admin_app
 
 app = Flask(__name__)
 
@@ -70,13 +70,13 @@ app.register_blueprint(admin_app, url_prefix="/admin")
   </code>
 </pre> </div> </div> <p class=lead> Register ORM models </p> <ul class="nav nav-tabs" id=register_orm_models role=tablist> <li class=nav-item role=presentation> <button class="nav-link active" id=tortoise_orm data-bs-toggle=tab data-bs-target=#tortoise_orm-pane type=button role=tab aria-controls=tortoise_orm aria-selected=true>Tortoise ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=django_orm data-bs-toggle=tab data-bs-target=#django_orm-pane type=button role=tab aria-controls=django_orm aria-selected=false>Django ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=sql_alchemy data-bs-toggle=tab data-bs-target=#sql_alchemy-pane type=button role=tab aria-controls=sql_alchemy aria-selected=false>SQL Alchemy</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=pony_orm data-bs-toggle=tab data-bs-target=#pony_orm-pane type=button role=tab aria-controls=pony_orm aria-selected=false>Pony ORM</button> </li> </ul> <div class=tab-content id=register_orm_models-content> <div class="tab-pane fade show active" id=tortoise_orm-pane role=tabpanel aria-labelledby=tortoise_orm tabindex=0> <pre>
   <code class=language-python>
-import bcrypt
 from uuid import UUID
 
-from tortoise.models import Model
+import bcrypt
 from tortoise import fields
+from tortoise.models import Model
 
-from fastadmin import register, TortoiseModelAdmin
+from fastadmin import TortoiseModelAdmin, register
 
 
 class User(Model):
@@ -86,7 +86,7 @@ class User(Model):
     is_active = fields.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(User)
@@ -120,7 +120,7 @@ class User(models.Model):
     is_active = models.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(User)
@@ -143,20 +143,14 @@ class UserAdmin(DjangoModelAdmin):
 </pre> </div> <div class="tab-pane fade " id=sql_alchemy-pane role=tabpanel aria-labelledby=sql_alchemy tabindex=0> <pre>
   <code class=language-python>
 import bcrypt
-from sqlalchemy import (
-    Boolean,
-    String,
-    Integer,
-    select,
-)
+from sqlalchemy import Boolean, Integer, String, select
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from fastadmin import SqlAlchemyModelAdmin, register
 
-
 sqlalchemy_engine = create_async_engine(
-    f"sqlite+aiosqlite:///:memory:",
+    "sqlite+aiosqlite:///:memory:",
     echo=True,
 )
 sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
@@ -176,7 +170,7 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
@@ -211,7 +205,7 @@ db = Database()
 db.bind(provider="sqlite", filename=":memory:", create_db=True)
 
 
-class User(db.Entity):
+class User(db.Entity):  # type: ignore [name-defined]
     _table_ = "user"
     id = PrimaryKey(int, auto=True)
     username = Required(str)
@@ -220,7 +214,7 @@ class User(db.Entity):
     is_active = Required(bool, default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(User)
@@ -243,61 +237,61 @@ class UserAdmin(PonyORMModelAdmin):
   </code>
 </pre> </div> </div> </section> </section> <hr class=small-divider> <section id=settings> <h2>Settings</h2> <p class=text-4> There are settings with default values: </p> <p class="alert alert-info"> Note: Export virtual environment variables or create <code>.env</code> file with variables and use <code>python-dotenv</code> package. </p> <pre>
   <code class=language-python>
-class Settings(BaseSettings):
+class Settings:
     """Settings"""
 
     # This value is the prefix you used for mounting FastAdmin app for FastAPI.
-    ADMIN_PREFIX: str = "admin"
+    ADMIN_PREFIX: str = os.getenv("ADMIN_PREFIX", "admin")
 
     # This value is the site name on sign-in page and on header.
-    ADMIN_SITE_NAME: str = "FastAdmin"
+    ADMIN_SITE_NAME: str = os.getenv("ADMIN_SITE_NAME", "FastAdmin")
 
     # This value is the logo path on sign-in page.
-    ADMIN_SITE_SIGN_IN_LOGO: str = "/admin/static/images/sign-in-logo.svg"
+    ADMIN_SITE_SIGN_IN_LOGO: str = os.getenv("ADMIN_SITE_SIGN_IN_LOGO", "/admin/static/images/sign-in-logo.svg")
 
     # This value is the logo path on header.
-    ADMIN_SITE_HEADER_LOGO: str = "/admin/static/images/header-logo.svg"
+    ADMIN_SITE_HEADER_LOGO: str = os.getenv("ADMIN_SITE_HEADER_LOGO", "/admin/static/images/header-logo.svg")
 
     # This value is the favicon path.
-    ADMIN_SITE_FAVICON: str = "/admin/static/images/favicon.png"
+    ADMIN_SITE_FAVICON: str = os.getenv("ADMIN_SITE_FAVICON", "/admin/static/images/favicon.png")
 
     # This value is the primary color for FastAdmin.
-    ADMIN_PRIMARY_COLOR: str = "#009485"
+    ADMIN_PRIMARY_COLOR: str = os.getenv("ADMIN_PRIMARY_COLOR", "#009485")
 
     # This value is the session id key to store session id in http only cookies.
-    ADMIN_SESSION_ID_KEY: str = "admin_session_id"
+    ADMIN_SESSION_ID_KEY: str = os.getenv("ADMIN_SESSION_ID_KEY", "admin_session_id")
 
     # This value is the expired_at period (in sec) for session id.
-    ADMIN_SESSION_EXPIRED_AT: int = 144000  # in sec
+    ADMIN_SESSION_EXPIRED_AT: int = os.getenv("ADMIN_SESSION_EXPIRED_AT", 144000)  # in sec
+
+    # This value is the date format for JS widgets.
+    ADMIN_DATE_FORMAT: str = os.getenv("ADMIN_DATE_FORMAT", "YYYY-MM-DD")
+
+    # This value is the datetime format for JS widgets.
+    ADMIN_DATETIME_FORMAT: str = os.getenv("ADMIN_DATETIME_FORMAT", "YYYY-MM-DD HH:mm")
+
+    # This value is the time format for JS widgets.
+    ADMIN_TIME_FORMAT: str = os.getenv("ADMIN_TIME_FORMAT", "HH:mm:ss")
 
     # This value is the name for User db/orm model class for authentication.
-    ADMIN_USER_MODEL: str
+    ADMIN_USER_MODEL: str = os.getenv("ADMIN_USER_MODEL")
 
     # This value is the username field for User db/orm model for for authentication.
-    ADMIN_USER_MODEL_USERNAME_FIELD: str
+    ADMIN_USER_MODEL_USERNAME_FIELD: str = os.getenv("ADMIN_USER_MODEL_USERNAME_FIELD")
 
     # This value is the key to securing signed data - it is vital you keep this secure,
     # or attackers could use it to generate their own signed values.
-    ADMIN_SECRET_KEY: str
-
-    # This value is the date format for JS widgets.
-    ADMIN_DATE_FORMAT: str = "YYYY-MM-DD"
-
-    # This value is the datetime format for JS widgets.
-    ADMIN_DATETIME_FORMAT: str = "YYYY-MM-DD HH:mm"
-
-    # This value is the time format for JS widgets.
-    ADMIN_TIME_FORMAT: str = "HH:mm:ss"
+    ADMIN_SECRET_KEY: str = os.getenv("ADMIN_SECRET_KEY")
 
   </code>
 </pre> <p class="alert alert-warning"> Note: Settings without default values are required. </p> </section> <hr class=small-divider> <section id=dashboard-widget-admins> <h2>Dashboard Widget Admins</h2> <section id=registering-widgets> <h3>Registering Widgets</h3> <p class=lead> Register Dashboard widgets </p> <ul class="nav nav-tabs" id=register_dashboard_widgets role=tablist> <li class=nav-item role=presentation> <button class="nav-link active" id=dashboard_tortoise_orm data-bs-toggle=tab data-bs-target=#dashboard_tortoise_orm-pane type=button role=tab aria-controls=dashboard_tortoise_orm aria-selected=true>Tortoise ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=dashboard_django_orm data-bs-toggle=tab data-bs-target=#dashboard_django_orm-pane type=button role=tab aria-controls=dashboard_django_orm aria-selected=false>Django ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=dashboard_sql_alchemy data-bs-toggle=tab data-bs-target=#dashboard_sql_alchemy-pane type=button role=tab aria-controls=dashboard_sql_alchemy aria-selected=false>SQL Alchemy</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=dashboard_pony_orm data-bs-toggle=tab data-bs-target=#dashboard_pony_orm-pane type=button role=tab aria-controls=dashboard_pony_orm aria-selected=false>Pony ORM</button> </li> </ul> <div class=tab-content id=register_dashboard_widgets-content> <div class="tab-pane fade show active" id=dashboard_tortoise_orm-pane role=tabpanel aria-labelledby=dashboard_tortoise_orm tabindex=0> <pre>
   <code class=language-python>
-from tortoise import Tortoise
-from tortoise.models import Model
-from tortoise import fields
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-from fastadmin import register_widget, DashboardWidgetAdmin, DashboardWidgetType, WidgetType
+from tortoise import Tortoise, fields
+from tortoise.models import Model
+
+from fastadmin import DashboardWidgetAdmin, DashboardWidgetType, WidgetType, register_widget
 
 
 class DashboardUser(Model):
@@ -307,7 +301,7 @@ class DashboardUser(Model):
     is_active = fields.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register_widget
@@ -329,11 +323,11 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
         conn = Tortoise.get_connection("default")
 
         if not min_x_field:
-            min_x_field_date = datetime.utcnow() - timedelta(days=360)
+            min_x_field_date = datetime.now(timezone.utc) - timedelta(days=360)
         else:
             min_x_field_date = datetime.fromisoformat(min_x_field.replace("Z", "+00:00"))
         if not max_x_field:
-            max_x_field_date = datetime.utcnow() + timedelta(days=1)
+            max_x_field_date = datetime.now(timezone.utc) + timedelta(days=1)
         else:
             max_x_field_date = datetime.fromisoformat(max_x_field.replace("Z", "+00:00"))
 
@@ -361,12 +355,12 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
   </code>
 </pre> </div> <div class="tab-pane fade " id=dashboard_django_orm-pane role=tabpanel aria-labelledby=dashboard_django_orm tabindex=0> <pre>
   <code class=language-python>
-from django.db import models
-from django.db import connection
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
-from fastadmin import register_widget, DashboardWidgetAdmin, DashboardWidgetType, WidgetType
+from django.db import connection, models
 
+from fastadmin import DashboardWidgetAdmin, DashboardWidgetType, WidgetType, register_widget
 
 
 class DashboardUser(models.Model):
@@ -376,7 +370,7 @@ class DashboardUser(models.Model):
     is_active = models.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register_widget
@@ -389,23 +383,23 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
     x_field_filter_widget_props = {"picker": "month"}
     x_field_periods = ["day", "week", "month", "year"]
 
-    def get_data(
+    def get_data(  # type: ignore [override]
         self,
         min_x_field: str | None = None,
         max_x_field: str | None = None,
         period_x_field: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         def dictfetchall(cursor):
             columns = [col[0] for col in cursor.description]
-            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+            return [dict(zip(columns, row, strict=True)) for row in cursor.fetchall()]
 
         with connection.cursor() as c:
             if not min_x_field:
-                min_x_field_date = datetime.utcnow() - timedelta(days=360)
+                min_x_field_date = datetime.now(timezone.utc) - timedelta(days=360)
             else:
                 min_x_field_date = datetime.fromisoformat(min_x_field.replace("Z", "+00:00"))
             if not max_x_field:
-                max_x_field_date = datetime.utcnow() + timedelta(days=1)
+                max_x_field_date = datetime.now(timezone.utc) + timedelta(days=1)
             else:
                 max_x_field_date = datetime.fromisoformat(max_x_field.replace("Z", "+00:00"))
 
@@ -482,11 +476,13 @@ class DashboardWidgetType(str, Enum):
   </code>
 </pre> <p class="alert alert-warning"> Note: Please see <a href=https://charts.ant.design/en/examples target=_blank>antd charts</a> for more details (e.g. to see how they look like). </p> </section> </section> <hr class=small-divider> <section id=model-admins> <h2>Model Admins</h2> <section id=registering-models> <h3>Registering Models</h3> <ul class="nav nav-tabs" id=register_models role=tablist> <li class=nav-item role=presentation> <button class="nav-link active" id=models_tortoise_orm data-bs-toggle=tab data-bs-target=#models_tortoise_orm-pane type=button role=tab aria-controls=models_tortoise_orm aria-selected=true>Tortoise ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=models_django_orm data-bs-toggle=tab data-bs-target=#models_django_orm-pane type=button role=tab aria-controls=models_django_orm aria-selected=false>Django ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=models_sql_alchemy data-bs-toggle=tab data-bs-target=#models_sql_alchemy-pane type=button role=tab aria-controls=models_sql_alchemy aria-selected=false>SQL Alchemy</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=models_pony_orm data-bs-toggle=tab data-bs-target=#models_pony_orm-pane type=button role=tab aria-controls=models_pony_orm aria-selected=false>Pony ORM</button> </li> </ul> <div class=tab-content id=register_models-content> <div class="tab-pane fade show active" id=models_tortoise_orm-pane role=tabpanel aria-labelledby=models_tortoise_orm tabindex=0> <pre>
   <code class=language-python>
-from tortoise.models import Model
-from tortoise import fields
-import bcrypt
+from uuid import UUID
 
-from fastadmin import register, TortoiseModelAdmin, action, WidgetType
+import bcrypt
+from tortoise import fields
+from tortoise.models import Model
+
+from fastadmin import TortoiseModelAdmin, WidgetType, action, register
 
 
 class ModelUser(Model):
@@ -496,15 +492,22 @@ class ModelUser(Model):
     is_active = fields.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(ModelUser)
 class UserAdmin(TortoiseModelAdmin):
     list_display = ("username", "is_superuser", "is_active")
     list_display_links = ("username",)
-    list_filter = ("username", "is_superuser", "is_active",)
-    search_fields = ("id", "username",)
+    list_filter = (
+        "username",
+        "is_superuser",
+        "is_active",
+    )
+    search_fields = (
+        "id",
+        "username",
+    )
     fieldsets = (
         (None, {"fields": ("username", "hash_password")}),
         ("Permissions", {"fields": ("is_active", "is_superuser")}),
@@ -513,7 +516,8 @@ class UserAdmin(TortoiseModelAdmin):
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
     }
-    actions = TortoiseModelAdmin.actions + (
+    actions = (
+        *TortoiseModelAdmin.actions,
         "activate",
         "deactivate",
     )
@@ -526,10 +530,10 @@ class UserAdmin(TortoiseModelAdmin):
             return None
         return user.id
 
-    async def change_password(self, user_id: int, password: str) -> None:
-        user = await self.model_cls.filter(id=user_id).first()
+    async def change_password(self, id: UUID | int, password: str) -> None:
+        user = await self.model_cls.filter(id=id).first()
         if not user:
-            return None
+            return
         user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         await user.save(update_fields=("hash_password",))
 
@@ -551,7 +555,7 @@ class BaseModelAdmin:
     model_name_prefix: str | None = None
 
     # A list of actions to make available on the change list page.
-    # You have to implement methods with names like action_name in your ModelAdmin class and decorate them with @action decorator.  # noqa: E501
+    # You have to implement methods with names like action_name in your ModelAdmin class and decorate them with @action decorator.
     # Example of usage:
     #
     # actions = ("make_published",)
@@ -563,23 +567,23 @@ class BaseModelAdmin:
     actions: Sequence[str] = ()
 
     # Controls where on the page the actions bar appears.
-    # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).  # noqa: E501
+    # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).
     # Example of usage: actions_on_top = True
     actions_on_top: bool = False
 
     # Controls where on the page the actions bar appears.
-    # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).  # noqa: E501
+    # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).
     # Example of usage: actions_on_bottom = False
     actions_on_bottom: bool = True
 
-    # Controls whether a selection counter is displayed next to the action dropdown. By default, the admin changelist will display it  # noqa: E501
+    # Controls whether a selection counter is displayed next to the action dropdown. By default, the admin changelist will display it
     # Example of usage: actions_selection_counter = False
     actions_selection_counter: bool = True
 
     # Not supported setting
     # date_hierarchy
 
-    # This attribute overrides the default display value for record’s fields that are empty (None, empty string, etc.). The default value is - (a dash).  # noqa: E501
+    # This attribute overrides the default display value for record's fields that are empty (None, empty string, etc.). The default value is - (a dash).
     # Example of usage: empty_value_display = "N/A"
     empty_value_display: str = "-"
 
@@ -594,17 +598,17 @@ class BaseModelAdmin:
     fields: Sequence[str] = ()
 
     # Set fieldsets to control the layout of admin “add” and “change” pages.
-    # fieldsets is a list of two-tuples, in which each two-tuple represents a fieldset on the admin form page. (A fieldset is a “section” of the form.)  # noqa: E501
+    # fieldsets is a list of two-tuples, in which each two-tuple represents a fieldset on the admin form page. (A fieldset is a “section” of the form.)
     fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
 
     # By default, a ManyToManyField is displayed in the admin dashboard with a select multiple.
     # However, multiple-select boxes can be difficult to use when selecting many items.
-    # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.  # noqa: E501
-    # The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.  # noqa: E501
+    # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.
+    # The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.
     # Example of usage: filter_horizontal = ("groups", "user_permissions")
     filter_horizontal: Sequence[str] = ()
 
-    # Same as filter_horizontal, but uses a vertical display of the filter interface with the box of unselected options appearing above the box of selected options.  # noqa: E501
+    # Same as filter_horizontal, but uses a vertical display of the filter interface with the box of unselected options appearing above the box of selected options.
     # Example of usage: filter_vertical = ("groups", "user_permissions")
     filter_vertical: Sequence[str] = ()
 
@@ -621,11 +625,11 @@ class BaseModelAdmin:
     formfield_overrides: dict[str, tuple[WidgetType, dict]] = {}
 
     # Set list_display to control which fields are displayed on the list page of the admin.
-    # If you don’t set list_display, the admin site will display a single column that displays the __str__() representation of each object  # noqa: E501
+    # If you don't set list_display, the admin site will display a single column that displays the __str__() representation of each object
     # Example of usage: list_display = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
     list_display: Sequence[str] = ()
 
-    # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.  # noqa: E501
+    # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.
     # Example of usage: list_display_links = ("id", "mobile_number", "email")
     list_display_links: Sequence[str] = ()
 
@@ -647,21 +651,21 @@ class BaseModelAdmin:
     preserve_filters: bool = True
 
     # Set list_max_show_all to control how many items can appear on a “Show all” admin change list page.
-    # The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.  # noqa: E501
+    # The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.
     # Example of usage: list_max_show_all = 100
     list_max_show_all: int = 200
 
-    # Set list_per_page to control how many items appear on each paginated admin list page. By default, this is set to 10.  # noqa: E501
+    # Set list_per_page to control how many items appear on each paginated admin list page. By default, this is set to 10.
     # Example of usage: list_per_page = 50
     list_per_page = 10
 
-    # Set list_select_related to tell ORM to use select_related() in retrieving the list of objects on the admin list page.  # noqa: E501
+    # Set list_select_related to tell ORM to use select_related() in retrieving the list of objects on the admin list page.
     # This can save you a bunch of database queries.
     # Example of usage: list_select_related = ("user",)
     list_select_related: Sequence[str] = ()
 
     # Set ordering to specify how lists of objects should be ordered in the admin views.
-    # This should be a list or tuple in the same format as a model’s ordering parameter.
+    # This should be a list or tuple in the same format as a model's ordering parameter.
     # Example of usage: ordering = ("-created_at",)
     ordering: Sequence[str] = ()
 
@@ -676,7 +680,7 @@ class BaseModelAdmin:
     # (e.g. substituting dashes for spaces and lowercasing ASCII letters).
     # prepopulated_fields: dict[str, Sequence[str]] = {}
 
-    # By default, FastAPI admin uses a select-box interface (select) for fields that are ForeignKey or have choices set.  # noqa: E501
+    # By default, FastAPI admin uses a select-box interface (select) for fields that are ForeignKey or have choices set.
     # If a field is present in radio_fields, FastAPI admin will use a radio-button interface instead.
     # Example of usage: radio_fields = ("user",)
     radio_fields: Sequence[str] = ()
@@ -685,8 +689,8 @@ class BaseModelAdmin:
     # autocomplete_fields
 
     # By default, FastAPI admin uses a select-box interface (select) for fields that are ForeignKey.
-    # Sometimes you don’t want to incur the overhead of having to select all the related instances to display in the drop-down.  # noqa: E501
-    # raw_id_fields is a list of fields you would like to change into an Input widget for either a ForeignKey or ManyToManyField.  # noqa: E501
+    # Sometimes you don't want to incur the overhead of having to select all the related instances to display in the drop-down.
+    # raw_id_fields is a list of fields you would like to change into an Input widget for either a ForeignKey or ManyToManyField.
     # Example of usage: raw_id_fields = ("user",)
     raw_id_fields: Sequence[str] = ()
 
@@ -696,7 +700,7 @@ class BaseModelAdmin:
     readonly_fields: Sequence[str] = ()
 
     # Set search_fields to enable a search box on the admin list page.
-    # This should be set to a list of field names that will be searched whenever somebody submits a search query in that text box.  # noqa: E501
+    # This should be set to a list of field names that will be searched whenever somebody submits a search query in that text box.
     # Example of usage: search_fields = ("mobile_number", "email")
     search_fields: Sequence[str] = ()
 
@@ -716,6 +720,12 @@ class BaseModelAdmin:
     # An empty collection disables sorting for all columns.
     # Example of usage: sortable_by = ("mobile_number", "email")
     sortable_by: Sequence[str] = ()
+
+    # An override to the verbose_name from the model's inner Meta class.
+    verbose_name: str | None = None
+
+    # An override to the verbose_name_plural from the model's inner Meta class.
+    verbose_name_plural: str | None = None
 
     def __init__(self, model_cls: Any):
         """This method is used to initialize admin class.
@@ -827,7 +837,7 @@ class BaseModelAdmin:
 
         :return: A db session maker.
         """
-        return getattr(cls, "db_session_maker")
+        return cls.db_session_maker
 
     @classmethod
     def set_sessionmaker(cls, db_session_maker: Any) -> None:
@@ -836,7 +846,7 @@ class BaseModelAdmin:
         :params db_session: a db session maker.
         :return: None.
         """
-        setattr(cls, "db_session_maker", db_session_maker)
+        cls.db_session_maker = db_session_maker
 
     def get_fields_for_serialize(self) -> set[str]:
         """This method is used to get fields for serialize.
@@ -1005,27 +1015,33 @@ class BaseModelAdmin:
         fields = self.get_model_fields_with_widget_types(with_m2m=False)
 
         export_fields = [f.name for f in fields]
-        output = StringIO()
-        if not export_format or export_format == ExportFormat.CSV:
-            writer = csv.DictWriter(output, fieldnames=export_fields)
-            writer.writeheader()
-            for obj in objs:
-                obj_dict = await self.serialize_obj(obj, list_view=True)
-                obj_dict = {k: v for k, v in obj_dict.items() if k in export_fields}
-                writer.writerow(obj_dict)
-        if not export_format or export_format == ExportFormat.JSON:
 
-            class JSONEncoder(json.JSONEncoder):
-                def default(self, obj):
-                    try:
-                        return super().default(obj)
-                    except TypeError:
-                        return str(obj)
+        match export_format:
+            case ExportFormat.CSV:
+                output = StringIO()
+                writer = csv.DictWriter(output, fieldnames=export_fields)
+                writer.writeheader()
+                for obj in objs:
+                    obj_dict = await self.serialize_obj(obj, list_view=True)
+                    obj_dict = {k: v for k, v in obj_dict.items() if k in export_fields}
+                    writer.writerow(obj_dict)
+                output.seek(0)
+                return output
+            case ExportFormat.JSON:
 
-            json.dump([await self.serialize_obj(obj, list_view=True) for obj in objs], output, cls=JSONEncoder)
+                class JSONEncoder(json.JSONEncoder):
+                    def default(self, obj):
+                        try:
+                            return super().default(obj)
+                        except TypeError:
+                            return str(obj)
 
-        output.seek(0)
-        return output
+                output = StringIO()
+                json.dump([await self.serialize_obj(obj, list_view=True) for obj in objs], output, cls=JSONEncoder)
+                output.seek(0)
+                return output
+            case _:
+                return None
 
     def has_add_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to add new model instance.
@@ -1071,7 +1087,7 @@ class ModelAdmin(BaseModelAdmin):
     # Example of usage: save_as = True
     save_as: bool = False
 
-    # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.  # noqa: E501
+    # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.
     # If you set save_as_continue=False, the redirect will be to the changelist view.
     # Example of usage: save_as_continue = False
     save_as_continue: bool = False
@@ -1138,11 +1154,13 @@ class WidgetType(str, Enum):
   </code>
 </pre> <p class="alert alert-warning"> Note: Please see <a href=https://ant.design/components/overview target=_blank>antd components</a> for more details (e.g. to see how they look like). </p> </section> </section> <hr class=small-divider> <section id=inline-admins> <h2>Inline Model Admins</h2> <section id=registering-inlines> <h3>Registering Inlines</h3> <ul class="nav nav-tabs" id=register_inlines role=tablist> <li class=nav-item role=presentation> <button class="nav-link active" id=inlines_tortoise_orm data-bs-toggle=tab data-bs-target=#inlines_tortoise_orm-pane type=button role=tab aria-controls=inlines_tortoise_orm aria-selected=true>Tortoise ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=inlines_django_orm data-bs-toggle=tab data-bs-target=#inlines_django_orm-pane type=button role=tab aria-controls=inlines_django_orm aria-selected=false>Django ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=inlines_sql_alchemy data-bs-toggle=tab data-bs-target=#inlines_sql_alchemy-pane type=button role=tab aria-controls=inlines_sql_alchemy aria-selected=false>SQL Alchemy</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=inlines_pony_orm data-bs-toggle=tab data-bs-target=#inlines_pony_orm-pane type=button role=tab aria-controls=inlines_pony_orm aria-selected=false>Pony ORM</button> </li> </ul> <div class=tab-content id=register_inlines-content> <div class="tab-pane fade show active" id=inlines_tortoise_orm-pane role=tabpanel aria-labelledby=inlines_tortoise_orm tabindex=0> <pre>
   <code class=language-python>
-from tortoise.models import Model
-from tortoise import fields
-import bcrypt
+from uuid import UUID
 
-from fastadmin import register, TortoiseModelAdmin, action, WidgetType, TortoiseInlineModelAdmin
+import bcrypt
+from tortoise import fields
+from tortoise.models import Model
+
+from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, WidgetType, action, register
 
 
 class InlineUser(Model):
@@ -1152,7 +1170,7 @@ class InlineUser(Model):
     is_active = fields.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 class InlineUserMessage(Model):
@@ -1160,7 +1178,7 @@ class InlineUserMessage(Model):
     message = fields.TextField()
 
     def __str__(self):
-      return self.message
+        return self.message
 
 
 class UserMessageAdminInline(TortoiseInlineModelAdmin):
@@ -1175,8 +1193,15 @@ class UserMessageAdminInline(TortoiseInlineModelAdmin):
 class UserAdmin(TortoiseModelAdmin):
     list_display = ("username", "is_superuser", "is_active")
     list_display_links = ("username",)
-    list_filter = ("username", "is_superuser", "is_active",)
-    search_fields = ("id", "username",)
+    list_filter = (
+        "username",
+        "is_superuser",
+        "is_active",
+    )
+    search_fields = (
+        "id",
+        "username",
+    )
     fieldsets = (
         (None, {"fields": ("username", "hash_password")}),
         ("Permissions", {"fields": ("is_active", "is_superuser")}),
@@ -1185,7 +1210,8 @@ class UserAdmin(TortoiseModelAdmin):
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
     }
-    actions = TortoiseModelAdmin.actions + (
+    actions = (
+        *TortoiseModelAdmin.actions,
         "activate",
         "deactivate",
     )
@@ -1200,10 +1226,10 @@ class UserAdmin(TortoiseModelAdmin):
             return None
         return user.id
 
-    async def change_password(self, user_id: int, password: str) -> None:
-        user = await self.model_cls.filter(id=user_id).first()
+    async def change_password(self, id: UUID | int, password: str) -> None:
+        user = await self.model_cls.filter(id=id).first()
         if not user:
-            return None
+            return
         user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         await user.save(update_fields=("hash_password",))
 
@@ -1230,21 +1256,15 @@ class InlineModelAdmin(BaseModelAdmin):
     fk_name: str | None = None
 
     # This controls the maximum number of forms to show in the inline.
-    # This doesn’t directly correlate to the number of objects, but can if the value is small enough.
+    # This doesn't directly correlate to the number of objects, but can if the value is small enough.
     # See Limiting the number of editable objects for more information.
     max_num: int = 10
 
     # This controls the minimum number of forms to show in the inline.
     min_num: int = 1
 
-    # An override to the verbose_name from the model’s inner Meta class.
-    verbose_name: str | None = None
-
-    # An override to the verbose_name_plural from the model’s inner Meta class.
-    verbose_name_plural: str | None = None
-
   </code>
-</pre> </section> </section> <hr class=small-divider> <section id=changelog> <h2>Changelog</h2> <p class="alert alert-info"> See what's new added, changed, fixed, improved or updated in the latest versions. </p> <section id=v0_1_37> <h3>v0.1.37</h3> <p class=text-4> Bug fixes. </p> </section> <section id=v0_1_36> <h3>v0.1.36</h3> <p class=text-4> Added autogeneration of documentation and examples. </p> </section> <section id=v0_1_35> <h3>v0.1.35</h3> <p class=text-4> Added DashboardWidgetAdmin class and charts for dashboard. </p> </section> <section id=v0_1_34> <h3>v0.1.34</h3> <p class=text-4> Added SlugInput, EmailInput, PhoneInput, UrlInput, JsonTextArea widget types. </p> </section> <section id=v0_1_33> <h3>v0.1.33</h3> <p class=text-4> Added list_display_widths parameter. </p> </section> <section id=v0_1_32> <h3>v0.1.32</h3> <p class=text-4> Added Upload widget type. </p> </section> <section id=v0_1_31> <h3>v0.1.31</h3> <p class=text-4> Added PasswordInput widget type. </p> </section> </section> <hr class=small-divider> </div> </div> </div> <footer id=footer class="section bg-dark footer-text-light"> <div class=container> <!--
+</pre> </section> </section> <hr class=small-divider> <section id=changelog> <h2>Changelog</h2> <p class="alert alert-info"> See what's new added, changed, fixed, improved or updated in the latest versions. </p> <section id=v0_1_39> <h3>v0.1.39</h3> <p class=text-4> Added RUFF linter. Cleaned up code. Removed pydantic dependency. </p> </section> <section id=v0_1_38> <h3>v0.1.38</h3> <p class=text-4> Bug fixes. </p> </section> <section id=v0_1_37> <h3>v0.1.37</h3> <p class=text-4> Bug fixes. </p> </section> <section id=v0_1_36> <h3>v0.1.36</h3> <p class=text-4> Added autogeneration of documentation and examples. </p> </section> <section id=v0_1_35> <h3>v0.1.35</h3> <p class=text-4> Added DashboardWidgetAdmin class and charts for dashboard. </p> </section> <section id=v0_1_34> <h3>v0.1.34</h3> <p class=text-4> Added SlugInput, EmailInput, PhoneInput, UrlInput, JsonTextArea widget types. </p> </section> <section id=v0_1_33> <h3>v0.1.33</h3> <p class=text-4> Added list_display_widths parameter. </p> </section> <section id=v0_1_32> <h3>v0.1.32</h3> <p class=text-4> Added Upload widget type. </p> </section> <section id=v0_1_31> <h3>v0.1.31</h3> <p class=text-4> Added PasswordInput widget type. </p> </section> </section> <hr class=small-divider> </div> </div> </div> <footer id=footer class="section bg-dark footer-text-light"> <div class=container> <!--
             <ul class="social-icons social-icons-lg social-icons-muted justify-content-center mb-3">
               <li><a data-toggle="tooltip" href="https://twitter.com/harnishdesign/" target="_blank" title="" data-original-title="Twitter"><i class="fab fa-twitter"></i></a></li>
               <li><a data-toggle="tooltip" href="http://www.facebook.com/harnishdesign/" target="_blank" title="" data-original-title="Facebook"><i class="fab fa-facebook-f"></i></a></li>

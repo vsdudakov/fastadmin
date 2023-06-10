@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from fastadmin import fastapi_app as admin_app
 
+from fastadmin import fastapi_app as admin_app
 
 app = FastAPI()
 

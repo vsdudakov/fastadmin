@@ -1,10 +1,10 @@
-import bcrypt
 from uuid import UUID
 
-from tortoise.models import Model
+import bcrypt
 from tortoise import fields
+from tortoise.models import Model
 
-from fastadmin import register, TortoiseModelAdmin
+from fastadmin import TortoiseModelAdmin, register
 
 
 class User(Model):
@@ -14,7 +14,7 @@ class User(Model):
     is_active = fields.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(User)

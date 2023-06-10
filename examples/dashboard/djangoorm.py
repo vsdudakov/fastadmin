@@ -1,9 +1,9 @@
-from django.db import models
-from django.db import connection
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
-from fastadmin import register_widget, DashboardWidgetAdmin, DashboardWidgetType, WidgetType
+from django.db import connection, models
 
+from fastadmin import DashboardWidgetAdmin, DashboardWidgetType, WidgetType, register_widget
 
 
 class DashboardUser(models.Model):
@@ -13,7 +13,7 @@ class DashboardUser(models.Model):
     is_active = models.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register_widget
@@ -26,23 +26,23 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
     x_field_filter_widget_props = {"picker": "month"}
     x_field_periods = ["day", "week", "month", "year"]
 
-    def get_data(
+    def get_data(  # type: ignore [override]
         self,
         min_x_field: str | None = None,
         max_x_field: str | None = None,
         period_x_field: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         def dictfetchall(cursor):
             columns = [col[0] for col in cursor.description]
-            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+            return [dict(zip(columns, row, strict=True)) for row in cursor.fetchall()]
 
         with connection.cursor() as c:
             if not min_x_field:
-                min_x_field_date = datetime.utcnow() - timedelta(days=360)
+                min_x_field_date = datetime.now(timezone.utc) - timedelta(days=360)
             else:
                 min_x_field_date = datetime.fromisoformat(min_x_field.replace("Z", "+00:00"))
             if not max_x_field:
-                max_x_field_date = datetime.utcnow() + timedelta(days=1)
+                max_x_field_date = datetime.now(timezone.utc) + timedelta(days=1)
             else:
                 max_x_field_date = datetime.fromisoformat(max_x_field.replace("Z", "+00:00"))
 

@@ -7,7 +7,7 @@ db = Database()
 db.bind(provider="sqlite", filename=":memory:", create_db=True)
 
 
-class User(db.Entity):
+class User(db.Entity):  # type: ignore [name-defined]
     _table_ = "user"
     id = PrimaryKey(int, auto=True)
     username = Required(str)
@@ -16,7 +16,7 @@ class User(db.Entity):
     is_active = Required(bool, default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(User)

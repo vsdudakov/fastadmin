@@ -480,27 +480,33 @@ class BaseModelAdmin:
         fields = self.get_model_fields_with_widget_types(with_m2m=False)
 
         export_fields = [f.name for f in fields]
-        output = StringIO()
-        if not export_format or export_format == ExportFormat.CSV:
-            writer = csv.DictWriter(output, fieldnames=export_fields)
-            writer.writeheader()
-            for obj in objs:
-                obj_dict = await self.serialize_obj(obj, list_view=True)
-                obj_dict = {k: v for k, v in obj_dict.items() if k in export_fields}
-                writer.writerow(obj_dict)
-        if not export_format or export_format == ExportFormat.JSON:
 
-            class JSONEncoder(json.JSONEncoder):
-                def default(self, obj):
-                    try:
-                        return super().default(obj)
-                    except TypeError:
-                        return str(obj)
+        match export_format:
+            case ExportFormat.CSV:
+                output = StringIO()
+                writer = csv.DictWriter(output, fieldnames=export_fields)
+                writer.writeheader()
+                for obj in objs:
+                    obj_dict = await self.serialize_obj(obj, list_view=True)
+                    obj_dict = {k: v for k, v in obj_dict.items() if k in export_fields}
+                    writer.writerow(obj_dict)
+                output.seek(0)
+                return output
+            case ExportFormat.JSON:
 
-            json.dump([await self.serialize_obj(obj, list_view=True) for obj in objs], output, cls=JSONEncoder)
+                class JSONEncoder(json.JSONEncoder):
+                    def default(self, obj):
+                        try:
+                            return super().default(obj)
+                        except TypeError:
+                            return str(obj)
 
-        output.seek(0)
-        return output
+                output = StringIO()
+                json.dump([await self.serialize_obj(obj, list_view=True) for obj in objs], output, cls=JSONEncoder)
+                output.seek(0)
+                return output
+            case _:
+                return None
 
     def has_add_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to add new model instance.

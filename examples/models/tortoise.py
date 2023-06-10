@@ -1,8 +1,10 @@
-from tortoise.models import Model
-from tortoise import fields
-import bcrypt
+from uuid import UUID
 
-from fastadmin import register, TortoiseModelAdmin, action, WidgetType
+import bcrypt
+from tortoise import fields
+from tortoise.models import Model
+
+from fastadmin import TortoiseModelAdmin, WidgetType, action, register
 
 
 class ModelUser(Model):
@@ -12,15 +14,22 @@ class ModelUser(Model):
     is_active = fields.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(ModelUser)
 class UserAdmin(TortoiseModelAdmin):
     list_display = ("username", "is_superuser", "is_active")
     list_display_links = ("username",)
-    list_filter = ("username", "is_superuser", "is_active",)
-    search_fields = ("id", "username",)
+    list_filter = (
+        "username",
+        "is_superuser",
+        "is_active",
+    )
+    search_fields = (
+        "id",
+        "username",
+    )
     fieldsets = (
         (None, {"fields": ("username", "hash_password")}),
         ("Permissions", {"fields": ("is_active", "is_superuser")}),
@@ -29,7 +38,8 @@ class UserAdmin(TortoiseModelAdmin):
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
     }
-    actions = TortoiseModelAdmin.actions + (
+    actions = (
+        *TortoiseModelAdmin.actions,
         "activate",
         "deactivate",
     )
@@ -42,10 +52,10 @@ class UserAdmin(TortoiseModelAdmin):
             return None
         return user.id
 
-    async def change_password(self, user_id: int, password: str) -> None:
-        user = await self.model_cls.filter(id=user_id).first()
+    async def change_password(self, id: UUID | int, password: str) -> None:
+        user = await self.model_cls.filter(id=id).first()
         if not user:
-            return None
+            return
         user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         await user.save(update_fields=("hash_password",))
 

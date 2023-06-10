@@ -1,3 +1,6 @@
+from datetime import datetime, timezone
+
+
 async def test_list(session_id, event, client):
     assert session_id
 
@@ -13,8 +16,10 @@ async def test_list(session_id, event, client):
     assert item["id"] == event.id
     assert item["name"] == event.name
     assert item["tournament"] == event.tournament_id if hasattr(event, "tournament_id") else event.tournament
-    assert item["created_at"] == event.created_at.isoformat()
-    assert item["updated_at"] == event.updated_at.isoformat()
+    created_at = datetime.fromisoformat(item["created_at"])
+    updated_at = datetime.fromisoformat(item["updated_at"])
+    assert created_at.replace(tzinfo=timezone.utc) == event.created_at.replace(tzinfo=timezone.utc)
+    assert updated_at.replace(tzinfo=timezone.utc) == event.updated_at.replace(tzinfo=timezone.utc)
     assert "participants" not in item  # no m2m fields on list
 
 

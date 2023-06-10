@@ -1,9 +1,9 @@
-from tortoise import Tortoise
-from tortoise.models import Model
-from tortoise import fields
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-from fastadmin import register_widget, DashboardWidgetAdmin, DashboardWidgetType, WidgetType
+from tortoise import Tortoise, fields
+from tortoise.models import Model
+
+from fastadmin import DashboardWidgetAdmin, DashboardWidgetType, WidgetType, register_widget
 
 
 class DashboardUser(Model):
@@ -13,7 +13,7 @@ class DashboardUser(Model):
     is_active = fields.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register_widget
@@ -35,11 +35,11 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
         conn = Tortoise.get_connection("default")
 
         if not min_x_field:
-            min_x_field_date = datetime.utcnow() - timedelta(days=360)
+            min_x_field_date = datetime.now(timezone.utc) - timedelta(days=360)
         else:
             min_x_field_date = datetime.fromisoformat(min_x_field.replace("Z", "+00:00"))
         if not max_x_field:
-            max_x_field_date = datetime.utcnow() + timedelta(days=1)
+            max_x_field_date = datetime.now(timezone.utc) + timedelta(days=1)
         else:
             max_x_field_date = datetime.fromisoformat(max_x_field.replace("Z", "+00:00"))
 

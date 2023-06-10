@@ -1,18 +1,12 @@
 import bcrypt
-from sqlalchemy import (
-    Boolean,
-    String,
-    Integer,
-    select,
-)
+from sqlalchemy import Boolean, Integer, String, select
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from fastadmin import SqlAlchemyModelAdmin, register
 
-
 sqlalchemy_engine = create_async_engine(
-    f"sqlite+aiosqlite:///:memory:",
+    "sqlite+aiosqlite:///:memory:",
     echo=True,
 )
 sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
@@ -32,7 +26,7 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
