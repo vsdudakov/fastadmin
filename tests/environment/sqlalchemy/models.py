@@ -1,7 +1,7 @@
 import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
 from sqlalchemy import (
     JSON,
@@ -64,7 +64,7 @@ class User(BaseModel):
     password: Mapped[str] = mapped_column(String(length=255), nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    events: Mapped[List["Event"]] = relationship(secondary=user_m2m_event, back_populates="participants")
+    events: Mapped[list["Event"]] = relationship(secondary=user_m2m_event, back_populates="participants")
 
     async def __str__(self):
         return self.username
@@ -75,7 +75,7 @@ class Tournament(BaseModel):
 
     name: Mapped[str] = mapped_column(String(length=255), nullable=False)
 
-    events: Mapped[List["Event"]] = relationship(back_populates="tournament")
+    events: Mapped[list["Event"]] = relationship(back_populates="tournament")
 
     async def __str__(self):
         return self.name
@@ -90,29 +90,29 @@ class BaseEvent(BaseModel):
 class Event(BaseModel):
     __tablename__ = "event"
 
-    base_id: Mapped[Optional[int]] = mapped_column(ForeignKey("base_event.id"), nullable=True)
+    base_id: Mapped[int | None] = mapped_column(ForeignKey("base_event.id"), nullable=True)
     base: Mapped[Optional["BaseEvent"]] = relationship(back_populates="event")
 
     name: Mapped[str] = mapped_column(String(length=255), nullable=False)
 
-    tournament_id: Mapped[Optional[int]] = mapped_column(ForeignKey("tournament.id"), nullable=False)
+    tournament_id: Mapped[int | None] = mapped_column(ForeignKey("tournament.id"), nullable=False)
     tournament: Mapped[Optional["Tournament"]] = relationship(back_populates="events")
 
     participants: Mapped[list["User"]] = relationship(secondary=user_m2m_event, back_populates="events")
 
     rating: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=False)
     event_type: Mapped[EventTypeEnum] = mapped_column(default=EventTypeEnum.PUBLIC)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    start_time: Mapped[Optional[datetime.time]] = mapped_column(Time, nullable=True)
-    date: Mapped[Optional[datetime.date]] = mapped_column(Date, nullable=True)
-    latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    price: Mapped[Optional[Decimal]] = mapped_column(
+    start_time: Mapped[datetime.time | None] = mapped_column(Time, nullable=True)
+    date: Mapped[datetime.date | None] = mapped_column(Date, nullable=True)
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    price: Mapped[Decimal | None] = mapped_column(
         Float(asdecimal=True), nullable=True
     )  # max_digits=10, decimal_places=2
 
-    json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     async def __str__(self):
         return self.name

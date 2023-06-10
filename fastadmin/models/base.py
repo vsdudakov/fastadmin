@@ -20,7 +20,7 @@ class BaseModelAdmin:
     model_name_prefix: str | None = None
 
     # A list of actions to make available on the change list page.
-    # You have to implement methods with names like action_name in your ModelAdmin class and decorate them with @action decorator.  # noqa: E501
+    # You have to implement methods with names like action_name in your ModelAdmin class and decorate them with @action decorator.
     # Example of usage:
     #
     # actions = ("make_published",)
@@ -32,23 +32,23 @@ class BaseModelAdmin:
     actions: Sequence[str] = ()
 
     # Controls where on the page the actions bar appears.
-    # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).  # noqa: E501
+    # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).
     # Example of usage: actions_on_top = True
     actions_on_top: bool = False
 
     # Controls where on the page the actions bar appears.
-    # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).  # noqa: E501
+    # By default, the admin changelist displays actions at the top of the page (actions_on_top = False; actions_on_bottom = True).
     # Example of usage: actions_on_bottom = False
     actions_on_bottom: bool = True
 
-    # Controls whether a selection counter is displayed next to the action dropdown. By default, the admin changelist will display it  # noqa: E501
+    # Controls whether a selection counter is displayed next to the action dropdown. By default, the admin changelist will display it
     # Example of usage: actions_selection_counter = False
     actions_selection_counter: bool = True
 
     # Not supported setting
     # date_hierarchy
 
-    # This attribute overrides the default display value for record’s fields that are empty (None, empty string, etc.). The default value is - (a dash).  # noqa: E501
+    # This attribute overrides the default display value for record's fields that are empty (None, empty string, etc.). The default value is - (a dash).
     # Example of usage: empty_value_display = "N/A"
     empty_value_display: str = "-"
 
@@ -63,17 +63,17 @@ class BaseModelAdmin:
     fields: Sequence[str] = ()
 
     # Set fieldsets to control the layout of admin “add” and “change” pages.
-    # fieldsets is a list of two-tuples, in which each two-tuple represents a fieldset on the admin form page. (A fieldset is a “section” of the form.)  # noqa: E501
+    # fieldsets is a list of two-tuples, in which each two-tuple represents a fieldset on the admin form page. (A fieldset is a “section” of the form.)
     fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] = ()
 
     # By default, a ManyToManyField is displayed in the admin dashboard with a select multiple.
     # However, multiple-select boxes can be difficult to use when selecting many items.
-    # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.  # noqa: E501
-    # The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.  # noqa: E501
+    # Adding a ManyToManyField to this list will instead use a nifty unobtrusive JavaScript “filter” interface that allows searching within the options.
+    # The unselected and selected options appear in two boxes side by side. See filter_vertical to use a vertical interface.
     # Example of usage: filter_horizontal = ("groups", "user_permissions")
     filter_horizontal: Sequence[str] = ()
 
-    # Same as filter_horizontal, but uses a vertical display of the filter interface with the box of unselected options appearing above the box of selected options.  # noqa: E501
+    # Same as filter_horizontal, but uses a vertical display of the filter interface with the box of unselected options appearing above the box of selected options.
     # Example of usage: filter_vertical = ("groups", "user_permissions")
     filter_vertical: Sequence[str] = ()
 
@@ -90,11 +90,11 @@ class BaseModelAdmin:
     formfield_overrides: dict[str, tuple[WidgetType, dict]] = {}
 
     # Set list_display to control which fields are displayed on the list page of the admin.
-    # If you don’t set list_display, the admin site will display a single column that displays the __str__() representation of each object  # noqa: E501
+    # If you don't set list_display, the admin site will display a single column that displays the __str__() representation of each object
     # Example of usage: list_display = ("id", "mobile_number", "email", "is_superuser", "is_active", "created_at")
     list_display: Sequence[str] = ()
 
-    # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.  # noqa: E501
+    # Use list_display_links to control if and which fields in list_display should be linked to the “change” page for an object.
     # Example of usage: list_display_links = ("id", "mobile_number", "email")
     list_display_links: Sequence[str] = ()
 
@@ -116,21 +116,21 @@ class BaseModelAdmin:
     preserve_filters: bool = True
 
     # Set list_max_show_all to control how many items can appear on a “Show all” admin change list page.
-    # The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.  # noqa: E501
+    # The admin will display a “Show all” link on the change list only if the total result count is less than or equal to this setting. By default, this is set to 200.
     # Example of usage: list_max_show_all = 100
     list_max_show_all: int = 200
 
-    # Set list_per_page to control how many items appear on each paginated admin list page. By default, this is set to 10.  # noqa: E501
+    # Set list_per_page to control how many items appear on each paginated admin list page. By default, this is set to 10.
     # Example of usage: list_per_page = 50
     list_per_page = 10
 
-    # Set list_select_related to tell ORM to use select_related() in retrieving the list of objects on the admin list page.  # noqa: E501
+    # Set list_select_related to tell ORM to use select_related() in retrieving the list of objects on the admin list page.
     # This can save you a bunch of database queries.
     # Example of usage: list_select_related = ("user",)
     list_select_related: Sequence[str] = ()
 
     # Set ordering to specify how lists of objects should be ordered in the admin views.
-    # This should be a list or tuple in the same format as a model’s ordering parameter.
+    # This should be a list or tuple in the same format as a model's ordering parameter.
     # Example of usage: ordering = ("-created_at",)
     ordering: Sequence[str] = ()
 
@@ -145,7 +145,7 @@ class BaseModelAdmin:
     # (e.g. substituting dashes for spaces and lowercasing ASCII letters).
     # prepopulated_fields: dict[str, Sequence[str]] = {}
 
-    # By default, FastAPI admin uses a select-box interface (select) for fields that are ForeignKey or have choices set.  # noqa: E501
+    # By default, FastAPI admin uses a select-box interface (select) for fields that are ForeignKey or have choices set.
     # If a field is present in radio_fields, FastAPI admin will use a radio-button interface instead.
     # Example of usage: radio_fields = ("user",)
     radio_fields: Sequence[str] = ()
@@ -154,8 +154,8 @@ class BaseModelAdmin:
     # autocomplete_fields
 
     # By default, FastAPI admin uses a select-box interface (select) for fields that are ForeignKey.
-    # Sometimes you don’t want to incur the overhead of having to select all the related instances to display in the drop-down.  # noqa: E501
-    # raw_id_fields is a list of fields you would like to change into an Input widget for either a ForeignKey or ManyToManyField.  # noqa: E501
+    # Sometimes you don't want to incur the overhead of having to select all the related instances to display in the drop-down.
+    # raw_id_fields is a list of fields you would like to change into an Input widget for either a ForeignKey or ManyToManyField.
     # Example of usage: raw_id_fields = ("user",)
     raw_id_fields: Sequence[str] = ()
 
@@ -165,7 +165,7 @@ class BaseModelAdmin:
     readonly_fields: Sequence[str] = ()
 
     # Set search_fields to enable a search box on the admin list page.
-    # This should be set to a list of field names that will be searched whenever somebody submits a search query in that text box.  # noqa: E501
+    # This should be set to a list of field names that will be searched whenever somebody submits a search query in that text box.
     # Example of usage: search_fields = ("mobile_number", "email")
     search_fields: Sequence[str] = ()
 
@@ -185,6 +185,12 @@ class BaseModelAdmin:
     # An empty collection disables sorting for all columns.
     # Example of usage: sortable_by = ("mobile_number", "email")
     sortable_by: Sequence[str] = ()
+
+    # An override to the verbose_name from the model's inner Meta class.
+    verbose_name: str | None = None
+
+    # An override to the verbose_name_plural from the model's inner Meta class.
+    verbose_name_plural: str | None = None
 
     def __init__(self, model_cls: Any):
         """This method is used to initialize admin class.
@@ -296,7 +302,7 @@ class BaseModelAdmin:
 
         :return: A db session maker.
         """
-        return getattr(cls, "db_session_maker")
+        return cls.db_session_maker
 
     @classmethod
     def set_sessionmaker(cls, db_session_maker: Any) -> None:
@@ -305,7 +311,7 @@ class BaseModelAdmin:
         :params db_session: a db session maker.
         :return: None.
         """
-        setattr(cls, "db_session_maker", db_session_maker)
+        cls.db_session_maker = db_session_maker
 
     def get_fields_for_serialize(self) -> set[str]:
         """This method is used to get fields for serialize.
@@ -474,27 +480,33 @@ class BaseModelAdmin:
         fields = self.get_model_fields_with_widget_types(with_m2m=False)
 
         export_fields = [f.name for f in fields]
-        output = StringIO()
-        if not export_format or export_format == ExportFormat.CSV:
-            writer = csv.DictWriter(output, fieldnames=export_fields)
-            writer.writeheader()
-            for obj in objs:
-                obj_dict = await self.serialize_obj(obj, list_view=True)
-                obj_dict = {k: v for k, v in obj_dict.items() if k in export_fields}
-                writer.writerow(obj_dict)
-        if not export_format or export_format == ExportFormat.JSON:
 
-            class JSONEncoder(json.JSONEncoder):
-                def default(self, obj):
-                    try:
-                        return super().default(obj)
-                    except TypeError:
-                        return str(obj)
+        match export_format:
+            case ExportFormat.CSV:
+                output = StringIO()
+                writer = csv.DictWriter(output, fieldnames=export_fields)
+                writer.writeheader()
+                for obj in objs:
+                    obj_dict = await self.serialize_obj(obj, list_view=True)
+                    obj_dict = {k: v for k, v in obj_dict.items() if k in export_fields}
+                    writer.writerow(obj_dict)
+                output.seek(0)
+                return output
+            case ExportFormat.JSON:
 
-            json.dump([await self.serialize_obj(obj, list_view=True) for obj in objs], output, cls=JSONEncoder)
+                class JSONEncoder(json.JSONEncoder):
+                    def default(self, obj):
+                        try:
+                            return super().default(obj)
+                        except TypeError:
+                            return str(obj)
 
-        output.seek(0)
-        return output
+                output = StringIO()
+                json.dump([await self.serialize_obj(obj, list_view=True) for obj in objs], output, cls=JSONEncoder)
+                output.seek(0)
+                return output
+            case _:
+                return None
 
     def has_add_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to add new model instance.
@@ -541,18 +553,12 @@ class InlineModelAdmin(BaseModelAdmin):
     fk_name: str | None = None
 
     # This controls the maximum number of forms to show in the inline.
-    # This doesn’t directly correlate to the number of objects, but can if the value is small enough.
+    # This doesn't directly correlate to the number of objects, but can if the value is small enough.
     # See Limiting the number of editable objects for more information.
     max_num: int = 10
 
     # This controls the minimum number of forms to show in the inline.
     min_num: int = 1
-
-    # An override to the verbose_name from the model’s inner Meta class.
-    verbose_name: str | None = None
-
-    # An override to the verbose_name_plural from the model’s inner Meta class.
-    verbose_name_plural: str | None = None
 
 
 class ModelAdmin(BaseModelAdmin):
@@ -564,7 +570,7 @@ class ModelAdmin(BaseModelAdmin):
     # Example of usage: save_as = True
     save_as: bool = False
 
-    # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.  # noqa: E501
+    # When save_as_continue=True, the default redirect after saving the new object is to the change view for that object.
     # If you set save_as_continue=False, the redirect will be to the changelist view.
     # Example of usage: save_as_continue = False
     save_as_continue: bool = False

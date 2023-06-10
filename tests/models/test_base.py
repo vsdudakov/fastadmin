@@ -99,4 +99,4 @@ async def test_get_fields_for_serialize(mocker):
 
     mocker.patch.object(base, "orm_get_list", return_value=([], 0))
     mocker.patch.object(base, "get_model_fields_with_widget_types", return_value=[])
-    await base.get_export("wrong_format") is None
+    assert await base.get_export("wrong_format") is None

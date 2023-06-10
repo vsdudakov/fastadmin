@@ -11,13 +11,15 @@ def sanitize_filter_value(value: str) -> bool | None | str:
     :params value: a value.
     :return: A sanitized value.
     """
-    if value == "false":
-        return False
-    elif value == "true":
-        return True
-    elif value == "null":
-        return None
-    return value
+    match value:
+        case "false":
+            return False
+        case "true":
+            return True
+        case "null":
+            return None
+        case _:
+            return value
 
 
 def sanitize_filter_key(key: str, fields: list[ModelFieldWidgetSchema]) -> tuple[str, str]:

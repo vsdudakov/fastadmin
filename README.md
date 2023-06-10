@@ -133,7 +133,7 @@ Install the package using pip:
 
 
 
-Note: For zsh and macos use: <code>pip install fastadmin\[fastapi,django\]</code>
+Note: For zsh and macos use: <code>pip install fastadmin[fastapi,django]</code>
 
 
 
@@ -314,8 +314,8 @@ Setup FastAdmin for a framework
 
 ```python
 from fastapi import FastAPI
-from fastadmin import fastapi_app as admin_app
 
+from fastadmin import fastapi_app as admin_app
 
 app = FastAPI()
 
@@ -373,8 +373,8 @@ urlpatterns = [
 
 ```python
 from flask import Flask
-from fastadmin import flask_app as admin_app
 
+from fastadmin import flask_app as admin_app
 
 app = Flask(__name__)
 
@@ -433,13 +433,13 @@ Register ORM models
 
 
 ```python
-import bcrypt
 from uuid import UUID
 
-from tortoise.models import Model
+import bcrypt
 from tortoise import fields
+from tortoise.models import Model
 
-from fastadmin import register, TortoiseModelAdmin
+from fastadmin import TortoiseModelAdmin, register
 
 
 class User(Model):
@@ -449,7 +449,7 @@ class User(Model):
     is_active = fields.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(User)
@@ -501,7 +501,7 @@ class User(models.Model):
     is_active = models.BooleanField(default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(User)
@@ -542,20 +542,14 @@ class UserAdmin(DjangoModelAdmin):
 
 ```python
 import bcrypt
-from sqlalchemy import (
-    Boolean,
-    String,
-    Integer,
-    select,
-)
+from sqlalchemy import Boolean, Integer, String, select
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from fastadmin import SqlAlchemyModelAdmin, register
 
-
 sqlalchemy_engine = create_async_engine(
-    f"sqlite+aiosqlite:///:memory:",
+    "sqlite+aiosqlite:///:memory:",
     echo=True,
 )
 sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
@@ -575,7 +569,7 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
@@ -628,7 +622,7 @@ db = Database()
 db.bind(provider="sqlite", filename=":memory:", create_db=True)
 
 
-class User(db.Entity):
+class User(db.Entity):  # type: ignore [name-defined]
     _table_ = "user"
     id = PrimaryKey(int, auto=True)
     username = Required(str)
@@ -637,7 +631,7 @@ class User(db.Entity):
     is_active = Required(bool, default=False)
 
     def __str__(self):
-      return self.username
+        return self.username
 
 
 @register(User)

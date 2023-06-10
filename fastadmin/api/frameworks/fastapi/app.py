@@ -1,5 +1,4 @@
 import logging
-import os
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -17,7 +16,7 @@ app = FastAPI(
 )
 app.mount(
     "/static",
-    StaticFiles(directory=os.path.join(ROOT_DIR, "static")),
+    StaticFiles(directory=str(ROOT_DIR / "static")),
     name="static",
 )
 app.include_router(api_router)

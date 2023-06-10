@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from flask import Flask
@@ -13,8 +13,8 @@ async def test_exception_handler():
 
 
 async def test_json_provider():
-    today = date.today()
-    now = datetime.now()
+    today = datetime.now(timezone.utc).date()
+    now = datetime.now(timezone.utc)
     uuid = uuid4()
     app = Flask(__name__)
     assert JSONProvider(app).default(today) == today.isoformat()

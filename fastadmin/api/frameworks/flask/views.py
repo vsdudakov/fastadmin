@@ -17,4 +17,4 @@ def index():
 
     :return: A response object.
     """
-    return render_template("index.html", **{"request": request, "settings": settings})
+    return render_template("index.html", request=request, settings=settings)

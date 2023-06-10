@@ -1,4 +1,5 @@
 import logging
+from dataclasses import asdict
 from uuid import UUID
 
 from flask import Blueprint, Response, make_response, request
@@ -81,7 +82,7 @@ async def me() -> dict:
         raise http_exception
 
 
-@api_router.route("/dashboard-widge/<string:model>", methods=["GET"])
+@api_router.route("/dashboard-widget/<string:model>", methods=["GET"])
 async def dashboard_widget(model: str) -> dict:
     """This method is used to get a dashboard widget data.
 
@@ -112,7 +113,7 @@ async def dashboard_widget(model: str) -> dict:
 
 
 @api_router.route("/list/<string:model>", methods=["GET"])
-async def list(model: str) -> dict:
+async def list_objs(model: str) -> dict:
     """This method is used to get a list of objects.
 
     :params request: a request object.
@@ -123,12 +124,12 @@ async def list(model: str) -> dict:
     :params limit: a limit.
     :return: A list of objects.
     """
-    filters = request.args.to_dict()
-    search = filters.get("search", None)
-    sort_by = filters.get("sort_by", None)
-    offset = int(filters.get("offset", 0))
-    limit = int(filters.get("limit", 10))
     try:
+        filters = request.args.to_dict()
+        search = filters.get("search", None)
+        sort_by = filters.get("sort_by", None)
+        offset = int(filters.get("offset", 0))
+        limit = int(filters.get("limit", 10))
         objs, total = await api_service.list(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
@@ -142,6 +143,10 @@ async def list(model: str) -> dict:
             "total": total,
             "results": objs,
         }
+    except ValueError:
+        http_exception = HTTPException("Invalid format of get parameters")
+        http_exception.code = 422
+        raise http_exception
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -193,7 +198,7 @@ async def add(model: str) -> dict:
         raise http_exception
 
 
-@api_router.route("/change-password/<string:id>", methods=["PATCH"])  # type: ignore
+@api_router.route("/change-password/<string:id>", methods=["PATCH"])  # type: ignore [type-var]
 async def change_password(id: UUID | int) -> UUID | int:
     """This method is used to change password.
 
@@ -280,7 +285,7 @@ async def export(model: str) -> Response:
         raise http_exception
 
 
-@api_router.route("/delete/<string:model>/<string:id>", methods=["DELETE"])  # type: ignore
+@api_router.route("/delete/<string:model>/<string:id>", methods=["DELETE"])  # type: ignore [type-var]
 async def delete(
     model: str,
     id: UUID | int,
@@ -307,7 +312,7 @@ async def delete(
         raise http_exception
 
 
-@api_router.route("/action/<string:model>/<string:action>", methods=["POST"])  # type: ignore
+@api_router.route("/action/<string:model>/<string:action>", methods=["POST"])
 async def action(
     model: str,
     action: str,
@@ -345,4 +350,4 @@ async def configuration() -> dict:
     obj = await api_service.get_configuration(
         request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
     )
-    return obj.dict()
+    return asdict(obj)

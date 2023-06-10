@@ -330,10 +330,10 @@ class TortoiseMixin:
         await m2m_rel.clear()
         remote_model = m2m_rel.remote_model
         remote_model_objs = []
-        for id in ids:
+        for rel_id in ids:
             remote_model_obj = remote_model()
-            setattr(remote_model_obj, self.get_model_pk_name(remote_model), id)
-            setattr(remote_model_obj, "_saved_in_db", True)
+            setattr(remote_model_obj, self.get_model_pk_name(remote_model), rel_id)
+            remote_model_obj._saved_in_db = True
             remote_model_objs.append(remote_model_obj)
         await m2m_rel.add(*remote_model_objs)
 
@@ -346,7 +346,7 @@ class TortoiseMixin:
 
         :return: A list of ids.
         """
-        pass
+        ...
 
 
 class TortoiseModelAdmin(TortoiseMixin, ModelAdmin):

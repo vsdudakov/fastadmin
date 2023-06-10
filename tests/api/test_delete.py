@@ -8,8 +8,8 @@ async def test_delete(session_id, event, client):
         f"/api/delete/{event.get_model_name()}/{event.id}",
     )
     assert r.status_code == 200, r.text
-    id = r.json()
-    assert str(id) == str(event.id)
+    obj_id = r.json()
+    assert str(obj_id) == str(event.id)
 
 
 async def test_configuration_405(session_id, event, client):
