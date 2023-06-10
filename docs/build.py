@@ -39,9 +39,15 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
-            "version": "0.1.39",
+            "version": "0.1.40",
             "changes": [
                 "Added RUFF linter. Cleaned up code. Removed pydantic dependency.",
+            ],
+        },
+        {
+            "version": "0.1.39",
+            "changes": [
+                "Bug fixes.",
             ],
         },
         {
