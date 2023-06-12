@@ -30,6 +30,7 @@ class Settings(BaseSettings):
         default="admin",
         description="The prefix you used for mounting FastAdmin app for FastAPI.",
     )
+
     SITE_NAME: str = Field(
         default="FastAdmin",
         description="The site name on sign-in page and on header.",
