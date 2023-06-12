@@ -117,20 +117,20 @@ class SqlAlchemyMixin:
                     filter_widget_type = WidgetType.InputNumber
                 case "Date":
                     form_widget_type = WidgetType.DatePicker
-                    form_widget_props["format"] = settings.ADMIN_DATE_FORMAT
+                    form_widget_props["format"] = settings.DATE_FORMAT
                     filter_widget_type = WidgetType.RangePicker
-                    filter_widget_props["format"] = settings.ADMIN_DATE_FORMAT
+                    filter_widget_props["format"] = settings.DATE_FORMAT
                 case "DateTime":
                     form_widget_type = WidgetType.DateTimePicker
-                    form_widget_props["format"] = settings.ADMIN_DATETIME_FORMAT
+                    form_widget_props["format"] = settings.DATETIME_FORMAT
                     filter_widget_type = WidgetType.RangePicker
-                    filter_widget_props["format"] = settings.ADMIN_DATETIME_FORMAT
+                    filter_widget_props["format"] = settings.DATETIME_FORMAT
                     filter_widget_props["showTime"] = True
                 case "Time":
                     form_widget_type = WidgetType.TimePicker
-                    form_widget_props["format"] = settings.ADMIN_TIME_FORMAT
+                    form_widget_props["format"] = settings.TIME_FORMAT
                     filter_widget_type = WidgetType.RangePicker
-                    filter_widget_props["format"] = settings.ADMIN_TIME_FORMAT
+                    filter_widget_props["format"] = settings.TIME_FORMAT
                     filter_widget_props["showTime"] = True
                 case "Enum":
                     form_widget_props["options"] = [{"label": k, "value": v} for k, v in choices.items()]

@@ -62,12 +62,12 @@ async def sign_in(request: HttpRequest) -> JsonResponse:
     try:
         payload = SignInInputSchema(**json.loads(request.body))
         session_id = await api_service.sign_in(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
             payload,
         )
 
         response = JsonResponse({})
-        response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
+        response.set_cookie(settings.SESSION_ID_KEY, value=session_id, httponly=True)
         return response
 
     except AdminApiException as e:
@@ -86,9 +86,9 @@ async def sign_out(request: HttpRequest) -> JsonResponse:
     try:
         response = JsonResponse({})
         if await api_service.sign_out(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
         ):
-            response.delete_cookie(settings.ADMIN_SESSION_ID_KEY)
+            response.delete_cookie(settings.SESSION_ID_KEY)
         return response
 
     except AdminApiException as e:
@@ -106,12 +106,12 @@ async def me(request: HttpRequest) -> JsonResponse:
         return JsonResponse({"error": "Method not allowed"}, status=405)
     try:
         user_id = await get_user_id_from_session_id(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
         )
         if not user_id:
             raise AdminApiException(401, "User is not authenticated.")
         obj = await api_service.get(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None), settings.ADMIN_USER_MODEL, user_id
+            request.COOKIES.get(settings.SESSION_ID_KEY, None), settings.USER_MODEL, user_id
         )
         return JsonResponse(obj)
 
@@ -138,7 +138,7 @@ async def dashboard_widget(request: HttpRequest, model: str) -> JsonResponse:
 
     try:
         data = await api_service.dashboard_widget(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
             model,
             min_x_field=min_x_field,
             max_x_field=max_x_field,
@@ -171,7 +171,7 @@ async def list_objs(request: HttpRequest, model: str) -> JsonResponse:
         limit = int(filters.get("limit", 10))
 
         objs, total = await api_service.list(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
             model,
             search=search,
             sort_by=sort_by,
@@ -205,7 +205,7 @@ async def get(request: HttpRequest, model: str, id: UUID | int) -> JsonResponse:
         return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
     try:
         obj = await api_service.get(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
             model,
             id,
         )
@@ -227,7 +227,7 @@ async def add(request: HttpRequest, model: str) -> JsonResponse:
         return JsonResponse({"error": "Method not allowed"}, status=405)
     try:
         obj = await api_service.add(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
             model,
             json.loads(request.body),
         )
@@ -250,7 +250,7 @@ async def change_password(request: HttpRequest, id: UUID | int) -> JsonResponse:
         return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
     try:
         await api_service.change_password(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
             id,
             json.loads(request.body),
         )
@@ -275,7 +275,7 @@ async def change(request: HttpRequest, model: str, id: UUID | int) -> JsonRespon
         return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
     try:
         obj = await api_service.change(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
             model,
             id,
             json.loads(request.body),
@@ -305,7 +305,7 @@ async def export(request: HttpRequest, model: str) -> JsonResponse:
     try:
         payload = ExportInputSchema(**json.loads(request.body))
         file_name, content_type, stream = await api_service.export(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
             model,
             payload,
             search=search,
@@ -338,7 +338,7 @@ async def delete(
         return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
     try:
         deleted_id = await api_service.delete(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
             model,
             id,
         )
@@ -366,7 +366,7 @@ async def action(
     try:
         payload = ActionInputSchema(**json.loads(request.body))
         await api_service.action(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.COOKIES.get(settings.SESSION_ID_KEY, None),
             model,
             action,
             payload,
@@ -388,6 +388,6 @@ async def configuration(request: HttpRequest) -> JsonResponse:
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
     obj = await api_service.get_configuration(
-        request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+        request.COOKIES.get(settings.SESSION_ID_KEY, None),
     )
     return JsonResponse(asdict(obj))

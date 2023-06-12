@@ -66,12 +66,12 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
     if not session_id:
         return None
 
-    admin_model = get_admin_model(settings.ADMIN_USER_MODEL)
+    admin_model = get_admin_model(settings.USER_MODEL)
     if not admin_model:
         return None
 
     try:
-        token_payload = jwt.decode(session_id, settings.ADMIN_SECRET_KEY, algorithms=["HS256"])
+        token_payload = jwt.decode(session_id, settings.SECRET_KEY, algorithms=["HS256"])
     except jwt.PyJWTError:
         return None
 
@@ -99,7 +99,7 @@ class ApiService:
         session_id: str | None,
         payload: SignInInputSchema,
     ) -> str:
-        model = settings.ADMIN_USER_MODEL
+        model = settings.USER_MODEL
         admin_model = get_admin_model(model)
         if not admin_model:
             raise AdminApiException(401, detail=f"{model} model is not registered.")
@@ -115,7 +115,7 @@ class ApiService:
             raise AdminApiException(401, detail="Invalid credentials.")
 
         now = datetime.now(timezone.utc)
-        session_expired_at = now + timedelta(seconds=settings.ADMIN_SESSION_EXPIRED_AT)
+        session_expired_at = now + timedelta(seconds=settings.SESSION_EXPIRED_AT)
         if isinstance(user_id, UUID):
             user_id = str(user_id)
         return jwt.encode(
@@ -123,7 +123,7 @@ class ApiService:
                 "user_id": user_id,
                 "session_expired_at": session_expired_at.isoformat(),
             },
-            settings.ADMIN_SECRET_KEY,
+            settings.SECRET_KEY,
             algorithm="HS256",
         )
 
@@ -286,9 +286,9 @@ class ApiService:
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
 
-        admin_model = get_admin_model(settings.ADMIN_USER_MODEL)
+        admin_model = get_admin_model(settings.USER_MODEL)
         if not admin_model:
-            raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} model is not registered.")
+            raise AdminApiException(404, detail=f"{settings.USER_MODEL} model is not registered.")
 
         payload = ChangePasswordInputSchema(**payload)
         if payload.password != payload.confirm_password:
@@ -296,7 +296,7 @@ class ApiService:
 
         if not hasattr(admin_model, "change_password"):
             raise AdminApiException(
-                404, detail=f"{settings.ADMIN_USER_MODEL} admin class has no change_password method."
+                404, detail=f"{settings.USER_MODEL} admin class has no change_password method."
             )
 
         if inspect.iscoroutinefunction(admin_model.change_password):
@@ -416,7 +416,7 @@ class ApiService:
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
-        if str(current_user_id) == str(id) and model == settings.ADMIN_USER_MODEL:
+        if str(current_user_id) == str(id) and model == settings.USER_MODEL:
             raise AdminApiException(403, detail="You cannot delete yourself.")
         await admin_model.delete_model(id)
         return id
@@ -451,14 +451,14 @@ class ApiService:
         current_user_id = await get_user_id_from_session_id(session_id)
         if not current_user_id:
             return ConfigurationSchema(
-                site_name=settings.ADMIN_SITE_NAME,
-                site_sign_in_logo=settings.ADMIN_SITE_SIGN_IN_LOGO,
-                site_header_logo=settings.ADMIN_SITE_HEADER_LOGO,
-                site_favicon=settings.ADMIN_SITE_FAVICON,
-                primary_color=settings.ADMIN_PRIMARY_COLOR,
-                username_field=settings.ADMIN_USER_MODEL_USERNAME_FIELD,
-                date_format=settings.ADMIN_DATE_FORMAT,
-                datetime_format=settings.ADMIN_DATETIME_FORMAT,
+                site_name=settings.SITE_NAME,
+                site_sign_in_logo=settings.SITE_SIGN_IN_LOGO,
+                site_header_logo=settings.SITE_HEADER_LOGO,
+                site_favicon=settings.SITE_FAVICON,
+                primary_color=settings.PRIMARY_COLOR,
+                username_field=settings.USER_MODEL_USERNAME_FIELD,
+                date_format=settings.DATE_FORMAT,
+                datetime_format=settings.DATETIME_FORMAT,
                 models=[],
                 dashboard_widgets=[],
             )
@@ -467,14 +467,14 @@ class ApiService:
         models = cast(Sequence[ModelSchema], generate_models_schema(admin_models, user_id=current_user_id))
         dashboard_widgets = generate_dashboard_widgets_schema()
         return ConfigurationSchema(
-            site_name=settings.ADMIN_SITE_NAME,
-            site_sign_in_logo=settings.ADMIN_SITE_SIGN_IN_LOGO,
-            site_header_logo=settings.ADMIN_SITE_HEADER_LOGO,
-            site_favicon=settings.ADMIN_SITE_FAVICON,
-            primary_color=settings.ADMIN_PRIMARY_COLOR,
-            username_field=settings.ADMIN_USER_MODEL_USERNAME_FIELD,
-            date_format=settings.ADMIN_DATE_FORMAT,
-            datetime_format=settings.ADMIN_DATETIME_FORMAT,
+            site_name=settings.SITE_NAME,
+            site_sign_in_logo=settings.SITE_SIGN_IN_LOGO,
+            site_header_logo=settings.SITE_HEADER_LOGO,
+            site_favicon=settings.SITE_FAVICON,
+            primary_color=settings.PRIMARY_COLOR,
+            username_field=settings.USER_MODEL_USERNAME_FIELD,
+            date_format=settings.DATE_FORMAT,
+            datetime_format=settings.DATETIME_FORMAT,
             models=models,
             dashboard_widgets=dashboard_widgets,
         )  # type: ignore [call-arg]

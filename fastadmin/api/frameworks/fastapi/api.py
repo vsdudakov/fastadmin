@@ -32,11 +32,11 @@ async def sign_in(
 
     try:
         session_id = await api_service.sign_in(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.cookies.get(settings.SESSION_ID_KEY, None),
             payload,
         )
 
-        response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
+        response.set_cookie(settings.SESSION_ID_KEY, value=session_id, httponly=True)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
 
@@ -54,9 +54,9 @@ async def sign_out(
     """
     try:
         if await api_service.sign_out(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.cookies.get(settings.SESSION_ID_KEY, None),
         ):
-            response.delete_cookie(settings.ADMIN_SESSION_ID_KEY)
+            response.delete_cookie(settings.SESSION_ID_KEY)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
 
@@ -72,12 +72,12 @@ async def me(
     """
     try:
         user_id = await get_user_id_from_session_id(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.cookies.get(settings.SESSION_ID_KEY, None),
         )
         if not user_id:
             raise AdminApiException(401, "User is not authenticated.")
         return await api_service.get(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), settings.ADMIN_USER_MODEL, user_id
+            request.cookies.get(settings.SESSION_ID_KEY, None), settings.USER_MODEL, user_id
         )
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
@@ -101,7 +101,7 @@ async def dashboard_widget(
     """
     try:
         data = await api_service.dashboard_widget(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.cookies.get(settings.SESSION_ID_KEY, None),
             model,
             min_x_field=min_x_field,
             max_x_field=max_x_field,
@@ -133,7 +133,7 @@ async def list_objs(
     """
     try:
         objs, total = await api_service.list(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.cookies.get(settings.SESSION_ID_KEY, None),
             model,
             search=search,
             sort_by=sort_by,
@@ -163,7 +163,7 @@ async def get(
     """
     try:
         return await api_service.get(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.cookies.get(settings.SESSION_ID_KEY, None),
             model,
             id,
         )
@@ -185,7 +185,7 @@ async def add(
     """
     try:
         return await api_service.add(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.cookies.get(settings.SESSION_ID_KEY, None),
             model,
             payload,
         )
@@ -206,7 +206,7 @@ async def change_password(
     :return: An object.
     """
     try:
-        await api_service.change_password(request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), id, payload)
+        await api_service.change_password(request.cookies.get(settings.SESSION_ID_KEY, None), id, payload)
         return id
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
@@ -227,7 +227,7 @@ async def change(
     :return: An object.
     """
     try:
-        return await api_service.change(request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), model, id, payload)
+        return await api_service.change(request.cookies.get(settings.SESSION_ID_KEY, None), model, id, payload)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
 
@@ -251,7 +251,7 @@ async def export(
     """
     try:
         file_name, content_type, stream = await api_service.export(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.cookies.get(settings.SESSION_ID_KEY, None),
             model,
             payload,
             search=search,
@@ -282,7 +282,7 @@ async def delete(
     """
     try:
         return await api_service.delete(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.cookies.get(settings.SESSION_ID_KEY, None),
             model,
             id,
         )
@@ -306,7 +306,7 @@ async def action(
     """
     try:
         return await api_service.action(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request.cookies.get(settings.SESSION_ID_KEY, None),
             model,
             action,
             payload,
@@ -325,5 +325,5 @@ async def configuration(
     :return: A configuration.
     """
     return await api_service.get_configuration(
-        request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+        request.cookies.get(settings.SESSION_ID_KEY, None),
     )

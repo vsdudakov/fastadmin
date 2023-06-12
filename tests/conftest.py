@@ -420,7 +420,7 @@ async def client(request, fastapi_client, flask_client, django_client):
 
 @pytest.fixture()
 async def session_id(superuser, client):
-    settings.ADMIN_USER_MODEL = superuser.get_model_name()
+    settings.USER_MODEL = superuser.get_model_name()
     r = await client.post(
         "/api/sign-in",
         json={
@@ -431,7 +431,7 @@ async def session_id(superuser, client):
     assert r.status_code == 200, r.text
     assert not r.json(), r.json()
 
-    yield r.cookies[settings.ADMIN_SESSION_ID_KEY]
+    yield r.cookies[settings.SESSION_ID_KEY]
 
     r = await client.post("/api/sign-out")
     assert r.status_code == 200, r.text

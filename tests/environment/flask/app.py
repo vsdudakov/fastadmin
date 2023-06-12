@@ -7,4 +7,4 @@ from fastadmin.settings import settings
 app = Flask(__name__)
 # TODO: works only here not on blueprint
 app.json = JSONProvider(app)
-app.register_blueprint(admin_app, url_prefix=f"/{settings.ADMIN_PREFIX}")
+app.register_blueprint(admin_app, url_prefix=f"/{settings.PREFIX}")

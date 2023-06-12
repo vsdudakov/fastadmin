@@ -18,14 +18,14 @@ LIST_EVENT_FIELDS = [
 
 def validate_configuration_response_data(response_data, is_auth=True):
     assert response_data
-    assert response_data["site_name"] == settings.ADMIN_SITE_NAME
-    assert response_data["site_sign_in_logo"] == settings.ADMIN_SITE_SIGN_IN_LOGO
-    assert response_data["site_header_logo"] == settings.ADMIN_SITE_HEADER_LOGO
-    assert response_data["site_favicon"] == settings.ADMIN_SITE_FAVICON
-    assert response_data["primary_color"] == settings.ADMIN_PRIMARY_COLOR
-    assert response_data["username_field"] == settings.ADMIN_USER_MODEL_USERNAME_FIELD
-    assert response_data["date_format"] == settings.ADMIN_DATE_FORMAT
-    assert response_data["datetime_format"] == settings.ADMIN_DATETIME_FORMAT
+    assert response_data["site_name"] == settings.SITE_NAME
+    assert response_data["site_sign_in_logo"] == settings.SITE_SIGN_IN_LOGO
+    assert response_data["site_header_logo"] == settings.SITE_HEADER_LOGO
+    assert response_data["site_favicon"] == settings.SITE_FAVICON
+    assert response_data["primary_color"] == settings.PRIMARY_COLOR
+    assert response_data["username_field"] == settings.USER_MODEL_USERNAME_FIELD
+    assert response_data["date_format"] == settings.DATE_FORMAT
+    assert response_data["datetime_format"] == settings.DATETIME_FORMAT
 
     if not is_auth:
         assert response_data["models"] == []

@@ -42,34 +42,34 @@ async def test_get_user_id_from_session_id(session_id):
     assert user_id is not None
 
     now = datetime.now(timezone.utc)
-    session_expired_at = now + timedelta(seconds=settings.ADMIN_SESSION_EXPIRED_AT)
+    session_expired_at = now + timedelta(seconds=settings.SESSION_EXPIRED_AT)
     without_expired_session_id = jwt.encode(
         {
             "user_id": str(user_id),
         },
-        settings.ADMIN_SECRET_KEY,
+        settings.SECRET_KEY,
         algorithm="HS256",
     )
     assert await get_user_id_from_session_id(without_expired_session_id) is None
 
-    session_expired_at = now - timedelta(seconds=settings.ADMIN_SESSION_EXPIRED_AT)
+    session_expired_at = now - timedelta(seconds=settings.SESSION_EXPIRED_AT)
     expired_session_id = jwt.encode(
         {
             "user_id": str(user_id),
             "session_expired_at": session_expired_at.isoformat(),
         },
-        settings.ADMIN_SECRET_KEY,
+        settings.SECRET_KEY,
         algorithm="HS256",
     )
     assert await get_user_id_from_session_id(expired_session_id) is None
 
-    session_expired_at = now + timedelta(seconds=settings.ADMIN_SESSION_EXPIRED_AT)
+    session_expired_at = now + timedelta(seconds=settings.SESSION_EXPIRED_AT)
     invalid_user_session_id = jwt.encode(
         {
             "user_id": str(-1),
             "session_expired_at": session_expired_at.isoformat(),
         },
-        settings.ADMIN_SECRET_KEY,
+        settings.SECRET_KEY,
         algorithm="HS256",
     )
     assert await get_user_id_from_session_id(invalid_user_session_id) is None
