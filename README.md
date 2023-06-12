@@ -18,140 +18,29 @@
   </a>
 </p>
 
-
-
 ## Introduction
 
+<a href='https://github.com/vsdudakov/fastadmin' target='_blank'>FastAdmin</a> is an easy-to-use
+Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin.
 
-<a href='https://github.com/vsdudakov/fastadmin' target='_blank'>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+FastAdmin was built with relations in mind and admiration for the excellent and popular Django
+Admin. It's engraved in its design that you may configure your admin dashboard for
+FastAPI/Django/Flask easiest way.
 
 FastAdmin is designed to be minimalistic, functional and yet familiar.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Getting Started
 
-
-
-
-
-
-If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href='mailto:vsdudakov@gmail.com' target='_blank'>us</a>.
-
-
-
-
-
-
-
-
-
-
-
+If you have any questions that are beyond the scope of the documentation, Please feel free to
+email <a href='mailto:vsdudakov@gmail.com' target='_blank'>us</a>.
 
 ### Installation
 
-
-
-
 Follow the steps below to setup FastAdmin:
-
-
-
-
-
-
-
-
-
-
-
-
 
 Install the package using pip:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Note: For zsh and macos use: <code>pip install fastadmin[fastapi,django]</code>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ```bash
 
@@ -165,35 +54,7 @@ pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
 
 ```
 
-
-
-
-
-
-
 Install the package using poetry:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ```bash
 
@@ -207,51 +68,10 @@ poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
 
 ```
 
-
-
-
-
-
-
 Configure required settings using virtual environment variables:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href='#settings'>here</a>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Note: You can add these variables to .env and use python-dotenv to load them. See all
+settings <a href='#settings'>here</a>
 
 ```bash
 
@@ -261,56 +81,11 @@ export ADMIN_SECRET_KEY=secret_key
 
 ```
 
-
-
-
-
-
-
 ### Quick Tutorial
-
-
-
 
 Setup FastAdmin for a framework
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### FastAPI
-
-
-
-
-
-
-
-
-
-
-
 
 ```python
 from fastapi import FastAPI
@@ -323,23 +98,7 @@ app.mount("/admin", admin_app)
 
 ```
 
-
-
-
-
-
 ### Django
-
-
-
-
-
-
-
-
-
-
-
 
 ```python
 from django.urls import path
@@ -353,23 +112,7 @@ urlpatterns = [
 
 ```
 
-
-
-
-
-
 ### Flask
-
-
-
-
-
-
-
-
-
-
-
 
 ```python
 from flask import Flask
@@ -382,55 +125,9 @@ app.register_blueprint(admin_app, url_prefix="/admin")
 
 ```
 
-
-
-
-
-
-
-
-
-
-
 Register ORM models
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### Tortoise ORM
-
-
-
-
-
-
-
-
-
-
-
 
 ```python
 from uuid import UUID
@@ -470,23 +167,7 @@ class UserAdmin(TortoiseModelAdmin):
 
 ```
 
-
-
-
-
-
 ### Django ORM
-
-
-
-
-
-
-
-
-
-
-
 
 ```python
 from django.db import models
@@ -522,23 +203,7 @@ class UserAdmin(DjangoModelAdmin):
 
 ```
 
-
-
-
-
-
 ### SQL Alchemy
-
-
-
-
-
-
-
-
-
-
-
 
 ```python
 import bcrypt
@@ -594,23 +259,7 @@ class UserAdmin(SqlAlchemyModelAdmin):
 
 ```
 
-
-
-
-
-
 ### Pony ORM
-
-
-
-
-
-
-
-
-
-
-
 
 ```python
 import bcrypt
@@ -644,7 +293,8 @@ class UserAdmin(PonyORMModelAdmin):
 
     @db_session
     def authenticate(self, username, password):
-        user = next((f for f in self.model_cls.select(username=username, password=password, is_superuser=True)), None)
+        user = next((f for f in self.model_cls.select(username=username, password=password,
+                                                      is_superuser=True)), None)
         if not user:
             return None
         if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
@@ -653,29 +303,11 @@ class UserAdmin(PonyORMModelAdmin):
 
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Documentation
+
 See full documentation [here](https://vsdudakov.github.io/fastadmin).
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE) file for details.
+
+This project is licensed under the MIT License - see
+the [LICENSE](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE) file for details.
