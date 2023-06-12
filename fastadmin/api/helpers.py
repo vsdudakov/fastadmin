@@ -30,9 +30,8 @@ def sanitize_filter_key(key: str, fields: list[ModelFieldWidgetSchema]) -> tuple
     :return: A tuple of sanitized key and condition.
     """
     if "__" not in key:
-        key = f"{key}__exact"
-    field_name = key.split("__", 1)[0]
-    condition = key.split("__", 1)[1]
+        key += "__exact"
+    field_name, _, condition = key.partition("__")
     field: ModelFieldWidgetSchema | None = next((field for field in fields if field.name == field_name), None)
     if field and field.filter_widget_props.get("parentModel") and not field.is_m2m:
         field_name = f"{field_name}_id"
