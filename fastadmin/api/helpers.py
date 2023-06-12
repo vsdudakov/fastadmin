@@ -61,9 +61,9 @@ def is_valid_id(id: UUID | int) -> bool:
 
 
 def is_valid_base64(value: str) -> bool:
-    """Check if s is a valid base64.
+    """Check if a string is a valid base64.
 
-    :param s: A string to test.
+    :param value: A string to test.
     :return: True if s is a valid base64, False otherwise.
     """
     try:
