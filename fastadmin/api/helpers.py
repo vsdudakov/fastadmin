@@ -34,7 +34,7 @@ def sanitize_filter_key(key: str, fields: list[ModelFieldWidgetSchema]) -> tuple
     field_name, _, condition = key.partition("__")
     field: ModelFieldWidgetSchema | None = next((field for field in fields if field.name == field_name), None)
     if field and field.filter_widget_props.get("parentModel") and not field.is_m2m:
-        field_name = f"{field_name}_id"
+        field_name += "_id"
     return field_name, condition
 
 
