@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 
-from fastadmin.api.helpers import is_digit, is_valid_id, is_valid_uuid, sanitize_filter_value
+from fastadmin.api.helpers import is_valid_id, is_valid_uuid, sanitize_filter_value
 from fastadmin.api.service import get_user_id_from_session_id
 from fastadmin.settings import settings
 
@@ -21,13 +21,6 @@ async def test_is_valid_uuid():
     assert is_valid_uuid(str(uuid.uuid4())) is True
     assert is_valid_uuid(str(uuid.uuid5(uuid.uuid4(), "test"))) is True
     assert is_valid_uuid("invalid") is False
-
-
-async def test_is_digit():
-    assert is_digit("true") is False
-    assert is_digit("0.2") is False
-    assert is_digit("-1") is True
-    assert is_digit("foo") is False
 
 
 async def test_is_valid_id():
