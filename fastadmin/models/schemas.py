@@ -28,6 +28,7 @@ class WidgetType(str, Enum):
     RadioGroup = "RadioGroup"
     CheckboxGroup = "CheckboxGroup"
     Upload = "Upload"
+    GeometryInput = "GeometryInput"
 
 
 class DashboardWidgetType(str, Enum):

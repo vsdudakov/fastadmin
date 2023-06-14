@@ -137,6 +137,8 @@ class TortoiseMixin:
                         filter_widget_props["mode"] = "multiple"
                 case "JSONField":
                     form_widget_type = WidgetType.JsonTextArea
+                case "PointField" | "LineStringField" | "PolygonField" | "MultiPointField" | "MultiLineStringField" | "MultiPolygonField" | "GeometryCollectionField":
+                    form_widget_type = WidgetType.GeometryInput
 
             # relations
             if field_type in ("ForeignKeyFieldInstance", "OneToOneFieldInstance", "ManyToManyFieldInstance"):

@@ -143,6 +143,8 @@ class DjangoORMMixin:
                     form_widget_type = WidgetType.JsonTextArea
                 case "SlugField":
                     form_widget_type = WidgetType.SlugInput
+                case "GeometryField" | "PointField" | "LineStringField" | "PolygonField" | "MultiPointField" | "MultiLineStringField" | "MultiPolygonField" | "GeometryCollectionField" | "RasterField":
+                    form_widget_type = WidgetType.GeometryInput
 
             # relations
             if field_type in ("ForeignKey", "OneToOneField", "ManyToManyField"):
