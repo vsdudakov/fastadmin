@@ -1,17 +1,17 @@
-import React from 'react';
-import { render } from '@testing-library/react';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from "@tanstack/react-query";
+import { render } from "@testing-library/react";
+import { test } from "vitest";
 
-import { TestProviders } from 'providers';
-import { CrudContainer } from 'components/crud-container';
+import { CrudContainer } from "@/components/crud-container";
+import { TestProviders } from "@/providers";
 
-test('Renders CrudContainer', () => {
+test("Renders CrudContainer", () => {
   const queryClient = new QueryClient();
   render(
     <TestProviders client={queryClient}>
       <CrudContainer title="test">
         <div />
       </CrudContainer>
-    </TestProviders>
+    </TestProviders>,
   );
 });

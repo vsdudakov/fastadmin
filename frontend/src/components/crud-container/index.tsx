@@ -1,29 +1,35 @@
-import React, { useContext, useEffect, useState } from 'react';
 import {
+  BarsOutlined,
+  LinkOutlined,
+  SearchOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { useMutation } from "@tanstack/react-query";
+import {
+  Card,
   Col,
   Image,
+  Input,
   Layout,
   Menu,
   Row,
-  theme,
-  Card,
-  Typography,
-  Space,
   Skeleton,
-  Input,
-} from 'antd';
-import { UserOutlined, BarsOutlined, LinkOutlined, SearchOutlined } from '@ant-design/icons';
-import { Helmet } from 'react-helmet-async';
-import { useTranslation } from 'react-i18next';
-import { useMutation } from '@tanstack/react-query';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+  Space,
+  Typography,
+  theme,
+} from "antd";
+import type React from "react";
+import { useContext, useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { ConfigurationContext } from 'providers/ConfigurationProvider';
-import { SignInUserContext } from 'providers/SignInUserProvider';
-import { postFetcher } from 'fetchers/fetchers';
-import { IModel } from 'interfaces/configuration';
-import { useIsMobile } from 'hooks/useIsMobile';
-import { getTitleFromModel } from 'helpers/title';
+import { postFetcher } from "@/fetchers/fetchers";
+import { getTitleFromModel } from "@/helpers/title";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import type { IModel } from "@/interfaces/configuration";
+import { ConfigurationContext } from "@/providers/ConfigurationProvider";
+import { SignInUserContext } from "@/providers/SignInUserProvider";
 
 const { Header, Sider } = Layout;
 const { Title } = Typography;
@@ -52,8 +58,9 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
   const [search, setSearch] = useState<string | undefined>();
   const { model } = useParams();
   const { configuration } = useContext(ConfigurationContext);
-  const { signedInUser, signedInUserRefetch, signedIn } = useContext(SignInUserContext);
-  const { t: _t } = useTranslation('CrudContainer');
+  const { signedInUser, signedInUserRefetch, signedIn } =
+    useContext(SignInUserContext);
+  const { t: _t } = useTranslation("CrudContainer");
 
   const {
     token: { colorBgContainer, colorPrimary },
@@ -61,11 +68,12 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
 
   useEffect(() => {
     if (!signedIn) {
-      navigate('/sign-in');
+      navigate("/sign-in");
     }
   }, [navigate, signedIn]);
 
-  const { mutate: mutateSignOut } = useMutation(() => postFetcher('/sign-out', {}), {
+  const { mutate: mutateSignOut } = useMutation({
+    mutationFn: () => postFetcher("/sign-out", {}),
     onSuccess: () => {
       signedInUserRefetch();
     },
@@ -73,8 +81,8 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
 
   const onClickSideBarMenuItem = (item: any) => {
     switch (item.key) {
-      case 'dashboard':
-        navigate('/');
+      case "dashboard":
+        navigate("/");
         break;
       default:
         navigate(`/list/${item.key}`);
@@ -84,7 +92,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
 
   const onClickRightMenuItem = (item: any) => {
     switch (item.key) {
-      case 'sign-out':
+      case "sign-out":
         mutateSignOut();
         break;
       default:
@@ -94,16 +102,18 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
 
   const items = [
     {
-      key: 'dashboard',
-      label: _t('Dashboard'),
+      key: "dashboard",
+      label: _t("Dashboard"),
     },
     {
-      key: 'divider',
-      type: 'divider',
+      key: "divider",
+      type: "divider",
     },
     ...configuration.models
       .filter(
-        (m: IModel) => !search || m.name.toLocaleLowerCase().includes(search?.toLocaleLowerCase())
+        (m: IModel) =>
+          !search ||
+          m.name.toLocaleLowerCase().includes(search?.toLocaleLowerCase()),
       )
       .map((m: IModel) => {
         return {
@@ -120,7 +130,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
       <Helmet defaultTitle={title}>
         <meta name="description" content={title} />
       </Helmet>
-      <Layout style={{ minHeight: '100vh' }}>
+      <Layout style={{ minHeight: "100vh" }}>
         <Header style={{ background: colorPrimary, paddingInline: 20 }}>
           <Row justify="space-between">
             <Col>
@@ -130,11 +140,13 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                     style={{ background: colorPrimary }}
                     theme="light"
                     mode="horizontal"
-                    defaultSelectedKeys={[model || 'dashboard']}
+                    defaultSelectedKeys={[model || "dashboard"]}
                     items={[
                       {
-                        key: signedInUser?.id || 'key',
-                        icon: <BarsOutlined style={{ color: colorBgContainer }} />,
+                        key: signedInUser?.id || "key",
+                        icon: (
+                          <BarsOutlined style={{ color: colorBgContainer }} />
+                        ),
                         children: items,
                       },
                     ]}
@@ -144,7 +156,10 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
 
                 <Link to="/">
                   <Image
-                    src={(window as any).SERVER_DOMAIN + configuration.site_header_logo}
+                    src={
+                      (window as any).SERVER_DOMAIN +
+                      configuration.site_header_logo
+                    }
                     preview={false}
                     height={32}
                     alt={configuration.site_name}
@@ -154,7 +169,13 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
 
                 {!isMobile && (
                   <Link to="/">
-                    <span style={{ color: colorBgContainer, fontSize: 18, marginLeft: 10 }}>
+                    <span
+                      style={{
+                        color: colorBgContainer,
+                        fontSize: 18,
+                        marginLeft: 10,
+                      }}
+                    >
                       {configuration.site_name}
                     </span>
                   </Link>
@@ -165,7 +186,11 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
               <Space>
                 {!isMobile && (
                   <span style={{ color: colorBgContainer, marginRight: 5 }}>
-                    {(signedInUser || ({} as any))[configuration.username_field]}
+                    {
+                      (signedInUser || ({} as any))[
+                        configuration.username_field
+                      ]
+                    }
                   </span>
                 )}
 
@@ -175,12 +200,14 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                   mode="horizontal"
                   items={[
                     {
-                      key: signedInUser?.id || 'key',
-                      icon: <UserOutlined style={{ color: colorBgContainer }} />,
+                      key: signedInUser?.id || "key",
+                      icon: (
+                        <UserOutlined style={{ color: colorBgContainer }} />
+                      ),
                       children: [
                         {
-                          key: 'sign-out',
-                          label: _t('Sign Out'),
+                          key: "sign-out",
+                          label: _t("Sign Out"),
                         },
                       ],
                     },
@@ -198,17 +225,17 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                 <Input
                   value={search}
                   onChange={onSearch}
-                  placeholder={_t('Search By Menu') as string}
+                  placeholder={_t("Search By Menu") as string}
                   prefix={<SearchOutlined />}
                 />
               </div>
               <Menu
                 mode="inline"
                 theme="light"
-                defaultSelectedKeys={[model || 'dashboard']}
+                defaultSelectedKeys={[model || "dashboard"]}
                 style={{
                   borderRight: 0,
-                  overflowY: 'scroll',
+                  overflowY: "scroll",
                 }}
                 items={items}
                 onClick={onClickSideBarMenuItem}
@@ -221,7 +248,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
               {viewOnSite && (
                 <Col>
                   <a href={viewOnSite} target="_blank" rel="noreferrer">
-                    <LinkOutlined /> {_t('View on site')}
+                    <LinkOutlined /> {_t("View on site")}
                   </a>
                 </Col>
               )}

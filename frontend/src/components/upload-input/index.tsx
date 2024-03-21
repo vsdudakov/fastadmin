@@ -1,16 +1,20 @@
-import React, { useMemo, useState } from 'react';
-import { Image, Modal, Space, Upload } from 'antd';
-import ImgCrop from 'antd-img-crop';
-import getBase64 from 'getbase64data';
-import { useTranslation } from 'react-i18next';
-import { UploadOutlined } from '@ant-design/icons';
+import { UploadOutlined } from "@ant-design/icons";
+import { Image, Modal, Space, Upload } from "antd";
+import ImgCrop from "antd-img-crop";
+import getBase64 from "getbase64data";
+import type React from "react";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { isArray } from 'helpers/transform';
+import { isArray } from "@/helpers/transform";
 
 export interface IUploadInput {
   parentId: string;
+
   value?: any;
+
   defaultValue?: any;
+
   onChange?: (value: any) => void;
   multiple?: boolean;
 }
@@ -22,7 +26,7 @@ export const UploadInput: React.FC<IUploadInput> = ({
   multiple,
   ...props
 }) => {
-  const { t: _t } = useTranslation('UploadInput');
+  const { t: _t } = useTranslation("UploadInput");
   const [previewFileUrl, setPreviewFileUrl] = useState<string | undefined>();
 
   const onUpload = async (info: any) => {
@@ -49,14 +53,16 @@ export const UploadInput: React.FC<IUploadInput> = ({
     return v.map((url: string, index: number) => {
       return {
         uid: index,
-        status: 'done',
+        status: "done",
         url,
       };
     });
   }, [value]);
 
   const onPreview = async (file: any) => {
-    setPreviewFileUrl(file.url ? file.url : await getBase64.fromFile(file.originFileObj));
+    setPreviewFileUrl(
+      file.url ? file.url : await getBase64.fromFile(file.originFileObj),
+    );
   };
 
   const onClosePreview = () => setPreviewFileUrl(undefined);
@@ -78,13 +84,13 @@ export const UploadInput: React.FC<IUploadInput> = ({
         >
           <Space>
             <UploadOutlined />
-            {_t('Upload')}
+            {_t("Upload")}
           </Space>
         </Upload>
       </ImgCrop>
       <Modal
         footer={null}
-        title={_t('Preview Image')}
+        title={_t("Preview Image")}
         open={!!previewFileUrl}
         onCancel={onClosePreview}
       >

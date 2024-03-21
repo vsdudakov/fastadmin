@@ -1,16 +1,22 @@
-import React, { useCallback } from 'react';
-import querystring from 'querystring';
-import { Bar, Line, Area, Column, Pie } from '@ant-design/charts';
-import { Card, Col, Input, Radio, Row, Select, Space, Spin, theme } from 'antd';
-import { SwapOutlined } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
+import { Area, Bar, Column, Line, Pie } from "@ant-design/charts";
+import { SwapOutlined } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
+import { Card, Col, Input, Radio, Row, Select, Space, Spin, theme } from "antd";
+import querystring from "query-string";
+import React, { useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
-import { EDashboardWidgetType, IDashboardWidget } from 'interfaces/configuration';
-import { getFetcher } from 'fetchers/fetchers';
-import { getWidgetCls } from 'helpers/widgets';
-import { getTitleFromFieldName } from 'helpers/title';
-import { transformValueFromServer, transformValueToServer } from 'helpers/transform';
+import { getFetcher } from "@/fetchers/fetchers";
+import { getTitleFromFieldName } from "@/helpers/title";
+import {
+  transformValueFromServer,
+  transformValueToServer,
+} from "@/helpers/transform";
+import { getWidgetCls } from "@/helpers/widgets";
+import {
+  EDashboardWidgetType,
+  type IDashboardWidget,
+} from "@/interfaces/configuration";
 
 interface IDashboardWidgetProps {
   widget: IDashboardWidget;
@@ -18,11 +24,16 @@ interface IDashboardWidgetProps {
 
 const { useToken } = theme;
 
-export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({ widget }) => {
-  const { t: _t } = useTranslation('DashboardWidget');
+export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
+  widget,
+}) => {
+  const { t: _t } = useTranslation("DashboardWidget");
   const { token } = useToken();
+
   const [min, setMin] = React.useState<any>();
+
   const [max, setMax] = React.useState<any>();
+
   const [period, setPeriod] = React.useState<any>();
 
   const queryString = querystring.stringify({
@@ -31,33 +42,37 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({ widget }) => 
     period_x_field: transformValueToServer(period),
   });
 
-  const { data, isLoading } = useQuery(
-    [`/dashboard-widget/${widget.key}`, queryString],
-    () => getFetcher(`/dashboard-widget/${widget.key}?${queryString}`),
-    {
-      refetchOnWindowFocus: false,
-      onSuccess: (response) => {
-        setMin(transformValueFromServer(response.min_x_field));
-        setMax(transformValueFromServer(response.max_x_field));
-        setPeriod(transformValueFromServer(response.period_x_field));
-      },
+  const { data, isLoading } = useQuery({
+    queryKey: ["/dashboard-widget"],
+    queryFn: () => getFetcher(`/dashboard-widget/${widget.key}?${queryString}`),
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    if (data) {
+      setMin(transformValueFromServer(data.min_x_field));
+      setMax(transformValueFromServer(data.max_x_field));
+      setPeriod(transformValueFromServer(data.period_x_field));
     }
-  );
+  }, [data]);
 
   const getFilterWidget = useCallback(
     (
       dashboardWidget: IDashboardWidget,
       placeholder: string,
       value: string | undefined,
-      onChange: any
+
+      onChange: any,
     ) => {
       if (!dashboardWidget.x_field_filter_widget_type) {
         return null;
       }
+
       const [Widget, widgetProps]: any = getWidgetCls(
         dashboardWidget.x_field_filter_widget_type,
-        _t
+        _t,
       );
+
       const onChangeWidget = (widgetValue: any) => {
         if (Widget === Input || Widget === Radio.Group) {
           onChange(widgetValue.target.value);
@@ -77,7 +92,7 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({ widget }) => 
         />
       );
     },
-    [_t]
+    [_t],
   );
 
   return (
@@ -100,9 +115,9 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({ widget }) => 
                     size="small"
                   />
                 )}
-                {getFilterWidget(widget, _t('From'), min, setMin)}
+                {getFilterWidget(widget, _t("From"), min, setMin)}
                 <SwapOutlined />
-                {getFilterWidget(widget, _t('To'), max, setMax)}
+                {getFilterWidget(widget, _t("To"), max, setMax)}
               </Space>
             </Col>
           )}
@@ -110,64 +125,69 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({ widget }) => 
       }
       key={widget.title}
     >
-      {!isLoading && widget.dashboard_widget_type === EDashboardWidgetType.ChartLine && (
-        <Line
-          data={data?.results || []}
-          xField={widget.x_field}
-          yField={widget.y_field as string}
-          seriesField={widget.series_field}
-          legend={{
-            position: 'top-left',
-          }}
-          color={token.colorPrimary}
-        />
-      )}
-      {!isLoading && widget.dashboard_widget_type === EDashboardWidgetType.ChartArea && (
-        <Area
-          data={data?.results || []}
-          xField={widget.x_field}
-          yField={widget.y_field as string}
-          seriesField={widget.series_field}
-          legend={{
-            position: 'top-left',
-          }}
-          color={token.colorPrimary}
-        />
-      )}
-      {!isLoading && widget.dashboard_widget_type === EDashboardWidgetType.ChartColumn && (
-        <Column
-          data={data?.results || []}
-          xField={widget.x_field}
-          yField={widget.y_field as string}
-          seriesField={widget.series_field}
-          legend={{
-            position: 'top-left',
-          }}
-          color={token.colorPrimary}
-        />
-      )}
-      {!isLoading && widget.dashboard_widget_type === EDashboardWidgetType.ChartBar && (
-        <Bar
-          data={data?.results || []}
-          xField={widget.x_field}
-          yField={widget.y_field as string}
-          seriesField={widget.series_field}
-          legend={{
-            position: 'top-left',
-          }}
-          color={token.colorPrimary}
-        />
-      )}
-      {!isLoading && widget.dashboard_widget_type === EDashboardWidgetType.ChartPie && (
-        <Pie
-          data={data?.results || []}
-          colorField={widget.x_field}
-          angleField={widget.y_field as string}
-          legend={{
-            position: 'top-left',
-          }}
-        />
-      )}
+      {!isLoading &&
+        widget.dashboard_widget_type === EDashboardWidgetType.ChartLine && (
+          <Line
+            data={data?.results || []}
+            xField={widget.x_field}
+            yField={widget.y_field as string}
+            seriesField={widget.series_field}
+            legend={{
+              position: "top-left",
+            }}
+            color={token.colorPrimary}
+          />
+        )}
+      {!isLoading &&
+        widget.dashboard_widget_type === EDashboardWidgetType.ChartArea && (
+          <Area
+            data={data?.results || []}
+            xField={widget.x_field}
+            yField={widget.y_field as string}
+            seriesField={widget.series_field}
+            legend={{
+              position: "top-left",
+            }}
+            // color={token.colorPrimary}
+          />
+        )}
+      {!isLoading &&
+        widget.dashboard_widget_type === EDashboardWidgetType.ChartColumn && (
+          <Column
+            data={data?.results || []}
+            xField={widget.x_field}
+            yField={widget.y_field as string}
+            seriesField={widget.series_field}
+            legend={{
+              position: "top-left",
+            }}
+            color={token.colorPrimary}
+          />
+        )}
+      {!isLoading &&
+        widget.dashboard_widget_type === EDashboardWidgetType.ChartBar && (
+          <Bar
+            data={data?.results || []}
+            xField={widget.x_field}
+            yField={widget.y_field as string}
+            seriesField={widget.series_field}
+            legend={{
+              position: "top-left",
+            }}
+            color={token.colorPrimary}
+          />
+        )}
+      {!isLoading &&
+        widget.dashboard_widget_type === EDashboardWidgetType.ChartPie && (
+          <Pie
+            data={data?.results || []}
+            colorField={widget.x_field}
+            angleField={widget.y_field as string}
+            legend={{
+              position: "top-left",
+            }}
+          />
+        )}
       {isLoading && (
         <Row justify="center" align="middle">
           <Col>

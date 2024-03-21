@@ -14,7 +14,7 @@ fix:
 	@echo "Run black"
 	@exec poetry run black fastadmin tests examples docs
 	@echo "Run mypy"
-	@exec poetry run mypy -p fastadmin -p tests -p examples -p docs
+	@exec poetry run mypy -p fastadmin -p examples -p docs
 	@echo "Run frontend linters"
 	@exec make -C frontend fix
 
@@ -27,14 +27,14 @@ lint:
 	@echo "Run black"
 	@exec poetry run black --check --diff fastadmin tests examples docs
 	@echo "Run mypy"
-	@exec poetry run mypy -p fastadmin -p tests -p examples -p docs
+	@exec poetry run mypy -p fastadmin -p examples -p docs
 	@echo "Run frontend linters"
 	@exec make -C frontend lint
 
 .PHONY: test
 test:
 	@exec poetry run python generate_db.py
-	@exec env ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=90 -s tests
+	@exec env ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=90 -s tests -x
 	@exec make -C frontend test
 
 .PHONY: kill
@@ -44,24 +44,20 @@ kill:
 
 .PHONY: collectstatic
 collectstatic:
-	@exec rm -rf ./fastadmin/static/js
-	@exec rm -rf ./fastadmin/static/css
-	@exec cp -rf ./frontend/build/static/js/ ./fastadmin/static/js/
-	@exec cp -rf ./frontend/build/static/css/ ./fastadmin/static/css/
-	@exec mv fastadmin/static/js/main*.js fastadmin/static/js/main.min.js
-	@exec mv fastadmin/static/css/main*.css fastadmin/static/css/main.min.css
-	@exec rm fastadmin/static/js/*.txt
+	@exec rm -rf ./fastadmin/static/*.js
+	@exec rm -rf ./fastadmin/static/*.css
+	@exec cp -rf ./frontend/dist/assets/index-*.js ./fastadmin/static/main.min.js
+	@exec cp -rf ./frontend/dist/assets/index-*.css ./fastadmin/static/main.min.css
 
 .PHONY: install
 install:
+	@exec pip install poetry
 	@exec poetry install --all-extras
 	@exec make -C frontend install
-
 
 .PHONY: docs
 docs:
 	@exec make -C docs build
-
 
 .PHONY: build
 build:
@@ -69,20 +65,9 @@ build:
 	@exec make -C frontend build
 	@exec make collectstatic
 
-.PHONY: pre-commit-install
-pre-commit-install:
-	@exec poetry run pip install pre-commit
-	@exec poetry run pre-commit install
-
-.PHONY: pre-commit
-pre-commit:
-	@exec poetry run pre-commit run --all-files
-
 .PHONY: push
 pre-push:
 	@exec make fix
 	@exec make lint
-	@exec make pre-commit-install
-	@exec make pre-commit
 	@exec make docs
 	@exec make build

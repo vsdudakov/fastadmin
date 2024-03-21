@@ -1,13 +1,14 @@
-import { message } from 'antd';
-import type { FormInstance } from 'rc-field-form';
+import { message } from "antd";
+import type { FormInstance } from "rc-field-form";
 
 export const handleError = (error: any, form?: FormInstance) => {
-  const errors = error?.response?.data?.detail || error?.response?.data?.description;
+  const errors =
+    error?.response?.data?.detail || error?.response?.data?.description;
   if (!Array.isArray(errors)) {
-    if (typeof errors === 'string' || errors instanceof String) {
+    if (typeof errors === "string" || errors instanceof String) {
       message.error(errors);
     } else {
-      message.error('Server error');
+      message.error("Server error");
     }
     return;
   }
@@ -23,12 +24,14 @@ export const handleError = (error: any, form?: FormInstance) => {
   }
 
   if (!form) {
-    message.error('Server error');
+    message.error("Server error");
     return;
   }
 
   const errorsFields: any = [];
-  const fields = Object.keys(form.getFieldsValue()).filter((key) => key in errorsData);
+  const fields = Object.keys(form.getFieldsValue()).filter(
+    (key) => key in errorsData,
+  );
   for (const field of fields) {
     errorsFields.push({
       name: field,

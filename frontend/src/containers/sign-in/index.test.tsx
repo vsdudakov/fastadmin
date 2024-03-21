@@ -1,15 +1,15 @@
-import React from 'react';
-import { render } from '@testing-library/react';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from "@tanstack/react-query";
+import { render } from "@testing-library/react";
+import { test } from "vitest";
 
-import { TestProviders } from 'providers';
-import { SignIn } from 'containers/sign-in';
+import { SignIn } from "@/containers/sign-in";
+import { TestProviders } from "@/providers";
 
-test('Renders SignIn', () => {
+test("Renders SignIn", () => {
   const queryClient = new QueryClient();
   render(
     <TestProviders client={queryClient}>
       <SignIn />
-    </TestProviders>
+    </TestProviders>,
   );
 });

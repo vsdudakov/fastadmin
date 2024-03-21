@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
-import { Transfer } from 'antd';
-import { useQuery } from '@tanstack/react-query';
-import type { TransferDirection } from 'antd/es/transfer';
-import debounce from 'lodash.debounce';
-import querystring from 'querystring';
+import { useQuery } from "@tanstack/react-query";
+import { Transfer } from "antd";
+import type { TransferDirection } from "antd/es/transfer";
+import debounce from "lodash.debounce";
+import querystring from "query-string";
+import type React from "react";
+import { useState } from "react";
 
-import { getFetcher } from 'fetchers/fetchers';
-import { useIsMobile } from 'hooks/useIsMobile';
+import { getFetcher } from "@/fetchers/fetchers";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 export interface IAsyncTransfer {
   parentModel: string;
   idField: string;
   labelFields: string[];
-  layout?: 'horizontal' | 'vertical';
+  layout?: "horizontal" | "vertical";
   value: string[] | undefined;
+
   onChange: any;
 }
 
@@ -35,19 +37,23 @@ export const AsyncTransfer: React.FC<IAsyncTransfer> = ({
     search,
   });
 
-  const { data } = useQuery([`/list/${parentModel}`, queryString], () =>
-    getFetcher(`/list/${parentModel}?${queryString}`)
-  );
+  const { data } = useQuery({
+    queryKey: [`/list/${parentModel}`, queryString],
+    queryFn: () => getFetcher(`/list/${parentModel}?${queryString}`),
+  });
 
   const onFilter = (input: string, option: any) => {
     return (
-      ((option?.key as any) || '').toLowerCase().indexOf(input.toLowerCase()) >= 0 ||
-      ((option?.value as any) || '').toLowerCase().indexOf(input.toLowerCase()) >= 0
+      ((option?.key as any) || "").toLowerCase().indexOf(input.toLowerCase()) >=
+        0 ||
+      ((option?.value as any) || "")
+        .toLowerCase()
+        .indexOf(input.toLowerCase()) >= 0
     );
   };
 
   const onSearch = (direction: TransferDirection, v: string) => {
-    if (direction === 'left') {
+    if (direction === "left") {
       setSearch(v);
     }
   };
@@ -69,11 +75,13 @@ export const AsyncTransfer: React.FC<IAsyncTransfer> = ({
       onChange={onChange}
       targetKeys={value}
       listStyle={
-        layout === 'vertical' || isMobile
-          ? { width: '100%', marginTop: 5, marginBottom: 5 }
-          : { width: '100%' }
+        layout === "vertical" || isMobile
+          ? { width: "100%", marginTop: 5, marginBottom: 5 }
+          : { width: "100%" }
       }
-      style={layout === 'vertical' || isMobile ? { display: 'block' } : undefined}
+      style={
+        layout === "vertical" || isMobile ? { display: "block" } : undefined
+      }
       {...props}
     />
   );

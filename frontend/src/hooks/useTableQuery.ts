@@ -1,5 +1,6 @@
-import { IModel, IInlineModel } from 'interfaces/configuration';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from "react";
+
+import type { IInlineModel, IModel } from "@/interfaces/configuration";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
@@ -25,7 +26,9 @@ interface ITableQuery {
   resetTable: (preserveFilters?: boolean) => void;
 }
 
-export const useTableQuery = (modelConfiguration?: IModel | IInlineModel): ITableQuery => {
+export const useTableQuery = (
+  modelConfiguration?: IModel | IInlineModel,
+): ITableQuery => {
   const [action, setAction] = useState<string | undefined>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
 
@@ -48,7 +51,11 @@ export const useTableQuery = (modelConfiguration?: IModel | IInlineModel): ITabl
     }
   }, [modelConfiguration?.name]);
 
-  const onTableChange = (pagination: any, tableFilters: any, sorter: any): void => {
+  const onTableChange = (
+    pagination: any,
+    _tableFilters: any,
+    sorter: any,
+  ): void => {
     if (pagination.pageSize !== pageSize) {
       setPage(DEFAULT_PAGE);
     } else {
@@ -56,7 +63,7 @@ export const useTableQuery = (modelConfiguration?: IModel | IInlineModel): ITabl
     }
     setPageSize(pagination.pageSize);
     if (sorter.field) {
-      setSortBy(sorter.order === 'ascend' ? sorter.field : `-${sorter.field}`);
+      setSortBy(sorter.order === "ascend" ? sorter.field : `-${sorter.field}`);
     }
   };
 

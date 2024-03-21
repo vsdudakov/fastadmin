@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
-import { Spin, Card, Pagination, Descriptions, Empty, TableProps, Checkbox } from 'antd';
+import {
+  Card,
+  Checkbox,
+  Descriptions,
+  Empty,
+  Pagination,
+  Spin,
+  type TableProps,
+} from "antd";
+import { useState } from "react";
 
 export interface ICards extends Partial<TableProps<any>> {}
 
@@ -21,9 +29,12 @@ export const Cards = (props: ICards) => {
           current: page,
           pageSize,
         },
+
         {} as any,
+
         {} as any,
-        {} as any
+
+        {} as any,
       );
     }
   };
@@ -38,26 +49,34 @@ export const Cards = (props: ICards) => {
               ...(props.rowSelection?.selectedRowKeys || []),
               item[rowKey],
             ];
+
             props.rowSelection?.onChange(newSelectedRowKeys, [], {} as any);
           } else {
-            const newSelectedRowKeys = (props.rowSelection?.selectedRowKeys || []).filter(
-              (pk) => pk !== item[rowKey]
-            );
+            const newSelectedRowKeys = (
+              props.rowSelection?.selectedRowKeys || []
+            ).filter((pk) => pk !== item[rowKey]);
+
             props.rowSelection?.onChange(newSelectedRowKeys, [], {} as any);
           }
         };
 
         return (
-          <Card key={index} className={props.className} style={{ marginBottom: 10 }}>
+          <Card
+            key={index}
+            className={props.className}
+            style={{ marginBottom: 10 }}
+          >
             <Descriptions column={1} layout="vertical">
               {props.rowSelection && (
                 <Descriptions.Item
                   key="selection"
                   label={<b>Select</b>}
-                  contentStyle={{ width: '100%' }}
+                  contentStyle={{ width: "100%" }}
                 >
                   <Checkbox
-                    checked={(props.rowSelection?.selectedRowKeys || []).includes(item[rowKey])}
+                    checked={(
+                      props.rowSelection?.selectedRowKeys || []
+                    ).includes(item[rowKey])}
                     onChange={onSelect}
                   />
                 </Descriptions.Item>
@@ -67,27 +86,33 @@ export const Cards = (props: ICards) => {
                   <Descriptions.Item
                     key="expandable"
                     label={<b>Expand</b>}
-                    contentStyle={{ width: '100%' }}
+                    contentStyle={{ width: "100%" }}
                   >
-                    {props.expandable &&
-                      props.expandable.expandIcon &&
-                      props.expandable.expandIcon({
-                        expanded: expandedIds.includes(item[rowKey]),
-                        onExpand: () => {
-                          if (expandedIds.includes(item[rowKey])) {
-                            setExpandedIds(expandedIds.filter((pk) => pk !== item[rowKey]));
-                          } else {
-                            setExpandedIds([...expandedIds, item[rowKey]]);
-                          }
-                        },
-                        record: item,
-                      } as any)}
+                    {props.expandable?.expandIcon?.({
+                      expanded: expandedIds.includes(item[rowKey]),
+                      onExpand: () => {
+                        if (expandedIds.includes(item[rowKey])) {
+                          setExpandedIds(
+                            expandedIds.filter((pk) => pk !== item[rowKey]),
+                          );
+                        } else {
+                          setExpandedIds([...expandedIds, item[rowKey]]);
+                        }
+                      },
+                      record: item,
+                    } as any)}
                   </Descriptions.Item>
                   {expandedIds.includes(item[rowKey]) && (
-                    <Descriptions.Item key="expandable" contentStyle={{ width: '100%' }}>
-                      {props.expandable &&
-                        props.expandable.expandedRowRender &&
-                        props.expandable.expandedRowRender(item, index, 0, true)}
+                    <Descriptions.Item
+                      key="expandable"
+                      contentStyle={{ width: "100%" }}
+                    >
+                      {props.expandable?.expandedRowRender?.(
+                        item,
+                        index,
+                        0,
+                        true,
+                      )}
                     </Descriptions.Item>
                   )}
                 </>
@@ -96,10 +121,13 @@ export const Cards = (props: ICards) => {
                 <Descriptions.Item
                   key={field.title}
                   label={<b>{field.title}</b>}
-                  contentStyle={{ width: '100%' }}
+                  contentStyle={{ width: "100%" }}
                 >
                   {field.render
-                    ? field.render(field.dataIndex ? item[field.dataIndex] : item, item)
+                    ? field.render(
+                        field.dataIndex ? item[field.dataIndex] : item,
+                        item,
+                      )
                     : item[field.dataIndex]}
                 </Descriptions.Item>
               ))}
@@ -107,7 +135,9 @@ export const Cards = (props: ICards) => {
           </Card>
         );
       })}
-      {props.pagination && <Pagination {...props.pagination} onChange={onChangePage} />}
+      {props.pagination && (
+        <Pagination {...props.pagination} onChange={onChangePage} />
+      )}
     </>
   );
 };

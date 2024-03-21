@@ -1,15 +1,15 @@
-import React from 'react';
-import { render } from '@testing-library/react';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from "@tanstack/react-query";
+import { render } from "@testing-library/react";
+import { test } from "vitest";
 
-import { TestProviders } from 'providers';
-import { TableOrCards } from 'components/table-or-cards';
+import { TableOrCards } from "@/components/table-or-cards";
+import { TestProviders } from "@/providers";
 
-test('Renders TableOrCards', () => {
+test("Renders TableOrCards", () => {
   const queryClient = new QueryClient();
   render(
     <TestProviders client={queryClient}>
       <TableOrCards />
-    </TestProviders>
+    </TestProviders>,
   );
 });

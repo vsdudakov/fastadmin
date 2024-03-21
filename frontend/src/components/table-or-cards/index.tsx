@@ -1,9 +1,8 @@
-import React from 'react';
-import { Table, TableProps } from 'antd';
+import { Table, type TableProps } from "antd";
 
-import { useIsMobile } from 'hooks/useIsMobile';
+import { useIsMobile } from "@/hooks/useIsMobile";
 
-import { Cards } from './cards';
+import { Cards } from "./cards";
 
 export interface ITableOrCards extends Partial<TableProps<any>> {}
 

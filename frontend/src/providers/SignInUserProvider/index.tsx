@@ -1,9 +1,9 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
 
-import { getFetcher } from 'fetchers/fetchers';
+import { getFetcher } from "@/fetchers/fetchers";
 
-import { IMe } from 'interfaces/user';
+import type { IMe } from "@/interfaces/user";
 
 interface ISignInUserContext {
   signedInUser?: IMe;
@@ -23,7 +23,9 @@ export const SignInUserContext = React.createContext<ISignInUserContext>({
 export const SignInUserConsumer = SignInUserContext.Consumer;
 
 export const SignInUserProvider = ({ children }: ISignInUserProvider) => {
-  const signedInData = useQuery(['/me'], () => getFetcher('/me'), {
+  const signedInData = useQuery({
+    queryKey: ["/me"],
+    queryFn: () => getFetcher("/me"),
     retry: false,
     refetchOnWindowFocus: false,
   });

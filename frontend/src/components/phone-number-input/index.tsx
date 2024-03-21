@@ -1,17 +1,22 @@
-import { theme } from 'antd';
-import React from 'react';
-import PhoneInput from 'react-phone-input-2';
+import { theme } from "antd";
+import type React from "react";
+import PhoneInput from "react-phone-input-2";
 
-import 'react-phone-input-2/lib/style.css';
+import "react-phone-input-2/lib/style.css";
 
 interface IPhoneFieldProps {
   value?: any;
+
   onChange?: (value: any) => void;
 }
 
 const { useToken } = theme;
 
-export const PhoneNumberInput: React.FC<IPhoneFieldProps> = ({ value, onChange, ...props }) => {
+export const PhoneNumberInput: React.FC<IPhoneFieldProps> = ({
+  value,
+  onChange,
+  ...props
+}) => {
   const { token } = useToken();
   return (
     <PhoneInput
@@ -32,7 +37,7 @@ export const PhoneNumberInput: React.FC<IPhoneFieldProps> = ({ value, onChange, 
       inputStyle={{
         backgroundColor: token.colorBgBase,
         color: token.colorTextBase,
-        width: '100%',
+        width: "100%",
         height: 33,
         borderRadius: token.borderRadius,
         borderColor: token.colorBorder,

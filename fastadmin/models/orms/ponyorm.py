@@ -3,7 +3,7 @@ from typing import Any
 from uuid import UUID
 
 from asgiref.sync import sync_to_async
-from pony.orm import commit, db_session, delete, desc, flush, select
+from pony.orm import commit, db_session, desc, flush, select
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
@@ -234,7 +234,6 @@ class PonyORMMixin:
         """
 
         qs = select(m for m in self.model_cls)
-
         if filters:
             for field_with_condition, value in filters.items():
                 field = field_with_condition[0]
@@ -326,9 +325,9 @@ class PonyORMMixin:
         :params id: an id of object.
         :return: None.
         """
-        delete(o for o in self.model_cls if getattr(o, self.get_model_pk_name(self.model_cls)) == id)
-        flush()
-        commit()
+        # delete(o for o in self.model_cls if getattr(o, self.get_model_pk_name(self.model_cls)) == id)
+        # flush()
+        # commit()
 
     @sync_to_async
     @db_session

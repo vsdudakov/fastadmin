@@ -1,24 +1,24 @@
-import React from 'react';
-import { render } from '@testing-library/react';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from "@tanstack/react-query";
+import { render } from "@testing-library/react";
+import { test } from "vitest";
 
-import { TestProviders } from 'providers';
-import { InlineWidget } from 'components/inline-widget';
+import { InlineWidget } from "@/components/inline-widget";
+import { TestProviders } from "@/providers";
 
-test('Renders AsyncTransfer', () => {
+test("Renders AsyncTransfer", () => {
   const queryClient = new QueryClient();
   render(
     <TestProviders client={queryClient}>
       <InlineWidget
         parentId="test"
         modelConfiguration={{
-          name: 'Test',
+          name: "Test",
           fields: [],
           permissions: [],
           actions: [],
-          fk_name: 'parent',
+          fk_name: "parent",
         }}
       />
-    </TestProviders>
+    </TestProviders>,
   );
 });

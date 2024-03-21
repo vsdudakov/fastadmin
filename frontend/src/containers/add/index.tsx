@@ -1,67 +1,83 @@
-import React, { useContext } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Breadcrumb, Button, Col, Empty, Form, message, Row, Space } from 'antd';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { SaveOutlined } from '@ant-design/icons';
+import { SaveOutlined } from "@ant-design/icons";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Breadcrumb,
+  Button,
+  Col,
+  Empty,
+  Form,
+  Row,
+  Space,
+  message,
+} from "antd";
+import type React from "react";
+import { useContext } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { CrudContainer } from 'components/crud-container';
-import { EModelPermission, IModel } from 'interfaces/configuration';
-import { ConfigurationContext } from 'providers/ConfigurationProvider';
-import { postFetcher } from 'fetchers/fetchers';
-import { handleError } from 'helpers/forms';
-import { transformDataToServer } from 'helpers/transform';
-import { FormContainer } from 'components/form-container';
-import { getTitleFromModel } from 'helpers/title';
+import { CrudContainer } from "@/components/crud-container";
+import { FormContainer } from "@/components/form-container";
+import { postFetcher } from "@/fetchers/fetchers";
+import { handleError } from "@/helpers/forms";
+import { getTitleFromModel } from "@/helpers/title";
+import { transformDataToServer } from "@/helpers/transform";
+import { EModelPermission, type IModel } from "@/interfaces/configuration";
+import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 export const Add: React.FC = () => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { configuration } = useContext(ConfigurationContext);
-  const { t: _t } = useTranslation('Add');
+  const { t: _t } = useTranslation("Add");
   const { model } = useParams();
 
   const modelConfiguration: IModel | undefined = configuration.models.find(
-    (item: IModel) => item.name === model
+    (item: IModel) => item.name === model,
   );
 
-  const { mutate, isLoading, isError } = useMutation(
-    (payload: any) => postFetcher(`/add/${model}`, payload),
-    {
-      onSuccess: () => {
-        message.success(_t('Succesfully added'));
-        queryClient.invalidateQueries([`/list/${model}`]);
-        navigate(`/list/${model}`);
-      },
-      onError: (error: Error) => {
-        handleError(error, form);
-      },
-    }
-  );
+  const {
+    mutate,
+    isPending: isLoading,
+    isError,
+  } = useMutation({
+    mutationFn: (payload: any) => postFetcher(`/add/${model}`, payload),
+    onSuccess: () => {
+      message.success(_t("Succesfully added"));
+
+      queryClient.invalidateQueries([`/list/${model}`] as any);
+      navigate(`/list/${model}`);
+    },
+    onError: (error: Error) => {
+      handleError(error, form);
+    },
+  });
 
   const onFinish = (payload: any) => {
-    mutate(transformDataToServer(payload));
+    const data: any = transformDataToServer(payload);
+    mutate(data);
   };
 
   return (
     <CrudContainer
-      title={`${_t('Add')} ${modelConfiguration && getTitleFromModel(modelConfiguration)}`}
+      title={`${_t("Add")} ${
+        modelConfiguration && getTitleFromModel(modelConfiguration)
+      }`}
       breadcrumbs={
         <Breadcrumb>
           <Breadcrumb.Item>
-            <Link to="/">{_t('Dashboard')}</Link>
+            <Link to="/">{_t("Dashboard")}</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
             <Link to={`/list/${model}`}>
               {modelConfiguration && getTitleFromModel(modelConfiguration)}
             </Link>
           </Breadcrumb.Item>
-          <Breadcrumb.Item>{_t('Add')}</Breadcrumb.Item>
+          <Breadcrumb.Item>{_t("Add")}</Breadcrumb.Item>
         </Breadcrumb>
       }
     >
-      {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Add) ? (
+      {modelConfiguration?.permissions.includes(EModelPermission.Add) ? (
         <FormContainer
           modelConfiguration={modelConfiguration}
           form={form}
@@ -73,14 +89,14 @@ export const Add: React.FC = () => {
             <Col>
               <Space>
                 <Button loading={isLoading} htmlType="submit" type="primary">
-                  <SaveOutlined /> {_t('Add')}
+                  <SaveOutlined /> {_t("Add")}
                 </Button>
               </Space>
             </Col>
           </Row>
         </FormContainer>
       ) : (
-        <Empty description={_t('No permissions for model')} />
+        <Empty description={_t("No permissions for model")} />
       )}
     </CrudContainer>
   );

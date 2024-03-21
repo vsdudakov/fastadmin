@@ -1,14 +1,17 @@
-import { Checkbox, Tag } from 'antd';
-import dayjs from 'dayjs';
-import slugify from 'slugify';
+import { Checkbox, Tag } from "antd";
+import dayjs from "dayjs";
+import slugify from "slugify";
 
 export const isDayJs = (v: any): boolean => {
   const parsedDate = dayjs(v);
-  return parsedDate.isValid() && v.includes(parsedDate.toISOString().replace('Z', ''));
+  return (
+    parsedDate.isValid() &&
+    v.includes(parsedDate.toISOString().replace("Z", ""))
+  );
 };
 
 export const isNumeric = (v: any): boolean => {
-  return !isNaN(parseFloat(v)) && isFinite(v);
+  return !Number.isNaN(Number.parseFloat(v)) && Number.isFinite(v);
 };
 
 export const isArray = (v: any): boolean => {
@@ -16,23 +19,24 @@ export const isArray = (v: any): boolean => {
 };
 
 export const isBoolean = (v: any): boolean => {
-  return v === 'true' || v === 'false' || typeof v === 'boolean' || !!v === v;
+  return v === "true" || v === "false" || typeof v === "boolean" || !!v === v;
 };
 
 export const isString = (v: any): boolean => {
-  return typeof v === 'string' || v instanceof String;
+  return typeof v === "string" || v instanceof String;
 };
 
 export const isJson = (v: any): boolean => {
+  let jsonString = v;
   if (!isString(v)) {
     try {
-      v = JSON.stringify(v);
+      jsonString = JSON.stringify(v);
     } catch (e) {
       return false;
     }
   }
   try {
-    JSON.parse(v);
+    JSON.parse(jsonString);
   } catch (e) {
     return false;
   }
@@ -59,7 +63,9 @@ export const transformValueToServer = (value: any): any => {
 };
 
 export const transformDataToServer = (data: any) => {
-  return Object.fromEntries(Object.entries(data).map(([k, v]) => [k, transformValueToServer(v)]));
+  return Object.fromEntries(
+    Object.entries(data).map(([k, v]) => [k, transformValueToServer(v)]),
+  );
 };
 
 export const transformFiltersToServer = (data: any) => {
@@ -95,7 +101,7 @@ export const transformValueFromServer = (value: any): any => {
     return value;
   }
   if (isBoolean(value)) {
-    return value !== 'false' && !!value;
+    return value !== "false" && !!value;
   }
   if (isDayJs(value)) {
     return dayjs(value);
@@ -104,32 +110,34 @@ export const transformValueFromServer = (value: any): any => {
 };
 
 export const transformDataFromServer = (data: any) => {
-  return Object.fromEntries(Object.entries(data).map(([k, v]) => [k, transformValueFromServer(v)]));
+  return Object.fromEntries(
+    Object.entries(data).map(([k, v]) => [k, transformValueFromServer(v)]),
+  );
 };
 
 export const transformColumnValueFromServer = (
   value: any,
   emptyValue?: string,
-  dateTimeFormat?: string
+  dateTimeFormat?: string,
 ) => {
   if (value === null || value === undefined) {
-    return emptyValue || '-';
+    return emptyValue || "-";
   }
   if (isArray(value)) {
     const colors = [
-      'blue',
-      'purple',
-      'cyan',
-      'green',
-      'magenta',
-      'pink',
-      'red',
-      'orange',
-      'yellow',
-      'volcano',
-      'geekblue',
-      'lime',
-      'gold',
+      "blue",
+      "purple",
+      "cyan",
+      "green",
+      "magenta",
+      "pink",
+      "red",
+      "orange",
+      "yellow",
+      "volcano",
+      "geekblue",
+      "lime",
+      "gold",
     ];
 
     return value.map((v: any, index: number) => {

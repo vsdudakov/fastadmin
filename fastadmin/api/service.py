@@ -107,7 +107,7 @@ class ApiService:
         if inspect.iscoroutinefunction(admin_model.authenticate):
             authenticate_fn = admin_model.authenticate
         else:
-            authenticate_fn = sync_to_async(admin_model.authenticate)
+            authenticate_fn = sync_to_async(admin_model.authenticate)  # type: ignore [arg-type]
 
         user_id = await authenticate_fn(payload.username, payload.password)
 
@@ -162,7 +162,7 @@ class ApiService:
         if inspect.iscoroutinefunction(dashboard_widget_model.get_data):
             get_data = dashboard_widget_model.get_data
         else:
-            get_data = sync_to_async(dashboard_widget_model.get_data)
+            get_data = sync_to_async(dashboard_widget_model.get_data)  # type: ignore [arg-type]
         data = await get_data(
             min_x_field=query_params.min_x_field,
             max_x_field=query_params.max_x_field,
@@ -178,7 +178,7 @@ class ApiService:
         model: str,
         search: str | None = None,
         sort_by: str | None = None,
-        filters: dict = None,
+        filters: dict | None = None,
         offset: int | None = 0,
         limit: int | None = 10,
     ) -> tuple[list[dict], int]:
@@ -302,7 +302,7 @@ class ApiService:
         if inspect.iscoroutinefunction(admin_model.change_password):
             change_password_fn = admin_model.change_password
         else:
-            change_password_fn = sync_to_async(admin_model.change_password)
+            change_password_fn = sync_to_async(admin_model.change_password)  # type: ignore [arg-type]
         await change_password_fn(id, payload.password)
 
     async def change(
@@ -332,7 +332,7 @@ class ApiService:
         payload: ExportInputSchema,
         search: str | None = None,
         sort_by: str | None = None,
-        filters: dict = None,
+        filters: dict | None = None,
     ) -> tuple[str, str, StringIO | BytesIO | None]:
         current_user_id = await get_user_id_from_session_id(session_id)
         if not current_user_id:

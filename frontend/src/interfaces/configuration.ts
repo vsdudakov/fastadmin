@@ -1,46 +1,46 @@
 export enum EFieldWidgetType {
-  Input = 'Input',
-  InputNumber = 'InputNumber',
-  SlugInput = 'SlugInput',
-  EmailInput = 'EmailInput',
-  PhoneInput = 'PhoneInput',
-  UrlInput = 'UrlInput',
-  PasswordInput = 'PasswordInput',
-  TextArea = 'TextArea',
-  RichTextArea = 'RichTextArea',
-  JsonTextArea = 'JsonTextArea',
-  Select = 'Select',
-  AsyncSelect = 'AsyncSelect',
-  AsyncTransfer = 'AsyncTransfer',
-  Switch = 'Switch',
-  Checkbox = 'Checkbox',
-  TimePicker = 'TimePicker',
-  DatePicker = 'DatePicker',
-  DateTimePicker = 'DateTimePicker',
-  RangePicker = 'RangePicker',
-  RadioGroup = 'RadioGroup',
-  CheckboxGroup = 'CheckboxGroup',
-  Upload = 'Upload',
+  Input = "Input",
+  InputNumber = "InputNumber",
+  SlugInput = "SlugInput",
+  EmailInput = "EmailInput",
+  PhoneInput = "PhoneInput",
+  UrlInput = "UrlInput",
+  PasswordInput = "PasswordInput",
+  TextArea = "TextArea",
+  RichTextArea = "RichTextArea",
+  JsonTextArea = "JsonTextArea",
+  Select = "Select",
+  AsyncSelect = "AsyncSelect",
+  AsyncTransfer = "AsyncTransfer",
+  Switch = "Switch",
+  Checkbox = "Checkbox",
+  TimePicker = "TimePicker",
+  DatePicker = "DatePicker",
+  DateTimePicker = "DateTimePicker",
+  RangePicker = "RangePicker",
+  RadioGroup = "RadioGroup",
+  CheckboxGroup = "CheckboxGroup",
+  Upload = "Upload",
 }
 
 export enum EDashboardWidgetType {
-  ChartLine = 'ChartLine',
-  ChartArea = 'ChartArea',
-  ChartColumn = 'ChartColumn',
-  ChartBar = 'ChartBar',
-  ChartPie = 'ChartPie',
+  ChartLine = "ChartLine",
+  ChartArea = "ChartArea",
+  ChartColumn = "ChartColumn",
+  ChartBar = "ChartBar",
+  ChartPie = "ChartPie",
 }
 
 export enum EModelPermission {
-  Add = 'Add',
-  Change = 'Change',
-  Delete = 'Delete',
-  Export = 'Export',
+  Add = "Add",
+  Change = "Change",
+  Delete = "Delete",
+  Export = "Export",
 }
 
 export enum EExportFormat {
-  CSV = 'CSV',
-  JSON = 'JSON',
+  CSV = "CSV",
+  JSON = "JSON",
 }
 
 export interface IModelAction {
@@ -55,12 +55,14 @@ export interface IListConfigurationField {
   is_link?: boolean;
   empty_value_display: string;
   filter_widget_type?: EFieldWidgetType;
+
   filter_widget_props?: any;
 }
 
 export interface IAddConfigurationField {
   index?: number;
   form_widget_type?: EFieldWidgetType;
+
   form_widget_props?: any;
   required?: boolean;
 }
@@ -68,6 +70,7 @@ export interface IAddConfigurationField {
 export interface IChangeConfigurationField {
   index?: number;
   form_widget_type?: EFieldWidgetType;
+
   form_widget_props?: any;
   required?: boolean;
 }
@@ -120,6 +123,7 @@ export interface IDashboardWidget {
   y_field?: string;
   series_field?: string;
   x_field_filter_widget_type?: EFieldWidgetType;
+
   x_field_filter_widget_props?: Record<string, any>;
   x_field_periods?: string[];
 }

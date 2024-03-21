@@ -1,24 +1,29 @@
-import React from 'react';
-import { Button, Input, Space, Tooltip } from 'antd';
-import { SwapOutlined } from '@ant-design/icons';
+import { SwapOutlined } from "@ant-design/icons";
+import { Button, Input, Space, Tooltip } from "antd";
+import type React from "react";
 
-import slugify from 'slugify';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
+import slugify from "slugify";
 
 interface IJsonTextAreaProps {
   value?: any;
+
   onChange?: (data: any) => void;
 }
 
-export const SlugInput: React.FC<IJsonTextAreaProps> = ({ value, onChange, ...props }) => {
-  const { t: _t } = useTranslation('SlugInput');
+export const SlugInput: React.FC<IJsonTextAreaProps> = ({
+  value,
+  onChange,
+  ...props
+}) => {
+  const { t: _t } = useTranslation("SlugInput");
 
   const onSwap = () => {
     if (onChange) onChange(slugify(value));
   };
   return (
-    <Space.Compact style={{ width: '100%' }}>
-      <Tooltip title={_t('Slugify')}>
+    <Space.Compact style={{ width: "100%" }}>
+      <Tooltip title={_t("Slugify")}>
         <Button onClick={onSwap}>
           <SwapOutlined />
         </Button>

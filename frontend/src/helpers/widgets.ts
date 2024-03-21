@@ -1,15 +1,28 @@
-import { Checkbox, DatePicker, Input, InputNumber, Radio, Select, Switch, TimePicker } from 'antd';
-import { AsyncSelect } from 'components/async-select';
-import { AsyncTransfer } from 'components/async-transfer';
-import { JsonTextArea } from 'components/json-textarea';
-import { PasswordInput } from 'components/password-input';
-import { PhoneNumberInput } from 'components/phone-number-input';
-import { SlugInput } from 'components/slug-input';
-import { TextEditor } from 'components/texteditor-field';
-import { UploadInput } from 'components/upload-input';
-import { EFieldWidgetType } from 'interfaces/configuration';
+import { AsyncSelect } from "@/components/async-select";
+import { AsyncTransfer } from "@/components/async-transfer";
+import { JsonTextArea } from "@/components/json-textarea";
+import { PasswordInput } from "@/components/password-input";
+import { PhoneNumberInput } from "@/components/phone-number-input";
+import { SlugInput } from "@/components/slug-input";
+import { TextEditor } from "@/components/texteditor-field";
+import { UploadInput } from "@/components/upload-input";
+import { EFieldWidgetType } from "@/interfaces/configuration";
+import {
+  Checkbox,
+  DatePicker,
+  Input,
+  InputNumber,
+  Radio,
+  Select,
+  Switch,
+  TimePicker,
+} from "antd";
 
-export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any, id?: string) => {
+export const getWidgetCls = (
+  widgetType: EFieldWidgetType,
+  _t: any,
+  id?: string,
+) => {
   switch (widgetType) {
     case EFieldWidgetType.Input:
       return [Input, {}];
@@ -17,7 +30,7 @@ export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any, id?: string)
       return [
         InputNumber,
         {
-          style: { width: '100%' },
+          style: { width: "100%" },
         },
       ];
     case EFieldWidgetType.EmailInput:
@@ -40,14 +53,14 @@ export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any, id?: string)
       return [
         Select,
         {
-          style: { width: '100%' },
+          style: { width: "100%" },
         },
       ];
     case EFieldWidgetType.AsyncSelect:
       return [
         AsyncSelect,
         {
-          style: { width: '100%' },
+          style: { width: "100%" },
         },
       ];
     case EFieldWidgetType.AsyncTransfer:
@@ -64,22 +77,22 @@ export const getWidgetCls = (widgetType: EFieldWidgetType, _t: any, id?: string)
       return [
         DatePicker,
         {
-          style: { width: '100%' },
+          style: { width: "100%" },
         },
       ];
     case EFieldWidgetType.TimePicker:
       return [
         TimePicker,
         {
-          style: { width: '100%' },
+          style: { width: "100%" },
         },
       ];
     case EFieldWidgetType.DateTimePicker:
-      return [DatePicker, { style: { width: '100%' }, showTime: true }];
+      return [DatePicker, { style: { width: "100%" }, showTime: true }];
     case EFieldWidgetType.RangePicker:
       return [
         DatePicker.RangePicker,
-        { style: { width: '100%' }, placeholder: [_t('Start'), _t('End')] },
+        { style: { width: "100%" }, placeholder: [_t("Start"), _t("End")] },
       ];
     case EFieldWidgetType.Upload:
       return [UploadInput, { parentId: id }];

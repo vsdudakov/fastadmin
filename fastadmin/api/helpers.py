@@ -57,7 +57,14 @@ def is_valid_id(id: UUID | int) -> bool:
     :param id: An id to test.
     :return: True if id is a valid id, False otherwise.
     """
-    return str(id).isdigit() or is_valid_uuid(str(id))
+    if is_valid_uuid(str(id)):
+        return True
+    try:
+        int(id)
+        return True
+    except ValueError:
+        pass
+    return False
 
 
 def is_valid_base64(value: str) -> bool:

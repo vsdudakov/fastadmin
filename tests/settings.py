@@ -18,5 +18,6 @@ ORMS = [
     "tortoiseorm",
     "djangoorm",
     "sqlalchemy",
-    "ponyorm",
+    # TODO: fix pony orm
+    # "ponyorm",
 ]

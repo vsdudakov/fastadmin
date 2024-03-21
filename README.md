@@ -22,7 +22,7 @@
 
 ## Introduction
 
-
+  
 <a href='https://github.com/vsdudakov/fastadmin' target='_blank'>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin.
 
 
@@ -38,7 +38,7 @@
 
 
 
-
+  
 FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way.
 
 
@@ -54,7 +54,7 @@ FastAdmin was built with relations in mind and admiration for the excellent and 
 
 
 
-
+  
 FastAdmin is designed to be minimalistic, functional and yet familiar.
 
 
@@ -76,7 +76,7 @@ FastAdmin is designed to be minimalistic, functional and yet familiar.
 
 ## Getting Started
 
-
+  
 
 
 
@@ -96,7 +96,7 @@ If you have any questions that are beyond the scope of the documentation, Please
 
 ### Installation
 
-
+  
 
 
 Follow the steps below to setup FastAdmin:
@@ -112,7 +112,7 @@ Follow the steps below to setup FastAdmin:
 
 
 
-
+  
 Install the package using pip:
 
 
@@ -128,7 +128,7 @@ Install the package using pip:
 
 
 
-
+  
 
 
 
@@ -144,7 +144,7 @@ Note: For zsh and macos use: <code>pip install fastadmin[fastapi,django]</code>
 
 
 
-
+  
 
 
 
@@ -170,7 +170,7 @@ pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
 
 
 
-
+  
 Install the package using poetry:
 
 
@@ -186,7 +186,7 @@ Install the package using poetry:
 
 
 
-
+  
 
 
 
@@ -212,7 +212,7 @@ poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
 
 
 
-
+  
 Configure required settings using virtual environment variables:
 
 
@@ -228,7 +228,7 @@ Configure required settings using virtual environment variables:
 
 
 
-
+  
 
 
 
@@ -244,7 +244,7 @@ Note: You can add these variables to .env and use python-dotenv to load them. Se
 
 
 
-
+  
 
 
 
@@ -269,7 +269,7 @@ export ADMIN_SECRET_KEY=secret_key
 
 ### Quick Tutorial
 
-
+  
 
 
 Setup FastAdmin for a framework
@@ -285,7 +285,7 @@ Setup FastAdmin for a framework
 
 
 
-
+  
 
 
 
@@ -389,7 +389,7 @@ app.register_blueprint(admin_app, url_prefix="/admin")
 
 
 
-
+  
 
 
 Register ORM models
@@ -405,7 +405,7 @@ Register ORM models
 
 
 
-
+  
 
 
 

@@ -1,10 +1,20 @@
-import { Button, Divider, Form, Input, message, Modal, Space, Tooltip } from 'antd';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { EditOutlined } from '@ant-design/icons';
-import { patchFetcher } from 'fetchers/fetchers';
-import { handleError } from 'helpers/forms';
-import { useMutation } from '@tanstack/react-query';
+import { EditOutlined } from "@ant-design/icons";
+import { useMutation } from "@tanstack/react-query";
+import {
+  Button,
+  Divider,
+  Form,
+  Input,
+  Modal,
+  Space,
+  Tooltip,
+  message,
+} from "antd";
+import React from "react";
+import { useTranslation } from "react-i18next";
+
+import { patchFetcher } from "@/fetchers/fetchers";
+import { handleError } from "@/helpers/forms";
 
 export interface IPasswordInput {
   parentId: string;
@@ -16,7 +26,7 @@ export const PasswordInput: React.FC<IPasswordInput> = ({
   passwordModalForm,
   ...props
 }) => {
-  const { t: _t } = useTranslation('PasswordInput');
+  const { t: _t } = useTranslation("PasswordInput");
   const [form] = Form.useForm();
   const [open, setOpen] = React.useState<boolean>(false);
 
@@ -30,18 +40,17 @@ export const PasswordInput: React.FC<IPasswordInput> = ({
     setOpen(true);
   };
 
-  const { mutate, isLoading } = useMutation(
-    (payload: any) => patchFetcher(`/change-password/${parentId}`, payload),
-    {
-      onSuccess: () => {
-        message.success(_t('Succesfully changed'));
-        onClose();
-      },
-      onError: (error: Error) => {
-        handleError(error, form);
-      },
-    }
-  );
+  const { mutate, isPending: isLoading } = useMutation({
+    mutationFn: (data: any) =>
+      patchFetcher(`/users/${parentId}/change-password`, data),
+    onSuccess: () => {
+      message.success(_t("Succesfully changed"));
+      onClose();
+    },
+    onError: (error: Error) => {
+      handleError(error, form);
+    },
+  });
 
   const onChangePassword = (data: any) => {
     mutate(data);
@@ -52,15 +61,20 @@ export const PasswordInput: React.FC<IPasswordInput> = ({
   }
   return (
     <>
-      <Space.Compact style={{ width: '100%' }}>
-        <Tooltip title={_t('Change Password')}>
+      <Space.Compact style={{ width: "100%" }}>
+        <Tooltip title={_t("Change Password")}>
           <Button onClick={onOpen}>
             <EditOutlined />
           </Button>
         </Tooltip>
         <Input.Password {...props} />
       </Space.Compact>
-      <Modal open={open} title={_t('Change Password')} onCancel={onClose} footer={null}>
+      <Modal
+        open={open}
+        title={_t("Change Password")}
+        onCancel={onClose}
+        footer={null}
+      >
         <Divider />
         <Form form={form} layout="vertical" onFinish={onChangePassword}>
           <Form.Item name="password" label="Password">
@@ -72,7 +86,7 @@ export const PasswordInput: React.FC<IPasswordInput> = ({
           <Divider />
           <Form.Item>
             <Button type="primary" loading={isLoading} htmlType="submit">
-              {_t('Save')}
+              {_t("Save")}
             </Button>
           </Form.Item>
         </Form>

@@ -1,33 +1,35 @@
-import React, { useCallback, useContext, useState } from 'react';
+import { PlusCircleOutlined, SaveOutlined } from "@ant-design/icons";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Button,
   Col,
   Divider,
   Empty,
   Form,
-  message,
   Modal,
   Row,
   Select,
   Space,
   Tooltip,
-} from 'antd';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { PlusCircleOutlined, SaveOutlined } from '@ant-design/icons';
-import debounce from 'lodash.debounce';
-import querystring from 'querystring';
-import { useTranslation } from 'react-i18next';
+  message,
+} from "antd";
+import debounce from "lodash.debounce";
+import querystring from "query-string";
+import type React from "react";
+import { useCallback, useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { getFetcher, postFetcher } from 'fetchers/fetchers';
-import { FormContainer } from 'components/form-container';
-import { handleError } from 'helpers/forms';
-import { getTitleFromModel } from 'helpers/title';
-import { EModelPermission, IModel } from 'interfaces/configuration';
-import { ConfigurationContext } from 'providers/ConfigurationProvider';
+import { FormContainer } from "@/components/form-container";
+import { getFetcher, postFetcher } from "@/fetchers/fetchers";
+import { handleError } from "@/helpers/forms";
+import { getTitleFromModel } from "@/helpers/title";
+import { EModelPermission, type IModel } from "@/interfaces/configuration";
+import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 export interface IAsyncSelect {
   idField: string;
   labelFields: string[];
+
   value?: any;
 
   parentModel: string;
@@ -41,12 +43,12 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
   ...props
 }) => {
   const [formAdd] = Form.useForm();
-  const { t: _t } = useTranslation('AsyncSelect');
+  const { t: _t } = useTranslation("AsyncSelect");
   const [search, setSearch] = useState<string | undefined>();
   const [openAdd, setOpenAdd] = useState<boolean>(false);
   const { configuration } = useContext(ConfigurationContext);
   const modelConfiguration: IModel | undefined = configuration.models.find(
-    (item: IModel) => item.name === parentModel
+    (item: IModel) => item.name === parentModel,
   );
 
   const queryString = querystring.stringify({
@@ -55,17 +57,19 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
     search,
   });
 
-  const { data, isLoading, refetch } = useQuery([`/list/${parentModel}`, queryString], () =>
-    getFetcher(`/list/${parentModel}?${queryString}`)
-  );
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: [`/list/${parentModel}`, queryString],
+    queryFn: () => getFetcher(`/list/${parentModel}?${queryString}`),
+  });
 
   const {
     mutate: mutateAdd,
-    isLoading: isLoadingAdd,
+    isPending: isLoadingAdd,
     isError: isErrorAdd,
-  } = useMutation((payload: any) => postFetcher(`/add/${parentModel}`, payload), {
+  } = useMutation({
+    mutationFn: (payload: any) => postFetcher(`/add/${parentModel}`, payload),
     onSuccess: () => {
-      message.success(_t('Succesfully added'));
+      message.success(_t("Succesfully added"));
       refetch();
       onCloseAdd();
     },
@@ -76,8 +80,14 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
 
   const onFilter = (input: string, option: any) => {
     return (
-      ((option?.label as any) || '').toString().toLowerCase().indexOf(input.toLowerCase()) >= 0 ||
-      ((option?.value as any) || '').toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+      ((option?.label as any) || "")
+        .toString()
+        .toLowerCase()
+        .indexOf(input.toLowerCase()) >= 0 ||
+      ((option?.value as any) || "")
+        .toString()
+        .toLowerCase()
+        .indexOf(input.toLowerCase()) >= 0
     );
   };
 
@@ -103,12 +113,14 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
       <Modal
         width={600}
         open={openAdd}
-        title={_t(`Add ${modelConfiguration && getTitleFromModel(modelConfiguration)}`)}
+        title={_t(
+          `Add ${modelConfiguration && getTitleFromModel(modelConfiguration)}`,
+        )}
         onCancel={onCloseAdd}
         footer={null}
       >
         <Divider />
-        {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Add) ? (
+        {modelConfiguration?.permissions.includes(EModelPermission.Add) ? (
           <FormContainer
             modelConfiguration={modelConfiguration}
             form={formAdd}
@@ -119,19 +131,29 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
             <Row justify="end">
               <Col>
                 <Space>
-                  <Button loading={isLoadingAdd} htmlType="submit" type="primary">
-                    <SaveOutlined /> {_t('Add')}
+                  <Button
+                    loading={isLoadingAdd}
+                    htmlType="submit"
+                    type="primary"
+                  >
+                    <SaveOutlined /> {_t("Add")}
                   </Button>
                 </Space>
               </Col>
             </Row>
           </FormContainer>
         ) : (
-          <Empty description={_t('No permissions for model')} />
+          <Empty description={_t("No permissions for model")} />
         )}
       </Modal>
-      <Space.Compact style={{ width: '100%' }}>
-        <Tooltip title={_t(`Add ${modelConfiguration && getTitleFromModel(modelConfiguration)}`)}>
+      <Space.Compact style={{ width: "100%" }}>
+        <Tooltip
+          title={_t(
+            `Add ${
+              modelConfiguration && getTitleFromModel(modelConfiguration)
+            }`,
+          )}
+        >
           <Button onClick={onOpenAdd}>
             <PlusCircleOutlined />
           </Button>

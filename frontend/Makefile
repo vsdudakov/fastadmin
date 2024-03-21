@@ -1,37 +1,50 @@
-.PHONY: clean
-clean:
-	rm -rf node_modules
 
-.PHONY: remove-cache
-remove-cache:
+.PHONY: help  # Shows this message
+help:
+	@grep '^.PHONY: .* #' Makefile | sed 's/\.PHONY: \(.*\) # \(.*\)/\1	\2/' | expand -t20
+
+
+.PHONY: clean  # Cleaning artefacts
+clean:
+	find . | grep -E "(dist$$|node_modules$$)" | xargs rm -rf
+
+
+.PHONY: install  # Install
+install:
+	@echo "Install"
+	@exec yarn install
+
+
+.PHONY: lint  # Runs linters
+lint:
+	@echo "Run eslint"
+	@exec yarn run lint
+	@exec yarn run biome-lint
+
+
+.PHONY: fix  # Runs linters and fixes auto-fixable errors
+fix:
+	@echo "Run eslint"
+	@exec yarn run lint --fix
+	@exec yarn run biome-check
+
+
+.PHONY: test  # Runs tests
+test:
+	@echo "Run tests"
+	@exec yarn run coverage
+
+
+.PHONY: dev  # Run dev server
+dev:
+	@exec yarn run dev --host 0.0.0.0 --port 3030
+
+
+.PHONY: remove_cache  # Remove cache
+remove_cache:
 	rm -rf node_modules/.cache
 
-.PHONY: dev
-dev:
-	GENERATE_SOURCEMAP=false PORT=3030 yarn run start
 
-.PHONY: fix
-fix:
-	yarn run tslint --fix --project .
-	yarn run pretty-quick
-
-.PHONY: lint
-lint:
-	yarn run tslint --project .
-	yarn run pretty-quick --check
-
-.PHONY: test
-test:
-	yarn run test --coverage --watchAll=false
-
-.PHONY: install
-install:
-	yarn install
-
-.PHONY: build
+.PHONY: build  # Build prod server
 build:
-	GENERATE_SOURCEMAP=false yarn run build
-
-.PHONY: kill
-kill:
-	kill -9 $$(lsof -t -i:3030)
+	@exec yarn run build

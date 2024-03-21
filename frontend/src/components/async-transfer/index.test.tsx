@@ -1,22 +1,23 @@
-import React from 'react';
-import { render } from '@testing-library/react';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from "@tanstack/react-query";
+import { render } from "@testing-library/react";
+import { test } from "vitest";
 
-import { TestProviders } from 'providers';
-import { AsyncTransfer } from 'components/async-transfer';
+import { AsyncTransfer } from "@/components/async-transfer";
+import { TestProviders } from "@/providers";
 
-test('Renders AsyncTransfer', () => {
+test("Renders AsyncTransfer", () => {
   const queryClient = new QueryClient();
-  const onChange = (data: any) => undefined;
+
+  const onChange = (_data: any) => undefined;
   render(
     <TestProviders client={queryClient}>
       <AsyncTransfer
         idField="id"
-        labelFields={['id']}
+        labelFields={["id"]}
         parentModel="test"
         onChange={onChange}
         value={undefined}
       />
-    </TestProviders>
+    </TestProviders>,
   );
 });

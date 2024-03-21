@@ -104,6 +104,12 @@ def get_versions():
                 "Added PasswordInput widget type.",
             ],
         },
+        {
+            "version": "0.2.0",
+            "changes": [
+                "Update packages. Use vite instead obsolete react-scripts.",
+            ],
+        },
     ]
 
 

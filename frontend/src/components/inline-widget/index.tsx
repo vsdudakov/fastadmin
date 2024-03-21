@@ -1,33 +1,62 @@
-import React, { useCallback, useContext, useState } from 'react';
-import { Button, Col, Divider, Empty, Form, Input, message, Modal, Row, Select, Space } from 'antd';
-import { PlusCircleOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import querystring from 'querystring';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { SaveOutlined } from '@ant-design/icons';
+import { PlusCircleOutlined } from "@ant-design/icons";
+import { SaveOutlined } from "@ant-design/icons";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  Button,
+  Col,
+  Divider,
+  Empty,
+  Form,
+  Input,
+  Modal,
+  Row,
+  Select,
+  Space,
+  message,
+} from "antd";
+import querystring from "query-string";
+import type React from "react";
+import { useCallback, useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { TableOrCards } from 'components/table-or-cards';
-import { useTableQuery } from 'hooks/useTableQuery';
-import { useTableColumns } from 'hooks/useTableColumns';
-import { handleError } from 'helpers/forms';
-import { transformDataFromServer, transformFiltersToServer } from 'helpers/transform';
-import { deleteFetcher, getFetcher, patchFetcher, postFetcher } from 'fetchers/fetchers';
-import { ConfigurationContext } from 'providers/ConfigurationProvider';
-import { EModelPermission, IInlineModel, IModelAction } from 'interfaces/configuration';
-import { getTitleFromModel } from 'helpers/title';
-import { ExportBtn } from 'components/export-btn';
-import { FormContainer } from 'components/form-container';
+import { ExportBtn } from "@/components/export-btn";
+import { FormContainer } from "@/components/form-container";
+import { TableOrCards } from "@/components/table-or-cards";
+import {
+  deleteFetcher,
+  getFetcher,
+  patchFetcher,
+  postFetcher,
+} from "@/fetchers/fetchers";
+import { handleError } from "@/helpers/forms";
+import { getTitleFromModel } from "@/helpers/title";
+import {
+  transformDataFromServer,
+  transformFiltersToServer,
+} from "@/helpers/transform";
+import { useTableColumns } from "@/hooks/useTableColumns";
+import { useTableQuery } from "@/hooks/useTableQuery";
+import {
+  EModelPermission,
+  type IInlineModel,
+  type IModelAction,
+} from "@/interfaces/configuration";
+import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 export interface IInlineWidget {
   modelConfiguration: IInlineModel;
   parentId: string;
 }
 
-export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, parentId }) => {
-  const { t: _t } = useTranslation('Inline');
+export const InlineWidget: React.FC<IInlineWidget> = ({
+  modelConfiguration,
+  parentId,
+}) => {
+  const { t: _t } = useTranslation("Inline");
   const { configuration } = useContext(ConfigurationContext);
   const [openList, setOpenList] = useState<boolean>(false);
   const [openAdd, setOpenAdd] = useState<boolean>(false);
+
   const [openChange, setOpenChange] = useState<any | undefined>();
 
   const [formAdd] = Form.useForm();
@@ -82,7 +111,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
       setOpenChange(item?.id);
       setOpenAdd(false);
     },
-    [formChange]
+    [formChange],
   );
 
   const onCloseChange = useCallback(() => {
@@ -99,31 +128,29 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
     ...transformFiltersToServer(filters),
   });
 
-  const { data, isLoading, refetch } = useQuery(
-    [`/list/inlines.${model}`, queryString],
-    () => getFetcher(`/list/inlines.${model}?${queryString}`),
-    {
-      enabled: openList,
-      refetchOnWindowFocus: false,
-    }
-  );
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: [`/list/inlines.${model}`, queryString],
+    queryFn: () => getFetcher(`/list/inlines.${model}?${queryString}`),
+    enabled: openList,
+    refetchOnWindowFocus: false,
+  });
 
-  const { data: initialChangeValues, isLoading: isLoadingInitialValues } = useQuery(
-    [`/retrieve/inlines.${model}/${openChange}`],
-    () => getFetcher(`/retrieve/inlines.${model}/${openChange}`),
-    {
+  const { data: initialChangeValues, isLoading: isLoadingInitialValues } =
+    useQuery({
+      queryKey: [`/retrieve/inlines.${model}/${openChange}`],
+      queryFn: () => getFetcher(`/retrieve/inlines.${model}/${openChange}`),
       enabled: !!openChange,
       refetchOnWindowFocus: false,
-    }
-  );
+    });
 
   const {
     mutate: mutateAdd,
-    isLoading: isLoadingAdd,
+    isPending: isLoadingAdd,
     isError: isErrorAdd,
-  } = useMutation((payload: any) => postFetcher(`/add/inlines.${model}`, payload), {
+  } = useMutation({
+    mutationFn: (data: any) => postFetcher(`/add/inlines.${model}`, data),
     onSuccess: () => {
-      message.success(_t('Succesfully added'));
+      message.success(_t("Succesfully added"));
       refetch();
       onCloseAdd();
     },
@@ -134,54 +161,50 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
 
   const {
     mutate: mutateChange,
-    isLoading: isLoadingChange,
+    isPending: isLoadingChange,
     isError: isErrorChange,
-  } = useMutation(
-    (payload: any) => patchFetcher(`/change/inlines.${model}/${openChange}`, payload),
-    {
-      onSuccess: () => {
-        message.success(_t('Succesfully changed'));
-        refetch();
-        onCloseChange();
-      },
-      onError: (error: Error) => {
-        handleError(error, formChange);
-      },
-    }
-  );
+  } = useMutation({
+    mutationFn: (data: any) =>
+      patchFetcher(`/change/inlines.${model}/${openChange}`, data),
+    onSuccess: () => {
+      message.success(_t("Succesfully changed"));
+      refetch();
+      onCloseChange();
+    },
+    onError: (error: Error) => {
+      handleError(error, formChange);
+    },
+  });
 
-  const { mutate: mutateDelete } = useMutation(
-    (id: string) => deleteFetcher(`/delete/inlines.${model}/${id}`),
-    {
-      onSuccess: () => {
-        resetTable(modelConfiguration?.preserve_filters);
-        refetch();
-        message.success(_t('Successfully deleted'));
-      },
-      onError: (error) => {
-        handleError(error);
-      },
-    }
-  );
+  const { mutate: mutateDelete } = useMutation({
+    mutationFn: (id: string) => deleteFetcher(`/delete/inlines.${model}/${id}`),
+    onSuccess: () => {
+      resetTable(modelConfiguration?.preserve_filters);
+      refetch();
+      message.success(_t("Successfully deleted"));
+    },
+    onError: (error) => {
+      handleError(error);
+    },
+  });
 
-  const { mutate: mutateAction, isLoading: isLoadingAction } = useMutation(
-    (payload: any) => postFetcher(`/action/inlines.${model}/${action}`, payload),
-    {
-      onSuccess: () => {
-        resetTable(modelConfiguration?.preserve_filters);
-        refetch();
-        message.success(_t('Successfully applied'));
-      },
-      onError: () => {
-        message.error(_t('Server error'));
-      },
-    }
-  );
+  const { mutate: mutateAction, isPending: isLoadingAction } = useMutation({
+    mutationFn: (data: any) =>
+      postFetcher(`/action/inlines.${model}/${action}`, data),
+    onSuccess: () => {
+      resetTable(modelConfiguration?.preserve_filters);
+      refetch();
+      message.success(_t("Successfully applied"));
+    },
+    onError: () => {
+      message.error(_t("Server error"));
+    },
+  });
 
   const onSelectRow = (v: string[]) => setSelectedRowKeys(v);
   const onApplyAction = useCallback(
     () => mutateAction({ ids: selectedRowKeys }),
-    [mutateAction, selectedRowKeys]
+    [mutateAction, selectedRowKeys],
   );
 
   const dateTimeFormat = configuration?.datetime_format;
@@ -192,7 +215,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
       (fieldName: string) => {
         return filters[fieldName];
       },
-      [filters]
+      [filters],
     ),
     useCallback(
       (fieldName: string, value: any) => {
@@ -202,7 +225,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
         setPage(defaultPage);
         setPageSize(defaultPageSize);
       },
-      [defaultPage, defaultPageSize, filters, setFilters, setPage, setPageSize]
+      [defaultPage, defaultPageSize, filters, setFilters, setPage, setPageSize],
     ),
     useCallback(
       (fieldName: string) => {
@@ -212,22 +235,22 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
         setPage(defaultPage);
         setPageSize(defaultPageSize);
       },
-      [defaultPage, defaultPageSize, filters, setFilters, setPage, setPageSize]
+      [defaultPage, defaultPageSize, filters, setFilters, setPage, setPageSize],
     ),
     useCallback(
       (record: any) => {
         // onDeleteItem
         mutateDelete(record.id);
       },
-      [mutateDelete]
+      [mutateDelete],
     ),
     useCallback(
       (record: any) => {
         // onChangeItem
         onOpenChange(record);
       },
-      [onOpenChange]
-    )
+      [onOpenChange],
+    ),
   );
 
   const onFinishAdd = (payload: any) => {
@@ -241,35 +264,39 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
   const tableHeader = useCallback(
     () => (
       <Row justify="end" gutter={[8, 8]}>
-        {(modelConfiguration?.actions || []).length > 0 && modelConfiguration?.actions_on_top && (
-          <Col>
-            <Select
-              placeholder={_t('Select Action By') as string}
-              allowClear={true}
-              value={action}
-              onChange={setAction}
-              style={{ width: 300 }}
-            >
-              {(modelConfiguration?.actions || []).map((a: IModelAction) => (
-                <Select.Option key={a.name} value={a.name}>
-                  {a.description || a.name}
-                </Select.Option>
-              ))}
-            </Select>
-            <Button
-              disabled={!action || selectedRowKeys.length === 0}
-              style={{ marginLeft: 5 }}
-              loading={isLoadingAction}
-              onClick={onApplyAction}
-            >
-              {_t('Apply')}
-            </Button>
-          </Col>
-        )}
+        {(modelConfiguration?.actions || []).length > 0 &&
+          modelConfiguration?.actions_on_top && (
+            <Col>
+              <Select
+                placeholder={_t("Select Action By") as string}
+                allowClear={true}
+                value={action}
+                onChange={setAction}
+                style={{ width: 300 }}
+              >
+                {(modelConfiguration?.actions || []).map((a: IModelAction) => (
+                  <Select.Option key={a.name} value={a.name}>
+                    {a.description || a.name}
+                  </Select.Option>
+                ))}
+              </Select>
+              <Button
+                disabled={!action || selectedRowKeys.length === 0}
+                style={{ marginLeft: 5 }}
+                loading={isLoadingAction}
+                onClick={onApplyAction}
+              >
+                {_t("Apply")}
+              </Button>
+            </Col>
+          )}
         {(modelConfiguration?.search_fields || []).length > 0 && (
           <Col>
             <Input.Search
-              placeholder={modelConfiguration?.search_help_text || (_t('Search By') as string)}
+              placeholder={
+                modelConfiguration?.search_help_text ||
+                (_t("Search By") as string)
+              }
               allowClear={true}
               onSearch={setSearch}
               style={{ width: 200 }}
@@ -289,7 +316,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
         {modelConfiguration?.permissions?.includes(EModelPermission.Add) && (
           <Col>
             <Button onClick={onOpenAdd} style={{ marginRight: -10 }}>
-              <PlusCircleOutlined /> {_t('Add')}
+              <PlusCircleOutlined /> {_t("Add")}
             </Button>
           </Col>
         )}
@@ -315,7 +342,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
       parentId,
       sortBy,
       onOpenAdd,
-    ]
+    ],
   );
 
   const tableFooter = useCallback(() => {
@@ -328,17 +355,19 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
                 modelConfiguration?.actions_on_bottom && (
                   <div style={{ marginLeft: -8 }}>
                     <Select
-                      placeholder={_t('Select Action By') as string}
+                      placeholder={_t("Select Action By") as string}
                       allowClear={true}
                       value={action}
                       onChange={setAction}
                       style={{ width: 200 }}
                     >
-                      {(modelConfiguration?.actions || []).map((a: IModelAction) => (
-                        <Select.Option key={a.name} value={a.name}>
-                          {a.description || a.name}
-                        </Select.Option>
-                      ))}
+                      {(modelConfiguration?.actions || []).map(
+                        (a: IModelAction) => (
+                          <Select.Option key={a.name} value={a.name}>
+                            {a.description || a.name}
+                          </Select.Option>
+                        ),
+                      )}
                     </Select>
                     <Button
                       disabled={!action || selectedRowKeys.length === 0}
@@ -346,7 +375,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
                       loading={isLoadingAction}
                       onClick={onApplyAction}
                     >
-                      {_t('Apply')}
+                      {_t("Apply")}
                     </Button>
                   </div>
                 )}
@@ -370,7 +399,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
   return (
     <div>
       <Button style={{ minWidth: 200 }} type="dashed" onClick={onOpenList}>
-        {_t('Change')}
+        {_t("Change")}
       </Button>
       <Modal
         width="100%"
@@ -390,6 +419,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
                 (modelConfiguration?.actions || []).length > 0
                   ? {
                       selectedRowKeys,
+
                       onChange: onSelectRow as any,
                     }
                   : undefined
@@ -417,7 +447,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
         footer={null}
       >
         <Divider />
-        {modelConfiguration && modelConfiguration.permissions.includes(EModelPermission.Add) ? (
+        {modelConfiguration?.permissions.includes(EModelPermission.Add) ? (
           <FormContainer
             modelConfiguration={modelConfiguration}
             form={formAdd}
@@ -428,15 +458,19 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
             <Row justify="end">
               <Col>
                 <Space>
-                  <Button loading={isLoadingAdd} htmlType="submit" type="primary">
-                    <SaveOutlined /> {_t('Add')}
+                  <Button
+                    loading={isLoadingAdd}
+                    htmlType="submit"
+                    type="primary"
+                  >
+                    <SaveOutlined /> {_t("Add")}
                   </Button>
                 </Space>
               </Col>
             </Row>
           </FormContainer>
         ) : (
-          <Empty description={_t('No permissions for model')} />
+          <Empty description={_t("No permissions for model")} />
         )}
       </Modal>
       <Modal
@@ -466,14 +500,14 @@ export const InlineWidget: React.FC<IInlineWidget> = ({ modelConfiguration, pare
                     htmlType="submit"
                     type="primary"
                   >
-                    <SaveOutlined /> {_t('Save')}
+                    <SaveOutlined /> {_t("Save")}
                   </Button>
                 </Space>
               </Col>
             </Row>
           </FormContainer>
         ) : (
-          <Empty description={_t('No permissions for model')} />
+          <Empty description={_t("No permissions for model")} />
         )}
       </Modal>
     </div>

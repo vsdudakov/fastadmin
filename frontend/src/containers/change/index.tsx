@@ -1,19 +1,38 @@
-import React, { useContext } from 'react';
-import { Breadcrumb, Button, Col, Empty, Form, message, Popconfirm, Row, Space } from 'antd';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { SaveOutlined, SaveFilled, DeleteOutlined } from '@ant-design/icons';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { DeleteOutlined, SaveFilled, SaveOutlined } from "@ant-design/icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Breadcrumb,
+  Button,
+  Col,
+  Empty,
+  Form,
+  Popconfirm,
+  Row,
+  Space,
+  message,
+} from "antd";
+import type React from "react";
+import { useContext } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { CrudContainer } from 'components/crud-container';
-import { ConfigurationContext } from 'providers/ConfigurationProvider';
-import { EModelPermission, IModel } from 'interfaces/configuration';
-import { deleteFetcher, getFetcher, patchFetcher, postFetcher } from 'fetchers/fetchers';
-import { handleError } from 'helpers/forms';
-import { transformDataToServer, transformDataFromServer } from 'helpers/transform';
-import { FormContainer } from 'components/form-container';
-import { useIsMobile } from 'hooks/useIsMobile';
-import { getTitleFromModel } from 'helpers/title';
+import { CrudContainer } from "@/components/crud-container";
+import { FormContainer } from "@/components/form-container";
+import {
+  deleteFetcher,
+  getFetcher,
+  patchFetcher,
+  postFetcher,
+} from "@/fetchers/fetchers";
+import { handleError } from "@/helpers/forms";
+import { getTitleFromModel } from "@/helpers/title";
+import {
+  transformDataFromServer,
+  transformDataToServer,
+} from "@/helpers/transform";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { EModelPermission, type IModel } from "@/interfaces/configuration";
+import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 export const Change: React.FC = () => {
   const [form] = Form.useForm();
@@ -21,30 +40,31 @@ export const Change: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { configuration } = useContext(ConfigurationContext);
-  const { t: _t } = useTranslation('Change');
+  const { t: _t } = useTranslation("Change");
   const { model, id } = useParams();
 
   const modelConfiguration: IModel | undefined = configuration.models.find(
-    (item: IModel) => item.name === model
+    (item: IModel) => item.name === model,
   );
 
-  const { data: initialChangeValues, isLoading: isLoadingInitialValues } = useQuery(
-    [`/retrieve/${model}/${id}`],
-    () => getFetcher(`/retrieve/${model}/${id}`),
-    {
+  const { data: initialChangeValues, isLoading: isLoadingInitialValues } =
+    useQuery({
+      queryKey: [`/retrieve/${model}/${id}`],
+      queryFn: () => getFetcher(`/retrieve/${model}/${id}`),
       refetchOnWindowFocus: false,
-    }
-  );
+    });
 
   const {
     mutate: mutateAdd,
-    isLoading: isLoadingAdd,
+    isPending: isLoadingAdd,
     isError: isErrorAdd,
-  } = useMutation((payload: any) => postFetcher(`/add/${model}`, payload), {
+  } = useMutation({
+    mutationFn: (payload: any) => postFetcher(`/add/${model}`, payload),
     onSuccess: () => {
-      message.success(_t('Succesfully added'));
-      queryClient.invalidateQueries([`/list/${model}`]);
-      const next = form.getFieldValue('next');
+      message.success(_t("Succesfully added"));
+
+      queryClient.invalidateQueries([`/list/${model}`] as any);
+      const next = form.getFieldValue("next");
       if (next) {
         navigate(next);
       }
@@ -54,37 +74,44 @@ export const Change: React.FC = () => {
     },
   });
 
-  const { mutate, isLoading, isError } = useMutation(
-    (payload: any) => patchFetcher(`/change/${model}/${id}`, payload),
-    {
-      onSuccess: () => {
-        message.success(_t('Succesfully changed'));
-        queryClient.invalidateQueries([`/retrieve/${model}/${id}`]);
-        queryClient.invalidateQueries([`/list/${model}`]);
-        const next = form.getFieldValue('next');
-        if (next) {
-          navigate(next);
-        }
-      },
-      onError: (error: Error) => {
-        handleError(error, form);
-      },
-    }
-  );
-
-  const { mutate: mutateDelete } = useMutation(() => deleteFetcher(`/delete/${model}/${id}`), {
+  const {
+    mutate,
+    isPending: isLoading,
+    isError,
+  } = useMutation({
+    mutationFn: (payload: any) =>
+      patchFetcher(`/change/${model}/${id}`, payload),
     onSuccess: () => {
-      message.success(_t('Successfully deleted'));
-      queryClient.invalidateQueries([`/list/${model}`]);
+      message.success(_t("Succesfully changed"));
+
+      queryClient.invalidateQueries([`/retrieve/${model}/${id}`] as any);
+
+      queryClient.invalidateQueries([`/list/${model}`] as any);
+      const next = form.getFieldValue("next");
+      if (next) {
+        navigate(next);
+      }
+    },
+    onError: (error: Error) => {
+      handleError(error, form);
+    },
+  });
+
+  const { mutate: mutateDelete } = useMutation({
+    mutationFn: () => deleteFetcher(`/delete/${model}/${id}`),
+    onSuccess: () => {
+      message.success(_t("Successfully deleted"));
+
+      queryClient.invalidateQueries([`/list/${model}`] as any);
       navigate(`/list/${model}`);
     },
     onError: () => {
-      message.error(_t('Server error'));
+      message.error(_t("Server error"));
     },
   });
 
   const onFinish = (payload: any) => {
-    const saveAsNew = form.getFieldValue('save_as_new');
+    const saveAsNew = form.getFieldValue("save_as_new");
     if (saveAsNew) {
       mutateAdd(transformDataToServer(payload));
       return;
@@ -99,27 +126,29 @@ export const Change: React.FC = () => {
   };
 
   const onSaveAndAddAnother = () => {
-    form.setFieldValue('next', `/add/${model}`);
+    form.setFieldValue("next", `/add/${model}`);
     if (modelConfiguration?.save_as) {
-      form.setFieldValue('save_as_new', true);
+      form.setFieldValue("save_as_new", true);
     }
     form.submit();
   };
 
   const onSave = () => {
     if (!modelConfiguration?.save_as_continue) {
-      form.setFieldValue('next', `/list/${model}`);
+      form.setFieldValue("next", `/list/${model}`);
     }
     form.submit();
   };
 
   return (
     <CrudContainer
-      title={`${_t('Change')} ${modelConfiguration && getTitleFromModel(modelConfiguration)} ${id}`}
+      title={`${_t("Change")} ${
+        modelConfiguration && getTitleFromModel(modelConfiguration)
+      } ${id}`}
       breadcrumbs={
         <Breadcrumb>
           <Breadcrumb.Item>
-            <Link to="/">{_t('Dashboard')}</Link>
+            <Link to="/">{_t("Dashboard")}</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
             <Link to={`/list/${model}`}>
@@ -146,9 +175,12 @@ export const Change: React.FC = () => {
           <Row gutter={[8, 8]} justify="space-between">
             <Col>
               <Space>
-                <Popconfirm title={_t('Are you sure?')} onConfirm={onConfirmDelete}>
+                <Popconfirm
+                  title={_t("Are you sure?")}
+                  onConfirm={onConfirmDelete}
+                >
                   <Button danger={true}>
-                    <DeleteOutlined /> {_t('Delete')}
+                    <DeleteOutlined /> {_t("Delete")}
                   </Button>
                 </Popconfirm>
               </Space>
@@ -161,7 +193,7 @@ export const Change: React.FC = () => {
                     onClick={onSaveAndContinueEditing}
                     type="default"
                   >
-                    <SaveFilled /> {_t('Save and continue editing')}
+                    <SaveFilled /> {_t("Save and continue editing")}
                   </Button>
                 )}
                 {!isMobile && (
@@ -170,19 +202,25 @@ export const Change: React.FC = () => {
                     onClick={onSaveAndAddAnother}
                     type="default"
                   >
-                    <SaveFilled />{' '}
-                    {modelConfiguration?.save_as ? _t('Save as new') : _t('Save and add another')}
+                    <SaveFilled />{" "}
+                    {modelConfiguration?.save_as
+                      ? _t("Save as new")
+                      : _t("Save and add another")}
                   </Button>
                 )}
-                <Button loading={isLoading || isLoadingAdd} onClick={onSave} type="primary">
-                  <SaveOutlined /> {_t('Save')}
+                <Button
+                  loading={isLoading || isLoadingAdd}
+                  onClick={onSave}
+                  type="primary"
+                >
+                  <SaveOutlined /> {_t("Save")}
                 </Button>
               </Space>
             </Col>
           </Row>
         </FormContainer>
       ) : (
-        <Empty description={_t('No permissions for model')} />
+        <Empty description={_t("No permissions for model")} />
       )}
     </CrudContainer>
   );
