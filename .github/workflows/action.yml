@@ -1,5 +1,8 @@
 name: fastadmin ci
 on: [create, push]
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   fastadmin-ci:
     runs-on: ubuntu-latest
