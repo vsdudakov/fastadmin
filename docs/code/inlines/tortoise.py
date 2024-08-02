@@ -25,8 +25,14 @@ class InlineUserMessage(Model):
         return self.message
 
 
+@register(InlineUser)
+class InlineUserAdmin(TortoiseModelAdmin):
+    # we have to register model for inline usage
+    pass
+
+
 class UserMessageAdminInline(TortoiseInlineModelAdmin):
-    model_cls = InlineUserMessage
+    model = InlineUserMessage
     list_display = ("user", "message")
     list_display_links = ("user", "message")
     list_filter = ("user", "message")

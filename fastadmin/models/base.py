@@ -1,4 +1,5 @@
 import csv
+import datetime
 import inspect
 import json
 from collections.abc import Sequence
@@ -383,6 +384,15 @@ class BaseModelAdmin:
 
         return obj_dict
 
+    def deserialize_value(self, field: ModelFieldWidgetSchema, value: Any) -> Any:
+        if not value:
+            return value
+        match field.form_widget_type:
+            case WidgetType.DatePicker | WidgetType.DateTimePicker:
+                return datetime.datetime.fromisoformat(value)
+            case _:
+                return value
+
     async def get_list(
         self,
         offset: int | None = None,
@@ -434,7 +444,12 @@ class BaseModelAdmin:
         m2m_fields = self.get_model_fields_with_widget_types(with_m2m=True)
         upload_fields = self.get_model_fields_with_widget_types(with_upload=True)
 
-        fields_payload = {field.column_name: payload[field.name] for field in fields if field.name in payload}
+        fields_payload = {
+            field.column_name: self.deserialize_value(field, payload[field.name])
+            for field in fields
+            if field.name in payload
+        }
+
         obj = await self.orm_save_obj(id, fields_payload)
         if not obj:
             return None

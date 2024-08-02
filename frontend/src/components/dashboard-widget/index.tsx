@@ -74,7 +74,11 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
       );
 
       const onChangeWidget = (widgetValue: any) => {
-        if (Widget === Input || Widget === Radio.Group) {
+        if (
+          Widget === Input ||
+          Widget === Input.TextArea ||
+          Widget === Radio.Group
+        ) {
           onChange(widgetValue.target.value);
         } else {
           onChange(widgetValue);
@@ -105,6 +109,7 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
               <Space>
                 {widget.x_field_periods && (
                   <Select
+                    allowClear={true}
                     style={{ width: 100 }}
                     options={widget.x_field_periods.map((value: string) => ({
                       label: getTitleFromFieldName(value),

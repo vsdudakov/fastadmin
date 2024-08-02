@@ -159,6 +159,7 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
           </Button>
         </Tooltip>
         <Select
+          allowClear={true}
           showSearch={true}
           loading={isLoading}
           filterOption={onFilter}

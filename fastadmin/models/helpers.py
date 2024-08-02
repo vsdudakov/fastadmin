@@ -62,7 +62,7 @@ def get_admin_model(orm_model_cls: str | Any) -> ModelAdmin | None:
         model_name_prefix = admin_model.model_name_prefix
         if model_name_prefix:
             model_name = f"{model_name_prefix}.{model_name}"
-        if orm_model_cls in model_name:
+        if orm_model_cls == model_name:
             return admin_model
     return None
 

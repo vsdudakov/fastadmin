@@ -3,14 +3,7 @@ import dayjs from "dayjs";
 import slugify from "slugify";
 
 export const isDayJs = (v: any): boolean => {
-  const parsedDate = dayjs(v);
-  if (typeof v !== "string") {
-    return false;
-  }
-  return (
-    parsedDate.isValid() &&
-    v.includes(parsedDate.toISOString().replace("Z", ""))
-  );
+  return !Number.isNaN(new Date(v).getDate());
 };
 
 export const isNumeric = (v: any): boolean => {
@@ -56,11 +49,14 @@ export const isSlug = (v: any): boolean => {
 };
 
 export const transformValueToServer = (value: any): any => {
+  if (!value) {
+    return value;
+  }
   if (isArray(value)) {
     return value.map(transformValueToServer);
   }
-  if (isDayJs(value)) {
-    return value.toISOString();
+  if (value.date) {
+    return value.format();
   }
   return value;
 };
@@ -78,15 +74,15 @@ export const transformFiltersToServer = (data: any) => {
     if (isArray(v) && v.length === 2 && v.every(isDayJs)) {
       filtersData[`${k}__gte`] = v[0];
       filtersData[`${k}__lte`] = v[1];
-      return;
+      return filtersData;
     }
     if (isArray(v)) {
       filtersData[`${k}__in`] = v;
-      return;
+      return filtersData;
     }
     if (isDayJs(v) || isNumeric(v) || isBoolean(v)) {
       filtersData[k] = v;
-      return;
+      return filtersData;
     }
     filtersData[`${k}__icontains`] = v;
   }
