@@ -36,7 +36,6 @@ tortoise-orm = { version = "0.*", optional = true }
 sqlalchemy = { version = "2.*", extras = ["asyncio"], optional = true }
 pony = { version = "0.*", optional = true }
 
-
 [tool.poetry.extras]
 fastapi = ["fastapi"]
 flask = ["flask"]
