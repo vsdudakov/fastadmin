@@ -113,7 +113,7 @@ def get_versions():
         {
             "version": "0.2.1",
             "changes": [
-                "Update packages. Fix linters and tests in vite frontend.",
+                "Update packages. Fix linters and tests in vite frontend. Removed pydantic from dependencies.",
             ],
         },
     ]
