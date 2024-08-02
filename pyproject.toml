@@ -43,7 +43,6 @@ flask = ["flask"]
 django = ["django"]
 tortoise-orm = ["tortoise-orm"]
 sqlalchemy = ["sqlalchemy"]
-greenlet = ["sqlalchemy"]
 pony = ["pony"]
 
 [tool.poetry.group.dev.dependencies]
