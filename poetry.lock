@@ -1272,7 +1272,6 @@ watchdog = ["watchdog (>=2.3)"]
 django = ["django"]
 fastapi = ["fastapi"]
 flask = ["flask"]
-greenlet = ["sqlalchemy"]
 pony = ["pony"]
 sqlalchemy = ["sqlalchemy"]
 tortoise-orm = ["tortoise-orm"]
@@ -1280,4 +1279,4 @@ tortoise-orm = ["tortoise-orm"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f570972f06cf80f9ae25de924a9d111a9be0e2eb1137542e00cbbef91e4f48e3"
+content-hash = "397aac3e5233edb4f09718c16a09e112dd3b1e781754bd767366228b730fe9f9"
