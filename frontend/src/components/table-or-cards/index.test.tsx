@@ -5,7 +5,6 @@ import { test } from "vitest";
 // import { TableOrCards } from "@/components/table-or-cards";
 // import { TestProviders } from "@/providers";
 
-
 test("Renders TableOrCards", () => {
   // const queryClient = new QueryClient();
   // render(
