@@ -62,7 +62,7 @@ export const Cards = (props: ICards) => {
 
         return (
           <Card
-            key={index}
+            key={item[rowKey]}
             className={props.className}
             style={{ marginBottom: 10 }}
           >

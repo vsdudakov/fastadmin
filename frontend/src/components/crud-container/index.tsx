@@ -147,7 +147,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                         icon: (
                           <BarsOutlined style={{ color: colorBgContainer }} />
                         ),
-                        children: items,
+                        children: items as any,
                       },
                     ]}
                     onClick={onClickSideBarMenuItem}
@@ -237,7 +237,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                   borderRight: 0,
                   overflowY: "scroll",
                 }}
-                items={items}
+                items={items as any}
                 onClick={onClickSideBarMenuItem}
               />
             </Sider>

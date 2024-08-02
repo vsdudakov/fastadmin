@@ -42,7 +42,7 @@ export const PasswordInput: React.FC<IPasswordInput> = ({
 
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: (data: any) =>
-      patchFetcher(`/users/${parentId}/change-password`, data),
+      patchFetcher(`/change-password/${parentId}`, data),
     onSuccess: () => {
       message.success(_t("Succesfully changed"));
       onClose();

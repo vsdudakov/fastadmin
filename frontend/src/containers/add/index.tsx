@@ -64,17 +64,19 @@ export const Add: React.FC = () => {
         modelConfiguration && getTitleFromModel(modelConfiguration)
       }`}
       breadcrumbs={
-        <Breadcrumb>
-          <Breadcrumb.Item>
-            <Link to="/">{_t("Dashboard")}</Link>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>
-            <Link to={`/list/${model}`}>
-              {modelConfiguration && getTitleFromModel(modelConfiguration)}
-            </Link>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>{_t("Add")}</Breadcrumb.Item>
-        </Breadcrumb>
+        <Breadcrumb
+          items={[
+            { title: <Link to="/">{_t("Dashboard")}</Link> },
+            {
+              title: (
+                <Link to={`/list/${model}`}>
+                  {modelConfiguration && getTitleFromModel(modelConfiguration)}
+                </Link>
+              ),
+            },
+            { title: _t("Add") },
+          ]}
+        />
       }
     >
       {modelConfiguration?.permissions.includes(EModelPermission.Add) ? (

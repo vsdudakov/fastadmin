@@ -1,4 +1,3 @@
-
 .PHONY: help  # Shows this message
 help:
 	@grep '^.PHONY: .* #' Makefile | sed 's/\.PHONY: \(.*\) # \(.*\)/\1	\2/' | expand -t20
@@ -15,18 +14,25 @@ install:
 	@exec yarn install
 
 
-.PHONY: lint  # Runs linters
-lint:
-	@echo "Run eslint"
+.PHONY: check  # Runs linters
+check:
+	@echo "Run linters"
 	@exec yarn run lint
 	@exec yarn run biome-lint
 
 
 .PHONY: fix  # Runs linters and fixes auto-fixable errors
 fix:
-	@echo "Run eslint"
+	@echo "Fix linters"
 	@exec yarn run lint --fix
 	@exec yarn run biome-check
+
+
+.PHONY: lint  # Runs linters
+lint:
+	@echo "Run linters"
+	@exec yarn run lint
+	@exec yarn run biome-lint
 
 
 .PHONY: test  # Runs tests

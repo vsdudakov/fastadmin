@@ -7,31 +7,9 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-	  "suspicious": {
-		"noExplicitAny": "off",
-		"noArrayIndexKey": "off",
-		"noAssignInExpressions": "off"
-	  },
-	  "style": {
-		"noUselessElse": "off",
-		"noNonNullAssertion": "off",
-		"noArguments": "off"
-	  },
-	  "complexity": {
-		"noBannedTypes": "off",
-		"noForEach": "off"
-	  },
-	  "correctness": {
-		"useExhaustiveDependencies": "off"
-	  },
-	  "a11y": {
-		"useMediaCaption": "off",
-		"useValidAnchor": "off",
-		"noSvgWithoutTitle": "off"
-	  },
-	  "performance": {
-		"noAccumulatingSpread": "off"
-	  }
+    	"suspicious": {
+    	  "noExplicitAny": "off"
+      }
     }
   },
   "formatter": {

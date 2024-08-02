@@ -8,4 +8,15 @@ export default defineConfig({
   resolve: {
     alias: [{ find: "@", replacement: "/src" }],
   },
+  build: {
+    rollupOptions: {
+        output: {
+            dir: '../fastadmin/static/',
+            entryFileNames: 'index.min.js',
+            assetFileNames: 'index.min.css',
+            chunkFileNames: "chunk.min.js",
+            manualChunks: undefined,
+        }
+    }
+  }
 })
