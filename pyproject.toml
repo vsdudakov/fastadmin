@@ -31,16 +31,14 @@ jinja2 = "^3.1.2"
 pyjwt = "^2.6.0"
 python-dotenv = "^1.0.0"
 asgiref = "3.6.0"
-pydantic = "^1.10.7"
-
+greenlet = "^3.0.3"
 fastapi = { version = "0.*", optional = true }
 flask = { version = "2.*", optional = true }
 django = { version = "4.*", optional = true }
 tortoise-orm = { version = "0.*", optional = true }
 sqlalchemy = { version = "2.*", optional = true }
 pony = { version = "0.*", optional = true }
-isort = "^5.12.0"
-greenlet = "^3.0.3"
+
 
 [tool.poetry.extras]
 fastapi = ["fastapi"]
@@ -52,18 +50,19 @@ pony = ["pony"]
 
 [tool.poetry.group.dev.dependencies]
 uvicorn = "^0.20.0"
-pytest = "^7.2.1"
-pytest-cov = "^4.0.0"
-pytest-mock = "^3.10.0"
-pytest-asyncio = "^0.20.3"
-black = "^23.1.0"
-mypy = "^1.0.1"
+pytest = "^7.4.3"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+pytest-asyncio = "^0.21.1"
+black = "^23.11.0"
+mypy = "^1.7.1"
 httpx = "^0.23.3"
 aioshutil = "^1.2"
 jinja2 = "^3.1.2"
 htmlmin = "^0.1.12"
 bcrypt = "^4.0.1"
-ruff = "^0.0.272"
+ruff = "^0.1.6"
+isort = "^5.13.2"
 
 [build-system]
 requires = ["poetry-core"]

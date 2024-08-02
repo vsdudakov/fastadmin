@@ -17,6 +17,12 @@ export default defineConfig({
             chunkFileNames: "chunk.min.js",
             manualChunks: undefined,
         }
-    }
+    },
+    target: "es2015",
+    lib: {
+      entry: "src/main.tsx",
+      formats: ["umd"],
+      name: "App",
+    },
   }
 })

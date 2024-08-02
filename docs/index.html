@@ -287,6 +287,7 @@ class Settings:
 </pre> <p class="alert alert-warning"> Note: Settings without default values are required. </p> </section> <hr class=small-divider> <section id=dashboard-widget-admins> <h2>Dashboard Widget Admins</h2> <section id=registering-widgets> <h3>Registering Widgets</h3> <p class=lead> Register Dashboard widgets </p> <ul class="nav nav-tabs" id=register_dashboard_widgets role=tablist> <li class=nav-item role=presentation> <button class="nav-link active" id=dashboard_tortoise_orm data-bs-toggle=tab data-bs-target=#dashboard_tortoise_orm-pane type=button role=tab aria-controls=dashboard_tortoise_orm aria-selected=true>Tortoise ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=dashboard_django_orm data-bs-toggle=tab data-bs-target=#dashboard_django_orm-pane type=button role=tab aria-controls=dashboard_django_orm aria-selected=false>Django ORM</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=dashboard_sql_alchemy data-bs-toggle=tab data-bs-target=#dashboard_sql_alchemy-pane type=button role=tab aria-controls=dashboard_sql_alchemy aria-selected=false>SQL Alchemy</button> </li> <li class=nav-item role=presentation> <button class="nav-link " id=dashboard_pony_orm data-bs-toggle=tab data-bs-target=#dashboard_pony_orm-pane type=button role=tab aria-controls=dashboard_pony_orm aria-selected=false>Pony ORM</button> </li> </ul> <div class=tab-content id=register_dashboard_widgets-content> <div class="tab-pane fade show active" id=dashboard_tortoise_orm-pane role=tabpanel aria-labelledby=dashboard_tortoise_orm tabindex=0> <pre>
   <code class=language-python>
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from tortoise import Tortoise, fields
 from tortoise.models import Model
@@ -311,8 +312,8 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
     x_field = "date"
     y_field = "count"
     x_field_filter_widget_type = WidgetType.DatePicker
-    x_field_filter_widget_props = {"picker": "month"}
-    x_field_periods = ["day", "week", "month", "year"]
+    x_field_filter_widget_props: dict[str, Any] = {"picker": "month"}  # noqa: RUF012
+    x_field_periods = ["day", "week", "month", "year"]  # noqa: RUF012
 
     async def get_data(
         self,
@@ -331,7 +332,7 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
         else:
             max_x_field_date = datetime.fromisoformat(max_x_field.replace("Z", "+00:00"))
 
-        if not period_x_field or period_x_field not in self.x_field_periods:
+        if not period_x_field or period_x_field not in (self.x_field_periods or []):
             period_x_field = "month"
 
         results = await conn.execute_query_dict(
@@ -380,8 +381,8 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
     x_field = "date"
     y_field = "count"
     x_field_filter_widget_type = WidgetType.DatePicker
-    x_field_filter_widget_props = {"picker": "month"}
-    x_field_periods = ["day", "week", "month", "year"]
+    x_field_filter_widget_props = {"picker": "month"}  # noqa: RUF012
+    x_field_periods = ["day", "week", "month", "year"]  # noqa: RUF012
 
     def get_data(  # type: ignore [override]
         self,
@@ -512,7 +513,7 @@ class UserAdmin(TortoiseModelAdmin):
         (None, {"fields": ("username", "hash_password")}),
         ("Permissions", {"fields": ("is_active", "is_superuser")}),
     )
-    formfield_overrides = {
+    formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
     }
@@ -622,7 +623,7 @@ class BaseModelAdmin:
     # formfield_overrides = {
     #     "description": (WidgetType.RichTextArea, {})
     # }
-    formfield_overrides: dict[str, tuple[WidgetType, dict]] = {}
+    formfield_overrides: dict[str, tuple[WidgetType, dict]] = {}  # noqa: RUF012
 
     # Set list_display to control which fields are displayed on the list page of the admin.
     # If you don't set list_display, the admin site will display a single column that displays the __str__() representation of each object
@@ -639,7 +640,7 @@ class BaseModelAdmin:
     # list_display_widths = {
     #     "id": "100px",
     # }
-    list_display_widths: dict[str, str] = {}
+    list_display_widths: dict[str, str] = {}  # noqa: RUF012
 
     # Set list_filter to activate filters in the tabel columns of the list page of the admin.
     # Example of usage: list_filter = ("is_superuser", "is_active", "created_at")
@@ -1206,7 +1207,7 @@ class UserAdmin(TortoiseModelAdmin):
         (None, {"fields": ("username", "hash_password")}),
         ("Permissions", {"fields": ("is_active", "is_superuser")}),
     )
-    formfield_overrides = {
+    formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
     }

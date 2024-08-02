@@ -117,7 +117,7 @@ async def list_objs(
     request: Request,
     model: str,
     search: str | None = None,
-    sort_by: str = None,
+    sort_by: str | None = None,
     offset: int | None = 0,
     limit: int | None = 10,
 ):
@@ -238,7 +238,7 @@ async def export(
     model: str,
     payload: ExportInputSchema,
     search: str | None = None,
-    sort_by: str = None,
+    sort_by: str | None = None,
 ):
     """This method is used to export a list of objects.
 

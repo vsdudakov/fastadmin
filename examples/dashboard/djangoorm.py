@@ -23,8 +23,8 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
     x_field = "date"
     y_field = "count"
     x_field_filter_widget_type = WidgetType.DatePicker
-    x_field_filter_widget_props = {"picker": "month"}
-    x_field_periods = ["day", "week", "month", "year"]
+    x_field_filter_widget_props = {"picker": "month"}  # noqa: RUF012
+    x_field_periods = ["day", "week", "month", "year"]  # noqa: RUF012
 
     def get_data(  # type: ignore [override]
         self,
