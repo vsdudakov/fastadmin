@@ -48,6 +48,7 @@ export const useTableQuery = (
     if (modelConfiguration?.name) {
       setPage(DEFAULT_PAGE);
       setSortBy(undefined);
+      setFilters({});
     }
   }, [modelConfiguration?.name]);
 

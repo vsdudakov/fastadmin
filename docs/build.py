@@ -39,6 +39,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.3",
+            "changes": [
+                "Fix filters issue on lists. Remove jinja from dependencies.",
+            ],
+        },
+        {
             "version": "0.2.2",
             "changes": [
                 "Fix bugs with datetime.",

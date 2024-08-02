@@ -1,5 +1,6 @@
 import base64
 import binascii
+from pathlib import Path
 from uuid import UUID
 
 from fastadmin.models.schemas import ModelFieldWidgetSchema
@@ -78,3 +79,11 @@ def is_valid_base64(value: str) -> bool:
         return True
     except binascii.Error:
         return False
+
+
+def get_template(template: Path, context: dict) -> str:
+    with Path.open(template, "r") as file:
+        content = file.read()
+        for key, value in context.items():
+            content = content.replace(f"{{{{{key}}}}}", value)
+        return content

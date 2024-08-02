@@ -352,7 +352,7 @@ dotenv = ["python-dotenv"]
 name = "greenlet"
 version = "3.0.3"
 description = "Lightweight in-process concurrent programming"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "greenlet-3.0.3-cp310-cp310-macosx_11_0_universal2.whl", hash = "sha256:9da2bd29ed9e4f15955dd1595ad7bc9320308a3b766ef7f837e23ad4b4aac31a"},
@@ -1279,4 +1279,4 @@ tortoise-orm = ["tortoise-orm"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "138123811574a38c049f2a79ad3dde7b7665bbff95caf31854c80358b12abe28"
+content-hash = "d24a936de8e8d958cdec5615a9eb9919a54ce84c82390473e4dfa640cc5b1d52"

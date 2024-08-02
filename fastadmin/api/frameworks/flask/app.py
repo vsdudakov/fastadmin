@@ -25,7 +25,6 @@ app = Blueprint(
     url_prefix="/parent",
     static_url_path="/static",
     static_folder=ROOT_DIR / "static",
-    template_folder=ROOT_DIR / "templates",
 )
 app.register_blueprint(views_router)
 app.register_blueprint(api_router)

@@ -1,8 +1,9 @@
 import logging
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint
 
-from fastadmin.settings import settings
+from fastadmin.api.helpers import get_template
+from fastadmin.settings import ROOT_DIR, settings
 
 logger = logging.getLogger(__name__)
 views_router = Blueprint(
@@ -17,4 +18,9 @@ def index():
 
     :return: A response object.
     """
-    return render_template("index.html", request=request, settings=settings)
+    return get_template(
+        ROOT_DIR / "templates" / "index.html",
+        {
+            "ADMIN_PREFIX": settings.ADMIN_PREFIX,
+        },
+    )
