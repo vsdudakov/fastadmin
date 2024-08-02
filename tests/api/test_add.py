@@ -31,6 +31,17 @@ async def test_add(session_id, admin_models, event, client):
             "name": "new name",
             "tournament": tournament["id"],
             "participants": [participant["id"]],
+            "rating": 10,
+            "description": "test",
+            "event_type": "PRIVATE",
+            "is_active": True,
+            "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            "date": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            "latitude": 0.2,
+            "longitude": 0.4,
+            # TODO: bug with Decimal
+            # "price": "20.3",
+            "json": {"test": "test"},
         },
     )
     assert r.status_code == 200, r.text

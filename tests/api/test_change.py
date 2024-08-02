@@ -23,8 +23,20 @@ async def test_change(session_id, admin_models, event, client):
         json={
             "name": "new name",
             "participants": [participant["id"]],
+            "rating": 10,
+            "description": "test",
+            "event_type": "PRIVATE",
+            "is_active": True,
+            "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            "date": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            "latitude": 0.2,
+            "longitude": 0.4,
+            # TODO: bug with Decimal
+            # "price": "20.3",
+            "json": {"test": "test"},
         },
     )
+
     assert r.status_code == 200, r.text
 
     updated_event = await event_admin_model.get_obj(event.id)

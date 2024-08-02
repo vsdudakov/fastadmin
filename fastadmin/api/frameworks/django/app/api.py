@@ -1,7 +1,7 @@
 import json
 import logging
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, time
 from functools import wraps
 from uuid import UUID
 
@@ -23,7 +23,7 @@ api_service = ApiService()
 
 class JsonEncoder(DjangoJSONEncoder):
     def default(self, o):
-        if isinstance(o, datetime):
+        if isinstance(o, datetime | time):
             return o.isoformat()
         if isinstance(o, UUID):
             return str(o)

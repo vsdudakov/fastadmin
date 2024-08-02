@@ -1,5 +1,5 @@
 import logging
-from datetime import date
+from datetime import date, time
 
 from flask import Blueprint
 from flask.json.provider import DefaultJSONProvider
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class JSONProvider(DefaultJSONProvider):
     def default(self, o):
-        if isinstance(o, date):
+        if isinstance(o, date | time):
             return o.isoformat()
         return super().default(o)
 

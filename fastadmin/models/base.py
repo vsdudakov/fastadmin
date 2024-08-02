@@ -388,6 +388,8 @@ class BaseModelAdmin:
         if not value:
             return value
         match field.form_widget_type:
+            case WidgetType.TimePicker:
+                return datetime.datetime.fromisoformat(value).time()
             case WidgetType.DatePicker | WidgetType.DateTimePicker:
                 return datetime.datetime.fromisoformat(value)
             case _:
@@ -449,7 +451,6 @@ class BaseModelAdmin:
             for field in fields
             if field.name in payload
         }
-
         obj = await self.orm_save_obj(id, fields_payload)
         if not obj:
             return None
