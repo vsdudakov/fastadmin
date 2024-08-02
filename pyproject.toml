@@ -33,7 +33,7 @@ fastapi = { version = "0.*", optional = true }
 flask = { version = "2.*", optional = true }
 django = { version = "4.*", optional = true }
 tortoise-orm = { version = "0.*", optional = true }
-sqlalchemy = { version = "2.*", optional = true }
+sqlalchemy = { version = "2.*", extras = ["asyncio"], optional = true }
 pony = { version = "0.*", optional = true }
 
 
@@ -43,6 +43,7 @@ flask = ["flask"]
 django = ["django"]
 tortoise-orm = ["tortoise-orm"]
 sqlalchemy = ["sqlalchemy"]
+greenlet = ["sqlalchemy"]
 pony = ["pony"]
 
 [tool.poetry.group.dev.dependencies]
