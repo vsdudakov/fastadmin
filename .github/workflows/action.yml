@@ -10,12 +10,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
           cache: "poetry"
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: v22.4.1
           cache: 'yarn'
           cache-dependency-path: 'frontend/yarn.lock'
       - name: Install Dependencies
