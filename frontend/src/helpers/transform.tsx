@@ -4,6 +4,9 @@ import slugify from "slugify";
 
 export const isDayJs = (v: any): boolean => {
   const parsedDate = dayjs(v);
+  if (typeof v !== "string") {
+    return false;
+  }
   return (
     parsedDate.isValid() &&
     v.includes(parsedDate.toISOString().replace("Z", ""))
@@ -71,7 +74,7 @@ export const transformDataToServer = (data: any) => {
 export const transformFiltersToServer = (data: any) => {
   const filters = transformDataToServer(data);
   const filtersData: Record<string, string> = {};
-  Object.entries(filters).forEach(([k, v]) => {
+  for (const [k, v] of Object.entries(filters)) {
     if (isArray(v) && v.length === 2 && v.every(isDayJs)) {
       filtersData[`${k}__gte`] = v[0];
       filtersData[`${k}__lte`] = v[1];
@@ -86,7 +89,7 @@ export const transformFiltersToServer = (data: any) => {
       return;
     }
     filtersData[`${k}__icontains`] = v;
-  });
+  }
   return filtersData;
 };
 

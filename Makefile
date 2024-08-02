@@ -42,13 +42,6 @@ kill:
 	@exec kill -9 $$(lsof -t -i:8090)
 	@exec kill -9 $$(lsof -t -i:3030)
 
-.PHONY: collectstatic
-collectstatic:
-	@exec rm -rf ./fastadmin/static/*.js
-	@exec rm -rf ./fastadmin/static/*.css
-	@exec cp -rf ./frontend/dist/assets/index-*.js ./fastadmin/static/main.min.js
-	@exec cp -rf ./frontend/dist/assets/index-*.css ./fastadmin/static/main.min.css
-
 .PHONY: install
 install:
 	@exec pip install poetry
@@ -63,7 +56,6 @@ docs:
 build:
 	@exec make docs
 	@exec make -C frontend build
-	@exec make collectstatic
 
 .PHONY: push
 pre-push:

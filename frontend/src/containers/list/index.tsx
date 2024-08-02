@@ -160,16 +160,22 @@ export const List: React.FC = () => {
 
   return (
     <CrudContainer
-      title={modelConfiguration?.name || model || ""}
+      title={
+        modelConfiguration ? getTitleFromModel(modelConfiguration, true) : ""
+      }
       breadcrumbs={
-        <Breadcrumb>
-          <Breadcrumb.Item>
-            <Link to="/">{_t("Dashboard")}</Link>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>
-            {modelConfiguration && getTitleFromModel(modelConfiguration)}
-          </Breadcrumb.Item>
-        </Breadcrumb>
+        <Breadcrumb
+          items={[
+            { title: <Link to="/">{_t("Dashboard")}</Link> },
+            {
+              title: (
+                <Link to={`/list/${model}`}>
+                  {modelConfiguration && getTitleFromModel(modelConfiguration)}
+                </Link>
+              ),
+            },
+          ]}
+        />
       }
       viewOnSite={modelConfiguration?.view_on_site}
       headerActions={

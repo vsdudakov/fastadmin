@@ -37,7 +37,7 @@ async def sign_in() -> Response:
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/sign-out", methods=["POST"])
@@ -57,7 +57,7 @@ async def sign_out() -> Response:
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/me", methods=["GET"])
@@ -79,7 +79,7 @@ async def me() -> dict:
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/dashboard-widget/<string:model>", methods=["GET"])
@@ -109,7 +109,7 @@ async def dashboard_widget(model: str) -> dict:
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/list/<string:model>", methods=["GET"])
@@ -143,14 +143,14 @@ async def list_objs(model: str) -> dict:
             "total": total,
             "results": objs,
         }
-    except ValueError:
+    except ValueError as e:
         http_exception = HTTPException("Invalid format of get parameters")
         http_exception.code = 422
-        raise http_exception
+        raise http_exception from e
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/retrieve/<string:model>/<string:id>", methods=["GET"])
@@ -174,7 +174,7 @@ async def get(model: str, id: UUID | int) -> dict:
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/add/<string:model>", methods=["POST"])
@@ -195,7 +195,7 @@ async def add(model: str) -> dict:
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/change-password/<string:id>", methods=["PATCH"])  # type: ignore [type-var]
@@ -221,7 +221,7 @@ async def change_password(id: UUID | int) -> UUID | int:
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/change/<string:model>/<string:id>", methods=["PATCH"])
@@ -248,7 +248,7 @@ async def change(model: str, id: UUID | int) -> dict:
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/export/<string:model>", methods=["POST"])
@@ -282,7 +282,7 @@ async def export(model: str) -> Response:
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/delete/<string:model>/<string:id>", methods=["DELETE"])  # type: ignore [type-var]
@@ -309,7 +309,7 @@ async def delete(
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/action/<string:model>/<string:action>", methods=["POST"])
@@ -337,7 +337,7 @@ async def action(
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
-        raise http_exception
+        raise http_exception from e
 
 
 @api_router.route("/configuration", methods=["GET"])

@@ -48,12 +48,12 @@ export const cleanFormErrors = (form: FormInstance) => {
   const errorsFields: any = [];
   const fields = Object.keys(form.getFieldsValue());
 
-  fields.forEach((field) => {
+  for (const field of fields) {
     errorsFields.push({
       name: field,
       errors: [],
     });
-  });
+  }
 
   form.setFields(errorsFields);
 };

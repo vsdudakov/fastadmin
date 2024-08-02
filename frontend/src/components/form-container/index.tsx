@@ -56,7 +56,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
         ),
       );
     }
-  }, [hasOperationError, modelConfiguration?.fieldsets, setActiveKey]);
+  }, [hasOperationError, modelConfiguration?.fieldsets]);
 
   const getWidget = useCallback(
     (
@@ -190,30 +190,26 @@ export const FormContainer: React.FC<IFormContainer> = ({
           expandIconPosition="end"
           activeKey={activeKey}
           onChange={onChange as any}
-        >
-          {fieldsets.map((fieldset) => {
+          items={fieldsets.map((fieldset) => {
             const collapseTitle = fieldset[0];
             const collapseFields = fieldset[1]?.fields;
-            return (
-              <Collapse.Panel
-                header={collapseTitle || _t("General")}
-                key={JSON.stringify(collapseFields)}
-              >
-                {formItemWidgets(
-                  fields
-                    .filter((field: IModelField) =>
-                      (collapseFields || []).includes(field.name),
-                    )
-                    .sort(
-                      (a: IModelField, b: IModelField) =>
-                        collapseFields.indexOf(a.name) -
-                        collapseFields.indexOf(b.name),
-                    ),
-                )}
-              </Collapse.Panel>
-            );
+            return {
+              key: JSON.stringify(collapseFields),
+              label: collapseTitle || _t("General"),
+              children: formItemWidgets(
+                fields
+                  .filter((field: IModelField) =>
+                    (collapseFields || []).includes(field.name),
+                  )
+                  .sort(
+                    (a: IModelField, b: IModelField) =>
+                      collapseFields.indexOf(a.name) -
+                      collapseFields.indexOf(b.name),
+                  ),
+              ),
+            };
           })}
-        </Collapse>
+        />
       );
     }
     return formItemWidgets(

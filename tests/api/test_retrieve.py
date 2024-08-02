@@ -1,3 +1,6 @@
+import datetime
+
+
 async def test_retrieve(session_id, admin_models, event, client):
     assert session_id
     event_admin_model = admin_models[event.__class__]
@@ -11,8 +14,8 @@ async def test_retrieve(session_id, admin_models, event, client):
     assert item["id"] == updated_event["id"]
     assert item["name"] == updated_event["name"]
     assert item["tournament"] == updated_event["tournament"]
-    assert item["created_at"] == updated_event["created_at"].isoformat()
-    assert item["updated_at"] == updated_event["updated_at"].isoformat()
+    assert datetime.datetime.fromisoformat(item["created_at"]) == updated_event["created_at"]
+    assert datetime.datetime.fromisoformat(item["updated_at"]) == updated_event["updated_at"]
     assert "participants" in item
     assert item["participants"]
     assert item["participants"][0] == updated_event["participants"][0]

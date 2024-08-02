@@ -87,7 +87,7 @@ class BaseModelAdmin:
     # formfield_overrides = {
     #     "description": (WidgetType.RichTextArea, {})
     # }
-    formfield_overrides: dict[str, tuple[WidgetType, dict]] = {}
+    formfield_overrides: dict[str, tuple[WidgetType, dict]] = {}  # noqa: RUF012
 
     # Set list_display to control which fields are displayed on the list page of the admin.
     # If you don't set list_display, the admin site will display a single column that displays the __str__() representation of each object
@@ -104,7 +104,7 @@ class BaseModelAdmin:
     # list_display_widths = {
     #     "id": "100px",
     # }
-    list_display_widths: dict[str, str] = {}
+    list_display_widths: dict[str, str] = {}  # noqa: RUF012
 
     # Set list_filter to activate filters in the tabel columns of the list page of the admin.
     # Example of usage: list_filter = ("is_superuser", "is_active", "created_at")

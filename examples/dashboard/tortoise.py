@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from tortoise import Tortoise, fields
 from tortoise.models import Model
@@ -23,8 +24,8 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
     x_field = "date"
     y_field = "count"
     x_field_filter_widget_type = WidgetType.DatePicker
-    x_field_filter_widget_props = {"picker": "month"}
-    x_field_periods = ["day", "week", "month", "year"]
+    x_field_filter_widget_props: dict[str, Any] = {"picker": "month"}  # noqa: RUF012
+    x_field_periods = ["day", "week", "month", "year"]  # noqa: RUF012
 
     async def get_data(
         self,
@@ -43,7 +44,7 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
         else:
             max_x_field_date = datetime.fromisoformat(max_x_field.replace("Z", "+00:00"))
 
-        if not period_x_field or period_x_field not in self.x_field_periods:
+        if not period_x_field or period_x_field not in (self.x_field_periods or []):
             period_x_field = "month"
 
         results = await conn.execute_query_dict(

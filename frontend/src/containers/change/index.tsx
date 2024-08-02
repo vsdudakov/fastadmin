@@ -146,17 +146,19 @@ export const Change: React.FC = () => {
         modelConfiguration && getTitleFromModel(modelConfiguration)
       } ${id}`}
       breadcrumbs={
-        <Breadcrumb>
-          <Breadcrumb.Item>
-            <Link to="/">{_t("Dashboard")}</Link>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>
-            <Link to={`/list/${model}`}>
-              {modelConfiguration && getTitleFromModel(modelConfiguration)}
-            </Link>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>{id}</Breadcrumb.Item>
-        </Breadcrumb>
+        <Breadcrumb
+          items={[
+            { title: <Link to="/">{_t("Dashboard")}</Link> },
+            {
+              title: (
+                <Link to={`/list/${model}`}>
+                  {modelConfiguration && getTitleFromModel(modelConfiguration)}
+                </Link>
+              ),
+            },
+            { title: id },
+          ]}
+        />
       }
       isLoading={isLoadingInitialValues}
     >

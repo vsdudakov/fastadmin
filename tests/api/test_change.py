@@ -1,3 +1,5 @@
+import datetime
+
 from fastadmin.models.base import ModelAdmin
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.models.schemas import ModelFieldWidgetSchema
@@ -30,8 +32,8 @@ async def test_change(session_id, admin_models, event, client):
     assert item["id"] == updated_event["id"]
     assert item["name"] == updated_event["name"]
     assert item["tournament"] == updated_event["tournament"]
-    assert item["created_at"] == updated_event["created_at"].isoformat()
-    assert item["updated_at"] == updated_event["updated_at"].isoformat()
+    assert datetime.datetime.fromisoformat(item["created_at"]) == updated_event["created_at"]
+    assert datetime.datetime.fromisoformat(item["updated_at"]) == updated_event["updated_at"]
     assert item["participants"] == [participant["id"]]
 
     r = await client.delete(f"/api/delete/{participants_model}/{participant['id']}")

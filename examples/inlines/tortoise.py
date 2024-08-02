@@ -50,7 +50,7 @@ class UserAdmin(TortoiseModelAdmin):
         (None, {"fields": ("username", "hash_password")}),
         ("Permissions", {"fields": ("is_active", "is_superuser")}),
     )
-    formfield_overrides = {
+    formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
     }

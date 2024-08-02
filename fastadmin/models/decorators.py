@@ -1,4 +1,4 @@
-def action(function=None, *, description: str = None):
+def action(function=None, *, description: str | None = None):
     """Conveniently add attributes to an action function:
 
     Example of usage:

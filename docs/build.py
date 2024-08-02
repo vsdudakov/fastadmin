@@ -110,6 +110,12 @@ def get_versions():
                 "Update packages. Use vite instead obsolete react-scripts.",
             ],
         },
+        {
+            "version": "0.2.1",
+            "changes": [
+                "Update packages. Fix linters and tests in vite frontend. Removed pydantic from dependencies.",
+            ],
+        },
     ]
 
 

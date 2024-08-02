@@ -129,16 +129,16 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
   });
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: [`/list/inlines.${model}`, queryString],
-    queryFn: () => getFetcher(`/list/inlines.${model}?${queryString}`),
+    queryKey: [`/list/${model}`, queryString],
+    queryFn: () => getFetcher(`/list/${model}?${queryString}`),
     enabled: openList,
     refetchOnWindowFocus: false,
   });
 
   const { data: initialChangeValues, isLoading: isLoadingInitialValues } =
     useQuery({
-      queryKey: [`/retrieve/inlines.${model}/${openChange}`],
-      queryFn: () => getFetcher(`/retrieve/inlines.${model}/${openChange}`),
+      queryKey: [`/retrieve/${model}/${openChange}`],
+      queryFn: () => getFetcher(`/retrieve/${model}/${openChange}`),
       enabled: !!openChange,
       refetchOnWindowFocus: false,
     });
@@ -148,7 +148,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
     isPending: isLoadingAdd,
     isError: isErrorAdd,
   } = useMutation({
-    mutationFn: (data: any) => postFetcher(`/add/inlines.${model}`, data),
+    mutationFn: (data: any) => postFetcher(`/add/${model}`, data),
     onSuccess: () => {
       message.success(_t("Succesfully added"));
       refetch();
@@ -165,7 +165,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
     isError: isErrorChange,
   } = useMutation({
     mutationFn: (data: any) =>
-      patchFetcher(`/change/inlines.${model}/${openChange}`, data),
+      patchFetcher(`/change/${model}/${openChange}`, data),
     onSuccess: () => {
       message.success(_t("Succesfully changed"));
       refetch();
@@ -177,7 +177,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
   });
 
   const { mutate: mutateDelete } = useMutation({
-    mutationFn: (id: string) => deleteFetcher(`/delete/inlines.${model}/${id}`),
+    mutationFn: (id: string) => deleteFetcher(`/delete/${model}/${id}`),
     onSuccess: () => {
       resetTable(modelConfiguration?.preserve_filters);
       refetch();
@@ -189,8 +189,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
   });
 
   const { mutate: mutateAction, isPending: isLoadingAction } = useMutation({
-    mutationFn: (data: any) =>
-      postFetcher(`/action/inlines.${model}/${action}`, data),
+    mutationFn: (data: any) => postFetcher(`/action/${model}/${action}`, data),
     onSuccess: () => {
       resetTable(modelConfiguration?.preserve_filters);
       refetch();
@@ -306,7 +305,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
         {modelConfiguration?.permissions?.includes(EModelPermission.Export) && (
           <Col>
             <ExportBtn
-              model={`inlines.${model}`}
+              model={model}
               search={search}
               filters={{ ...filters, [modelConfiguration.fk_name]: parentId }}
               sortBy={sortBy}
