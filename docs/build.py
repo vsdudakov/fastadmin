@@ -213,17 +213,17 @@ def get_sections():
 
 
 def get_page_context(page_url):
-    from examples.dashboard import djangoorm as dashboard_djangoorm
-    from examples.dashboard import tortoise as dashboard_tortoise
-    from examples.inlines import tortoise as inlines_tortoise
-    from examples.models import tortoise as models_tortoise
-    from examples.quick_tutorial import django as quick_tutorial_django
-    from examples.quick_tutorial import djangoorm as quick_tutorial_djangoorm
-    from examples.quick_tutorial import fastapi as quick_tutorial_fastapi
-    from examples.quick_tutorial import flask as quick_tutorial_flask
-    from examples.quick_tutorial import ponyorm as quick_tutorial_ponyorm
-    from examples.quick_tutorial import sqlalchemy as quick_tutorial_sqlalchemy
-    from examples.quick_tutorial import tortoise as quick_tutorial_tortoise
+    from docs.code.dashboard import djangoorm as dashboard_djangoorm
+    from docs.code.dashboard import tortoise as dashboard_tortoise
+    from docs.code.inlines import tortoise as inlines_tortoise
+    from docs.code.models import tortoise as models_tortoise
+    from docs.code.quick_tutorial import django as quick_tutorial_django
+    from docs.code.quick_tutorial import djangoorm as quick_tutorial_djangoorm
+    from docs.code.quick_tutorial import fastapi as quick_tutorial_fastapi
+    from docs.code.quick_tutorial import flask as quick_tutorial_flask
+    from docs.code.quick_tutorial import ponyorm as quick_tutorial_ponyorm
+    from docs.code.quick_tutorial import sqlalchemy as quick_tutorial_sqlalchemy
+    from docs.code.quick_tutorial import tortoise as quick_tutorial_tortoise
 
     from fastadmin import DashboardWidgetAdmin, DashboardWidgetType, InlineModelAdmin, ModelAdmin, WidgetType
     from fastadmin.models.base import BaseModelAdmin
