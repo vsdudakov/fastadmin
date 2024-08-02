@@ -16,8 +16,8 @@ FRAMEWORKS = [
 
 ORMS = [
     "tortoiseorm",
-    # "djangoorm",
-    # "sqlalchemy",
+    "djangoorm",
+    "sqlalchemy",
     # TODO: fix pony orm
     # "ponyorm",
 ]
