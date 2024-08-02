@@ -39,6 +39,18 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.1",
+            "changes": [
+                "Update packages. Fix linters and tests in vite frontend. Removed pydantic from dependencies.",
+            ],
+        },
+        {
+            "version": "0.2.0",
+            "changes": [
+                "Update packages. Use vite instead obsolete react-scripts.",
+            ],
+        },
+        {
             "version": "0.1.41",
             "changes": [
                 "Fixed bug with datetime. Added verbose name logic for models and inlines. Updated frontend libraries.",
@@ -102,18 +114,6 @@ def get_versions():
             "version": "0.1.31",
             "changes": [
                 "Added PasswordInput widget type.",
-            ],
-        },
-        {
-            "version": "0.2.0",
-            "changes": [
-                "Update packages. Use vite instead obsolete react-scripts.",
-            ],
-        },
-        {
-            "version": "0.2.1",
-            "changes": [
-                "Update packages. Fix linters and tests in vite frontend. Removed pydantic from dependencies.",
             ],
         },
     ]
