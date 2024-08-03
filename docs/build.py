@@ -318,7 +318,7 @@ poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
                 },
                 {
                     "type": "alert-info",
-                    "content": "Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href='#settings'>here</a>",
+                    "content": "Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href='https://vsdudakov.github.io/fastadmin#settings'>here</a>",
                 },
                 {
                     "type": "code-bash",
