@@ -1,0 +1,23 @@
+name: FastAdmin CD
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+
+concurrency: 
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Deploy Package
+        run: |
+          poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+          poetry build
+          poetry publish
