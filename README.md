@@ -234,7 +234,7 @@ Configure required settings using virtual environment variables:
 
 
 
-Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href='#settings'>here</a>
+Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href='https://vsdudakov.github.io/fastadmin#settings'>here</a>
 
 
 
