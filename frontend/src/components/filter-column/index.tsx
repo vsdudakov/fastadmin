@@ -39,14 +39,15 @@ export const FilterColumn = ({
   };
 
   const onChangeWidget = (widgetValue: any) => {
-    if (
-      FilterWidget === Input ||
-      FilterWidget === Input.TextArea ||
-      FilterWidget === Radio.Group
-    ) {
-      setFilterValue(widgetValue.target.value);
-    } else {
-      setFilterValue(widgetValue);
+    switch (FilterWidget) {
+      case Input:
+      case Input.TextArea:
+      case Radio.Group:
+        setFilterValue(widgetValue.target.value);
+        break;
+      default:
+        setFilterValue(widgetValue);
+        break;
     }
   };
 

@@ -30,6 +30,7 @@ PYPI_URL = "https://pypi.org/project/fastadmin/"
 NAME = "FastAdmin"
 AUTHOR_NAME = "Seva D."
 AUTHOR_EMAIL = "vsdudakov@gmail.com"
+ANTD_CHARTS_EXAMPLES = "https://ant-design-charts.antgroup.com/en/examples"
 
 
 def read_cls_docstring(cls):
@@ -38,6 +39,12 @@ def read_cls_docstring(cls):
 
 def get_versions():
     return [
+        {
+            "version": "0.2.4",
+            "changes": [
+                "Fix dashboard widgets and auto register inlines.",
+            ],
+        },
         {
             "version": "0.2.3",
             "changes": [
@@ -444,7 +451,7 @@ export ADMIN_SECRET_KEY=secret_key
                 {"type": "code-python", "content": inspect.getsource(DashboardWidgetAdmin)},
                 {
                     "type": "alert-warning",
-                    "content": "Note: Please see <a href='https://charts.ant.design/en/examples' target='_blank'>antd charts</a> for <code>x_field_filter_widget_props</code>.",
+                    "content": f"Note: Please see <a href='{ANTD_CHARTS_EXAMPLES}' target='_blank'>antd charts</a> for <code>x_field_filter_widget_props</code>.",
                 },
             ]
         case "#widget-chart-types":
@@ -456,7 +463,7 @@ export ADMIN_SECRET_KEY=secret_key
                 {"type": "code-python", "content": inspect.getsource(DashboardWidgetType)},
                 {
                     "type": "alert-warning",
-                    "content": "Note: Please see <a href='https://charts.ant.design/en/examples' target='_blank'>antd charts</a> for more details (e.g. to see how they look like).",
+                    "content": f"Note: Please see <a href='={ANTD_CHARTS_EXAMPLES}' target='_blank'>antd charts</a> for more details (e.g. to see how they look like).",
                 },
             ]
         # models

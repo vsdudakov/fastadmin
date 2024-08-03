@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta, timezone
-from typing import Any
+import datetime
 
 from tortoise import Tortoise, fields
 from tortoise.models import Model
@@ -21,11 +20,13 @@ class DashboardUser(Model):
 class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
     title = "Users"
     dashboard_widget_type = DashboardWidgetType.ChartLine
+
     x_field = "date"
-    y_field = "count"
     x_field_filter_widget_type = WidgetType.DatePicker
-    x_field_filter_widget_props: dict[str, Any] = {"picker": "month"}  # noqa: RUF012
+    x_field_filter_widget_props: dict[str, str] = {"picker": "month"}  # noqa: RUF012
     x_field_periods = ["day", "week", "month", "year"]  # noqa: RUF012
+
+    y_field = "count"
 
     async def get_data(
         self,
@@ -36,13 +37,13 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
         conn = Tortoise.get_connection("default")
 
         if not min_x_field:
-            min_x_field_date = datetime.now(timezone.utc) - timedelta(days=360)
+            min_x_field_date = datetime.datetime.now(tz=datetime.UTC) - datetime.timedelta(days=360)
         else:
-            min_x_field_date = datetime.fromisoformat(min_x_field.replace("Z", "+00:00"))
+            min_x_field_date = datetime.datetime.fromisoformat(min_x_field)
         if not max_x_field:
-            max_x_field_date = datetime.now(timezone.utc) + timedelta(days=1)
+            max_x_field_date = datetime.datetime.now(tz=datetime.UTC) + datetime.timedelta(days=1)
         else:
-            max_x_field_date = datetime.fromisoformat(max_x_field.replace("Z", "+00:00"))
+            max_x_field_date = datetime.datetime.fromisoformat(max_x_field)
 
         if not period_x_field or period_x_field not in (self.x_field_periods or []):
             period_x_field = "month"
@@ -60,7 +61,7 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
         )
         return {
             "results": results,
-            "min_x_field": min_x_field_date.isoformat().replace("+00:00", "Z"),
-            "max_x_field": max_x_field_date.isoformat().replace("+00:00", "Z"),
+            "min_x_field": min_x_field_date.isoformat(),
+            "max_x_field": max_x_field_date.isoformat(),
             "period_x_field": period_x_field,
         }

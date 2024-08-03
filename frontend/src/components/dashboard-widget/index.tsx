@@ -43,7 +43,7 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ["/dashboard-widget"],
+    queryKey: ["/dashboard-widget", queryString],
     queryFn: () => getFetcher(`/dashboard-widget/${widget.key}?${queryString}`),
     refetchOnWindowFocus: false,
   });
@@ -74,14 +74,15 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
       );
 
       const onChangeWidget = (widgetValue: any) => {
-        if (
-          Widget === Input ||
-          Widget === Input.TextArea ||
-          Widget === Radio.Group
-        ) {
-          onChange(widgetValue.target.value);
-        } else {
-          onChange(widgetValue);
+        switch (Widget) {
+          case Input:
+          case Input.TextArea:
+          case Radio.Group:
+            onChange(widgetValue.target.value);
+            break;
+          default:
+            onChange(widgetValue);
+            break;
         }
       };
 
@@ -135,12 +136,12 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
           <Line
             data={data?.results || []}
             xField={widget.x_field}
-            yField={widget.y_field as string}
-            seriesField={widget.series_field}
+            yField={widget.y_field}
             legend={{
               position: "top-left",
             }}
-            color={token.colorPrimary}
+            colorField={token.colorPrimary}
+            {...(widget.dashboard_widget_props || {})}
           />
         )}
       {!isLoading &&
@@ -148,12 +149,12 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
           <Area
             data={data?.results || []}
             xField={widget.x_field}
-            yField={widget.y_field as string}
-            seriesField={widget.series_field}
+            yField={widget.y_field}
             legend={{
               position: "top-left",
             }}
-            // color={token.colorPrimary}
+            colorField={token.colorPrimary}
+            {...(widget.dashboard_widget_props || {})}
           />
         )}
       {!isLoading &&
@@ -161,12 +162,12 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
           <Column
             data={data?.results || []}
             xField={widget.x_field}
-            yField={widget.y_field as string}
-            seriesField={widget.series_field}
+            yField={widget.y_field}
             legend={{
               position: "top-left",
             }}
-            color={token.colorPrimary}
+            colorField={token.colorPrimary}
+            {...(widget.dashboard_widget_props || {})}
           />
         )}
       {!isLoading &&
@@ -174,12 +175,12 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
           <Bar
             data={data?.results || []}
             xField={widget.x_field}
-            yField={widget.y_field as string}
-            seriesField={widget.series_field}
+            yField={widget.y_field}
             legend={{
               position: "top-left",
             }}
-            color={token.colorPrimary}
+            colorField={token.colorPrimary}
+            {...(widget.dashboard_widget_props || {})}
           />
         )}
       {!isLoading &&
@@ -187,10 +188,11 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
           <Pie
             data={data?.results || []}
             colorField={widget.x_field}
-            angleField={widget.y_field as string}
+            angleField={widget.y_field}
             legend={{
               position: "top-left",
             }}
+            {...(widget.dashboard_widget_props || {})}
           />
         )}
       {isLoading && (
