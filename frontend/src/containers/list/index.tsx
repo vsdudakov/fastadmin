@@ -19,7 +19,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { CrudContainer } from "@/components/crud-container";
 import {
   EModelPermission,
-  type IModel,
   type IModelAction,
 } from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
@@ -27,6 +26,7 @@ import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 import { ExportBtn } from "@/components/export-btn";
 import { TableOrCards } from "@/components/table-or-cards";
 import { deleteFetcher, getFetcher, postFetcher } from "@/fetchers/fetchers";
+import { getConfigurationModel } from "@/helpers/configuration";
 import { handleError } from "@/helpers/forms";
 import { getTitleFromModel } from "@/helpers/title";
 import { transformFiltersToServer } from "@/helpers/transform";
@@ -41,8 +41,9 @@ export const List: React.FC = () => {
   const { model } = useParams();
   const isMobile = useIsMobile();
 
-  const modelConfiguration: IModel | undefined = configuration.models.find(
-    (item: IModel) => item.name === model,
+  const modelConfiguration = getConfigurationModel(
+    configuration,
+    model as string,
   );
 
   const {

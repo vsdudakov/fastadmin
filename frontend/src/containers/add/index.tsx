@@ -18,10 +18,11 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { CrudContainer } from "@/components/crud-container";
 import { FormContainer } from "@/components/form-container";
 import { postFetcher } from "@/fetchers/fetchers";
+import { getConfigurationModel } from "@/helpers/configuration";
 import { handleError } from "@/helpers/forms";
 import { getTitleFromModel } from "@/helpers/title";
 import { transformDataToServer } from "@/helpers/transform";
-import { EModelPermission, type IModel } from "@/interfaces/configuration";
+import { EModelPermission } from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 export const Add: React.FC = () => {
@@ -32,8 +33,9 @@ export const Add: React.FC = () => {
   const { t: _t } = useTranslation("Add");
   const { model } = useParams();
 
-  const modelConfiguration: IModel | undefined = configuration.models.find(
-    (item: IModel) => item.name === model,
+  const modelConfiguration = getConfigurationModel(
+    configuration,
+    model as string,
   );
 
   const {

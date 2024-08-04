@@ -1,8 +1,10 @@
 import type { IModel } from "@/interfaces/configuration";
 
 export const getTitleFromFieldName = (value: string) => {
-  const str = value.replace("_", " ");
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  return value
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
 export const getTitleFromModel = (model: IModel, plural = false) => {

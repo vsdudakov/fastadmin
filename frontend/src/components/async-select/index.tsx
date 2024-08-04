@@ -21,9 +21,10 @@ import { useTranslation } from "react-i18next";
 
 import { FormContainer } from "@/components/form-container";
 import { getFetcher, postFetcher } from "@/fetchers/fetchers";
+import { getConfigurationModel } from "@/helpers/configuration";
 import { handleError } from "@/helpers/forms";
 import { getTitleFromModel } from "@/helpers/title";
-import { EModelPermission, type IModel } from "@/interfaces/configuration";
+import { EModelPermission } from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 export interface IAsyncSelect {
@@ -47,9 +48,7 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
   const [search, setSearch] = useState<string | undefined>();
   const [openAdd, setOpenAdd] = useState<boolean>(false);
   const { configuration } = useContext(ConfigurationContext);
-  const modelConfiguration: IModel | undefined = configuration.models.find(
-    (item: IModel) => item.name === parentModel,
-  );
+  const modelConfiguration = getConfigurationModel(configuration, parentModel);
 
   const queryString = querystring.stringify({
     offset: 0,
