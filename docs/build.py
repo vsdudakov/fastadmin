@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.5",
+            "changes": [
+                "Fix for async select in inlines.",
+            ],
+        },
+        {
             "version": "0.2.4",
             "changes": [
                 "Fix dashboard widgets and auto register inlines.",
