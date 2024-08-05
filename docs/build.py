@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.6",
+            "changes": [
+                "Add edit btn for async select.",
+            ],
+        },
+        {
             "version": "0.2.5",
             "changes": [
                 "Fix for async select in inlines.",

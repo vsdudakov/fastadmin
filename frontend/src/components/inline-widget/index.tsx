@@ -53,14 +53,13 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
   parentId,
 }) => {
   const { t: _t } = useTranslation("Inline");
+  const [formAdd] = Form.useForm();
+  const [formChange] = Form.useForm();
+
   const { configuration } = useContext(ConfigurationContext);
   const [openList, setOpenList] = useState<boolean>(false);
   const [openAdd, setOpenAdd] = useState<boolean>(false);
-
   const [openChange, setOpenChange] = useState<any | undefined>();
-
-  const [formAdd] = Form.useForm();
-  const [formChange] = Form.useForm();
 
   const {
     defaultPage,

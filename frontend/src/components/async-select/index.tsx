@@ -1,4 +1,8 @@
-import { PlusCircleOutlined, SaveOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  PlusCircleOutlined,
+  SaveOutlined,
+} from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Button,
@@ -20,10 +24,11 @@ import { useCallback, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { FormContainer } from "@/components/form-container";
-import { getFetcher, postFetcher } from "@/fetchers/fetchers";
+import { getFetcher, patchFetcher, postFetcher } from "@/fetchers/fetchers";
 import { getConfigurationModel } from "@/helpers/configuration";
 import { handleError } from "@/helpers/forms";
 import { getTitleFromModel } from "@/helpers/title";
+import { transformDataFromServer } from "@/helpers/transform";
 import { EModelPermission } from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
@@ -44,10 +49,15 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
   ...props
 }) => {
   const [formAdd] = Form.useForm();
+  const [formChange] = Form.useForm();
   const { t: _t } = useTranslation("AsyncSelect");
   const [search, setSearch] = useState<string | undefined>();
-  const [openAdd, setOpenAdd] = useState<boolean>(false);
+
   const { configuration } = useContext(ConfigurationContext);
+
+  const [openAdd, setOpenAdd] = useState<boolean>(false);
+  const [openChange, setOpenChange] = useState<any | undefined>();
+
   const modelConfiguration = getConfigurationModel(configuration, parentModel);
 
   const queryString = querystring.stringify({
@@ -60,6 +70,14 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
     queryKey: [`/list/${parentModel}`, queryString],
     queryFn: () => getFetcher(`/list/${parentModel}?${queryString}`),
   });
+
+  const { data: initialChangeValues, isLoading: isLoadingInitialValues } =
+    useQuery({
+      queryKey: [`/retrieve/${parentModel}/${openChange}`],
+      queryFn: () => getFetcher(`/retrieve/${parentModel}/${openChange}`),
+      enabled: !!openChange,
+      refetchOnWindowFocus: false,
+    });
 
   const {
     mutate: mutateAdd,
@@ -74,6 +92,23 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
     },
     onError: (error: Error) => {
       handleError(error, formAdd);
+    },
+  });
+
+  const {
+    mutate: mutateChange,
+    isPending: isLoadingChange,
+    isError: isErrorChange,
+  } = useMutation({
+    mutationFn: (data: any) =>
+      patchFetcher(`/change/${parentModel}/${openChange}`, data),
+    onSuccess: () => {
+      message.success(_t("Succesfully changed"));
+      refetch();
+      onCloseChange();
+    },
+    onError: (error: Error) => {
+      handleError(error, formChange);
     },
   });
 
@@ -107,8 +142,68 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
     mutateAdd(payload);
   };
 
+  const onOpenChange = useCallback(
+    (itemId: string) => {
+      formChange.resetFields();
+      setOpenChange(itemId);
+      setOpenAdd(false);
+    },
+    [formChange],
+  );
+
+  const onCloseChange = useCallback(() => {
+    setOpenChange(undefined);
+    setOpenAdd(false);
+  }, []);
+
+  const onFinishChange = (payload: any) => {
+    mutateChange(payload);
+  };
+
   return (
     <>
+      <Space.Compact style={{ width: "100%" }}>
+        <Tooltip
+          title={_t(
+            `Add ${
+              modelConfiguration && getTitleFromModel(modelConfiguration)
+            }`,
+          )}
+        >
+          <Button onClick={onOpenAdd}>
+            <PlusCircleOutlined />
+          </Button>
+        </Tooltip>
+        {value && (
+          <Tooltip
+            title={_t(
+              `Edit ${
+                modelConfiguration && getTitleFromModel(modelConfiguration)
+              }`,
+            )}
+          >
+            <Button onClick={() => onOpenChange(value)}>
+              <EditOutlined />
+            </Button>
+          </Tooltip>
+        )}
+        <Select
+          allowClear={true}
+          showSearch={true}
+          loading={isLoading}
+          filterOption={onFilter}
+          onSearch={debounce(onSearch, 500)}
+          options={(data?.results || []).map((item: any) => {
+            const labelField = labelFields.filter((f) => item[f])[0];
+            return {
+              value: `${item[idField]}`,
+              label: item[labelField],
+            };
+          })}
+          value={value ? `${value}` : undefined}
+          {...props}
+        />
+      </Space.Compact>
       <Modal
         width={600}
         open={openAdd}
@@ -145,35 +240,43 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
           <Empty description={_t("No permissions for model")} />
         )}
       </Modal>
-      <Space.Compact style={{ width: "100%" }}>
-        <Tooltip
-          title={_t(
-            `Add ${
-              modelConfiguration && getTitleFromModel(modelConfiguration)
-            }`,
-          )}
-        >
-          <Button onClick={onOpenAdd}>
-            <PlusCircleOutlined />
-          </Button>
-        </Tooltip>
-        <Select
-          allowClear={true}
-          showSearch={true}
-          loading={isLoading}
-          filterOption={onFilter}
-          onSearch={debounce(onSearch, 500)}
-          options={(data?.results || []).map((item: any) => {
-            const labelField = labelFields.filter((f) => item[f])[0];
-            return {
-              value: `${item[idField]}`,
-              label: item[labelField],
-            };
-          })}
-          value={value ? `${value}` : undefined}
-          {...props}
-        />
-      </Space.Compact>
+      <Modal
+        width={600}
+        open={!!openChange}
+        title={`Change ${modelConfiguration && getTitleFromModel(modelConfiguration)} ${openChange}`}
+        onCancel={onCloseChange}
+        footer={null}
+      >
+        <Divider />
+        {initialChangeValues &&
+        modelConfiguration &&
+        modelConfiguration.permissions.includes(EModelPermission.Change) ? (
+          <FormContainer
+            modelConfiguration={modelConfiguration}
+            form={formChange}
+            onFinish={onFinishChange}
+            mode="inline-change"
+            hasOperationError={isErrorChange}
+            initialValues={transformDataFromServer(initialChangeValues)}
+          >
+            <Row justify="end">
+              <Col>
+                <Space>
+                  <Button
+                    loading={isLoadingChange || isLoadingInitialValues}
+                    htmlType="submit"
+                    type="primary"
+                  >
+                    <SaveOutlined /> {_t("Save")}
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+          </FormContainer>
+        ) : (
+          <Empty description={_t("No permissions for model")} />
+        )}
+      </Modal>
     </>
   );
 };
