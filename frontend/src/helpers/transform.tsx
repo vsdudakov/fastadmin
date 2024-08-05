@@ -3,11 +3,17 @@ import dayjs from "dayjs";
 import slugify from "slugify";
 
 export const isDayJs = (v: any): boolean => {
-  return !Number.isNaN(new Date(v).getDate());
+  const iso8601Regex =
+    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2}))$/;
+  if (iso8601Regex.test(v)) {
+    return true;
+  }
+  return false;
 };
 
 export const isNumeric = (v: any): boolean => {
-  return !Number.isNaN(Number.parseFloat(v)) && Number.isFinite(v);
+  const numericRegex = /^[+-]?(\d+(\.\d*)?|\.\d+)$/;
+  return numericRegex.test(v);
 };
 
 export const isArray = (v: any): boolean => {
@@ -15,7 +21,8 @@ export const isArray = (v: any): boolean => {
 };
 
 export const isBoolean = (v: any): boolean => {
-  return v === "true" || v === "false" || typeof v === "boolean" || !!v === v;
+  const booleanRegex = /^(true|false)$/i;
+  return booleanRegex.test(v);
 };
 
 export const isString = (v: any): boolean => {
@@ -96,9 +103,6 @@ export const transformValueFromServer = (value: any): any => {
   if (isArray(value)) {
     return value.map(transformValueFromServer);
   }
-  if (isNumeric(value)) {
-    return value;
-  }
   if (isBoolean(value)) {
     return value !== "false" && !!value;
   }
@@ -146,9 +150,6 @@ export const transformColumnValueFromServer = (
         </Tag>
       );
     });
-  }
-  if (isNumeric(value)) {
-    return value;
   }
   if (isBoolean(value)) {
     return <Checkbox checked={value} />;
