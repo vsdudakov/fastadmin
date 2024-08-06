@@ -1,7 +1,9 @@
+from typing import List
+
 from fastapi import FastAPI
-from sqlalchemy import Boolean, Integer, String, select
+from sqlalchemy import Boolean, Integer, String, select, ForeignKey
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from fastadmin import SqlAlchemyModelAdmin, register, fastapi_app as admin_app
 
@@ -23,8 +25,19 @@ class User(Base):
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
+    transactions: Mapped[List["Transaction"]] = relationship(back_populates="user")
+
     def __str__(self):
         return self.username
+
+
+class Transaction(Base):
+    __tablename__ = "transaction"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
+    user: Mapped["User"] = relationship(back_populates="transactions")
 
 
 async def init_db():
@@ -47,7 +60,7 @@ async def create_superuser():
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 class UserAdmin(SqlAlchemyModelAdmin):
-    exclude = ("hash_password",)
+    exclude = ("password",)
     list_display = ("id", "username", "is_superuser", "is_active")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
@@ -66,6 +79,11 @@ class UserAdmin(SqlAlchemyModelAdmin):
             if password != user.password:
                 return None
             return user.id
+
+@register(Transaction, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class TransactionAdmin(SqlAlchemyModelAdmin):
+    list_display = ("id", "user")
+    raw_id_fields = ("user",)
 
 
 app = FastAPI()
