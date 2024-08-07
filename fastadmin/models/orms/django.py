@@ -334,8 +334,6 @@ class DjangoORMMixin:
 
         :return: A list of ids.
         """
-        if not ids:
-            return
         m2m_rel = getattr(obj, field)
         m2m_rel.set(ids)
 

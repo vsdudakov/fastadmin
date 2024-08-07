@@ -323,8 +323,6 @@ class TortoiseMixin:
 
         :return: A list of ids.
         """
-        if not ids:
-            return
         m2m_rel = getattr(obj, field)
 
         await m2m_rel.clear()
@@ -335,7 +333,8 @@ class TortoiseMixin:
             setattr(remote_model_obj, self.get_model_pk_name(remote_model), rel_id)
             remote_model_obj._saved_in_db = True
             remote_model_objs.append(remote_model_obj)
-        await m2m_rel.add(*remote_model_objs)
+        if remote_model_objs:
+            await m2m_rel.add(*remote_model_objs)
 
     async def orm_save_upload_field(self, obj: Any, field: str, base64: str) -> None:
         """This method is used to save upload field.

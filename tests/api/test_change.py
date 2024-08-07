@@ -52,6 +52,41 @@ async def test_change(session_id, admin_models, event, client):
     assert r.status_code == 200, r.text
 
 
+async def test_change_empty_m2m(session_id, admin_models, event, client):
+    assert session_id
+    event_admin_model: ModelAdmin = admin_models[event.__class__]
+
+    r = await client.patch(
+        f"/api/change/{event.get_model_name()}/{event.id}",
+        json={
+            "name": "new name",
+            "participants": [],
+            "rating": 10,
+            "description": "test",
+            "event_type": "PRIVATE",
+            "is_active": True,
+            "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            "date": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            "latitude": 0.2,
+            "longitude": 0.4,
+            # TODO: bug with Decimal
+            # "price": "20.3",
+            "json": {"test": "test"},
+        },
+    )
+
+    assert r.status_code == 200, r.text
+
+    updated_event = await event_admin_model.get_obj(event.id)
+    item = r.json()
+    assert item["id"] == updated_event["id"]
+    assert item["name"] == updated_event["name"]
+    assert item["tournament"] == updated_event["tournament"]
+    assert datetime.datetime.fromisoformat(item["created_at"]) == updated_event["created_at"]
+    assert datetime.datetime.fromisoformat(item["updated_at"]) == updated_event["updated_at"]
+    assert item["participants"] == []
+
+
 async def test_change_405(session_id, event, client):
     assert session_id
     r = await client.get(

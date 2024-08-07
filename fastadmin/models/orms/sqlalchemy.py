@@ -400,7 +400,8 @@ class SqlAlchemyMixin:
                         obj_field_name: obj_id,
                     }
                 )
-            await session.execute(orm_model_field.secondary.insert().values(values))
+            if values:
+                await session.execute(orm_model_field.secondary.insert().values(values))
             await session.commit()
 
     async def orm_save_upload_field(self, obj: Any, field: str, base64: str) -> None:

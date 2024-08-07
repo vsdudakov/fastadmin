@@ -362,11 +362,12 @@ class PonyORMMixin:
         obj = next((i for i in self.model_cls.select(**{key_id: getattr(obj, key_id)})), None)
         if not obj:
             return
-        rel_model_cls = getattr(self.model_cls, field).py_type
-        rel_key_id = self.get_model_pk_name(rel_model_cls)
-        rel_objs = list(rel_model_cls.select(lambda o: getattr(o, rel_key_id) in ids))
         obj.participants.clear()
-        obj.participants.add(rel_objs)
+        if ids:
+            rel_model_cls = getattr(self.model_cls, field).py_type
+            rel_key_id = self.get_model_pk_name(rel_model_cls)
+            rel_objs = list(rel_model_cls.select(lambda o: getattr(o, rel_key_id) in ids))
+            obj.participants.add(rel_objs)
         flush()
         commit()
 
