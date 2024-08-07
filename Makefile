@@ -8,11 +8,11 @@ clean:
 .PHONY: fix
 fix:
 	@echo "Run ruff"
-	@exec poetry run ruff --fix fastadmin tests docs
+	@exec poetry run ruff --fix fastadmin tests docs examples
 	@echo "Run isort"
-	@exec poetry run isort fastadmin tests docs
+	@exec poetry run isort fastadmin tests docs examples
 	@echo "Run black"
-	@exec poetry run black fastadmin tests docs
+	@exec poetry run black fastadmin tests docs examples
 	@echo "Run mypy"
 	@exec poetry run mypy -p fastadmin -p docs
 	@echo "Run frontend linters"
@@ -21,11 +21,11 @@ fix:
 .PHONY: lint
 lint:
 	@echo "Run ruff"
-	@exec poetry run ruff fastadmin tests docs
+	@exec poetry run ruff fastadmin tests docs examples
 	@echo "Run isort"
-	@exec poetry run isort --check-only fastadmin tests docs
+	@exec poetry run isort --check-only fastadmin tests docs examples
 	@echo "Run black"
-	@exec poetry run black --check --diff fastadmin tests docs
+	@exec poetry run black --check --diff fastadmin tests docs examples
 	@echo "Run mypy"
 	@exec poetry run mypy -p fastadmin -p docs
 	@echo "Run frontend linters"

@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.8",
+            "changes": [
+                "Fix sqlalchemy delete functionality. Add more examples.",
+            ],
+        },
+        {
             "version": "0.2.7",
             "changes": [
                 "Fix helpers function. Add regexps.",

@@ -2,30 +2,27 @@ import { Checkbox, Tag } from "antd";
 import dayjs from "dayjs";
 import slugify from "slugify";
 
-export const isDayJs = (v: any): boolean => {
+export const isDayJs = (v: string): boolean => {
   const iso8601Regex =
     /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2}))$/;
-  if (iso8601Regex.test(v)) {
-    return true;
-  }
-  return false;
+  return iso8601Regex.test(v);
 };
 
-export const isNumeric = (v: any): boolean => {
+export const isNumeric = (v: string): boolean => {
   const numericRegex = /^[+-]?(\d+(\.\d*)?|\.\d+)$/;
   return numericRegex.test(v);
 };
 
-export const isArray = (v: any): boolean => {
+export const isArray = (v: unknown): boolean => {
   return Array.isArray(v);
 };
 
-export const isBoolean = (v: any): boolean => {
+export const isBoolean = (v: string): boolean => {
   const booleanRegex = /^(true|false)$/i;
   return booleanRegex.test(v);
 };
 
-export const isString = (v: any): boolean => {
+export const isString = (v: unknown): boolean => {
   return typeof v === "string" || v instanceof String;
 };
 
@@ -112,7 +109,7 @@ export const transformValueFromServer = (value: any): any => {
   return value;
 };
 
-export const transformDataFromServer = (data: any) => {
+export const transformDataFromServer = (data: Record<string, unknown>) => {
   return Object.fromEntries(
     Object.entries(data).map(([k, v]) => [k, transformValueFromServer(v)]),
   );

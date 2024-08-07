@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "fastadmin-fastapi-tortoiseorm"
+version = "0.1.0"
+description = "FastAdmin Example (FastAPI + Tortoise ORM)"
+authors = ["Dmitrii <dmitrii.davidov@gmail.com>"]
+license = "MIT"
+homepage = "https://github.com/vsdudakov/fastadmin"
+repository = "https://github.com/vsdudakov/fastadmin"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = {"version" = "^0.112.0", extras = ["standard"]}
+fastadmin = {"version" = "^0.2.7", extras = ["fastapi", "tortoise-orm"]}
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

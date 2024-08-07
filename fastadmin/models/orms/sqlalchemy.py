@@ -346,6 +346,7 @@ class SqlAlchemyMixin:
         async with sessionmaker() as session:
             obj = await session.get(self.model_cls, id)
             await session.delete(obj)
+            await session.commit()
 
     async def orm_get_m2m_ids(self, obj: Any, field: str) -> list[int | UUID]:
         """This method is used to get m2m ids.
