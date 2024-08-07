@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.9",
+            "changes": [
+                "Fix issue with modal inline dialogs. Fix issue with m2m multiple select.",
+            ],
+        },
+        {
             "version": "0.2.8",
             "changes": [
                 "Fix sqlalchemy delete functionality. Add more examples.",

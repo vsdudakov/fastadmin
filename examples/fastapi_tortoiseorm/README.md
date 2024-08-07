@@ -1,7 +1,6 @@
 ## FastAPI + Tortoise ORM Example
 
 - Uses in-memory SQLite 3 instance
-- Creates User mode
 - Creates "admin/admin" superuser
 
 ```bash

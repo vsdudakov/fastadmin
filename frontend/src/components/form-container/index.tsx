@@ -58,6 +58,10 @@ export const FormContainer: React.FC<IFormContainer> = ({
     }
   }, [hasOperationError, modelConfiguration?.fieldsets]);
 
+  useEffect(() => {
+    form.setFieldsValue(initialValues);
+  }, [form, initialValues]);
+
   const getWidget = useCallback(
     (
       configurationField: IAddConfigurationField | IChangeConfigurationField,

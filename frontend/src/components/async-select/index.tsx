@@ -37,7 +37,6 @@ export interface IAsyncSelect {
   labelFields: string[];
 
   value?: any;
-
   parentModel: string;
 }
 
@@ -160,6 +159,8 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
     mutateChange(payload);
   };
 
+  const isMultipleMode = (props as any).mode === "multiple";
+
   return (
     <>
       <Space.Compact style={{ width: "100%" }}>
@@ -174,7 +175,7 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
             <PlusCircleOutlined />
           </Button>
         </Tooltip>
-        {value && (
+        {value && !isMultipleMode && (
           <Tooltip
             title={_t(
               `Edit ${
@@ -200,7 +201,15 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
               label: item[labelField],
             };
           })}
-          value={value ? `${value}` : undefined}
+          value={
+            isMultipleMode
+              ? value
+                ? value.map((v: any) => `${v}`)
+                : []
+              : value
+                ? `${value}`
+                : undefined
+          }
           {...props}
         />
       </Space.Compact>

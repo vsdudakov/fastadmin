@@ -1,7 +1,6 @@
 ## FastAPI + SQLAlchemy 2.x Example
 
 - Uses in-memory SQLite 3 instance
-- Creates User mode
 - Creates "admin/admin" superuser
 
 ```bash

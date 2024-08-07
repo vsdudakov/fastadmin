@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from models import BaseEvent, Event, Tournament, User
 from tortoise import Tortoise
 
@@ -49,7 +50,6 @@ class BaseEventModelAdmin(TortoiseModelAdmin):
 class EventModelAdmin(TortoiseModelAdmin):
     actions = ("make_is_active", "make_is_not_active")
     list_display = ("id", "name_with_price", "rating", "event_type", "is_active", "started")
-    raw_id_fields = ("base",)
 
     @action(description="Make user active")
     async def make_is_active(self, ids):
@@ -96,3 +96,11 @@ async def shutdown():
 
 
 app.mount("/admin", admin_app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
