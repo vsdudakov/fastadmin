@@ -43,7 +43,7 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ["/dashboard-widget", queryString],
+    queryKey: ["/dashboard-widget", widget.key, queryString],
     queryFn: () => getFetcher(`/dashboard-widget/${widget.key}?${queryString}`),
     refetchOnWindowFocus: false,
   });
