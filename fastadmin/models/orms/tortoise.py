@@ -1,5 +1,9 @@
+import functools
+import operator
 from typing import Any
 from uuid import UUID
+
+from tortoise.expressions import Q
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
@@ -244,11 +248,13 @@ class TortoiseMixin:
                 qs = qs.filter(**{f"{field}__{condition}" if condition != "exact" else field: value})
 
         if search and self.search_fields:
-            ids = []
-            for f in self.search_fields:
-                qs = qs.filter(**{f + "__icontains": search})
-                ids += await qs.values_list(self.get_model_pk_name(self.model_cls), flat=True)
-            qs = qs.filter(id__in=set(ids))
+            qs = qs.filter(
+                functools.reduce(
+                    operator.or_,
+                    (Q(**{f + "__icontains": search}) for f in self.search_fields),
+                    Q(),
+                )
+            )
 
         if sort_by:
             qs = qs.order_by(sort_by)
