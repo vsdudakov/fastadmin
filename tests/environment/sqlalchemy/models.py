@@ -101,7 +101,7 @@ class Event(BaseModel):
     participants: Mapped[list["User"]] = relationship(secondary=user_m2m_event, back_populates="events")
 
     rating: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     event_type: Mapped[EventTypeEnum] = mapped_column(default=EventTypeEnum.PUBLIC)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     start_time: Mapped[datetime.time | None] = mapped_column(Time, nullable=True)

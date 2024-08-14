@@ -31,8 +31,7 @@ async def test_change(session_id, admin_models, event, client):
             "date": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "latitude": 0.2,
             "longitude": 0.4,
-            # TODO: bug with Decimal
-            # "price": "20.3",
+            "price": "20.3",
             "json": {"test": "test"},
         },
     )
@@ -69,8 +68,7 @@ async def test_change_empty_m2m(session_id, admin_models, event, client):
             "date": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "latitude": 0.2,
             "longitude": 0.4,
-            # TODO: bug with Decimal
-            # "price": "20.3",
+            "price": "20.3",
             "json": {"test": "test"},
         },
     )

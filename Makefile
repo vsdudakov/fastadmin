@@ -31,10 +31,10 @@ lint:
 	@echo "Run frontend linters"
 	@exec make -C frontend lint
 
+# -n auto : fix django
 .PHONY: test
 test:
-	@exec poetry run python generate_db.py
-	@exec env ADMIN_ENV_FILE=example.env poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=80 -s tests
+	@exec poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=80 -s tests
 	@exec make -C frontend test
 
 .PHONY: kill

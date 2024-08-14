@@ -3,7 +3,7 @@ from typing import Any
 from uuid import UUID
 
 from asgiref.sync import sync_to_async
-from pony.orm import commit, db_session, desc, flush, select
+from pony.orm import commit, db_session, desc, flush
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
@@ -233,7 +233,7 @@ class PonyORMMixin:
         :return: A tuple of list of objects and total count.
         """
 
-        qs = select(m for m in self.model_cls)
+        qs = getattr(self.model_cls, "select")(lambda m: m)  # noqa: B009
         if filters:
             for field_with_condition, value in filters.items():
                 field = field_with_condition[0]
@@ -256,14 +256,17 @@ class PonyORMMixin:
                     case "contains":
                         pony_condition = "in"
                     case "icontains":
+                        # TODO: support icontains here
                         pony_condition = "in"
                 filter_expr = f""""{value}" {pony_condition}  m.{field}"""
                 qs = qs.filter(filter_expr)
 
         if search and self.search_fields:
             ids = []
-            for f in self.search_fields:
-                qs_ids = qs.filter(lambda m: search.lower() in getattr(m, f).lower())  # noqa: B023
+            for search_field in self.search_fields:
+                # TODO: support icontains here
+                filter_expr = f""""{search}" in m.{search_field}"""
+                qs_ids = qs.filter(filter_expr)
                 ids += [o.id for o in qs_ids]
             qs = qs.filter(lambda m: m.id in set(ids))
 

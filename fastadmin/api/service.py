@@ -53,7 +53,7 @@ def convert_id(id: str | int | UUID) -> int | UUID | None:
     if re.fullmatch(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", id):
         return UUID(id)
 
-    logger.error("Invalid id: %s", id)
+    logger.warning("Invalid id: %s", id)
     return None
 
 
@@ -101,6 +101,7 @@ class ApiService:
     ) -> str:
         model = settings.ADMIN_USER_MODEL
         admin_model = get_admin_model(model)
+
         if not admin_model:
             raise AdminApiException(401, detail=f"{model} model is not registered.")
 

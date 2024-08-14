@@ -5,9 +5,6 @@ logging.disable(logging.WARNING)
 
 ROOT_DIR = Path(__file__).parent
 
-DB_SQLITE = str(ROOT_DIR / "environment" / "db.sqlite3")
-
-
 FRAMEWORKS = [
     "fastapi",
     "flask",
@@ -18,6 +15,5 @@ ORMS = [
     "tortoiseorm",
     "djangoorm",
     "sqlalchemy",
-    # TODO: fix pony orm
-    # "ponyorm",
+    "ponyorm",
 ]

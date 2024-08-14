@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.11",
+            "changes": [
+                "Optimisation on unit tests. Fix for pony orm. Optimisation on search for tortoise orm.",
+            ],
+        },
+        {
             "version": "0.2.10",
             "changes": [
                 "Fix issue empty m2m.",

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastadmin"
-version = "0.2.10"
+version = "0.2.11"
 description = "FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin."
 authors = ["Seva D <vsdudakov@gmail.com>"]
 license = "MIT"
@@ -60,6 +60,7 @@ ruff = "^0.1.6"
 isort = "^5.13.2"
 python-dotenv = "^1.0.0"
 jinja2 = "^3.1.2"
+pytest-xdist = "^3.6.1"
 
 [build-system]
 requires = ["poetry-core"]
