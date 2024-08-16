@@ -53,7 +53,7 @@ class User(BaseModel):
 
     events: Mapped[list["Event"]] = relationship(secondary=user_m2m_event, back_populates="participants")
 
-    async def __str__(self):
+    def __str__(self):
         return self.username
 
 
@@ -64,7 +64,7 @@ class Tournament(BaseModel):
 
     events: Mapped[list["Event"]] = relationship(back_populates="tournament")
 
-    async def __str__(self):
+    def __str__(self):
         return self.name
 
 
@@ -74,7 +74,7 @@ class BaseEvent(BaseModel):
     name: Mapped[str] = mapped_column(String(length=255), nullable=False)
     event: Mapped[tp.Optional["Event"]] = relationship(back_populates="base")
 
-    async def __str__(self):
+    def __str__(self):
         return self.name
 
 
@@ -105,5 +105,5 @@ class Event(BaseModel):
 
     json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
-    async def __str__(self):
+    def __str__(self):
         return self.name
