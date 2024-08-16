@@ -13,6 +13,7 @@ from pony.orm.core import BindingError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from tortoise import Tortoise
 
+from fastadmin import DjangoModelAdmin, PonyORMModelAdmin, SqlAlchemyModelAdmin, TortoiseModelAdmin
 from fastadmin.models.base import admin_models as admin_models_objs
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.settings import settings
@@ -587,6 +588,20 @@ async def event(session_with_type, tortoiseorm_event, django_event, sqlalchemy_e
         case "ponyorm":
             async for obj in ponyorm_event():
                 yield obj
+
+
+@pytest.fixture()
+async def base_model_admin(session_with_type):
+    _, session_type = session_with_type
+    match session_type:
+        case "tortoiseorm":
+            yield TortoiseModelAdmin
+        case "djangoorm":
+            yield DjangoModelAdmin
+        case "sqlalchemy":
+            yield SqlAlchemyModelAdmin
+        case "ponyorm":
+            yield PonyORMModelAdmin
 
 
 @pytest.fixture()

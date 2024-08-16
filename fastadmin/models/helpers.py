@@ -162,10 +162,13 @@ def generate_models_schema(
                 ),
             )
 
-        for column_index, field_name in enumerate(orm_model_fields_for_serialize):
+        for field_name in orm_model_fields_for_serialize:
             display_field_function = getattr(admin_model_obj, field_name, None)
             if not display_field_function or not hasattr(display_field_function, "is_display"):
                 continue
+            if field_name not in column_fields:
+                continue
+            column_index = column_fields.index(field_name)
 
             fields_schema.append(
                 ModelFieldSchema(
