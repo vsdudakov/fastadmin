@@ -15,6 +15,21 @@ from fastadmin.models.schemas import (
     ModelSchema,
 )
 
+try:
+    from tortoise.models import Model as TortoiseModel
+except ImportError:
+
+    class TortoiseModel:
+        pass
+
+
+try:
+    from django.db.models import Model as DjangoModel
+except ImportError:
+
+    class DjangoModel:
+        pass
+
 
 def register_admin_model_class(admin_model_class: type[ModelAdmin], orm_model_classes: list[Any], **kwargs) -> None:
     """This method is used to register an admin model.
@@ -170,12 +185,16 @@ def generate_models_schema(
                 continue
             column_index = column_fields.index(field_name)
 
+            sorter = getattr(display_field_function, "sorter", False)
+            if sorter and not issubclass(orm_model_cls, (TortoiseModel, DjangoModel)):
+                raise NotImplementedError("Sorter of custom columns is supported only for Tortoise or Django")
+
             fields_schema.append(
                 ModelFieldSchema(
                     name=field_name,
                     list_configuration=ListConfigurationFieldSchema(
                         index=column_index,
-                        sorter=False,
+                        sorter=sorter,
                         is_link=field_name in getattr(admin_model_obj, "list_display_links", ()),
                         empty_value_display=admin_model_obj.empty_value_display,
                         filter_widget_type=None,
