@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "fastadmin-fastapi-sqlalchemy2"
+name = "fastadmin-fastapi-ponyeorm"
 version = "0.1.0"
-description = "FastAdmin Example (FastAPI + SQLAlchemy 2.*)"
-authors = ["Dmitrii <dmitrii.davidov@gmail.com>", "Seva D <vsdudakov@gmail.com>"]
+description = "FastAdmin Example (FastAPI + Pony ORM)"
+authors = ["Dmitrii <dmitrii.davidov@gmail.com>"]
 license = "MIT"
 homepage = "https://github.com/vsdudakov/fastadmin"
 repository = "https://github.com/vsdudakov/fastadmin"
@@ -11,8 +11,7 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = {"version" = "^0.112.0", extras = ["standard"]}
-fastadmin = {"version" = "^0.2.7", extras = ["fastapi", "sqlalchemy"]}
-aiosqlite = "^0.20.0"
+fastadmin = {"version" = "^0.2.7", extras = ["fastapi", "pony"]}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
