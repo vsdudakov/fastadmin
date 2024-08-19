@@ -2,7 +2,7 @@
 name = "fastadmin-fastapi-tortoiseorm"
 version = "0.1.0"
 description = "FastAdmin Example (FastAPI + Tortoise ORM)"
-authors = ["Dmitrii <dmitrii.davidov@gmail.com>"]
+authors = ["Seva D <vsdudakov@gmail.com>"]
 license = "MIT"
 homepage = "https://github.com/vsdudakov/fastadmin"
 repository = "https://github.com/vsdudakov/fastadmin"
