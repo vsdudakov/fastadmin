@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from models import db, BaseEvent, Event, Tournament, User
+from models import BaseEvent, Event, Tournament, User, db
 from pony.orm import db_session
 
 from fastadmin import PonyORMInlineModelAdmin, PonyORMModelAdmin, action, display
@@ -81,7 +81,6 @@ class EventModelAdmin(PonyORMModelAdmin):
 def init_db():
     db.bind(provider="sqlite", filename=":sharedmemory:")
     db.generate_mapping(create_tables=True)
-    pass
 
 
 @db_session

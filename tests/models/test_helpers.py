@@ -2,7 +2,6 @@ from fastadmin import ModelAdmin, display
 from fastadmin.models.helpers import (
     generate_models_schema,
     get_admin_model,
-    get_admin_models,
     register_admin_model_class,
     unregister_admin_model_class,
 )

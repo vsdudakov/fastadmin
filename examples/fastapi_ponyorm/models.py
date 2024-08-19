@@ -1,9 +1,8 @@
-from datetime import date, datetime, time
+from datetime import UTC, date, datetime, time
 from decimal import Decimal
 from enum import Enum
 
-from pony.orm import *
-
+from pony.orm import Database, Json, LongStr, Optional, PrimaryKey, Required, Set
 
 db = Database()
 
@@ -19,7 +18,7 @@ class BaseModel:
     updated_at = Required(datetime, default=datetime.utcnow)
 
     def before_update(self):
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(tz=UTC)
 
     @classmethod
     def get_model_name(cls):
