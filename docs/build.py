@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.11",
+            "changes": [
+                "Fixes for examples. Fixes for Pony ORM (delete, update m2m). Allow sorting by custoim columns. Fix for list_display ordering.",
+            ],
+        },
+        {
             "version": "0.2.10",
             "changes": [
                 "Fix issue empty m2m. Optimisation on unit tests. Fix for pony orm. Optimisation on search for tortoise orm.",

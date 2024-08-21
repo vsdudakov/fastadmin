@@ -19,7 +19,7 @@ try:
     from tortoise.models import Model as TortoiseModel
 except ImportError:
 
-    class TortoiseModel:
+    class TortoiseModel:  # type: ignore [no-redef]
         pass
 
 
@@ -27,7 +27,7 @@ try:
     from django.db.models import Model as DjangoModel
 except ImportError:
 
-    class DjangoModel:
+    class DjangoModel:  # type: ignore [no-redef]
         pass
 
 
@@ -186,7 +186,7 @@ def generate_models_schema(
             column_index = column_fields.index(field_name)
 
             sorter = getattr(display_field_function, "sorter", False)
-            if sorter and not issubclass(orm_model_cls, (TortoiseModel, DjangoModel)):
+            if sorter and not issubclass(orm_model_cls, TortoiseModel | DjangoModel):
                 raise NotImplementedError("Sorter of custom columns is supported only for Tortoise or Django")
 
             fields_schema.append(
