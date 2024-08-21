@@ -24,7 +24,8 @@ def action(function=None, *, description: str | None = None):
         return decorator(function)
 
 
-def display(function=None):
+# TODO: make the sorter parameter a string to specify how to sort the data
+def display(function=None, *, sorter: bool = False):
     """Conveniently add attributes to a display function:
 
     Example of usage:
@@ -33,10 +34,13 @@ def display(function=None):
         return obj.publish_date is not None
 
     :param function: A function to decorate.
+    :param sorter: Enable sorting or not. **WARNING**: supported only for Django and Tortoise.
+        Function name should be like an ORM ordering param, e.g. `def user__username(self, obj)`.
     """
 
     def decorator(func):
         func.is_display = True
+        func.sorter = sorter
         return func
 
     if function is None:
