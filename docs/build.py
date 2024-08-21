@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.12",
+            "changes": [
+                "Remove python-dotenv dep. Bump django. Add django example.",
+            ],
+        },
+        {
             "version": "0.2.11",
             "changes": [
                 "Fixes for examples. Fixes for Pony ORM (delete, update m2m). Allow sorting by custoim columns. Fix for list_display ordering.",
@@ -109,72 +115,6 @@ def get_versions():
             "version": "0.2.0",
             "changes": [
                 "Update packages. Use vite instead obsolete react-scripts.",
-            ],
-        },
-        {
-            "version": "0.1.41",
-            "changes": [
-                "Fixed bug with datetime. Added verbose name logic for models and inlines. Updated frontend libraries.",
-            ],
-        },
-        {
-            "version": "0.1.40",
-            "changes": [
-                "Added RUFF linter. Cleaned up code. Removed pydantic dependency.",
-            ],
-        },
-        {
-            "version": "0.1.39",
-            "changes": [
-                "Bug fixes.",
-            ],
-        },
-        {
-            "version": "0.1.38",
-            "changes": [
-                "Bug fixes.",
-            ],
-        },
-        {
-            "version": "0.1.37",
-            "changes": [
-                "Bug fixes.",
-            ],
-        },
-        {
-            "version": "0.1.36",
-            "changes": [
-                "Added autogeneration of documentation and examples.",
-            ],
-        },
-        {
-            "version": "0.1.35",
-            "changes": [
-                "Added DashboardWidgetAdmin class and charts for dashboard.",
-            ],
-        },
-        {
-            "version": "0.1.34",
-            "changes": [
-                "Added SlugInput, EmailInput, PhoneInput, UrlInput, JsonTextArea widget types.",
-            ],
-        },
-        {
-            "version": "0.1.33",
-            "changes": [
-                "Added list_display_widths parameter.",
-            ],
-        },
-        {
-            "version": "0.1.32",
-            "changes": [
-                "Added Upload widget type.",
-            ],
-        },
-        {
-            "version": "0.1.31",
-            "changes": [
-                "Added PasswordInput widget type.",
             ],
         },
     ]
