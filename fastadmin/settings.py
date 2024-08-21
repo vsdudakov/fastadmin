@@ -1,11 +1,6 @@
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
-
-load_dotenv(os.getenv("ADMIN_ENV_FILE") or ".env")
-
-
 ROOT_DIR = Path(__file__).resolve().parent
 
 

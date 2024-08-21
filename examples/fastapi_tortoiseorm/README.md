@@ -2,6 +2,7 @@
 
 - Uses in-memory SQLite 3 instance
 - Creates "admin/admin" superuser
+- Setup env variables in __init__.py
 
 ```bash
 make install  # Creates virtualenv with Poetry
