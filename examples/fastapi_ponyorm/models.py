@@ -20,10 +20,6 @@ class BaseModel:
     def before_update(self):
         self.updated_at = datetime.now(tz=UTC)
 
-    @classmethod
-    def get_model_name(cls):
-        return f"ponyorm.{cls.__name__}"
-
 
 class User(db.Entity, BaseModel):
     _table_ = "user"

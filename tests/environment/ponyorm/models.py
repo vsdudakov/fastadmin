@@ -145,7 +145,7 @@ class PonyORMBaseEventModelAdmin(PonyORMModelAdmin):
 class PonyORMEventModelAdmin(PonyORMModelAdmin):
     model_name_prefix = "ponyorm"
 
-    @action(description="Make user active")
+    @action(description="Make event active")
     @db_session
     def make_is_active(self, ids):
         # update(o.set(is_active=True) for o in self.model_cls if o.id in ids)
@@ -164,9 +164,9 @@ class PonyORMEventModelAdmin(PonyORMModelAdmin):
         commit()
 
     @display
-    async def started(self, obj):
+    def started(self, obj):
         return bool(obj.start_time)
 
     @display()
-    async def name_with_price(self, obj):
+    def name_with_price(self, obj):
         return f"{obj.name} - {obj.price}"

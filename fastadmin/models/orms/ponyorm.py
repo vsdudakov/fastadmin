@@ -328,6 +328,7 @@ class PonyORMMixin:
         :params id: an id of object.
         :return: None.
         """
+        # TODO: fix me
         # delete(o for o in self.model_cls if getattr(o, self.get_model_pk_name(self.model_cls)) == id)
         # flush()
         # commit()
@@ -365,12 +366,14 @@ class PonyORMMixin:
         obj = next((i for i in self.model_cls.select(**{key_id: getattr(obj, key_id)})), None)
         if not obj:
             return
-        obj.participants.clear()
-        if ids:
-            rel_model_cls = getattr(self.model_cls, field).py_type
-            rel_key_id = self.get_model_pk_name(rel_model_cls)
-            rel_objs = list(rel_model_cls.select(lambda o: getattr(o, rel_key_id) in ids))
-            obj.participants.add(rel_objs)
+        # TODO: fix me
+        # if ids:
+        #     rel_model_cls = getattr(self.model_cls, field).py_type
+        #     rel_key_id = self.get_model_pk_name(rel_model_cls)
+        #     rel_objs = list(rel_model_cls.select(lambda o: getattr(o, rel_key_id) in ids))
+        #     getattr(obj, field).clear()
+        #     for rel_obj in rel_objs:
+        #         getattr(obj, field).add(rel_obj)
         flush()
         commit()
 

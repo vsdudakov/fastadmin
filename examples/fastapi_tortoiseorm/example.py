@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from models import BaseEvent, Event, Tournament, User
 from tortoise import Tortoise
 
-from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, action, display
+from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, WidgetType, action, display
 from fastadmin import fastapi_app as admin_app
 from fastadmin import register
 
@@ -15,6 +15,10 @@ class UserModelAdmin(TortoiseModelAdmin):
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")
     search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "username": (WidgetType.SlugInput, {"required": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+    }
 
     async def authenticate(self, username, password):
         obj = await self.model_cls.filter(username=username, password=password, is_superuser=True).first()
@@ -51,7 +55,7 @@ class EventModelAdmin(TortoiseModelAdmin):
     actions = ("make_is_active", "make_is_not_active")
     list_display = ("id", "name_with_price", "rating", "event_type", "is_active", "started")
 
-    @action(description="Make user active")
+    @action(description="Make event active")
     async def make_is_active(self, ids):
         await self.model_cls.filter(id__in=ids).update(is_active=True)
 

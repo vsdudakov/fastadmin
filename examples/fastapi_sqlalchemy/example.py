@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from models import Base, BaseEvent, Event, Tournament, User, sqlalchemy_engine, sqlalchemy_sessionmaker
 from sqlalchemy import select, update
 
-from fastadmin import SqlAlchemyInlineModelAdmin, SqlAlchemyModelAdmin, action, display
+from fastadmin import SqlAlchemyInlineModelAdmin, SqlAlchemyModelAdmin, WidgetType, action, display
 from fastadmin import fastapi_app as admin_app
 from fastadmin import register
 
@@ -15,6 +15,10 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")
     search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "username": (WidgetType.SlugInput, {"required": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+    }
 
     async def authenticate(self, username, password):
         sessionmaker = self.get_sessionmaker()

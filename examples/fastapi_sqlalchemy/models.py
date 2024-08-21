@@ -31,10 +31,6 @@ class BaseModel(Base):
         DateTime, nullable=False, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
     )
 
-    @classmethod
-    def get_model_name(cls):
-        return f"sqlalchemy.{cls.__name__}"
-
 
 user_m2m_event = Table(
     "event_participants",

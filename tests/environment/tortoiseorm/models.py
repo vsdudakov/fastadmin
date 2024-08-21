@@ -116,7 +116,7 @@ class TortoiseORMBaseEventModelAdmin(TortoiseModelAdmin):
 class TortoiseORMEventModelAdmin(TortoiseModelAdmin):
     model_name_prefix = "tortoiseorm"
 
-    @action(description="Make user active")
+    @action(description="Make event active")
     async def make_is_active(self, ids):
         await self.model_cls.filter(id__in=ids).update(is_active=True)
 

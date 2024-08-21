@@ -14,10 +14,6 @@ class BaseModel(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
-    @classmethod
-    def get_model_name(cls):
-        return f"tortoiseorm.{cls.__name__}"
-
     class Meta:
         abstract = True
 

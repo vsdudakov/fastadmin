@@ -3,35 +3,39 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models import BaseEvent, Event, Tournament, User, db
-from pony.orm import db_session
+from pony.orm import commit, db_session
 
-from fastadmin import PonyORMInlineModelAdmin, PonyORMModelAdmin, action, display
+from fastadmin import PonyORMInlineModelAdmin, PonyORMModelAdmin, WidgetType, action, display
 from fastadmin import fastapi_app as admin_app
 from fastadmin import register
 
 
 @register(User)
 class UserModelAdmin(PonyORMModelAdmin):
-    exclude = ("password",)
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")
     search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "username": (WidgetType.SlugInput, {"required": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+    }
 
-    async def authenticate(self, username, password):
-        with db_session:
-            obj = next((f for f in User.select(username=username, password=password, is_superuser=True)), None)  # fmt: skip
-            if not obj:
-                return None
-            return obj.id
+    @db_session
+    def authenticate(self, username, password):
+        obj = next((f for f in User.select(username=username, password=password, is_superuser=True)), None)  # fmt: skip
+        if not obj:
+            return None
+        return obj.id
 
-    async def change_password(self, user_id, password):
-        user = await self.model_cls.filter(id=user_id).first()
-        if not user:
+    @db_session
+    def change_password(self, user_id, password):
+        obj = next((f for f in self.model_cls.select(id=user_id)), None)
+        if not obj:
             return
         # direct saving password is only for tests - use hash
-        user.password = password
-        await user.save()
+        obj.password = password
+        commit()
 
 
 class EventInlineModelAdmin(PonyORMInlineModelAdmin):
@@ -61,20 +65,32 @@ class EventModelAdmin(PonyORMModelAdmin):
         "started",
     )
 
-    @action(description="Make user active")
-    async def make_is_active(self, ids):
-        await self.model_cls.filter(id__in=ids).update(is_active=True)
+    @action(description="Make event active")
+    @db_session
+    def make_is_active(self, ids):
+        # update(o.set(is_active=True) for o in self.model_cls if o.id in ids)
+        objs = self.model_cls.select(lambda o: o.id in ids)
+        for obj in objs:
+            obj.is_active = True
+        commit()
 
     @action
-    async def make_is_not_active(self, ids):
-        await self.model_cls.filter(id__in=ids).update(is_active=False)
+    @db_session
+    def make_is_not_active(self, ids):
+        # update(o.set(is_active=False) for o in self.model_cls if o.id in ids)
+        objs = self.model_cls.select(lambda o: o.id in ids)
+        for obj in objs:
+            obj.is_active = False
+        commit()
 
     @display
-    async def started(self, obj):
+    @db_session
+    def started(self, obj):
         return bool(obj.start_time)
 
     @display()
-    async def name_with_price(self, obj):
+    @db_session
+    def name_with_price(self, obj):
         return f"{obj.name} - {obj.price}"
 
 

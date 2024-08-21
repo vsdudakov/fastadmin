@@ -113,7 +113,7 @@ class DjangoBaseEventModelAdmin(DjangoModelAdmin):
 class DjangoEventModelAdmin(DjangoModelAdmin):
     model_name_prefix = "django"
 
-    @action(description="Make user active")
+    @action(description="Make event active")
     def make_is_active(self, ids):
         self.model_cls.objects.filter(id__in=ids).update(is_active=True)
 

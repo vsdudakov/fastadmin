@@ -171,7 +171,7 @@ class SqlAlchemyBaseEventModelAdmin(SqlAlchemyModelAdmin):
 class SqlAlchemyEventModelAdmin(SqlAlchemyModelAdmin):
     model_name_prefix = "sqlalchemy"
 
-    @action(description="Make user active")
+    @action(description="Make event active")
     async def make_is_active(self, ids):
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
