@@ -5,13 +5,13 @@ import type React from "react";
 import { useTranslation } from "react-i18next";
 import slugify from "slugify";
 
-interface IJsonTextAreaProps {
+interface ISlugInputProps {
   value?: any;
 
   onChange?: (data: any) => void;
 }
 
-export const SlugInput: React.FC<IJsonTextAreaProps> = ({
+export const SlugInput: React.FC<ISlugInputProps> = ({
   value,
   onChange,
   ...props

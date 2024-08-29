@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.13",
+            "changes": [
+                "Fix edit page frontend issue for Date field.",
+            ],
+        },
+        {
             "version": "0.2.12",
             "changes": [
                 "Remove python-dotenv dep. Bump django. Add django example.",

@@ -4,7 +4,7 @@ import slugify from "slugify";
 
 export const isDayJs = (v: string): boolean => {
   const iso8601Regex =
-    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2}))$/;
+    /^(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2}))?)$/;
   return iso8601Regex.test(v);
 };
 
