@@ -465,7 +465,7 @@ class ApiService:
             )
 
         admin_models = cast(dict[Any, ModelAdmin | InlineModelAdmin], get_admin_models())
-        models = cast(Sequence[ModelSchema], generate_models_schema(admin_models, user_id=current_user_id))
+        models = cast(Sequence[ModelSchema], await generate_models_schema(admin_models, user_id=current_user_id))
         dashboard_widgets = generate_dashboard_widgets_schema()
         return ConfigurationSchema(
             site_name=settings.ADMIN_SITE_NAME,

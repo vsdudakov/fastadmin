@@ -1,3 +1,4 @@
+import asyncio
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.settings import settings
 
@@ -16,7 +17,7 @@ LIST_EVENT_FIELDS = [
 ]
 
 
-def validate_configuration_response_data(response_data, is_auth=True):
+async def validate_configuration_response_data(response_data, is_auth=True):
     assert response_data
     assert response_data["site_name"] == settings.ADMIN_SITE_NAME
     assert response_data["site_sign_in_logo"] == settings.ADMIN_SITE_SIGN_IN_LOGO
@@ -38,13 +39,13 @@ def validate_configuration_response_data(response_data, is_auth=True):
         assert admin_model
         assert model["name"] == admin_model.model_cls.get_model_name()
         permissions = []
-        if admin_model.has_add_permission():
+        if await admin_model.has_add_permission():
             permissions.append("Add")
-        if admin_model.has_change_permission():
+        if await admin_model.has_change_permission():
             permissions.append("Change")
-        if admin_model.has_delete_permission():
+        if await admin_model.has_delete_permission():
             permissions.append("Delete")
-        if admin_model.has_export_permission():
+        if await admin_model.has_export_permission():
             permissions.append("Export")
         assert set(model["permissions"]) == set(permissions)
         assert model["list_per_page"] == admin_model.list_per_page
@@ -103,7 +104,7 @@ async def test_configuration(session_id, event, client):
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
 
 async def test_configuration_405(session_id, client):
@@ -120,7 +121,7 @@ async def test_configuration_not_auth(client):
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
-    validate_configuration_response_data(response_data, is_auth=False)
+    asyncio.run(validate_configuration_response_data(response_data, is_auth=False))
 
 
 async def test_configuration_list_display(session_id, admin_models, event, client):
@@ -134,7 +135,7 @@ async def test_configuration_list_display(session_id, admin_models, event, clien
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
 
 async def test_configuration_list_display_display_fields(session_id, admin_models, event, client):
@@ -148,7 +149,7 @@ async def test_configuration_list_display_display_fields(session_id, admin_model
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
 
 async def test_configuration_list_filter(session_id, admin_models, event, client):
@@ -163,7 +164,7 @@ async def test_configuration_list_filter(session_id, admin_models, event, client
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
 
 async def test_configuration_sortable_by(session_id, admin_models, event, client):
@@ -179,7 +180,7 @@ async def test_configuration_sortable_by(session_id, admin_models, event, client
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
 
 async def test_configuration_radio_fields(session_id, admin_models, event, client):
@@ -195,7 +196,7 @@ async def test_configuration_radio_fields(session_id, admin_models, event, clien
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
 
 async def test_configuration_filter_horizontal_vertical(session_id, admin_models, event, client):
@@ -211,7 +212,7 @@ async def test_configuration_filter_horizontal_vertical(session_id, admin_models
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
     event_admin_model.filter_vertical = ["participants"]
     r = await client.get(
@@ -220,7 +221,7 @@ async def test_configuration_filter_horizontal_vertical(session_id, admin_models
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
 
 async def test_configuration_raw_id_fields(session_id, admin_models, event, client):
@@ -236,7 +237,7 @@ async def test_configuration_raw_id_fields(session_id, admin_models, event, clie
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
 
 async def test_configuration_fields(session_id, admin_models, event, client):
@@ -250,7 +251,7 @@ async def test_configuration_fields(session_id, admin_models, event, client):
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
 
 async def test_configuration_actions(session_id, admin_models, event, client):
@@ -264,7 +265,7 @@ async def test_configuration_actions(session_id, admin_models, event, client):
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
     event_admin_model.actions = ("test_action",)
     r = await client.get(
@@ -273,7 +274,7 @@ async def test_configuration_actions(session_id, admin_models, event, client):
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
 
 async def test_configuration_fieldsets(session_id, admin_models, event, client):
@@ -303,7 +304,7 @@ async def test_configuration_fieldsets(session_id, admin_models, event, client):
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
 
 
 async def test_configuration_inlines(session_id, client):
@@ -315,4 +316,4 @@ async def test_configuration_inlines(session_id, client):
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    validate_configuration_response_data(response_data)
+    asyncio.run(validate_configuration_response_data(response_data))
