@@ -1,4 +1,3 @@
-import asyncio
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.settings import settings
 
@@ -104,7 +103,7 @@ async def test_configuration(session_id, event, client):
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
 
 async def test_configuration_405(session_id, client):
@@ -121,7 +120,7 @@ async def test_configuration_not_auth(client):
     )
     assert r.status_code == 200, r.text
     response_data = r.json()
-    asyncio.run(validate_configuration_response_data(response_data, is_auth=False))
+    await validate_configuration_response_data(response_data, is_auth=False)
 
 
 async def test_configuration_list_display(session_id, admin_models, event, client):
@@ -135,7 +134,7 @@ async def test_configuration_list_display(session_id, admin_models, event, clien
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
 
 async def test_configuration_list_display_display_fields(session_id, admin_models, event, client):
@@ -149,7 +148,7 @@ async def test_configuration_list_display_display_fields(session_id, admin_model
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
 
 async def test_configuration_list_filter(session_id, admin_models, event, client):
@@ -164,7 +163,7 @@ async def test_configuration_list_filter(session_id, admin_models, event, client
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
 
 async def test_configuration_sortable_by(session_id, admin_models, event, client):
@@ -180,7 +179,7 @@ async def test_configuration_sortable_by(session_id, admin_models, event, client
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
 
 async def test_configuration_radio_fields(session_id, admin_models, event, client):
@@ -196,7 +195,7 @@ async def test_configuration_radio_fields(session_id, admin_models, event, clien
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
 
 async def test_configuration_filter_horizontal_vertical(session_id, admin_models, event, client):
@@ -212,7 +211,7 @@ async def test_configuration_filter_horizontal_vertical(session_id, admin_models
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
     event_admin_model.filter_vertical = ["participants"]
     r = await client.get(
@@ -221,7 +220,7 @@ async def test_configuration_filter_horizontal_vertical(session_id, admin_models
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
 
 async def test_configuration_raw_id_fields(session_id, admin_models, event, client):
@@ -237,7 +236,7 @@ async def test_configuration_raw_id_fields(session_id, admin_models, event, clie
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
 
 async def test_configuration_fields(session_id, admin_models, event, client):
@@ -251,7 +250,7 @@ async def test_configuration_fields(session_id, admin_models, event, client):
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
 
 async def test_configuration_actions(session_id, admin_models, event, client):
@@ -265,7 +264,7 @@ async def test_configuration_actions(session_id, admin_models, event, client):
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
     event_admin_model.actions = ("test_action",)
     r = await client.get(
@@ -274,7 +273,7 @@ async def test_configuration_actions(session_id, admin_models, event, client):
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
 
 async def test_configuration_fieldsets(session_id, admin_models, event, client):
@@ -304,7 +303,7 @@ async def test_configuration_fieldsets(session_id, admin_models, event, client):
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
 
 
 async def test_configuration_inlines(session_id, client):
@@ -316,4 +315,4 @@ async def test_configuration_inlines(session_id, client):
     assert r.status_code == 200, r.text
     response_data = r.json()
     assert response_data
-    asyncio.run(validate_configuration_response_data(response_data))
+    await validate_configuration_response_data(response_data)
