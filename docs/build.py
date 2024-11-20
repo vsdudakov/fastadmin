@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.15",
+            "changes": [
+                "Fix password logic for user.",
+            ],
+        },
+        {
             "version": "0.2.14",
             "changes": [
                 "Make permissions functions awaitable. Bump frontend/backend packages.",

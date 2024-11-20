@@ -9,7 +9,7 @@ test("Renders PasswordInput", () => {
   const queryClient = new QueryClient();
   render(
     <TestProviders client={queryClient}>
-      <PasswordInput parentId="test" passwordModalForm={true} />
+      <PasswordInput parentId="test" />
     </TestProviders>,
   );
 });

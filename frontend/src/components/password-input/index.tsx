@@ -17,13 +17,11 @@ import { patchFetcher } from "@/fetchers/fetchers";
 import { handleError } from "@/helpers/forms";
 
 export interface IPasswordInput {
-  parentId: string;
-  passwordModalForm?: boolean;
+  parentId?: string;
 }
 
 export const PasswordInput: React.FC<IPasswordInput> = ({
   parentId,
-  passwordModalForm,
   ...props
 }) => {
   const { t: _t } = useTranslation("PasswordInput");
@@ -56,7 +54,7 @@ export const PasswordInput: React.FC<IPasswordInput> = ({
     mutate(data);
   };
 
-  if (!passwordModalForm) {
+  if (!parentId) {
     return <Input.Password {...props} />;
   }
   return (
@@ -67,7 +65,7 @@ export const PasswordInput: React.FC<IPasswordInput> = ({
             <EditOutlined />
           </Button>
         </Tooltip>
-        <Input.Password {...props} />
+        <Input.Password {...props} disabled />
       </Space.Compact>
       <Modal
         open={open}

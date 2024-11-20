@@ -621,6 +621,25 @@ class ModelAdmin(BaseModelAdmin):
         """
         raise NotImplementedError
 
+    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
+        """This method is used to save orm/db model object.
+
+        :params id: an id of object.
+        :params payload: a payload from request.
+        :return: A saved object or None.
+        """
+        obj = await super().save_model(id, payload)
+        fields = self.get_model_fields_with_widget_types(with_m2m=False, with_upload=False)
+        password_fields = [field.name for field in fields if field.form_widget_type == WidgetType.PasswordInput]
+        if obj and id is None and password_fields:
+            # save hashed password for create
+            pk_name = self.get_model_pk_name(self.model_cls)
+            pk = obj[pk_name]
+            password_values = [payload[field] for field in password_fields if field in payload]
+            if password_values:
+                await self.change_password(pk, password_values[0])
+        return obj
+
 
 class DashboardWidgetAdmin:
     title: str
