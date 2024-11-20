@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.14",
+            "changes": [
+                "Make permissions functions awaitable. Bump frontend/backend packages.",
+            ],
+        },
+        {
             "version": "0.2.13",
             "changes": [
                 "Fix edit page frontend issue for Date field.",
@@ -54,7 +60,7 @@ def get_versions():
         {
             "version": "0.2.11",
             "changes": [
-                "Fixes for examples. Fixes for Pony ORM (delete, update m2m). Allow sorting by custoim columns. Fix for list_display ordering.",
+                "Fixes for examples. Fixes for Pony ORM (delete, update m2m). Allow sorting by custom columns. Fix for list_display ordering.",
             ],
         },
         {

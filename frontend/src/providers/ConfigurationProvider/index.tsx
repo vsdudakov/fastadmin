@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { useQuery } from "@tanstack/react-query";
 import { Button, Popover, Result } from "antd";
 import React from "react";

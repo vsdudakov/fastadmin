@@ -244,36 +244,32 @@ export const List: React.FC = () => {
         </Row>
       }
       bottomActions={
-        <>
-          {(modelConfiguration?.actions || []).length > 0 &&
-            modelConfiguration?.actions_on_bottom && (
-              <div style={{ marginTop: isMobile ? 10 : -50 }}>
-                <Select
-                  placeholder={_t("Select Action By") as string}
-                  allowClear={true}
-                  value={action}
-                  onChange={setAction}
-                  style={{ width: 200 }}
-                >
-                  {(modelConfiguration?.actions || []).map(
-                    (a: IModelAction) => (
-                      <Select.Option key={a.name} value={a.name}>
-                        {a.description || a.name}
-                      </Select.Option>
-                    ),
-                  )}
-                </Select>
-                <Button
-                  disabled={!action || selectedRowKeys.length === 0}
-                  style={{ marginLeft: 5 }}
-                  loading={isLoadingAction}
-                  onClick={onApplyAction}
-                >
-                  {_t("Apply")}
-                </Button>
-              </div>
-            )}
-        </>
+        (modelConfiguration?.actions || []).length > 0 &&
+        modelConfiguration?.actions_on_bottom && (
+          <div style={{ marginTop: isMobile ? 10 : -50 }}>
+            <Select
+              placeholder={_t("Select Action By") as string}
+              allowClear={true}
+              value={action}
+              onChange={setAction}
+              style={{ width: 200 }}
+            >
+              {(modelConfiguration?.actions || []).map((a: IModelAction) => (
+                <Select.Option key={a.name} value={a.name}>
+                  {a.description || a.name}
+                </Select.Option>
+              ))}
+            </Select>
+            <Button
+              disabled={!action || selectedRowKeys.length === 0}
+              style={{ marginLeft: 5 }}
+              loading={isLoadingAction}
+              onClick={onApplyAction}
+            >
+              {_t("Apply")}
+            </Button>
+          </div>
+        )
       }
     >
       {modelConfiguration ? (
