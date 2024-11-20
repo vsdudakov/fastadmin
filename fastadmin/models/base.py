@@ -631,7 +631,7 @@ class ModelAdmin(BaseModelAdmin):
         obj = await super().save_model(id, payload)
         fields = self.get_model_fields_with_widget_types(with_m2m=False, with_upload=False)
         password_fields = [field.name for field in fields if field.form_widget_type == WidgetType.PasswordInput]
-        if id is None and password_fields:
+        if obj and id is None and password_fields:
             # save hashed password for create
             pk_name = self.get_model_pk_name(self.model_cls)
             pk = obj[pk_name]
@@ -639,6 +639,7 @@ class ModelAdmin(BaseModelAdmin):
             if password_values:
                 await self.change_password(pk, password_values[0])
         return obj
+
 
 class DashboardWidgetAdmin:
     title: str

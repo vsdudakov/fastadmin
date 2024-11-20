@@ -18,7 +18,6 @@ import { handleError } from "@/helpers/forms";
 
 export interface IPasswordInput {
   parentId?: string;
-  passwordModalForm?: boolean;
 }
 
 export const PasswordInput: React.FC<IPasswordInput> = ({
