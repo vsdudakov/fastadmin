@@ -98,7 +98,7 @@ def get_admin_or_admin_inline_model(orm_model_cls: str) -> ModelAdmin | InlineMo
     return None
 
 
-def generate_models_schema(
+async def generate_models_schema(
     admin_models: dict[Any, ModelAdmin | InlineModelAdmin],
     user_id: UUID | int | None = None,
     inline_parent_admin_modal: ModelAdmin | None = None,
@@ -207,13 +207,13 @@ def generate_models_schema(
             )
 
         permissions = []
-        if admin_model_obj.has_add_permission(user_id=user_id):
+        if await admin_model_obj.has_add_permission(user_id=user_id):
             permissions.append(ModelPermission.Add)
-        if admin_model_obj.has_change_permission(user_id=user_id):
+        if await admin_model_obj.has_change_permission(user_id=user_id):
             permissions.append(ModelPermission.Change)
-        if admin_model_obj.has_delete_permission(user_id=user_id):
+        if await admin_model_obj.has_delete_permission(user_id=user_id):
             permissions.append(ModelPermission.Delete)
-        if admin_model_obj.has_export_permission(user_id=user_id):
+        if await admin_model_obj.has_export_permission(user_id=user_id):
             permissions.append(ModelPermission.Export)
 
         actions = []
@@ -257,7 +257,7 @@ def generate_models_schema(
                     save_as=admin_model_obj.save_as,
                     save_as_continue=admin_model_obj.save_as_continue,
                     view_on_site=admin_model_obj.view_on_site,
-                    inlines=generate_models_schema(
+                    inlines=await generate_models_schema(
                         {inline.model: inline(inline.model) for inline in admin_model_obj.inlines},
                         inline_parent_admin_modal=admin_model_obj,
                         user_id=user_id,

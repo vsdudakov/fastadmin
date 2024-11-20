@@ -36,7 +36,7 @@ async def test_admin_model_list_configuration_ordering(tournament, base_model_ad
         def another_calculated_field(self, obj: Tournament) -> int:
             return 0
 
-    model_schema = generate_models_schema({Tournament: TournamentModelAdmin(Tournament)})
+    model_schema = await generate_models_schema({Tournament: TournamentModelAdmin(Tournament)})
 
     assert model_schema
     assert len(model_schema) == 1

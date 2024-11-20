@@ -524,7 +524,7 @@ class BaseModelAdmin:
             case _:
                 return None
 
-    def has_add_permission(self, user_id: UUID | int | None = None) -> bool:
+    async def has_add_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to add new model instance.
 
         :param user_id: The user id.
@@ -532,7 +532,7 @@ class BaseModelAdmin:
         """
         return True
 
-    def has_change_permission(self, user_id: UUID | int | None = None) -> bool:
+    async def has_change_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to change model instance.
 
         :param user_id: The user id.
@@ -540,7 +540,7 @@ class BaseModelAdmin:
         """
         return True
 
-    def has_delete_permission(self, user_id: UUID | int | None = None) -> bool:
+    async def has_delete_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to delete model instance.
 
         :param user_id: The user id.
@@ -548,7 +548,7 @@ class BaseModelAdmin:
         """
         return True
 
-    def has_export_permission(self, user_id: UUID | int | None = None) -> bool:
+    async def has_export_permission(self, user_id: UUID | int | None = None) -> bool:
         """This method is used to check if user has permission to export model instance.
 
         :param user_id: The user id.
