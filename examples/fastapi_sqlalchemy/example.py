@@ -10,7 +10,6 @@ from fastadmin import register
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 class UserModelAdmin(SqlAlchemyModelAdmin):
-    exclude = ("password",)
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")

@@ -13,6 +13,7 @@ from fastadmin.models.schemas import (
     ModelFieldSchema,
     ModelPermission,
     ModelSchema,
+    WidgetType,
 )
 
 try:
@@ -155,12 +156,13 @@ async def generate_models_schema(
                 if form_index is not None:
                     form_widget_type = orm_model_field.form_widget_type
                     form_widget_props = orm_model_field.form_widget_props
-                    add_configuration = AddConfigurationFieldSchema(
-                        index=form_index,
-                        form_widget_type=form_widget_type,
-                        form_widget_props=form_widget_props,
-                        required=form_widget_props.get("required", False),
-                    )
+                    if orm_model_field.form_widget_type != WidgetType.PasswordInput:
+                        add_configuration = AddConfigurationFieldSchema(
+                            index=form_index,
+                            form_widget_type=form_widget_type,
+                            form_widget_props=form_widget_props,
+                            required=form_widget_props.get("required", False),
+                        )
                     change_configuration = ChangeConfigurationFieldSchema(
                         index=form_index,
                         form_widget_type=form_widget_type,
