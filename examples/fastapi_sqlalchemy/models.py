@@ -48,6 +48,7 @@ class User(BaseModel):
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     events: Mapped[list["Event"]] = relationship(secondary=user_m2m_event, back_populates="participants")
+    avatar_url: Mapped[str | None] = mapped_column(String(length=255), nullable=True)
 
     def __str__(self):
         return self.username
