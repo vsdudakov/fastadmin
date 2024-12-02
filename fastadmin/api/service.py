@@ -460,6 +460,7 @@ class ApiService:
                 username_field=settings.ADMIN_USER_MODEL_USERNAME_FIELD,
                 date_format=settings.ADMIN_DATE_FORMAT,
                 datetime_format=settings.ADMIN_DATETIME_FORMAT,
+                disable_crop_image=settings.ADMIN_DISABLE_CROP_IMAGE,
                 models=[],
                 dashboard_widgets=[],
             )
@@ -476,6 +477,7 @@ class ApiService:
             username_field=settings.ADMIN_USER_MODEL_USERNAME_FIELD,
             date_format=settings.ADMIN_DATE_FORMAT,
             datetime_format=settings.ADMIN_DATETIME_FORMAT,
+            disable_crop_image=settings.ADMIN_DISABLE_CROP_IMAGE,
             models=models,
             dashboard_widgets=dashboard_widgets,
         )  # type: ignore [call-arg]

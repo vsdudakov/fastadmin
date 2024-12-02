@@ -17,6 +17,7 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
     formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "avatar_url": (WidgetType.Upload, {"required": False}),
     }
 
     async def authenticate(self, username, password):

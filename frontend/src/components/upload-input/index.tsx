@@ -3,10 +3,16 @@ import { Image, Modal, Space, Upload } from "antd";
 import ImgCrop from "antd-img-crop";
 import getBase64 from "getbase64data";
 import type React from "react";
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { isArray } from "@/helpers/transform";
+import { ConfigurationContext } from "@/providers/ConfigurationProvider";
+
+interface IUploadWrapperProps {
+  withCrop?: boolean;
+  children: JSX.Element;
+}
 
 export interface IUploadInput {
   parentId: string;
@@ -28,6 +34,7 @@ export const UploadInput: React.FC<IUploadInput> = ({
 }) => {
   const { t: _t } = useTranslation("UploadInput");
   const [previewFileUrl, setPreviewFileUrl] = useState<string | undefined>();
+  const { configuration } = useContext(ConfigurationContext);
 
   const onUpload = async (info: any) => {
     const changedFileList = multiple ? info.fileList : info.fileList.slice(-1);
@@ -69,9 +76,19 @@ export const UploadInput: React.FC<IUploadInput> = ({
 
   const beforeUpload = () => false;
 
+  const UploadWrapper: React.FC<IUploadWrapperProps> = ({
+    withCrop,
+    children,
+  }) => {
+    if (withCrop) {
+      return <ImgCrop rotationSlider>{children}</ImgCrop>;
+    }
+    return <>{children}</>;
+  };
+
   return (
     <>
-      <ImgCrop rotationSlider={true}>
+      <UploadWrapper withCrop={!configuration?.disable_crop_image}>
         <Upload
           listType="picture-card"
           withCredentials={true}
@@ -87,7 +104,7 @@ export const UploadInput: React.FC<IUploadInput> = ({
             {_t("Upload")}
           </Space>
         </Upload>
-      </ImgCrop>
+      </UploadWrapper>
       <Modal
         footer={null}
         title={_t("Preview Image")}

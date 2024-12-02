@@ -5,8 +5,8 @@ import { HelmetProvider } from "react-helmet-async";
 import { I18nextProvider } from "react-i18next";
 import { HashRouter } from "react-router-dom";
 
-import { ConfigurationProvider } from "@/providers/ConfigurationProvider";
-import { SignInUserProvider } from "@/providers/SignInUserProvider";
+import { ConfigurationProvider } from "@/providers/ConfigurationProvider/provider";
+import { SignInUserProvider } from "@/providers/SignInUserProvider/provider";
 
 interface IInternalProviders {
   children?: React.ReactNode;

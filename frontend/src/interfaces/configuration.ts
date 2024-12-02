@@ -139,6 +139,7 @@ export interface IConfiguration {
   username_field: string;
   date_format?: string;
   datetime_format?: string;
+  disable_crop_image?: boolean;
   models: IModel[];
   dashboard_widgets: IDashboardWidget[];
 }

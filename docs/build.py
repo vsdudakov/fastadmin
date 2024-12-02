@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.16",
+            "changes": [
+                "Added new setting ADMIN_DISABLE_CROP_IMAGE. So,we can configure crop images on upload.",
+            ],
+        },
+        {
             "version": "0.2.15",
             "changes": [
                 "Fix password logic for user.",

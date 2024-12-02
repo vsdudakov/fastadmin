@@ -50,5 +50,8 @@ class Settings:
     # or attackers could use it to generate their own signed values.
     ADMIN_SECRET_KEY: str = os.getenv("ADMIN_SECRET_KEY")
 
+    # This value disables the crop image feature in FastAdmin.
+    ADMIN_DISABLE_CROP_IMAGE: bool = os.getenv("ADMIN_DISABLE_CROP_IMAGE", False)
+
 
 settings = Settings()

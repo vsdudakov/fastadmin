@@ -172,6 +172,7 @@ class ConfigurationSchema:
     username_field: str
     date_format: str
     datetime_format: str
+    disable_crop_image: bool
     models: Sequence[ModelSchema]
     dashboard_widgets: Sequence[DashboardWidgetSchema]
 
