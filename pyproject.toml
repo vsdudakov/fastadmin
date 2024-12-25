@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastadmin"
-version = "0.2.16"
+version = "0.2.17"
 description = "FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin."
 authors = ["Seva D <vsdudakov@gmail.com>"]
 license = "MIT"
