@@ -1,7 +1,8 @@
+import contextlib
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import and_, func, inspect, or_, select, text
+from sqlalchemy import BIGINT, Integer, and_, func, inspect, or_, select, text
 from sqlalchemy.orm import selectinload
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
@@ -261,21 +262,27 @@ class SqlAlchemyMixin:
                 for field_with_condition, value in filters.items():
                     field = field_with_condition[0]
                     condition = field_with_condition[1]
+                    model_field = getattr(self.model_cls, field)
+
+                    if isinstance(model_field.expression.type, BIGINT | Integer):
+                        with contextlib.suppress(ValueError):
+                            value = int(value)
+
                     match condition:
                         case "lte":
-                            q.append(getattr(self.model_cls, field) >= value)
+                            q.append(model_field >= value)
                         case "gte":
-                            q.append(getattr(self.model_cls, field) <= value)
+                            q.append(model_field <= value)
                         case "lt":
-                            q.append(getattr(self.model_cls, field) > value)
+                            q.append(model_field > value)
                         case "gt":
-                            q.append(getattr(self.model_cls, field) < value)
+                            q.append(model_field < value)
                         case "exact":
-                            q.append(getattr(self.model_cls, field) == value)
+                            q.append(model_field == value)
                         case "contains":
-                            q.append(getattr(self.model_cls, field).like(f"%{value}%"))
+                            q.append(model_field.like(f"%{value}%"))
                         case "icontains":
-                            q.append(getattr(self.model_cls, field).ilike(f"%{value}%"))
+                            q.append(model_field.ilike(f"%{value}%"))
                 qs = qs.filter(and_(*q))
 
             if search and self.search_fields:
@@ -313,6 +320,13 @@ class SqlAlchemyMixin:
         async with sessionmaker() as session:
             return await session.get(self.model_cls, id)
 
+    def _get_foreign_key_fields(self) -> list[str]:
+        """Returns a list of foreign key fields for the model.
+
+        :return: List of foreign key field names.
+        """
+        return [column.name for column in self.model_cls.__table__.columns if column.foreign_keys]
+
     async def orm_save_obj(self, id: UUID | Any | None, payload: dict) -> Any:
         """This method is used to save orm/db model object.
 
@@ -320,6 +334,12 @@ class SqlAlchemyMixin:
         :params payload: a dict of payload.
         :return: An object.
         """
+        for fk_field_name in self._get_foreign_key_fields():
+            if fk_field_name in payload and isinstance(payload[fk_field_name], str):
+                with contextlib.suppress(ValueError):
+                    # convert string to int for foreign key fields for postgresql alchemy
+                    payload[fk_field_name] = int(payload[fk_field_name])
+
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
             if id:
