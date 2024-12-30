@@ -40,6 +40,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.18",
+            "changes": [
+                "Fixes for m2m fk's sqlalchemy postgres. Convert str to int for them.",
+            ],
+        },
+        {
             "version": "0.2.17",
             "changes": [
                 "Fixes for fk sqlalchemy postgres. Convert str to int for them.",
