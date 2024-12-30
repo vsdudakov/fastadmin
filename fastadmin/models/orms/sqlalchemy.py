@@ -265,7 +265,7 @@ class SqlAlchemyMixin:
                     model_field = getattr(self.model_cls, field)
 
                     if isinstance(model_field.expression.type, BIGINT | Integer):
-                        with contextlib.suppress(ValueError):
+                        with contextlib.suppress(ValueError, TypeError):
                             value = int(value)
 
                     match condition:
@@ -336,7 +336,7 @@ class SqlAlchemyMixin:
         """
         for fk_field_name in self._get_foreign_key_fields():
             if fk_field_name in payload and isinstance(payload[fk_field_name], str):
-                with contextlib.suppress(ValueError):
+                with contextlib.suppress(ValueError, TypeError):
                     # convert string to int for foreign key fields for postgresql alchemy
                     payload[fk_field_name] = int(payload[fk_field_name])
 
@@ -414,6 +414,10 @@ class SqlAlchemyMixin:
             )
             await session.execute(qs)
             for rel_id in ids:
+                with contextlib.suppress(ValueError, TypeError):
+                    rel_id = int(rel_id)
+                with contextlib.suppress(ValueError, TypeError):
+                    obj_id = int(obj_id)
                 values.append(
                     {
                         rel_field_name: rel_id,
