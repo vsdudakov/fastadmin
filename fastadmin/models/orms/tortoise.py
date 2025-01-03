@@ -62,7 +62,7 @@ class TortoiseMixin:
             if with_upload is not None and with_upload and not is_upload:
                 continue
 
-            is_pk = getattr(orm_model_field, "index", False)
+            is_pk = getattr(orm_model_field, "pk", False)
             is_immutable = (
                 is_pk or getattr(orm_model_field, "auto_now", False) or getattr(orm_model_field, "auto_now_add", False)
             ) and field_name not in self.readonly_fields
