@@ -40,12 +40,6 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
-            "version": "0.2.20",
-            "changes": [
-                "Fix for _id fields. Bump packages for backend and frontend.",
-            ],
-        },
-        {
             "version": "0.2.19",
             "changes": [
                 "Fix for is_pk for tortoise orm.",
