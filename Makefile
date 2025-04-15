@@ -8,7 +8,7 @@ clean:
 .PHONY: fix
 fix:
 	@echo "Run ruff"
-	@exec poetry run ruff --fix fastadmin tests docs examples
+	@exec poetry run ruff check --fix fastadmin tests docs examples
 	@echo "Run isort"
 	@exec poetry run isort fastadmin tests docs examples
 	@echo "Run black"
@@ -21,7 +21,7 @@ fix:
 .PHONY: lint
 lint:
 	@echo "Run ruff"
-	@exec poetry run ruff fastadmin tests docs examples
+	@exec poetry run ruff check fastadmin tests docs examples
 	@echo "Run isort"
 	@exec poetry run isort --check-only fastadmin tests docs examples
 	@echo "Run black"

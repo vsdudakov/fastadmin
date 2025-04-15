@@ -30,7 +30,7 @@ python = "^3.10"
 pyjwt = "^2.6.0"
 asgiref = "^3.7.0"
 fastapi = { version = "0.*", optional = true }
-flask = { version = "2.*", optional = true }
+flask = { version = "3.*", optional = true }
 django = { version = "5.*", optional = true }
 tortoise-orm = { version = "0.*", optional = true }
 sqlalchemy = { version = "2.*", extras = ["asyncio"], optional = true }
@@ -45,19 +45,18 @@ sqlalchemy = ["sqlalchemy"]
 pony = ["pony"]
 
 [tool.poetry.group.dev.dependencies]
-uvicorn = "^0.20.0"
-pytest = "^7.4.3"
-pytest-cov = "^4.1.0"
+uvicorn = "^0.34.1"
+pytest = "^8.3.5"
+pytest-cov = "^6.1.1"
 pytest-mock = "^3.12.0"
-pytest-asyncio = "^0.21.1"
-black = "^23.11.0"
+pytest-asyncio = "^0.26.0"
+black = "^25.1.0"
 mypy = "^1.7.1"
-httpx = "^0.23.3"
+httpx = "^0.28.1"
 aioshutil = "^1.2"
-htmlmin = "^0.1.12"
 bcrypt = "^4.0.1"
-ruff = "^0.1.6"
-isort = "^5.13.2"
+ruff = "^0.11.5"
+isort = "^6.0.1"
 python-dotenv = "^1.0.0"
 jinja2 = "^3.1.2"
 pytest-xdist = "^3.6.1"
@@ -87,7 +86,7 @@ exclude = ".git|.pytest_cache|.venv|.env|venv|env|static"
 [tool.ruff]
 target-version = "py310"
 line-length = 120
-select = [
+lint.select = [
     "F",       # pyflakes
     "E",       # pycodestyle
     "W",       # pycodestyle
@@ -115,10 +114,10 @@ select = [
     "PLE",     # pylint
     "RUF",     # ruff-specific
 ]
-fixable = [
+lint.fixable = [
     "F401",    # unused imports
 ]
-ignore = [
+lint.ignore = [
     "E501",    # 'black' handles line length
     "F405",    # defined from star import
     "S101",    # impossible logic branches are denoted with 'assert'
@@ -126,11 +125,10 @@ ignore = [
     "S105",
     "S106",
     "B008",    # function call (e.g. `Depends`) in argument defaults
-    "PT004",   # fixtures that don't return a value must start with an underscore
     "SIM108",  # use ternary operator ... instead of if-else-block
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 section-order = [
     "future",
     "standard-library",

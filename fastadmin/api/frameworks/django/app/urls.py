@@ -41,7 +41,7 @@ def get_admin_urls():
             path("api/action/<str:model>/<str:action>", action),
             path("api/configuration", configuration),
             re_path(
-                r"^%s(?P<path>.*)$" % re.escape("static"),
+                r"^%s(?P<path>.*)$" % re.escape("static"),  # noqa: UP031
                 serve,
                 kwargs={"document_root": ROOT_DIR / "static"},
             ),

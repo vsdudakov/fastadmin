@@ -267,7 +267,8 @@ class PonyORMMixin:
                 # TODO: support icontains here
                 filter_expr = f""""{search}" in m.{search_field}"""
                 qs_ids = qs.filter(filter_expr)
-                ids += [o.id for o in qs_ids]
+                objs = list(qs_ids)
+                ids += [o.id for o in objs]
             qs = qs.filter(lambda m: m.id in set(ids))
 
         ordering = [sort_by] if sort_by else self.ordering
@@ -298,7 +299,7 @@ class PonyORMMixin:
         :params id: an id of object.
         :return: An object.
         """
-        return next((i for i in self.model_cls.select(**{self.get_model_pk_name(self.model_cls): id})), None)
+        return self.model_cls.select(**{self.get_model_pk_name(self.model_cls): id}).first()
 
     @sync_to_async
     @db_session
@@ -310,7 +311,7 @@ class PonyORMMixin:
         :return: An object.
         """
         if id:
-            obj = next((i for i in self.model_cls.select(**{self.get_model_pk_name(self.model_cls): id})), None)
+            obj = self.model_cls.select(**{self.get_model_pk_name(self.model_cls): id}).first()
             if not obj:
                 return None
             obj.set(**payload)
@@ -328,7 +329,7 @@ class PonyORMMixin:
         :params id: an id of object.
         :return: None.
         """
-        obj = next((i for i in self.model_cls.select(**{self.get_model_pk_name(self.model_cls): id})), None)
+        obj = self.model_cls.select(**{self.get_model_pk_name(self.model_cls): id}).first()
         if not obj:
             return
         obj.delete()
@@ -346,7 +347,7 @@ class PonyORMMixin:
         :return: A list of ids.
         """
         key_id = self.get_model_pk_name(self.model_cls)
-        obj = next((i for i in self.model_cls.select(**{key_id: getattr(obj, key_id)})), None)
+        obj = self.model_cls.select(**{key_id: getattr(obj, key_id)}).first()
         if not obj:
             return []
         rel_model_cls = getattr(self.model_cls, field).py_type
@@ -365,7 +366,7 @@ class PonyORMMixin:
         :return: A list of ids.
         """
         key_id = self.get_model_pk_name(self.model_cls)
-        obj = next((i for i in self.model_cls.select(**{key_id: getattr(obj, key_id)})), None)
+        obj = self.model_cls.select(**{key_id: getattr(obj, key_id)}).first()
         if not obj:
             return
         getattr(obj, field).clear()
@@ -388,7 +389,6 @@ class PonyORMMixin:
 
         :return: A list of ids.
         """
-        ...
 
     @sync_to_async
     @db_session
@@ -403,7 +403,7 @@ class PonyORMMixin:
         """
         data = {}
         key_id = self.get_model_pk_name(self.model_cls)
-        obj = next((i for i in self.model_cls.select(**{key_id: getattr(obj, key_id)})), None)
+        obj = self.model_cls.select(**{key_id: getattr(obj, key_id)}).first()
         if not obj:
             return data
 

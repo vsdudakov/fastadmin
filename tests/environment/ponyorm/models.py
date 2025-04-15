@@ -110,14 +110,14 @@ class PonyORMUserModelAdmin(PonyORMModelAdmin):
 
     @db_session
     def authenticate(self, username, password):
-        obj = next((f for f in self.model_cls.select(username=username, password=password, is_superuser=True)), None)
+        obj = self.model_cls.select(username=username, password=password, is_superuser=True).first()
         if not obj:
             return None
         return obj.id
 
     @db_session
     def change_password(self, user_id, password):
-        obj = next((f for f in self.model_cls.select(id=user_id)), None)
+        obj = self.model_cls.select(id=user_id).first()
         if not obj:
             return
         # direct saving password is only for tests - use hash

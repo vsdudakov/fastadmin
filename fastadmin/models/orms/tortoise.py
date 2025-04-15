@@ -351,7 +351,6 @@ class TortoiseMixin:
 
         :return: A list of ids.
         """
-        ...
 
 
 class TortoiseModelAdmin(TortoiseMixin, ModelAdmin):

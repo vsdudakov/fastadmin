@@ -7,6 +7,7 @@ from asgiref.sync import sync_to_async
 from asgiref.wsgi import WsgiToAsgi
 from django.core.management import call_command
 from django.db import connections
+from httpx import ASGITransport
 from httpx import AsyncClient as TestClient
 from pony.orm import commit, db_session
 from pony.orm.core import BindingError
@@ -32,7 +33,7 @@ async def django_session():
     return _django_session
 
 
-@pytest.fixture()
+@pytest.fixture
 async def django_superuser():
     async def _django_superuser():
         from tests.environment.django.orm import models as django_models
@@ -46,7 +47,7 @@ async def django_superuser():
     return _django_superuser
 
 
-@pytest.fixture()
+@pytest.fixture
 async def django_user():
     async def _django_user():
         from tests.environment.django.orm import models as django_models
@@ -58,7 +59,7 @@ async def django_user():
     return _django_user
 
 
-@pytest.fixture()
+@pytest.fixture
 async def django_tournament():
     async def _django_tournament():
         from tests.environment.django.orm import models as django_models
@@ -70,7 +71,7 @@ async def django_tournament():
     return _django_tournament
 
 
-@pytest.fixture()
+@pytest.fixture
 async def django_base_event():
     async def _django_base_event():
         from tests.environment.django.orm import models as django_models
@@ -82,7 +83,7 @@ async def django_base_event():
     return _django_base_event
 
 
-@pytest.fixture()
+@pytest.fixture
 async def django_event():
     async def django_event():
         from tests.environment.django.orm import models as django_models
@@ -128,7 +129,7 @@ async def ponyorm_session():
     return _ponyorm_session
 
 
-@pytest.fixture()
+@pytest.fixture
 async def ponyorm_superuser():
     async def _ponyorm_superuser():
         from tests.environment.ponyorm import models as ponyorm_models
@@ -147,7 +148,7 @@ async def ponyorm_superuser():
     return _ponyorm_superuser
 
 
-@pytest.fixture()
+@pytest.fixture
 async def ponyorm_user():
     async def _ponyorm_user():
         from tests.environment.ponyorm import models as ponyorm_models
@@ -165,7 +166,7 @@ async def ponyorm_user():
     return _ponyorm_user
 
 
-@pytest.fixture()
+@pytest.fixture
 async def ponyorm_tournament():
     async def _ponyorm_tournament():
         from tests.environment.ponyorm import models as ponyorm_models
@@ -182,7 +183,7 @@ async def ponyorm_tournament():
     return _ponyorm_tournament
 
 
-@pytest.fixture()
+@pytest.fixture
 async def ponyorm_base_event():
     async def _ponyorm_base_event():
         from tests.environment.ponyorm import models as ponyorm_models
@@ -198,7 +199,7 @@ async def ponyorm_base_event():
     return _ponyorm_base_event
 
 
-@pytest.fixture()
+@pytest.fixture
 async def ponyorm_event():
     async def _ponyorm_event():
         from tests.environment.ponyorm import models as ponyorm_models
@@ -266,7 +267,7 @@ async def sqlalchemy_session():
     return _sqlalchemy_session
 
 
-@pytest.fixture()
+@pytest.fixture
 async def sqlalchemy_superuser():
     async def _sqlalchemy_superuser(sqlalchemy_session):
         from tests.environment.sqlalchemy import models as sqlalchemy_models
@@ -290,7 +291,7 @@ async def sqlalchemy_superuser():
     return _sqlalchemy_superuser
 
 
-@pytest.fixture()
+@pytest.fixture
 async def sqlalchemy_user():
     async def _sqlalchemy_user(sqlalchemy_session):
         from tests.environment.sqlalchemy import models as sqlalchemy_models
@@ -311,7 +312,7 @@ async def sqlalchemy_user():
     return _sqlalchemy_user
 
 
-@pytest.fixture()
+@pytest.fixture
 async def sqlalchemy_tournament():
     async def _sqlalchemy_tournament(sqlalchemy_session):
         from tests.environment.sqlalchemy import models as sqlalchemy_models
@@ -331,7 +332,7 @@ async def sqlalchemy_tournament():
     return _sqlalchemy_tournament
 
 
-@pytest.fixture()
+@pytest.fixture
 async def sqlalchemy_base_event():
     async def sqlalchemy_base_event(sqlalchemy_session):
         from tests.environment.sqlalchemy import models as sqlalchemy_models
@@ -350,7 +351,7 @@ async def sqlalchemy_base_event():
     return sqlalchemy_base_event
 
 
-@pytest.fixture()
+@pytest.fixture
 async def sqlalchemy_event():
     async def _sqlalchemy_event(sqlalchemy_session):
         from tests.environment.sqlalchemy import models as sqlalchemy_models
@@ -408,7 +409,7 @@ async def tortoiseorm_session():
     return _tortoiseorm_session
 
 
-@pytest.fixture()
+@pytest.fixture
 async def tortoiseorm_superuser():
     async def _tortoiseorm_superuser():
         from tests.environment.tortoiseorm import models as tortoiseorm_models
@@ -420,7 +421,7 @@ async def tortoiseorm_superuser():
     return _tortoiseorm_superuser
 
 
-@pytest.fixture()
+@pytest.fixture
 async def tortoiseorm_user():
     async def _tortoiseorm_user():
         from tests.environment.tortoiseorm import models as tortoiseorm_models
@@ -432,7 +433,7 @@ async def tortoiseorm_user():
     return _tortoiseorm_user
 
 
-@pytest.fixture()
+@pytest.fixture
 async def tortoiseorm_tournament():
     async def _tortoiseorm_tournament():
         from tests.environment.tortoiseorm import models as tortoiseorm_models
@@ -444,7 +445,7 @@ async def tortoiseorm_tournament():
     return _tortoiseorm_tournament
 
 
-@pytest.fixture()
+@pytest.fixture
 async def tortoiseorm_base_event():
     async def _tortoiseorm_base_event():
         from tests.environment.tortoiseorm import models as tortoiseorm_models
@@ -456,7 +457,7 @@ async def tortoiseorm_base_event():
     return _tortoiseorm_base_event
 
 
-@pytest.fixture()
+@pytest.fixture
 async def tortoiseorm_event():
     async def _tortoiseorm_event():
         from tests.environment.tortoiseorm import models as tortoiseorm_models
@@ -494,7 +495,7 @@ async def session_with_type(request, tortoiseorm_session, django_session, sqlalc
                 yield session
 
 
-@pytest.fixture()
+@pytest.fixture
 async def superuser(
     session_with_type, tortoiseorm_superuser, django_superuser, sqlalchemy_superuser, ponyorm_superuser
 ):
@@ -514,7 +515,7 @@ async def superuser(
                 yield obj
 
 
-@pytest.fixture()
+@pytest.fixture
 async def user(session_with_type, tortoiseorm_user, django_user, sqlalchemy_user, ponyorm_user):
     session, session_type = session_with_type
     match session_type:
@@ -532,7 +533,7 @@ async def user(session_with_type, tortoiseorm_user, django_user, sqlalchemy_user
                 yield obj
 
 
-@pytest.fixture()
+@pytest.fixture
 async def tournament(
     session_with_type, tortoiseorm_tournament, django_tournament, sqlalchemy_tournament, ponyorm_tournament
 ):
@@ -552,7 +553,7 @@ async def tournament(
                 yield obj
 
 
-@pytest.fixture()
+@pytest.fixture
 async def base_event(
     session_with_type, tortoiseorm_base_event, django_base_event, sqlalchemy_base_event, ponyorm_base_event
 ):
@@ -572,7 +573,7 @@ async def base_event(
                 yield obj
 
 
-@pytest.fixture()
+@pytest.fixture
 async def event(session_with_type, tortoiseorm_event, django_event, sqlalchemy_event, ponyorm_event):
     session, session_type = session_with_type
     match session_type:
@@ -590,7 +591,7 @@ async def event(session_with_type, tortoiseorm_event, django_event, sqlalchemy_e
                 yield obj
 
 
-@pytest.fixture()
+@pytest.fixture
 async def base_model_admin(session_with_type):
     _, session_type = session_with_type
     match session_type:
@@ -604,7 +605,7 @@ async def base_model_admin(session_with_type):
             yield PonyORMModelAdmin
 
 
-@pytest.fixture()
+@pytest.fixture
 async def admin_models():
     prev_admin_models = {k: copy(v) for k, v in admin_models_objs.items()}
     yield admin_models_objs
@@ -629,13 +630,16 @@ async def app(request):
             yield django_application
 
 
-@pytest.fixture()
+@pytest.fixture
 async def client(app):
-    async with TestClient(app=app, base_url="http://test/admin") as client:
+    async with TestClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test/admin",
+    ) as client:
         yield client
 
 
-@pytest.fixture()
+@pytest.fixture
 async def session_id(superuser, client):
     settings.ADMIN_USER_MODEL = superuser.get_model_name()
     r = await client.post(

@@ -113,7 +113,18 @@ class DjangoORMMixin:
                     form_widget_props["mode"] = "tags"
                     filter_widget_type = WidgetType.Select
                     filter_widget_props["mode"] = "tags"
-                case "SmallAutoField" | "AutoField" | "BigAutoField" | "SmallIntegerField" | "BigIntegerField" | "PositiveIntegerField" | "PositiveSmallIntegerField" | "IntegerField" | "FloatField" | "DecimalField":
+                case (
+                    "SmallAutoField"
+                    | "AutoField"
+                    | "BigAutoField"
+                    | "SmallIntegerField"
+                    | "BigIntegerField"
+                    | "PositiveIntegerField"
+                    | "PositiveSmallIntegerField"
+                    | "IntegerField"
+                    | "FloatField"
+                    | "DecimalField"
+                ):
                     form_widget_type = WidgetType.InputNumber
                     filter_widget_type = WidgetType.InputNumber
                 case "DateField":

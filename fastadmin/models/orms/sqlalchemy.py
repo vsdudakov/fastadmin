@@ -437,7 +437,6 @@ class SqlAlchemyMixin:
 
         :return: A list of ids.
         """
-        ...
 
 
 class SqlAlchemyModelAdmin(SqlAlchemyMixin, ModelAdmin):
