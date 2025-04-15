@@ -34,7 +34,7 @@ lint:
 # -n auto : fix django
 .PHONY: test
 test:
-	@exec poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=80 -s tests
+	@exec poetry run pytest -n 1 --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=80 -s tests
 	@exec make -C frontend test
 
 .PHONY: kill

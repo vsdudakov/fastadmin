@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "fastadmin-fastapi-ponyeorm"
+name = "fastadmin-fastapi-ponyorm"
 version = "0.1.0"
 description = "FastAdmin Example (FastAPI + Pony ORM)"
 authors = ["Dmitrii <dmitrii.davidov@gmail.com>"]
@@ -10,8 +10,8 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
-fastapi = {"version" = "^0.112.0", extras = ["standard"]}
-fastadmin = {"version" = "^0.2.15", extras = ["fastapi", "pony"]}
+fastapi = {"version" = "^0.112.4", extras = ["standard"]}
+fastadmin = {"version" = "^0.2.19", extras = ["fastapi", "pony"]}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

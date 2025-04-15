@@ -27,7 +27,8 @@ async def test_change(session_id, admin_models, event, client):
             "description": "test",
             "event_type": "PRIVATE",
             "is_active": True,
-            "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            # TODO: sqlite doesn't support datetime.time
+            # "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "date": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "latitude": 0.2,
             "longitude": 0.4,
@@ -64,7 +65,8 @@ async def test_change_empty_m2m(session_id, admin_models, event, client):
             "description": "test",
             "event_type": "PRIVATE",
             "is_active": True,
-            "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            # TODO: sqlite doesn't support datetime.time
+            # "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "date": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "latitude": 0.2,
             "longitude": 0.4,
