@@ -31,13 +31,13 @@ export const isJson = (v: any): boolean => {
   if (!isString(v)) {
     try {
       jsonString = JSON.stringify(v);
-    } catch (e) {
+    } catch {
       return false;
     }
   }
   try {
     JSON.parse(jsonString);
-  } catch (e) {
+  } catch {
     return false;
   }
   return true;
@@ -47,7 +47,7 @@ export const isSlug = (v: any): boolean => {
   if (!isString(v)) return false;
   try {
     return slugify(v) === v;
-  } catch (e) {
+  } catch {
     return false;
   }
 };

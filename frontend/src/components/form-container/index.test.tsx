@@ -8,7 +8,7 @@ import { TestProviders } from "@/providers";
 test("Renders FormContainer", () => {
   const queryClient = new QueryClient();
 
-  const onFinish = (_data: any) => undefined;
+  const onFinish = () => undefined;
   render(
     <TestProviders client={queryClient}>
       <FormContainer

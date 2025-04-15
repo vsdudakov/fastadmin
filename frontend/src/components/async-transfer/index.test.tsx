@@ -8,7 +8,7 @@ import { TestProviders } from "@/providers";
 test("Renders AsyncTransfer", () => {
   const queryClient = new QueryClient();
 
-  const onChange = (_data: any) => undefined;
+  const onChange = () => undefined;
   render(
     <TestProviders client={queryClient}>
       <AsyncTransfer

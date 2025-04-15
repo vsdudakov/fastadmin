@@ -4,9 +4,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 
 import { Cards } from "./cards";
 
-export interface ITableOrCards extends Partial<TableProps<any>> {}
-
-export const TableOrCards = (props: ITableOrCards) => {
+export const TableOrCards = (props: Partial<TableProps<any>>) => {
   const isMobile = useIsMobile();
   if (isMobile) {
     return <Cards {...props} />;

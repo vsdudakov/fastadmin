@@ -9,9 +9,7 @@ import {
 } from "antd";
 import { useState } from "react";
 
-export interface ICards extends Partial<TableProps<any>> {}
-
-export const Cards = (props: ICards) => {
+export const Cards = (props: Partial<TableProps<any>>) => {
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   if (props.loading) {
     return <Spin />;
