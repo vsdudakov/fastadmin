@@ -46,6 +46,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.21",
+            "changes": [
+                "Fix for cleaning async select fields on form.",
+            ],
+        },
+        {
             "version": "0.2.20",
             "changes": [
                 "Fix for _id fields. Bump packages for backend and frontend.",

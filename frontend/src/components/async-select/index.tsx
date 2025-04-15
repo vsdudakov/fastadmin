@@ -38,6 +38,7 @@ export interface IAsyncSelect {
 
   value?: any;
   parentModel: string;
+  onChange?: (value: any) => void;
 }
 
 export const AsyncSelect: React.FC<IAsyncSelect> = ({
@@ -45,6 +46,7 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
   labelFields,
   value,
   parentModel,
+  onChange,
   ...props
 }) => {
   const [formAdd] = Form.useForm();
@@ -210,6 +212,13 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
                 ? `${value}`
                 : undefined
           }
+          onChange={(v: any) => {
+            if (isMultipleMode) {
+              onChange?.(v);
+            } else {
+              onChange?.(v || null);
+            }
+          }}
           {...props}
         />
       </Space.Compact>
