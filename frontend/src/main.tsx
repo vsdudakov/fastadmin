@@ -3,6 +3,7 @@ import enUS from "antd/es/locale/en_US";
 import i18next from "i18next";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "@ant-design/v5-patch-for-react-19";
 
 import { App } from "@/containers/app/index.tsx";
 import { ExternalProviders, InternalProviders } from "@/providers.tsx";

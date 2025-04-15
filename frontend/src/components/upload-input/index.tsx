@@ -11,7 +11,7 @@ import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 interface IUploadWrapperProps {
   withCrop?: boolean;
-  children: JSX.Element;
+  children: React.ReactNode;
 }
 
 export interface IUploadInput {
@@ -26,7 +26,6 @@ export interface IUploadInput {
 }
 
 export const UploadInput: React.FC<IUploadInput> = ({
-  parentId,
   value,
   onChange,
   multiple,

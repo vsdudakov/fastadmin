@@ -35,12 +35,12 @@ async def test_add(session_id, admin_models, event, client):
             "description": "test",
             "event_type": "PRIVATE",
             "is_active": True,
-            "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            # TODO: sqlite doesn't support datetime.time
+            # "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "date": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "latitude": 0.2,
             "longitude": 0.4,
-            # TODO: bug with Decimal
-            # "price": "20.3",
+            "price": "20.3",
             "json": {"test": "test"},
         },
     )

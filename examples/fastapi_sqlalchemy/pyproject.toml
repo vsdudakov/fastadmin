@@ -10,8 +10,8 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
-fastapi = {"version" = "^0.112.0", extras = ["standard"]}
-fastadmin = {"version" = "^0.2.15", extras = ["fastapi", "sqlalchemy"]}
+fastapi = {"version" = "^0.112.4", extras = ["standard"]}
+fastadmin = {"version" = "^0.2.19", extras = ["fastapi", "sqlalchemy"]}
 aiosqlite = "^0.20.0"
 
 [build-system]

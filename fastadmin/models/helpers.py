@@ -110,8 +110,7 @@ async def generate_models_schema(
     :return: A list of models / inline models schemas.
     """
     models_schemas: list[ModelSchema | InlineModelSchema] = []
-    for orm_model_cls in admin_models:
-        admin_model_obj: ModelAdmin | InlineModelAdmin = admin_models[orm_model_cls]
+    for orm_model_cls, admin_model_obj in admin_models.items():
         orm_model_fields = admin_model_obj.get_model_fields_with_widget_types()
         orm_model_fields_for_serialize = admin_model_obj.get_fields_for_serialize()
 

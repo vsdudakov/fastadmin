@@ -1,12 +1,12 @@
 import inspect
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 from django.apps import apps
 from django.apps.registry import Apps
-from htmlmin import minify
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from fastadmin.settings import ROOT_DIR, Settings
@@ -16,6 +16,12 @@ os.environ.setdefault("ADMIN_ENV_FILE", str(ROOT_DIR / "example.env"))
 sys.path.append(str(TESTS_ROOT_DIR / "environment" / "django" / "dev"))
 
 Apps.check_apps_ready = lambda x: None
+
+
+def html_minify(html: str) -> str:
+    html = re.sub(r">\s+<", "><", html)
+    html = re.sub(r"\s+", " ", html)
+    return html.strip()
 
 
 class App:
@@ -39,6 +45,12 @@ def read_cls_docstring(cls):
 
 def get_versions():
     return [
+        {
+            "version": "0.2.20",
+            "changes": [
+                "Fix for _id fields. Bump packages for backend and frontend.",
+            ],
+        },
         {
             "version": "0.2.19",
             "changes": [
@@ -648,7 +660,7 @@ def build():
     index_template = env.get_template("templates/index.html")
     index_html = index_template.render(**context)
     with Path.open(Path("index.html"), "w") as fh:
-        fh.write(minify(index_html))
+        fh.write(html_minify(index_html))
 
     readme_template = env.get_template("templates/readme.md")
     readme_md = readme_template.render(**context)

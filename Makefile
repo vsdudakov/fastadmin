@@ -8,7 +8,7 @@ clean:
 .PHONY: fix
 fix:
 	@echo "Run ruff"
-	@exec poetry run ruff --fix fastadmin tests docs examples
+	@exec poetry run ruff check --fix fastadmin tests docs examples
 	@echo "Run isort"
 	@exec poetry run isort fastadmin tests docs examples
 	@echo "Run black"
@@ -21,7 +21,7 @@ fix:
 .PHONY: lint
 lint:
 	@echo "Run ruff"
-	@exec poetry run ruff fastadmin tests docs examples
+	@exec poetry run ruff check fastadmin tests docs examples
 	@echo "Run isort"
 	@exec poetry run isort --check-only fastadmin tests docs examples
 	@echo "Run black"
@@ -34,7 +34,7 @@ lint:
 # -n auto : fix django
 .PHONY: test
 test:
-	@exec poetry run pytest --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=80 -s tests
+	@exec poetry run pytest -n 1 --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=80 -s tests
 	@exec make -C frontend test
 
 .PHONY: kill
