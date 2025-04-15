@@ -43,7 +43,7 @@ class TortoiseMixin:
             if field_type in ("BackwardFKRelation", "BackwardOneToOneRelation"):
                 continue
 
-            if field_name.endswith("_id") and hasattr(orm_model_field, "reference"):
+            if field_name.endswith("_id") and getattr(orm_model_field, "reference", False):
                 # ignore _id fields for relations
                 continue
 
