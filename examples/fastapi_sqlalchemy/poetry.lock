@@ -167,14 +167,14 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fastadmin"
-version = "0.2.19"
+version = "0.2.21"
 description = "FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin."
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "fastadmin-0.2.19-py3-none-any.whl", hash = "sha256:49192d74aa94068625b726f5843bfb49697303ec2255f526ce896baf074c7f1e"},
-    {file = "fastadmin-0.2.19.tar.gz", hash = "sha256:20a3122967a2a454baef1db760af467e20802293f5b669eeef0a8c5fcb3a03c3"},
+    {file = "fastadmin-0.2.21-py3-none-any.whl", hash = "sha256:ad0c28328b4d06202e6f6aaf2f3c41bf33d91519a2f2b51ab2c2cd3b01095f05"},
+    {file = "fastadmin-0.2.21.tar.gz", hash = "sha256:43fec8b40ee435152e92ad6bbaad839f6783a7e0e89eeaf5df4191324a944f74"},
 ]
 
 [package.dependencies]
@@ -186,7 +186,7 @@ sqlalchemy = {version = "==2.*", extras = ["asyncio"], optional = true, markers 
 [package.extras]
 django = ["django (==5.*)"]
 fastapi = ["fastapi (==0.*)"]
-flask = ["flask (==2.*)"]
+flask = ["flask (==3.*)"]
 pony = ["pony (==0.*)"]
 sqlalchemy = ["sqlalchemy[asyncio] (==2.*)"]
 tortoise-orm = ["tortoise-orm (==0.*)"]
@@ -1305,4 +1305,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "ac304d234e541fc390cbaae52f2bc2670d4702ae8a879c9d8fb6ff697bc8178d"
+content-hash = "19a964293a0c9823536257d9bb335bbd8bccf156b6a9e8a223eb639874042044"

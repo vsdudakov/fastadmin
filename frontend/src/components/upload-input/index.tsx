@@ -23,12 +23,14 @@ export interface IUploadInput {
 
   onChange?: (value: any) => void;
   multiple?: boolean;
+  disableCropImage?: boolean;
 }
 
 export const UploadInput: React.FC<IUploadInput> = ({
   value,
   onChange,
   multiple,
+  disableCropImage,
   ...props
 }) => {
   const { t: _t } = useTranslation("UploadInput");
@@ -49,7 +51,7 @@ export const UploadInput: React.FC<IUploadInput> = ({
     if (multiple) {
       if (onChange) onChange(base64List);
     } else {
-      if (onChange) onChange(base64List[0]);
+      if (onChange) onChange(base64List[0] || null);
     }
   };
 
@@ -87,7 +89,9 @@ export const UploadInput: React.FC<IUploadInput> = ({
 
   return (
     <>
-      <UploadWrapper withCrop={!configuration?.disable_crop_image}>
+      <UploadWrapper
+        withCrop={!configuration?.disable_crop_image && !disableCropImage}
+      >
         <Upload
           listType="picture-card"
           withCredentials={true}

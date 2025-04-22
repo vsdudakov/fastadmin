@@ -11,7 +11,7 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.10"
 django = "^5.2"
-fastadmin = {"version" = "^0.2.19", extras = ["django"]}
+fastadmin = {"version" = "^0.2.21", extras = ["django"]}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

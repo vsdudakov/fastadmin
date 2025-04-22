@@ -18,6 +18,7 @@ class Migration(migrations.Migration):
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("username", models.CharField(max_length=255)),
                 ("password", models.CharField(max_length=255)),
+                ("avatar_url", models.TextField(null=True)),
                 ("is_superuser", models.BooleanField(default=False)),
             ],
             options={

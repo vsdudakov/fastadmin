@@ -1,3 +1,4 @@
+import typing as tp
 from uuid import UUID
 
 import bcrypt
@@ -12,6 +13,8 @@ class ModelUser(Model):
     hash_password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
     is_active = fields.BooleanField(default=False)
+
+    avatar_url = fields.TextField(null=True)
 
     def __str__(self):
         return self.username
@@ -37,6 +40,14 @@ class UserAdmin(TortoiseModelAdmin):
     formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "avatar_url": (
+            WidgetType.Upload,
+            {
+                "required": False,
+                # Disable crop image for upload field
+                # "disableCropImage": True,
+            },
+        ),
     }
     actions = (
         *TortoiseModelAdmin.actions,
@@ -66,3 +77,8 @@ class UserAdmin(TortoiseModelAdmin):
     @action(description="Deactivate")
     async def deactivate(self, ids: list[int]) -> None:
         await self.model_cls.filter(id__in=ids).update(is_active=False)
+
+    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
+        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
+        setattr(obj, field, base64)
+        await obj.save(update_fields=(field,))

@@ -1,3 +1,5 @@
+import typing as tp
+import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -19,22 +21,39 @@ class UserModelAdmin(PonyORMModelAdmin):
     formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "avatar_url": (
+            WidgetType.Upload,
+            {
+                "required": False,
+                # Disable crop image for upload field
+                # "disableCropImage": True,
+            },
+        ),
     }
 
     @db_session
-    def authenticate(self, username, password):
+    def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
         obj = next((f for f in User.select(username=username, password=password, is_superuser=True)), None)  # fmt: skip
         if not obj:
             return None
         return obj.id
 
     @db_session
-    def change_password(self, user_id, password):
-        obj = next((f for f in self.model_cls.select(id=user_id)), None)
+    def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        obj = next((f for f in self.model_cls.select(id=id)), None)
         if not obj:
             return
         # direct saving password is only for tests - use hash
         obj.password = password
+        commit()
+
+    @db_session
+    def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
+        obj = next((f for f in self.model_cls.select(id=obj.id)), None)
+        if not obj:
+            return
+        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
+        setattr(obj, field, base64)
         commit()
 
 

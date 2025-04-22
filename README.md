@@ -434,13 +434,14 @@ Register ORM models
 
 
 ```python
+import typing as tp
 from uuid import UUID
 
 import bcrypt
 from tortoise import fields
 from tortoise.models import Model
 
-from fastadmin import TortoiseModelAdmin, register
+from fastadmin import TortoiseModelAdmin, WidgetType, register
 
 
 class User(Model):
@@ -448,6 +449,7 @@ class User(Model):
     hash_password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
     is_active = fields.BooleanField(default=False)
+    avatar_url = fields.TextField(null=True)
 
     def __str__(self):
         return self.username
@@ -460,14 +462,38 @@ class UserAdmin(TortoiseModelAdmin):
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "username": (WidgetType.SlugInput, {"required": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "avatar_url": (
+            WidgetType.Upload,
+            {
+                "required": False,
+                # Disable crop image for upload field
+                # "disableCropImage": True,
+            },
+        ),
+    }
 
-    async def authenticate(self, username: str, password: str) -> UUID | int | None:
-        user = await User.filter(username=username, is_superuser=True).first()
+    async def authenticate(self, username: str, password: str) -> int | None:
+        user = await self.model_cls.filter(phone=username, is_superuser=True).first()
         if not user:
             return None
         if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
             return None
         return user.id
+
+    async def change_password(self, id: UUID | int, password: str) -> None:
+        user = await self.model_cls.filter(id=id).first()
+        if not user:
+            return
+        user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+        await user.save(update_fields=("hash_password",))
+
+    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
+        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
+        setattr(obj, field, base64)
+        await obj.save(update_fields=(field,))
 
 ```
 
@@ -542,8 +568,11 @@ class UserAdmin(DjangoModelAdmin):
 
 
 ```python
+import typing as tp
+import uuid
+
 import bcrypt
-from sqlalchemy import Boolean, Integer, String, select
+from sqlalchemy import Boolean, Integer, String, Text, select, update
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -568,6 +597,7 @@ class User(Base):
     hash_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     def __str__(self):
         return self.username
@@ -581,17 +611,33 @@ class UserAdmin(SqlAlchemyModelAdmin):
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
 
-    async def authenticate(self, username, password):
+    async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
-            query = select(User).filter_by(username=username, password=password, is_superuser=True)
+            query = select(self.model_cls).filter_by(username=username, password=password, is_superuser=True)
             result = await session.scalars(query)
-            user = result.first()
-            if not user:
+            obj = result.first()
+            if not obj:
                 return None
-            if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
+            if not bcrypt.checkpw(password.encode(), obj.hash_password.encode()):
                 return None
-            return user.id
+            return obj.id
+
+    async def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+            query = update(self.model_cls).where(User.id.in_([id])).values(hash_password=hash_password)
+            await session.execute(query)
+            await session.commit()
+
+    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
+            query = update(self.model_cls).where(User.id.in_([obj.id])).values(**{field: base64})
+            await session.execute(query)
+            await session.commit()
 
 ```
 
@@ -614,8 +660,11 @@ class UserAdmin(SqlAlchemyModelAdmin):
 
 
 ```python
+import typing as tp
+import uuid
+
 import bcrypt
-from pony.orm import Database, PrimaryKey, Required, db_session
+from pony.orm import Database, LongStr, Optional, PrimaryKey, Required, commit, db_session
 
 from fastadmin import PonyORMModelAdmin, register
 
@@ -630,6 +679,7 @@ class User(db.Entity):  # type: ignore [name-defined]
     hash_password = Required(str)
     is_superuser = Required(bool, default=False)
     is_active = Required(bool, default=False)
+    avatar_url = Optional(LongStr, nullable=True)
 
     def __str__(self):
         return self.username
@@ -644,13 +694,31 @@ class UserAdmin(PonyORMModelAdmin):
     search_fields = ("username",)
 
     @db_session
-    def authenticate(self, username, password):
-        user = next((f for f in self.model_cls.select(username=username, password=password, is_superuser=True)), None)
-        if not user:
+    def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
+        obj = next((f for f in User.select(username=username, password=password, is_superuser=True)), None)  # fmt: skip
+        if not obj:
             return None
-        if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
+        if not bcrypt.checkpw(password.encode(), obj.hash_password.encode()):
             return None
-        return user.id
+        return obj.id
+
+    @db_session
+    def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        obj = next((f for f in self.model_cls.select(id=id)), None)
+        if not obj:
+            return
+        hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+        obj.hash_password = hash_password
+        commit()
+
+    @db_session
+    def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
+        obj = next((f for f in self.model_cls.select(id=obj.id)), None)
+        if not obj:
+            return
+        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
+        setattr(obj, field, base64)
+        commit()
 
 ```
 
