@@ -11,7 +11,7 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = {"version" = "^0.112.4", extras = ["standard"]}
-fastadmin = {"version" = "^0.2.19", extras = ["fastapi", "tortoise-orm"]}
+fastadmin = {"version" = "^0.2.21", extras = ["fastapi", "tortoise-orm"]}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

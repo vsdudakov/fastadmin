@@ -1,3 +1,8 @@
+import typing as tp
+import uuid
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models import BaseEvent, Event, Tournament, User
@@ -17,21 +22,34 @@ class UserModelAdmin(TortoiseModelAdmin):
     formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "avatar_url": (
+            WidgetType.Upload,
+            {
+                "required": False,
+                # Disable crop image for upload field
+                # "disableCropImage": True,
+            },
+        ),
     }
 
-    async def authenticate(self, username, password):
+    async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
         obj = await self.model_cls.filter(username=username, password=password, is_superuser=True).first()
         if not obj:
             return None
         return obj.id
 
-    async def change_password(self, user_id, password):
-        user = await self.model_cls.filter(id=user_id).first()
+    async def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        user = await self.model_cls.filter(id=id).first()
         if not user:
             return
         # direct saving password is only for tests - use hash
         user.password = password
         await user.save()
+
+    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
+        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
+        setattr(obj, field, base64)
+        await obj.save(update_fields=(field,))
 
 
 class EventInlineModelAdmin(TortoiseInlineModelAdmin):
@@ -71,9 +89,6 @@ class EventModelAdmin(TortoiseModelAdmin):
         return f"{obj.name} - {obj.price}"
 
 
-app = FastAPI()
-
-
 async def init_db():
     await Tortoise.init(db_url="sqlite://:memory:", modules={"models": ["models"]})
     await Tortoise.generate_schemas()
@@ -87,15 +102,15 @@ async def create_superuser():
     )
 
 
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await init_db()
     await create_superuser()
-
-
-@app.on_event("shutdown")
-async def shutdown():
+    yield
     await Tortoise.close_connections()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 app.mount("/admin", admin_app)

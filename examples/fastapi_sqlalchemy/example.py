@@ -1,3 +1,8 @@
+import typing as tp
+import uuid
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models import Base, BaseEvent, Event, Tournament, User, sqlalchemy_engine, sqlalchemy_sessionmaker
@@ -17,10 +22,17 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
     formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
-        "avatar_url": (WidgetType.Upload, {"required": False}),
+        "avatar_url": (
+            WidgetType.Upload,
+            {
+                "required": False,
+                # Disable crop image for upload field
+                # "disableCropImage": True,
+            },
+        ),
     }
 
-    async def authenticate(self, username, password):
+    async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
             query = select(self.model_cls).filter_by(username=username, password=password, is_superuser=True)
@@ -30,11 +42,19 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
                 return None
             return obj.id
 
-    async def change_password(self, user_id, password):
+    async def change_password(self, id: uuid.UUID | int, password: str) -> None:
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
             # use hash password for real usage
-            query = update(self.model_cls).where(User.id.in_([user_id])).values(password=password)
+            query = update(self.model_cls).where(User.id.in_([id])).values(password=password)
+            await session.execute(query)
+            await session.commit()
+
+    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
+            query = update(self.model_cls).where(User.id.in_([obj.id])).values(**{field: base64})
             await session.execute(query)
             await session.commit()
 
@@ -84,9 +104,6 @@ class EventModelAdmin(SqlAlchemyModelAdmin):
         return f"{obj.name} - {obj.price}"
 
 
-app = FastAPI()
-
-
 async def init_db():
     async with sqlalchemy_engine.begin() as c:
         await c.run_sync(Base.metadata.drop_all)
@@ -104,10 +121,14 @@ async def create_superuser():
         await s.commit()
 
 
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await init_db()
     await create_superuser()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 app.mount("/admin", admin_app)

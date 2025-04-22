@@ -23,6 +23,8 @@ class User(BaseModel):
     password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
 
+    avatar_url = fields.TextField(null=True)
+
     def __str__(self):
         return self.username
 

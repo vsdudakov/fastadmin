@@ -1,3 +1,6 @@
+import typing as tp
+import uuid
+
 from django.db import models
 
 from fastadmin import DjangoInlineModelAdmin, DjangoModelAdmin, WidgetType, action, display, register
@@ -21,6 +24,8 @@ class User(BaseModel):
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
     is_superuser = models.BooleanField(default=False)
+
+    avatar_url = models.TextField(null=True)
 
     def __str__(self):
         return self.username
@@ -84,9 +89,17 @@ class UserModelAdmin(DjangoModelAdmin):
     formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "avatar_url": (
+            WidgetType.Upload,
+            {
+                "required": False,
+                # Disable crop image for upload field
+                # "disableCropImage": True,
+            },
+        ),
     }
 
-    def authenticate(self, username, password):
+    def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
         obj = self.model_cls.objects.filter(username=username, is_superuser=True).first()
         if not obj:
             return None
@@ -94,13 +107,18 @@ class UserModelAdmin(DjangoModelAdmin):
         #     return None
         return obj.id
 
-    def change_password(self, user_id, password):
-        user = self.model_cls.objects.filter(id=user_id).first()
+    def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        user = self.model_cls.objects.filter(id=id).first()
         if not user:
             return
         # direct saving password is only for tests - use hash
         user.password = password
         user.save()
+
+    def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
+        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
+        setattr(obj, field, base64)
+        obj.save(update_fields=(field,))
 
 
 class EventInlineModelAdmin(DjangoInlineModelAdmin):

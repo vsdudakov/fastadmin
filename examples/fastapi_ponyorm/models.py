@@ -28,6 +28,8 @@ class User(db.Entity, BaseModel):
     password = Required(str, max_len=255)
     is_superuser = Required(bool, default=False)
 
+    avatar_url = Optional(LongStr, nullable=True)
+
     events = Set("Event", table="event_participants", column="event_id")
 
     def __str__(self):

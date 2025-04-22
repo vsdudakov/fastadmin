@@ -46,6 +46,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.2.22",
+            "changes": [
+                "Fix upload base64 widget. Add new props disableCropImage. Fixed examples.",
+            ],
+        },
+        {
             "version": "0.2.21",
             "changes": [
                 "Fix for cleaning async select fields on form.",
