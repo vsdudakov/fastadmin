@@ -20,7 +20,12 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
     list_filter = ("id", "username", "is_superuser")
     search_fields = ("username",)
     formfield_overrides = {  # noqa: RUF012
-        "username": (WidgetType.SlugInput, {"required": True}),
+        "username": (WidgetType.SlugInput, {"required": True,
+                                            # Changing the field label to a custom option
+                                            # "label": "Custom label",
+                                            # Adding a small text below the field to better understand the purpose of the field
+                                            # "help": "Detailed description of the field"
+                                            }),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
         "avatar_url": (
             WidgetType.Upload,
@@ -129,7 +134,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = FastAPI(lifespan=lifespan)
-
 
 app.mount("/admin", admin_app)
 
