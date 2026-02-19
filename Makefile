@@ -35,7 +35,7 @@ lint:
 # uses a per-worker DB and SQLite timeout when xdist is used, but parallel runs remain unreliable.
 .PHONY: test
 test:
-	@exec poetry run pytest -n 1 --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=80 -s tests
+	@exec poetry run pytest -n 1 --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=100 -s tests
 	@exec make -C frontend test
 
 .PHONY: kill

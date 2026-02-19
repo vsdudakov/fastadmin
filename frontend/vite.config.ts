@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, UserConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import EnvironmentPlugin from "vite-plugin-environment";
 
@@ -7,6 +7,24 @@ export default defineConfig({
   plugins: [react(), EnvironmentPlugin("all", { prefix: "" })],
   test: {
     setupFiles: ["src/test-setup.ts"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "text-summary", "html"],
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.test.{ts,tsx}",
+        "src/test-setup.ts",
+        "src/main.tsx",
+        "src/interfaces/user.ts",
+        "src/vite-env.d.ts",
+      ],
+      thresholds: {
+        statements: 53,
+        branches: 28,
+        functions: 26,
+        lines: 54,
+      },
+    },
   },
   resolve: {
     alias: [{ find: "@", replacement: "/src" }],
@@ -28,4 +46,4 @@ export default defineConfig({
       name: "App",
     },
   }
-})
+} as UserConfig)

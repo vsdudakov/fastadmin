@@ -213,3 +213,16 @@ async def test_list_405(session_id, event, client):
         f"/api/list/{event.get_model_name()}",
     )
     assert r.status_code == 405, r.text
+
+
+async def test_list_invalid_offset_limit_422(session_id, event, client):
+    """List with non-integer offset or limit returns 422 (Django raises ValueError)."""
+    assert session_id
+    r = await client.get(
+        f"/api/list/{event.get_model_name()}?offset=abc",
+    )
+    assert r.status_code == 422, r.text
+    r2 = await client.get(
+        f"/api/list/{event.get_model_name()}?limit=xyz",
+    )
+    assert r2.status_code == 422, r2.text

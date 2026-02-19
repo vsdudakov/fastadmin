@@ -341,3 +341,449 @@ def test_nullable_foreign_key_form_required(event):
     assert (
         by_name["tournament"].form_widget_props["required"] is True
     ), "non-nullable FK tournament_id should be required in admin form"
+
+
+def test_sqlalchemy_field_mapping_special_cases(monkeypatch):
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms import sqlalchemy as sqlalchemy_orm
+    from fastadmin.models.orms.sqlalchemy import SqlAlchemyModelAdmin
+
+    class DummyModel:
+        pass
+
+    class RelModel:
+        __table__ = SimpleNamespace(
+            primary_key=SimpleNamespace(
+                _autoincrement_column=SimpleNamespace(name="id"),
+            )
+        )
+
+    class ARRAY:
+        pass
+
+    # First mapper: MANYTOONE without matching *_id FK column -> skip by continue at line 55.
+    mapper_missing_fk = SimpleNamespace(
+        c=[],
+        relationships=[
+            SimpleNamespace(
+                key="owner",
+                direction=SimpleNamespace(name="MANYTOONE"),
+            )
+        ],
+    )
+    monkeypatch.setattr(sqlalchemy_orm, "inspect", lambda _model_cls: mapper_missing_fk)
+    admin_missing_fk = SqlAlchemyModelAdmin(DummyModel)
+    assert admin_missing_fk.get_model_fields_with_widget_types() == []
+
+    # Second mapper: ARRAY and ONETOONE relation branch coverage.
+    mapper_full = SimpleNamespace(
+        c=[
+            SimpleNamespace(key="tags", foreign_keys=[], type=ARRAY()),
+            SimpleNamespace(key="profile_id", foreign_keys=[1], nullable=False),
+        ],
+        relationships=[
+            SimpleNamespace(
+                key="profile",
+                direction=SimpleNamespace(name="ONETOONE"),
+                entity=SimpleNamespace(class_=RelModel),
+            )
+        ],
+    )
+    monkeypatch.setattr(sqlalchemy_orm, "inspect", lambda _model_cls: mapper_full)
+    admin_full = SqlAlchemyModelAdmin(DummyModel)
+    fields = admin_full.get_model_fields_with_widget_types()
+    by_name = {f.name: f for f in fields}
+
+    assert by_name["tags"].form_widget_type == WidgetType.Select
+    assert by_name["tags"].form_widget_props["mode"] == "tags"
+    assert by_name["tags"].filter_widget_props["mode"] == "tags"
+    assert by_name["profile"].form_widget_type == WidgetType.AsyncSelect
+    assert by_name["profile"].form_widget_props["parentModel"] == "RelModel"
+    assert by_name["profile"].filter_widget_type == WidgetType.AsyncSelect
+    assert by_name["profile"].filter_widget_props["mode"] == "multiple"
+
+    # ONETOONE raw_id_fields branch -> Input widgets.
+    admin_full.raw_id_fields = ("profile",)
+    fields_raw = admin_full.get_model_fields_with_widget_types()
+    by_name_raw = {f.name: f for f in fields_raw}
+    assert by_name_raw["profile"].form_widget_type == WidgetType.Input
+    assert by_name_raw["profile"].filter_widget_type == WidgetType.Input
+
+
+def test_sqlalchemy_with_upload_false_skips_upload(user, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    admin_model = get_admin_model(user.__class__)
+    admin_model.formfield_overrides["username"] = (WidgetType.Upload, {})
+    fields = admin_model.get_model_fields_with_widget_types(with_upload=False)
+    assert "username" not in [f.name for f in fields]
+
+
+async def test_sqlalchemy_orm_get_list_filter_operators(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    objs, total = await admin_model.orm_get_list(
+        filters={
+            ("rating", "lte"): "10",
+            ("rating", "gte"): "0",
+            ("rating", "lt"): "100",
+            ("rating", "gt"): "-1",
+            ("rating", "in"): ["0", "1"],
+            ("name", "contains"): "event",
+        }
+    )
+    assert isinstance(total, int)
+    assert isinstance(objs, list)
+
+
+async def test_sqlalchemy_orm_serialize_obj_by_id(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    assert await admin_model.orm_serialize_obj_by_id(-1) is None
+    obj = await admin_model.orm_serialize_obj_by_id(event.id)
+    assert obj is not None
+    assert str(obj["id"]) == str(event.id)
+
+
+async def test_sqlalchemy_orm_save_obj_fk_string_conversion(tournament, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    from tests.environment.sqlalchemy_env.models import Event
+
+    admin_model = get_admin_model(Event)
+    obj = await admin_model.orm_save_obj(
+        None,
+        {
+            "name": "created-by-test",
+            "tournament_id": str(tournament.id),
+            "rating": 0,
+            "is_active": True,
+        },
+    )
+    assert obj is not None
+    assert obj.tournament_id == tournament.id
+    await admin_model.orm_delete_obj(obj.id)
+
+
+async def test_sqlalchemy_m2m_edge_cases(event, session_with_type):
+    from types import SimpleNamespace
+
+    import pytest
+
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    assert await admin_model.orm_get_m2m_ids(SimpleNamespace(id=-1), "participants") == []
+
+    with pytest.raises(ValueError, match="Field unknown_field is not a relationship field."):
+        await admin_model.orm_save_m2m_ids(event, "unknown_field", [1])
+
+    # id=0 hits early-return branch before writing m2m rows.
+    await admin_model.orm_save_m2m_ids(SimpleNamespace(id=0), "participants", [1])
+
+
+def test_ponyorm_field_mapping_special_cases():
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms.ponyorm import PonyORMModelAdmin
+
+    O2ORelation = type("o2o", (), {"_pk_": SimpleNamespace(name="id")})
+
+    fake_array_field = SimpleNamespace(
+        py_type=type("IntArray", (), {}),
+        name="tags",
+        is_relation=False,
+        is_collection=False,
+        is_pk=False,
+        hidden=False,
+        is_required=False,
+    )
+    fake_o2o_field = SimpleNamespace(
+        py_type=O2ORelation,
+        name="profile",
+        is_relation=False,
+        is_collection=False,
+        is_pk=False,
+        hidden=False,
+        is_required=False,
+    )
+
+    class FakeModel:
+        tags = fake_array_field
+        profile = fake_o2o_field
+
+    admin = PonyORMModelAdmin(FakeModel)
+    fields = admin.get_model_fields_with_widget_types()
+    by_name = {f.name: f for f in fields}
+
+    assert by_name["tags"].form_widget_type == WidgetType.Select
+    assert by_name["tags"].form_widget_props["mode"] == "tags"
+    assert by_name["tags"].filter_widget_type == WidgetType.Select
+    assert by_name["tags"].filter_widget_props["mode"] == "tags"
+
+    assert by_name["profile"].form_widget_type == WidgetType.AsyncSelect
+    assert by_name["profile"].form_widget_props["parentModel"] == "o2o"
+    assert by_name["profile"].form_widget_props["idField"] == "id"
+    assert by_name["profile"].filter_widget_type == WidgetType.AsyncSelect
+    assert by_name["profile"].filter_widget_props["mode"] == "multiple"
+
+    admin.raw_id_fields = ("profile",)
+    mapped_raw = admin.get_model_fields_with_widget_types()
+    by_name_raw = {f.name: f for f in mapped_raw}
+    assert by_name_raw["profile"].form_widget_type == WidgetType.Input
+    assert by_name_raw["profile"].filter_widget_type == WidgetType.Input
+
+
+def test_ponyorm_with_upload_false_skips_upload(user, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "ponyorm":
+        return
+
+    admin_model = get_admin_model(user.__class__)
+    admin_model.formfield_overrides["username"] = (WidgetType.Upload, {})
+    fields = admin_model.get_model_fields_with_widget_types(with_upload=False)
+    assert "username" not in [f.name for f in fields]
+
+
+async def test_ponyorm_orm_get_list_filter_operators():
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms.ponyorm import PonyORMModelAdmin
+
+    class FakeQuery:
+        def __init__(self):
+            self.filters = []
+
+        def filter(self, expression):
+            self.filters.append(expression)
+            return self
+
+        def order_by(self, *args):
+            return self
+
+        def prefetch(self, *args):
+            return self
+
+        def limit(self, _limit, offset=0):
+            return self
+
+        def count(self):
+            return 0
+
+        def __iter__(self):
+            return iter([])
+
+    fake_query = FakeQuery()
+
+    class FakeModel:
+        _pk_ = SimpleNamespace(name="id")
+        id = "id"
+        name = "name"
+
+        @staticmethod
+        def select(*args, **kwargs):
+            return fake_query
+
+    admin_model = PonyORMModelAdmin(FakeModel)
+    objs, total = await admin_model.orm_get_list(
+        filters={
+            ("id", "in"): [1, 2],
+            ("name", "lte"): "zzzz",
+            ("name", "gte"): "",
+            ("name", "lt"): "zzzz",
+            ("name", "gt"): "",
+            ("name", "contains"): "eve",
+        }
+    )
+    assert total == 0
+    assert objs == []
+    assert fake_query.filters
+
+
+async def test_ponyorm_edge_cases(event, session_with_type):
+    from types import SimpleNamespace
+
+    _, session_type = session_with_type
+    if session_type != "ponyorm":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+
+    # delete missing object should return without raising
+    await admin_model.orm_delete_obj(-1)
+
+    # m2m/get serialize paths when object is missing
+    assert await admin_model.orm_get_m2m_ids(SimpleNamespace(id=-1), "participants") == []
+    await admin_model.orm_save_m2m_ids(SimpleNamespace(id=-1), "participants", [1])
+
+    attrs = [
+        ModelFieldWidgetSchema(
+            name="id",
+            column_name="id",
+            is_m2m=False,
+            is_pk=True,
+            is_immutable=False,
+            form_widget_type=WidgetType.Input,
+            form_widget_props={},
+            filter_widget_type=WidgetType.Input,
+            filter_widget_props={},
+        )
+    ]
+    assert await admin_model.serialize_obj_attributes(SimpleNamespace(id=-1), attrs) == {}
+
+
+def test_tortoise_field_mapping_special_cases():
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms.tortoise import TortoiseModelAdmin
+
+    class RelatedModel:
+        _meta = SimpleNamespace(pk_attr="id")
+
+    fake_array = type("ArrayField", (), {})()
+    fake_array.name = "tags"
+    fake_array.pk = False
+    fake_array.auto_now = False
+    fake_array.auto_now_add = False
+    fake_array.null = True
+    fake_array.default = False
+    fake_array._generated = False
+    fake_array.reference = False
+
+    fake_fk = type("ForeignKeyFieldInstance", (), {})()
+    fake_fk.name = "profile"
+    fake_fk.pk = False
+    fake_fk.auto_now = False
+    fake_fk.auto_now_add = False
+    fake_fk.null = True
+    fake_fk.default = False
+    fake_fk._generated = False
+    fake_fk.reference = False
+    fake_fk.related_model = RelatedModel
+
+    fake_model = type(
+        "FakeTortoiseModel",
+        (),
+        {"_meta": SimpleNamespace(pk_attr="id", fields_map={"tags": fake_array, "profile": fake_fk})},
+    )
+
+    admin = TortoiseModelAdmin(fake_model)
+    admin.formfield_overrides = {}
+    fields = admin.get_model_fields_with_widget_types()
+    by_name = {f.name: f for f in fields}
+    assert by_name["tags"].form_widget_type == WidgetType.Select
+    assert by_name["tags"].form_widget_props["mode"] == "tags"
+    assert by_name["tags"].filter_widget_props["mode"] == "tags"
+
+    admin.formfield_overrides = {"tags": (WidgetType.Upload, {})}
+    mapped_no_upload = admin.get_model_fields_with_widget_types(with_upload=False)
+    assert "tags" not in [f.name for f in mapped_no_upload]
+
+
+def test_django_field_mapping_special_cases():
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms.django import DjangoModelAdmin
+
+    def make_field(class_name, name, *, null=True):
+        cls = type(class_name, (), {})
+        field = cls()
+        field.name = name
+        field.primary_key = False
+        field.auto_now = False
+        field.auto_now_add = False
+        field.null = null
+        field.default = False
+        field.choices = None
+        return field
+
+    fields = [
+        make_field("ArrayField", "tags"),
+        make_field("FileField", "file"),
+        make_field("URLField", "website"),
+        make_field("EmailField", "email"),
+        make_field("SlugField", "slug"),
+    ]
+
+    class FakeModel:
+        _meta = SimpleNamespace(get_fields=lambda: fields)
+
+    admin = DjangoModelAdmin(FakeModel)
+    admin.formfield_overrides = {}
+    mapped = admin.get_model_fields_with_widget_types()
+    by_name = {f.name: f for f in mapped}
+
+    assert by_name["tags"].form_widget_type == WidgetType.Select
+    assert by_name["tags"].form_widget_props["mode"] == "tags"
+    assert by_name["tags"].filter_widget_props["mode"] == "tags"
+    assert by_name["file"].form_widget_type == WidgetType.Upload
+    assert by_name["website"].form_widget_type == WidgetType.UrlInput
+    assert by_name["email"].form_widget_type == WidgetType.EmailInput
+    assert by_name["slug"].form_widget_type == WidgetType.SlugInput
+
+
+def test_django_with_upload_false_skips_upload_via_override():
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms.django import DjangoModelAdmin
+
+    char_field = type("CharField", (), {})()
+    char_field.name = "username"
+    char_field.primary_key = False
+    char_field.auto_now = False
+    char_field.auto_now_add = False
+    char_field.null = False
+    char_field.default = False
+    char_field.choices = None
+
+    class FakeModel:
+        _meta = SimpleNamespace(get_fields=lambda: [char_field])
+
+    admin = DjangoModelAdmin(FakeModel)
+    admin.formfield_overrides = {"username": (WidgetType.Upload, {})}
+    mapped = admin.get_model_fields_with_widget_types(with_upload=False)
+    assert mapped == []
+
+
+async def test_django_orm_save_upload_field():
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms.django import DjangoModelAdmin
+
+    class FakeModel:
+        _meta = SimpleNamespace(pk=SimpleNamespace(name="id"), get_fields=list)
+
+    class CaptureFile:
+        def __init__(self):
+            self.called = False
+            self.name = None
+            self.data = None
+            self.save_flag = None
+
+        def save(self, name, data, save=True):
+            self.called = True
+            self.name = name
+            self.data = data.read()
+            self.save_flag = save
+
+    obj = SimpleNamespace(avatar=CaptureFile())
+    admin = DjangoModelAdmin(FakeModel)
+    await admin.orm_save_upload_field(obj, "avatar", "data:image/png;base64,aGVsbG8=")
+
+    assert obj.avatar.called is True
+    assert obj.avatar.name == "image.png"
+    assert obj.avatar.data == b"hello"
+    assert obj.avatar.save_flag is True
