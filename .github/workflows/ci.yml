@@ -2,6 +2,10 @@ name: FastAdmin CI
 
 on: [create, push]
 
+permissions:
+  contents: read
+  id-token: write
+
 concurrency: 
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -39,7 +43,7 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: ./coverage.xml,./frontend/coverage/lcov.info
           flags: backend,frontend
           fail_ci_if_error: true
