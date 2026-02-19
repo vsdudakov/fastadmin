@@ -600,7 +600,7 @@ export ADMIN_SECRET_KEY=secret_key
                 },
                 {
                     "type": "code-python",
-                    "content": '''formfield_overrides = {
+                    "content": """formfield_overrides = {
     "username": (
         WidgetType.SlugInput,
         {
@@ -609,7 +609,7 @@ export ADMIN_SECRET_KEY=secret_key
             "help": "Detailed description of the field",
         },
     ),
-}''',
+}""",
                 },
             ]
         # inlines
