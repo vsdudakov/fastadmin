@@ -1,17 +1,16 @@
-## Admin Dashboard App for FastAPI/Flask/Django
+# Admin Dashboard for FastAPI / Flask / Django
 
 [![codecov](https://codecov.io/gh/vsdudakov/fastadmin/branch/main/graph/badge.svg?token=RNGX5HOW3T)](https://codecov.io/gh/vsdudakov/fastadmin)
 [![License](https://img.shields.io/github/license/vsdudakov/fastadmin)](https://github.com/vsdudakov/fastadmin/blob/master/LICENSE)
 [![PyPi](https://badgen.net/pypi/v/fastadmin)](https://pypi.org/project/fastadmin/)
-[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
 
 ## Screenshots
 
-![SignIn View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/signin.png)
-![List View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/list.png)
-![Change View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/change.png)
+![Sign-in view](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/signin.png)
+![List view](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/list.png)
+![Change view](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/change.png)
 
 <p align="center">
   <a href="https://twitter.com/intent/tweet?text=Admin%20Dashboard%20For%20FastAPI&url=https://github.com/vsdudakov/fastadmin&hashtags=FastAPI,AdminDashboard">
@@ -24,7 +23,7 @@
 ## Introduction
 
   
-<a href='https://github.com/vsdudakov/fastadmin' target='_blank'>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin.
+<a href='https://github.com/vsdudakov/fastadmin' target='_blank'>FastAdmin</a> is an easy-to-use admin dashboard for FastAPI, Django, and Flask, inspired by Django Admin.
 
 
 
@@ -40,7 +39,7 @@
 
 
   
-FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way.
+FastAdmin is built with relationships in mind and admiration for Django Admin. Its design focuses on making it as easy as possible to configure your admin dashboard for FastAPI, Django, or Flask.
 
 
 
@@ -56,7 +55,7 @@ FastAdmin was built with relations in mind and admiration for the excellent and 
 
 
   
-FastAdmin is designed to be minimalistic, functional and yet familiar.
+FastAdmin aims to be minimal, functional, and familiar.
 
 
 
@@ -82,7 +81,7 @@ FastAdmin is designed to be minimalistic, functional and yet familiar.
 
 
 
-If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href='mailto:vsdudakov@gmail.com' target='_blank'>us</a>.
+If you have questions beyond this documentation, feel free to <a href='mailto:vsdudakov@gmail.com' target='_blank'>email us</a>.
 
 
 
@@ -100,7 +99,7 @@ If you have any questions that are beyond the scope of the documentation, Please
   
 
 
-Follow the steps below to setup FastAdmin:
+Follow the steps below to set up FastAdmin:
 
 
 
@@ -114,27 +113,11 @@ Follow the steps below to setup FastAdmin:
 
 
   
-Install the package using pip:
+Install the package with pip:
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-Note: For zsh and macos use: <code>pip install fastadmin[fastapi,django]</code>
 
 
 
@@ -150,33 +133,7 @@ Note: For zsh and macos use: <code>pip install fastadmin[fastapi,django]</code>
 
 
 
-
-
-
-
-```bash
-
-pip install fastadmin[fastapi,django]  # for fastapi with django orm
-pip install fastadmin[fastapi,tortoise-orm]  # for fastapi with tortoise orm
-pip install fastadmin[fastapi,pony]  # for fastapi with pony orm
-pip install fastadmin[fastapi,sqlalchemy]  # for fastapi with sqlalchemy orm
-pip install fastadmin[django]  # for django with django orm
-pip install fastadmin[django,pony]  # for django with pony orm
-pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
-
-```
-
-
-
-
-
-
-  
-Install the package using poetry:
-
-
-
-
+On zsh and macOS, use quotes: <code>pip install 'fastadmin[fastapi,django]'</code>
 
 
 
@@ -198,13 +155,13 @@ Install the package using poetry:
 
 ```bash
 
-poetry add 'fastadmin[fastapi,django]'  # for fastapi with django orm
-poetry add 'fastadmin[fastapi,tortoise-orm]'  # for fastapi with tortoise orm
-poetry add 'fastadmin[fastapi,pony]'  # for fastapi with pony orm
-poetry add 'fastadmin[fastapi,sqlalchemy]'  # for fastapi with sqlalchemy orm
-poetry add 'fastadmin[django]'  # for django with django orm
-poetry add 'fastadmin[django,pony]'  # for django with pony orm
-poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
+pip install fastadmin[fastapi,django]        # FastAPI with Django ORM
+pip install fastadmin[fastapi,tortoise-orm]  # FastAPI with Tortoise ORM
+pip install fastadmin[fastapi,pony]          # FastAPI with Pony ORM
+pip install fastadmin[fastapi,sqlalchemy]    # FastAPI with SQLAlchemy (includes greenlet)
+pip install fastadmin[django]                # Django with Django ORM
+pip install fastadmin[django,pony]           # Django with Pony ORM
+pip install fastadmin[flask,sqlalchemy]      # Flask with SQLAlchemy (includes greenlet)
 
 ```
 
@@ -214,7 +171,7 @@ poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
 
 
   
-Configure required settings using virtual environment variables:
+Or install with Poetry:
 
 
 
@@ -234,7 +191,65 @@ Configure required settings using virtual environment variables:
 
 
 
-Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href='https://vsdudakov.github.io/fastadmin#settings'>here</a>
+
+
+
+
+```bash
+
+poetry add 'fastadmin[fastapi,django]'
+poetry add 'fastadmin[fastapi,tortoise-orm]'
+poetry add 'fastadmin[fastapi,pony]'
+poetry add 'fastadmin[fastapi,sqlalchemy]'
+poetry add 'fastadmin[django]'
+poetry add 'fastadmin[django,pony]'
+poetry add 'fastadmin[flask,sqlalchemy]'
+
+```
+
+
+
+
+
+
+  
+
+
+
+
+When using SQLAlchemy, the <code>greenlet</code> package is required (included in the <code>fastadmin[sqlalchemy]</code> extra).
+
+
+
+
+
+
+
+
+
+
+  
+Configure the required settings with environment variables:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+You can add these variables to a <code>.env</code> file and load them with python-dotenv. See <a href='https://vsdudakov.github.io/fastadmin#settings'>all settings</a> in the full documentation.
 
 
 
@@ -273,7 +288,7 @@ export ADMIN_SECRET_KEY=secret_key
   
 
 
-Setup FastAdmin for a framework
+Set up FastAdmin for your framework
 
 
 
@@ -476,14 +491,14 @@ class UserAdmin(TortoiseModelAdmin):
     }
 
     async def authenticate(self, username: str, password: str) -> int | None:
-        user = await self.model_cls.filter(phone=username, is_superuser=True).first()
+        user = await self.model_cls.filter(username=username, is_superuser=True).first()
         if not user:
             return None
         if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
             return None
         return user.id
 
-    async def change_password(self, id: UUID | int, password: str) -> None:
+    async def change_password(self, id: UUID | int | str, password: str) -> None:
         user = await self.model_cls.filter(id=id).first()
         if not user:
             return
@@ -554,7 +569,7 @@ class UserAdmin(DjangoModelAdmin):
 
 
 
-### SQL Alchemy
+### SQLAlchemy
 
 
 
@@ -623,7 +638,7 @@ class UserAdmin(SqlAlchemyModelAdmin):
                 return None
             return obj.id
 
-    async def change_password(self, id: uuid.UUID | int, password: str) -> None:
+    async def change_password(self, id: uuid.UUID | int | str, password: str) -> None:
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
             hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
@@ -744,7 +759,9 @@ class UserAdmin(PonyORMModelAdmin):
 
 
 ## Documentation
-See full documentation [here](https://vsdudakov.github.io/fastadmin).
+
+Full documentation is available at [vsdudakov.github.io/fastadmin](https://vsdudakov.github.io/fastadmin).
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE) file for details.
+
+This project is licensed under the MIT License — see the [LICENSE](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE) file for details.

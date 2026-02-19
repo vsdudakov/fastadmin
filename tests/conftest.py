@@ -241,7 +241,7 @@ async def ponyorm_event():
 @pytest.fixture(scope="session")
 async def sqlalchemy_session():
     async def _sqlalchemy_session():
-        from tests.environment.sqlalchemy import models as sqlalchemy_models
+        from tests.environment.sqlalchemy_env import models as sqlalchemy_models
 
         sqlalchemy_engine = create_async_engine(
             "sqlite+aiosqlite:///:memory:",
@@ -270,7 +270,7 @@ async def sqlalchemy_session():
 @pytest.fixture
 async def sqlalchemy_superuser():
     async def _sqlalchemy_superuser(sqlalchemy_session):
-        from tests.environment.sqlalchemy import models as sqlalchemy_models
+        from tests.environment.sqlalchemy_env import models as sqlalchemy_models
 
         obj = sqlalchemy_models.User(
             username="Test SuperUser",
@@ -294,7 +294,7 @@ async def sqlalchemy_superuser():
 @pytest.fixture
 async def sqlalchemy_user():
     async def _sqlalchemy_user(sqlalchemy_session):
-        from tests.environment.sqlalchemy import models as sqlalchemy_models
+        from tests.environment.sqlalchemy_env import models as sqlalchemy_models
 
         obj = sqlalchemy_models.User(
             username="Test User",
@@ -315,7 +315,7 @@ async def sqlalchemy_user():
 @pytest.fixture
 async def sqlalchemy_tournament():
     async def _sqlalchemy_tournament(sqlalchemy_session):
-        from tests.environment.sqlalchemy import models as sqlalchemy_models
+        from tests.environment.sqlalchemy_env import models as sqlalchemy_models
 
         obj = sqlalchemy_models.Tournament(
             name="Test Tournament",
@@ -335,7 +335,7 @@ async def sqlalchemy_tournament():
 @pytest.fixture
 async def sqlalchemy_base_event():
     async def sqlalchemy_base_event(sqlalchemy_session):
-        from tests.environment.sqlalchemy import models as sqlalchemy_models
+        from tests.environment.sqlalchemy_env import models as sqlalchemy_models
 
         obj = sqlalchemy_models.BaseEvent(
             created_at=datetime.now(timezone.utc),
@@ -354,7 +354,7 @@ async def sqlalchemy_base_event():
 @pytest.fixture
 async def sqlalchemy_event():
     async def _sqlalchemy_event(sqlalchemy_session):
-        from tests.environment.sqlalchemy import models as sqlalchemy_models
+        from tests.environment.sqlalchemy_env import models as sqlalchemy_models
 
         sqlalchemy_base_event = sqlalchemy_models.BaseEvent(
             created_at=datetime.now(timezone.utc),
@@ -617,11 +617,11 @@ async def admin_models():
 async def app(request):
     match request.param:
         case "fastapi":
-            from tests.environment.fastapi.dev import app as fastapi_application
+            from tests.environment.fastapi_app.dev import app as fastapi_application
 
             yield fastapi_application
         case "flask":
-            from tests.environment.flask.dev import app as flask_application
+            from tests.environment.flask_app.dev import app as flask_application
 
             yield WsgiToAsgi(flask_application)
         case "django":

@@ -1,5 +1,5 @@
+import type { FormInstance } from "antd";
 import { message } from "antd";
-import type { FormInstance } from "rc-field-form";
 
 export const handleError = (error: any, form?: FormInstance) => {
   const errors =

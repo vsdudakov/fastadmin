@@ -1,8 +1,10 @@
+import operator
 from base64 import b64decode
 from typing import Any
 from uuid import UUID
 
 from asgiref.sync import sync_to_async
+from django.db.models import Q
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
@@ -42,7 +44,7 @@ class DjangoORMMixin:
             if field_type in ("OneToOneField", "ForeignKey"):
                 column_name = f"{field_name}_id"
 
-            is_m2m = field_type in "ManyToManyField"
+            is_m2m = field_type == "ManyToManyField"
             w_type, _ = self.formfield_overrides.get(field_name, (None, None))
             is_upload = field_type in ("FileField", "ImageField") or w_type == WidgetType.Upload
             if with_m2m is not None and not with_m2m and is_m2m:
@@ -262,11 +264,9 @@ class DjangoORMMixin:
                 qs = qs.filter(**{f"{field}__{condition}" if condition != "exact" else field: value})
 
         if search and self.search_fields:
-            ids = []
-            for f in self.search_fields:
-                qs = qs.filter(**{f + "__icontains": search})
-                ids += qs.values_list(self.get_model_pk_name(self.model_cls), flat=True)
-            qs = qs.filter(id__in=set(ids))
+            search_conditions = [Q(**{f + "__icontains": search}) for f in self.search_fields]
+            search_q = search_conditions[0] if len(search_conditions) == 1 else operator.or_(*search_conditions)
+            qs = qs.filter(search_q)
 
         if sort_by:
             qs = qs.order_by(sort_by)
@@ -284,7 +284,7 @@ class DjangoORMMixin:
         return list(qs), total
 
     @sync_to_async
-    def orm_get_obj(self, id: UUID | int) -> Any | None:
+    def orm_get_obj(self, id: UUID | int | str) -> Any | None:
         """This method is used to get orm/db model object.
 
         :params id: an id of object.
@@ -313,7 +313,7 @@ class DjangoORMMixin:
         return obj
 
     @sync_to_async
-    def orm_delete_obj(self, id: UUID | int) -> None:
+    def orm_delete_obj(self, id: UUID | int | str) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.

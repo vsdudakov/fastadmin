@@ -53,7 +53,7 @@ class UserAdmin(SqlAlchemyModelAdmin):
                 return None
             return obj.id
 
-    async def change_password(self, id: uuid.UUID | int, password: str) -> None:
+    async def change_password(self, id: uuid.UUID | int | str, password: str) -> None:
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
             hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()

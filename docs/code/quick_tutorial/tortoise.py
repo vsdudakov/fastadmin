@@ -40,14 +40,14 @@ class UserAdmin(TortoiseModelAdmin):
     }
 
     async def authenticate(self, username: str, password: str) -> int | None:
-        user = await self.model_cls.filter(phone=username, is_superuser=True).first()
+        user = await self.model_cls.filter(username=username, is_superuser=True).first()
         if not user:
             return None
         if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
             return None
         return user.id
 
-    async def change_password(self, id: UUID | int, password: str) -> None:
+    async def change_password(self, id: UUID | int | str, password: str) -> None:
         user = await self.model_cls.filter(id=id).first()
         if not user:
             return

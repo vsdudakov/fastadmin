@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models import BaseEvent, Event, Tournament, User
-from tortoise import Tortoise
+from tortoise.contrib.fastapi import RegisterTortoise
 
 from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, WidgetType, action, display
 from fastadmin import fastapi_app as admin_app
@@ -47,7 +47,7 @@ class UserModelAdmin(TortoiseModelAdmin):
         await user.save()
 
     async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
+        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recommend it)
         setattr(obj, field, base64)
         await obj.save(update_fields=(field,))
 
@@ -89,11 +89,6 @@ class EventModelAdmin(TortoiseModelAdmin):
         return f"{obj.name} - {obj.price}"
 
 
-async def init_db():
-    await Tortoise.init(db_url="sqlite://:memory:", modules={"models": ["models"]})
-    await Tortoise.generate_schemas()
-
-
 async def create_superuser():
     await User.create(
         username="admin",
@@ -104,10 +99,16 @@ async def create_superuser():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    await init_db()
-    await create_superuser()
-    yield
-    await Tortoise.close_connections()
+    # RegisterTortoise sets up TortoiseContext so request handlers can use the DB
+    # (_enable_global_fallback=True by default for ASGI lifespan in a background task)
+    async with RegisterTortoise(
+        app=app,
+        db_url="sqlite://:memory:",
+        modules={"models": ["models"]},
+        generate_schemas=True,
+    ):
+        await create_superuser()
+        yield
 
 
 app = FastAPI(lifespan=lifespan)

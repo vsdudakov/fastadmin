@@ -1,5 +1,5 @@
-import type { IConfiguration } from "@/interfaces/configuration";
 import React from "react";
+import type { IConfiguration } from "@/interfaces/configuration";
 
 export const defaultConfiguration = {
   site_name: "API Administration",

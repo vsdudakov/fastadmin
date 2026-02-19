@@ -27,8 +27,7 @@ async def test_change(session_id, admin_models, event, client):
             "description": "test",
             "event_type": "PRIVATE",
             "is_active": True,
-            # TODO: sqlite doesn't support datetime.time
-            # "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            # start_time omitted: test DBs use SQLite which has limited datetime.time support
             "date": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "latitude": 0.2,
             "longitude": 0.4,
@@ -65,8 +64,7 @@ async def test_change_empty_m2m(session_id, admin_models, event, client):
             "description": "test",
             "event_type": "PRIVATE",
             "is_active": True,
-            # TODO: sqlite doesn't support datetime.time
-            # "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            # start_time omitted: test DBs use SQLite which has limited datetime.time support
             "date": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "latitude": 0.2,
             "longitude": 0.4,
@@ -121,6 +119,7 @@ async def test_change_404_admin_class_found(session_id, admin_models, superuser,
 
 async def test_change_404_obj_not_found(session_id, superuser, event, client):
     assert session_id
+    # "invalid" is valid as string PK; lookup fails → 404
     r = await client.patch(
         f"/api/change/{event.get_model_name()}/invalid",
         json={
@@ -128,7 +127,7 @@ async def test_change_404_obj_not_found(session_id, superuser, event, client):
             "participants": [superuser.id],
         },
     )
-    assert r.status_code == 422, r.text
+    assert r.status_code == 404, r.text
 
     r = await client.patch(
         f"/api/change/{event.get_model_name()}/-1",

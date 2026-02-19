@@ -11,8 +11,18 @@ import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 interface IUploadWrapperProps {
   withCrop?: boolean;
-  children: React.ReactNode;
+  children: React.ReactElement;
 }
+
+const UploadWrapper: React.FC<IUploadWrapperProps> = ({
+  withCrop,
+  children,
+}) => {
+  if (withCrop) {
+    return <ImgCrop rotationSlider>{children}</ImgCrop>;
+  }
+  return <>{children}</>;
+};
 
 export interface IUploadInput {
   parentId: string;
@@ -76,16 +86,6 @@ export const UploadInput: React.FC<IUploadInput> = ({
   const onClosePreview = () => setPreviewFileUrl(undefined);
 
   const beforeUpload = () => false;
-
-  const UploadWrapper: React.FC<IUploadWrapperProps> = ({
-    withCrop,
-    children,
-  }) => {
-    if (withCrop) {
-      return <ImgCrop rotationSlider>{children}</ImgCrop>;
-    }
-    return <>{children}</>;
-  };
 
   return (
     <>

@@ -50,6 +50,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
 
   useEffect(() => {
     if (hasOperationError) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- expand all fieldsets on validation error
       setActiveKey(
         (modelConfiguration?.fieldsets || []).map((fieldset) =>
           JSON.stringify(fieldset[1]?.fields),

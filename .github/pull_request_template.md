@@ -1,16 +1,16 @@
 ### References
 
-<!-- (Which ticket does the merge request reference e.g STORY-BUG-123) -->
+<!-- Which ticket or issue does this pull request reference? (e.g. STORY-BUG-123) -->
 
 ### Summary
 
-<!-- (What does the merge request solve?) -->
-<!-- For a bug: (Which bug does the merge request solve?) -->
+<!-- What does this pull request do? -->
+<!-- For a bug fix: which bug does it solve? -->
 
-### Are there any open tasks/blockers for the ticket?
+### Are there any open tasks or blockers?
 
-<!--(Are all tasks for the referred ticket done, are there any other issues, comments)-->
+<!-- Are all tasks for the referenced ticket done? Any remaining issues or comments? -->
 
-<!-- ### Optional: Next Step -->
+<!-- ### Optional: Next steps -->
 
-<!-- (If there are any open tasks/blockers, what is the next step - any follow-ups?) -->
+<!-- If there are open tasks or blockers, what are the suggested next steps or follow-ups? -->

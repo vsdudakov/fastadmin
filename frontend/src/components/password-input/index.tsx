@@ -6,9 +6,9 @@ import {
   Form,
   Input,
   Modal,
+  message,
   Space,
   Tooltip,
-  message,
 } from "antd";
 import React from "react";
 import { useTranslation } from "react-i18next";

@@ -1,12 +1,3 @@
-import { AsyncSelect } from "@/components/async-select";
-import { AsyncTransfer } from "@/components/async-transfer";
-import { JsonTextArea } from "@/components/json-textarea";
-import { PasswordInput } from "@/components/password-input";
-import { PhoneNumberInput } from "@/components/phone-number-input";
-import { SlugInput } from "@/components/slug-input";
-import { TextEditor } from "@/components/texteditor-field";
-import { UploadInput } from "@/components/upload-input";
-import { EFieldWidgetType } from "@/interfaces/configuration";
 import {
   Checkbox,
   DatePicker,
@@ -17,6 +8,15 @@ import {
   Switch,
   TimePicker,
 } from "antd";
+import { AsyncSelect } from "@/components/async-select";
+import { AsyncTransfer } from "@/components/async-transfer";
+import { JsonTextArea } from "@/components/json-textarea";
+import { PasswordInput } from "@/components/password-input";
+import { PhoneNumberInput } from "@/components/phone-number-input";
+import { SlugInput } from "@/components/slug-input";
+import { TextEditor } from "@/components/texteditor-field";
+import { UploadInput } from "@/components/upload-input";
+import { EFieldWidgetType } from "@/interfaces/configuration";
 
 export const getWidgetCls = (
   widgetType: EFieldWidgetType,

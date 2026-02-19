@@ -53,7 +53,7 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
     async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
-            # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
+            # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recommend it)
             query = update(self.model_cls).where(User.id.in_([obj.id])).values(**{field: base64})
             await session.execute(query)
             await session.commit()
@@ -79,7 +79,7 @@ class EventModelAdmin(SqlAlchemyModelAdmin):
     actions = ("make_is_active", "make_is_not_active")
     list_display = ("id", "name_with_price", "rating", "event_type", "is_active", "started")
 
-    @action(description="Make user active")
+    @action(description="Make event active")
     async def make_is_active(self, ids):
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:

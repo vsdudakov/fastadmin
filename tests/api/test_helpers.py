@@ -25,7 +25,9 @@ async def test_is_valid_uuid():
 
 async def test_is_valid_id():
     assert is_valid_id(1) is True
-    assert is_valid_uuid(str(uuid.uuid1())) is True
+    assert is_valid_id(str(uuid.uuid4())) is True
+    assert is_valid_id("MANUAL") is True  # string PK
+    assert is_valid_id("") is False
 
 
 async def test_get_user_id_from_session_id(session_id):

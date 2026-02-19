@@ -1,7 +1,10 @@
+# FastAdmin documentation (GitHub Pages)
+# https://vsdudakov.github.io/fastadmin
+
 User-agent: Googlebot
 Disallow: /nogooglebot/
 
 User-agent: *
 Allow: /
 
-Sitemap: https://github.com/vsdudakov/fastadmin/sitemap.xml
+Sitemap: https://vsdudakov.github.io/fastadmin/sitemap.xml

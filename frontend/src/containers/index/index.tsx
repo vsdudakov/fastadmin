@@ -13,14 +13,19 @@ export const Index: React.FC = () => {
   const { configuration } = useContext(ConfigurationContext);
   return (
     <CrudContainer title={_t("Dashboard")}>
-      <Row gutter={[16, 16]}>
+      <Row gutter={[24, 24]}>
         {configuration.dashboard_widgets.map((widget: IDashboardWidget) => (
-          <Col xs={24} md={12} key={widget.title}>
+          <Col xs={24} md={12} xl={8} key={widget.title}>
             <DashboardWidget widget={widget} />
           </Col>
         ))}
       </Row>
-      {configuration.dashboard_widgets.length === 0 && <Empty />}
+      {configuration.dashboard_widgets.length === 0 && (
+        <Empty
+          description={_t("No dashboard widgets configured")}
+          style={{ padding: "48px 0" }}
+        />
+      )}
     </CrudContainer>
   );
 };

@@ -99,6 +99,24 @@ async def test_list_search(session_id, admin_models, event, client):
     assert r.status_code == 422, r.text
 
 
+async def test_list_search_case_insensitive(session_id, admin_models, event, client):
+    """Search uses case-insensitive matching (icontains) across all ORMs."""
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
+    event_admin_model.search_fields = ["name"]
+    # Search with different case than stored (e.g. "Test Event" vs "TEST" or "test")
+    search_upper = event.name[:3].upper()
+    if search_upper != event.name[:3]:  # only if we actually changed case
+        r = await client.get(
+            f"/api/list/{event.get_model_name()}?search={search_upper}",
+        )
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data["total"] > 0, "icontains should find event when searching with different case"
+        item = next((result for result in data["results"] if str(result["id"]) == str(event.id)), None)
+        assert item, "current event should be in results when search matches case-insensitively"
+
+
 async def test_list_sort_by(session_id, admin_models, event, client):
     assert session_id
 

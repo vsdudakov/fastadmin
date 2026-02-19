@@ -1,5 +1,6 @@
 import typing as tp
 import uuid
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -52,7 +53,7 @@ class UserModelAdmin(PonyORMModelAdmin):
         obj = next((f for f in self.model_cls.select(id=obj.id)), None)
         if not obj:
             return
-        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
+        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recommend it)
         setattr(obj, field, base64)
         commit()
 
@@ -114,7 +115,7 @@ class EventModelAdmin(PonyORMModelAdmin):
 
 
 def init_db():
-    db.bind(provider="sqlite", filename=":sharedmemory:")
+    db.bind(provider="sqlite", filename=":memory:", create_db=True)
     db.generate_mapping(create_tables=True)
 
 
@@ -124,7 +125,7 @@ def create_superuser():
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     init_db()
     create_superuser()
     yield

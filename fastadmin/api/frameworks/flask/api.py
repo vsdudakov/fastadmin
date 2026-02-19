@@ -6,7 +6,7 @@ from flask import Blueprint, Response, make_response, request
 from werkzeug.exceptions import HTTPException
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.helpers import is_valid_id
+from fastadmin.api.helpers import is_valid_id, parse_list_filters_from_query_params
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.settings import settings
@@ -125,17 +125,21 @@ async def list_objs(model: str) -> dict:
     :return: A list of objects.
     """
     try:
-        filters = request.args.to_dict()
-        search = filters.get("search", None)
-        sort_by = filters.get("sort_by", None)
-        offset = int(filters.get("offset", 0))
-        limit = int(filters.get("limit", 10))
+        search = request.args.get("search") or None
+        sort_by = request.args.get("sort_by") or None
+        offset = int(request.args.get("offset", 0))
+        limit = int(request.args.get("limit", 10))
+        list_filters = parse_list_filters_from_query_params(
+            request.args.keys,
+            request.args.getlist,
+            exclude={"search", "sort_by", "offset", "limit"},
+        )
         objs, total = await api_service.list(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             search=search,
             sort_by=sort_by,
-            filters=filters,
+            filters=list_filters,
             offset=offset,
             limit=limit,
         )
@@ -154,7 +158,7 @@ async def list_objs(model: str) -> dict:
 
 
 @api_router.route("/retrieve/<string:model>/<string:id>", methods=["GET"])
-async def get(model: str, id: UUID | int) -> dict:
+async def get(model: str, id: UUID | int | str) -> dict:
     """This method is used to get an object.
 
     :params model: a name of model.
@@ -162,7 +166,7 @@ async def get(model: str, id: UUID | int) -> dict:
     :return: An object.
     """
     if not is_valid_id(id):
-        http_exception = HTTPException("Invalid id. It must be a UUID or an integer.")
+        http_exception = HTTPException("Invalid id. It must be a UUID, an integer, or a non-empty string.")
         http_exception.code = 422
         raise http_exception
     try:
@@ -199,7 +203,7 @@ async def add(model: str) -> dict:
 
 
 @api_router.route("/change-password/<string:id>", methods=["PATCH"])  # type: ignore [type-var]
-async def change_password(id: UUID | int) -> UUID | int:
+async def change_password(id: UUID | int | str) -> UUID | int | str:
     """This method is used to change password.
 
     :params id: an id of object.
@@ -207,7 +211,7 @@ async def change_password(id: UUID | int) -> UUID | int:
     :return: An object.
     """
     if not is_valid_id(id):
-        http_exception = HTTPException("Invalid id. It must be a UUID or an integer.")
+        http_exception = HTTPException("Invalid id. It must be a UUID, an integer, or a non-empty string.")
         http_exception.code = 422
         raise http_exception
     try:
@@ -225,7 +229,7 @@ async def change_password(id: UUID | int) -> UUID | int:
 
 
 @api_router.route("/change/<string:model>/<string:id>", methods=["PATCH"])
-async def change(model: str, id: UUID | int) -> dict:
+async def change(model: str, id: UUID | int | str) -> dict:
     """This method is used to change an object.
 
     :params model: a name of model.
@@ -234,7 +238,7 @@ async def change(model: str, id: UUID | int) -> dict:
     :return: An object.
     """
     if not is_valid_id(id):
-        http_exception = HTTPException("Invalid id. It must be a UUID or an integer.")
+        http_exception = HTTPException("Invalid id. It must be a UUID, an integer, or a non-empty string.")
         http_exception.code = 422
         raise http_exception
     try:
@@ -262,9 +266,13 @@ async def export(model: str) -> Response:
     :params sort_by: a sort by string.
     :return: A stream of export data.
     """
-    filters = request.args.to_dict()
-    search = filters.get("search", None)
-    sort_by = filters.get("sort_by", None)
+    search = request.args.get("search") or None
+    sort_by = request.args.get("sort_by") or None
+    list_filters = parse_list_filters_from_query_params(
+        request.args.keys,
+        request.args.getlist,
+        exclude={"search", "sort_by", "offset", "limit"},
+    )
     try:
         request_payload: dict = request.json
         payload: ExportInputSchema = ExportInputSchema(**request_payload)
@@ -274,7 +282,7 @@ async def export(model: str) -> Response:
             payload,
             search=search,
             sort_by=sort_by,
-            filters=filters,
+            filters=list_filters,
         )
         response = Response(stream, mimetype=content_type)
         response.headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
@@ -288,8 +296,8 @@ async def export(model: str) -> Response:
 @api_router.route("/delete/<string:model>/<string:id>", methods=["DELETE"])  # type: ignore [type-var]
 async def delete(
     model: str,
-    id: UUID | int,
-) -> UUID | int:
+    id: UUID | int | str,
+) -> UUID | int | str:
     """This method is used to delete an object.
 
     :params model: a name of model.
@@ -297,7 +305,7 @@ async def delete(
     :return: An id of object.
     """
     if not is_valid_id(id):
-        http_exception = HTTPException("Invalid id. It must be a UUID or an integer.")
+        http_exception = HTTPException("Invalid id. It must be a UUID, an integer, or a non-empty string.")
         http_exception.code = 422
         raise http_exception
     try:

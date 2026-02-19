@@ -50,6 +50,7 @@ export const DashboardWidget: React.FC<IDashboardWidgetProps> = ({
 
   useEffect(() => {
     if (data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync chart axes from API data
       setMin(transformValueFromServer(data.min_x_field));
       setMax(transformValueFromServer(data.max_x_field));
       setPeriod(transformValueFromServer(data.period_x_field));

@@ -264,32 +264,37 @@ class SqlAlchemyMixin:
                     condition = field_with_condition[1]
                     model_field = getattr(self.model_cls, field)
 
-                    if isinstance(model_field.expression.type, BIGINT | Integer):
+                    if condition != "in" and isinstance(model_field.expression.type, BIGINT | Integer):
                         with contextlib.suppress(ValueError, TypeError):
                             value = int(value)
 
                     match condition:
                         case "lte":
-                            q.append(model_field >= value)
-                        case "gte":
                             q.append(model_field <= value)
+                        case "gte":
+                            q.append(model_field >= value)
                         case "lt":
-                            q.append(model_field > value)
-                        case "gt":
                             q.append(model_field < value)
+                        case "gt":
+                            q.append(model_field > value)
                         case "exact":
                             q.append(model_field == value)
+                        case "in":
+                            if isinstance(model_field.expression.type, BIGINT | Integer):
+                                with contextlib.suppress(ValueError, TypeError):
+                                    value = [int(x) for x in value]
+                            q.append(model_field.in_(value))
                         case "contains":
                             q.append(model_field.like(f"%{value}%"))
                         case "icontains":
                             q.append(model_field.ilike(f"%{value}%"))
-                qs = qs.filter(and_(*q))
+                qs = qs.where(and_(*q))
 
             if search and self.search_fields:
                 q = []
                 for field in self.search_fields:
                     q.append(getattr(self.model_cls, field).ilike(f"%{search}%"))
-                qs = qs.filter(or_(*q))
+                qs = qs.where(or_(*q))
 
             if sort_by:
                 qs = qs.order_by(text(convert_sort_by(sort_by)))
@@ -297,8 +302,8 @@ class SqlAlchemyMixin:
                 sort_by_text = ", ".join([convert_sort_by(f) for f in self.ordering])
                 qs = qs.order_by(text(sort_by_text))
 
-            objs = await session.execute(select(func.count()).select_from(qs))  # type: ignore [arg-type]
-            total = objs.scalar()
+            count_stmt = select(func.count()).select_from(qs.subquery())
+            total = (await session.execute(count_stmt)).scalar_one()
 
             if self.list_select_related:
                 for field in self.list_select_related:
@@ -308,9 +313,10 @@ class SqlAlchemyMixin:
                 qs = qs.offset(offset)
                 qs = qs.limit(limit)
 
-            return await session.scalars(qs), total
+            result = await session.scalars(qs)
+            return list(result), total
 
-    async def orm_get_obj(self, id: UUID | int) -> Any | None:
+    async def orm_get_obj(self, id: UUID | int | str) -> Any | None:
         """This method is used to get orm/db model object.
 
         :params id: an id of object.
@@ -356,7 +362,7 @@ class SqlAlchemyMixin:
                 await session.commit()
             return await session.get(self.model_cls, getattr(obj, self.get_model_pk_name(self.model_cls)))
 
-    async def orm_delete_obj(self, id: UUID | int) -> None:
+    async def orm_delete_obj(self, id: UUID | int | str) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.
@@ -365,6 +371,8 @@ class SqlAlchemyMixin:
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
             obj = await session.get(self.model_cls, id)
+            if obj is None:
+                raise ValueError(f"{self.model_cls.__name__} not found.")
             await session.delete(obj)
             await session.commit()
 
@@ -380,10 +388,15 @@ class SqlAlchemyMixin:
         async with sessionmaker() as session:
             id_key = self.get_model_pk_name(self.model_cls)
             qs = select(self.model_cls)
-            qs = qs.filter_by(**{id_key: getattr(obj, id_key)})
+            qs = qs.where(getattr(self.model_cls, id_key) == getattr(obj, id_key))
             qs = qs.options(selectinload(getattr(self.model_cls, field)))
-            obj = await session.scalar(qs)
-            return [getattr(obj, id_key) for obj in getattr(obj, field, [])]
+            loaded = await session.scalar(qs)
+            if not loaded:
+                return []
+            rel_attr = getattr(self.model_cls, field)
+            related_class = rel_attr.property.mapper.class_
+            rel_pk_name = self.get_model_pk_name(related_class)
+            return [getattr(related_obj, rel_pk_name) for related_obj in getattr(loaded, field, [])]
 
     async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | UUID]) -> None:
         """This method is used to get m2m ids.

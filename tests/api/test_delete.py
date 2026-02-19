@@ -46,8 +46,10 @@ async def test_delete_403(session_id, superuser, client):
     assert r.status_code == 403, r.text
 
 
-async def test_delete_422(event, client):
+async def test_delete_422(session_id, event, client):
+    """Non-existent or invalid id for model yields 404 (string 'invalid' is valid format)."""
+    assert session_id
     r = await client.delete(
         f"/api/delete/{event.get_model_name()}/invalid",
     )
-    assert r.status_code == 422, r.text
+    assert r.status_code == 404, r.text

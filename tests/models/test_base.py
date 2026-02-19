@@ -91,6 +91,56 @@ async def test_export_wrong_format(mocker):
     assert "test_1" in base.get_fields_for_serialize()
 
 
+def test_resolve_sort_by_regular_field():
+    """resolve_sort_by returns sort_by unchanged for non-display fields."""
+    from fastadmin import ModelAdmin
+
+    class Model:
+        pass
+
+    class Admin(ModelAdmin):
+        pass
+
+    admin = Admin(Model)
+    assert admin.resolve_sort_by("name") == "name"
+    assert admin.resolve_sort_by("-created_at") == "-created_at"
+    assert admin.resolve_sort_by("") == ""
+
+
+def test_resolve_sort_by_display_with_sorter_string():
+    """resolve_sort_by returns the sorter string for @display(sorter='expr') columns."""
+    from fastadmin import ModelAdmin, display
+
+    class Model:
+        pass
+
+    class Admin(ModelAdmin):
+        @display(sorter="user__username")
+        def author(self, obj):
+            return (getattr(obj, "user", None) and getattr(obj.user, "username", "")) or ""
+
+    admin = Admin(Model)
+    assert admin.resolve_sort_by("author") == "user__username"
+    assert admin.resolve_sort_by("-author") == "-user__username"
+
+
+def test_resolve_sort_by_display_with_sorter_true():
+    """resolve_sort_by returns sort_by as-is when display has sorter=True (use function name)."""
+    from fastadmin import ModelAdmin, display
+
+    class Model:
+        pass
+
+    class Admin(ModelAdmin):
+        @display(sorter=True)
+        def user__username(self, obj):
+            return (getattr(obj, "user", None) and getattr(obj.user, "username", "")) or ""
+
+    admin = Admin(Model)
+    assert admin.resolve_sort_by("user__username") == "user__username"
+    assert admin.resolve_sort_by("-user__username") == "-user__username"
+
+
 async def test_get_fields_for_serialize(mocker):
     class Model:
         pass

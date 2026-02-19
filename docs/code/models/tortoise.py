@@ -63,7 +63,7 @@ class UserAdmin(TortoiseModelAdmin):
             return None
         return user.id
 
-    async def change_password(self, id: UUID | int, password: str) -> None:
+    async def change_password(self, id: UUID | int | str, password: str) -> None:
         user = await self.model_cls.filter(id=id).first()
         if not user:
             return

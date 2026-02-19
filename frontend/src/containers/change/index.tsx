@@ -6,18 +6,18 @@ import {
   Col,
   Empty,
   Form,
+  message,
   Popconfirm,
   Row,
   Space,
-  message,
 } from "antd";
 import type React from "react";
 import { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
-
 import { CrudContainer } from "@/components/crud-container";
 import { FormContainer } from "@/components/form-container";
+import { ROUTES } from "@/constants/routes";
 import {
   deleteFetcher,
   getFetcher,
@@ -150,7 +150,7 @@ export const Change: React.FC = () => {
       breadcrumbs={
         <Breadcrumb
           items={[
-            { title: <Link to="/">{_t("Dashboard")}</Link> },
+            { title: <Link to={ROUTES.HOME}>{_t("Dashboard")}</Link> },
             {
               title: (
                 <Link to={`/list/${model}`}>
@@ -178,16 +178,20 @@ export const Change: React.FC = () => {
         >
           <Row gutter={[8, 8]} justify="space-between">
             <Col>
-              <Space>
-                <Popconfirm
-                  title={_t("Are you sure?")}
-                  onConfirm={onConfirmDelete}
-                >
-                  <Button danger={true}>
-                    <DeleteOutlined /> {_t("Delete")}
-                  </Button>
-                </Popconfirm>
-              </Space>
+              {modelConfiguration.permissions.includes(
+                EModelPermission.Delete,
+              ) && (
+                <Space>
+                  <Popconfirm
+                    title={_t("Are you sure?")}
+                    onConfirm={onConfirmDelete}
+                  >
+                    <Button danger={true}>
+                      <DeleteOutlined /> {_t("Delete")}
+                    </Button>
+                  </Popconfirm>
+                </Space>
+              )}
             </Col>
             <Col>
               <Space>

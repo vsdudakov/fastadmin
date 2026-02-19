@@ -44,7 +44,7 @@ class PonyORMMixin:
                 else:
                     field_type = "fk"
 
-            is_m2m = field_type in "m2m"
+            is_m2m = field_type == "m2m"
             w_type, _ = self.formfield_overrides.get(field_name, (None, None))
             is_upload = w_type == WidgetType.Upload
             if with_m2m is not None and not with_m2m and is_m2m:
@@ -241,6 +241,12 @@ class PonyORMMixin:
                 model_pk_name = self.get_model_pk_name(self.model_cls)
                 if field.endswith(f"_{model_pk_name}"):
                     field = field.replace(f"_{model_pk_name}", f".{model_pk_name}")
+                if condition == "in":
+                    value_set = set(value)
+                    qs = qs.filter(
+                        lambda m, f=field, vs=value_set: getattr(m, f) in vs,
+                    )
+                    continue
                 pony_condition = "=="
                 match condition:
                     case "lte":
@@ -256,16 +262,18 @@ class PonyORMMixin:
                     case "contains":
                         pony_condition = "in"
                     case "icontains":
-                        # TODO: support icontains here
-                        pony_condition = "in"
+                        # Pony string filter: value.lower() in m.field.lower() for case-insensitive
+                        filter_expr = f'"{value.lower()}" in m.{field}.lower()'
+                        qs = qs.filter(filter_expr)
+                        continue
                 filter_expr = f""""{value}" {pony_condition}  m.{field}"""
                 qs = qs.filter(filter_expr)
 
         if search and self.search_fields:
             ids = []
             for search_field in self.search_fields:
-                # TODO: support icontains here
-                filter_expr = f""""{search}" in m.{search_field}"""
+                # Pony string filter for case-insensitive search
+                filter_expr = f'"{search.lower()}" in m.{search_field}.lower()'
                 qs_ids = qs.filter(filter_expr)
                 objs = list(qs_ids)
                 ids += [o.id for o in objs]
@@ -293,7 +301,7 @@ class PonyORMMixin:
 
     @sync_to_async
     @db_session
-    def orm_get_obj(self, id: UUID | int) -> Any | None:
+    def orm_get_obj(self, id: UUID | int | str) -> Any | None:
         """This method is used to get orm/db model object.
 
         :params id: an id of object.
@@ -323,7 +331,7 @@ class PonyORMMixin:
 
     @sync_to_async
     @db_session
-    def orm_delete_obj(self, id: UUID | int) -> None:
+    def orm_delete_obj(self, id: UUID | int | str) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.

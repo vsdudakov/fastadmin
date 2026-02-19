@@ -38,17 +38,21 @@ export const useTableQuery = (
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [sortBy, setSortBy] = useState<string | undefined>();
 
+  // Sync state when model config changes (switching models)
   useEffect(() => {
     if (modelConfiguration?.list_per_page) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync pageSize from model config
       setPageSize(modelConfiguration?.list_per_page);
     }
   }, [modelConfiguration?.list_per_page]);
 
   useEffect(() => {
     if (modelConfiguration?.name) {
+      /* eslint-disable react-hooks/set-state-in-effect -- reset table when model changes */
       setPage(DEFAULT_PAGE);
       setSortBy(undefined);
       setFilters({});
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [modelConfiguration?.name]);
 

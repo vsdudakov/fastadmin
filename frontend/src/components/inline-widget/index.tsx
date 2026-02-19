@@ -1,5 +1,4 @@
-import { PlusCircleOutlined } from "@ant-design/icons";
-import { SaveOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined, SaveOutlined } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Button,
@@ -9,10 +8,10 @@ import {
   Form,
   Input,
   Modal,
+  message,
   Row,
   Select,
   Space,
-  message,
 } from "antd";
 import querystring from "query-string";
 import type React from "react";
@@ -218,8 +217,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
     useCallback(
       (fieldName: string, value: any) => {
         // onApplyFilter
-        filters[fieldName] = value;
-        setFilters({ ...filters });
+        setFilters({ ...filters, [fieldName]: value });
         setPage(defaultPage);
         setPageSize(defaultPageSize);
       },
@@ -228,8 +226,9 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
     useCallback(
       (fieldName: string) => {
         // onRemoveFilter
-        delete filters[fieldName];
-        setFilters({ ...filters });
+        const rest = { ...filters };
+        delete rest[fieldName];
+        setFilters(rest);
         setPage(defaultPage);
         setPageSize(defaultPageSize);
       },
@@ -321,12 +320,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
       </Row>
     ),
     [
-      modelConfiguration?.actions,
-      modelConfiguration?.actions_on_top,
-      modelConfiguration?.search_fields,
-      modelConfiguration?.search_help_text,
-      modelConfiguration?.permissions,
-      modelConfiguration.fk_name,
+      modelConfiguration,
       _t,
       action,
       setAction,
@@ -383,12 +377,10 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
       </>
     );
   }, [
+    modelConfiguration,
     _t,
     action,
     isLoadingAction,
-    modelConfiguration?.actions,
-    modelConfiguration?.actions_on_bottom,
-    modelConfiguration?.permissions,
     onApplyAction,
     selectedRowKeys.length,
     setAction,

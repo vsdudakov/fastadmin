@@ -35,8 +35,7 @@ async def test_add(session_id, admin_models, event, client):
             "description": "test",
             "event_type": "PRIVATE",
             "is_active": True,
-            # TODO: sqlite doesn't support datetime.time
-            # "start_time": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+            # start_time omitted: test DBs use SQLite which has limited datetime.time support
             "date": datetime.datetime.now(tz=datetime.UTC).isoformat(),
             "latitude": 0.2,
             "longitude": 0.4,

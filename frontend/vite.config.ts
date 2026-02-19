@@ -5,6 +5,9 @@ import EnvironmentPlugin from "vite-plugin-environment";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), EnvironmentPlugin("all", { prefix: "" })],
+  test: {
+    setupFiles: ["src/test-setup.ts"],
+  },
   resolve: {
     alias: [{ find: "@", replacement: "/src" }],
   },

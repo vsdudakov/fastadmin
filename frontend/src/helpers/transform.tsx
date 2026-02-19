@@ -73,22 +73,19 @@ export const transformDataToServer = (data: any) => {
 
 export const transformFiltersToServer = (data: any) => {
   const filters = transformDataToServer(data);
-  const filtersData: Record<string, string> = {};
+  const filtersData: Record<string, string | string[]> = {};
   for (const [k, v] of Object.entries(filters)) {
     if (isArray(v) && v.length === 2 && v.every(isDayJs)) {
       filtersData[`${k}__gte`] = v[0];
       filtersData[`${k}__lte`] = v[1];
-      return filtersData;
+    } else if (isArray(v)) {
+      // Serialize __in as comma-separated so one query param works (status__in=active,inactive)
+      filtersData[`${k}__in`] = v.join(",");
+    } else if (isDayJs(v) || isNumeric(v) || isBoolean(v)) {
+      filtersData[k] = v as string;
+    } else {
+      filtersData[`${k}__icontains`] = String(v);
     }
-    if (isArray(v)) {
-      filtersData[`${k}__in`] = v;
-      return filtersData;
-    }
-    if (isDayJs(v) || isNumeric(v) || isBoolean(v)) {
-      filtersData[k] = v;
-      return filtersData;
-    }
-    filtersData[`${k}__icontains`] = v;
   }
   return filtersData;
 };

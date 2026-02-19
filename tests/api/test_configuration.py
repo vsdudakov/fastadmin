@@ -84,7 +84,11 @@ async def validate_configuration_response_data(response_data, is_auth=True):
             assert list_field["list_configuration"]["index"] == list_display.index(model_field.name)
             sorter = not admin_model.sortable_by or model_field.name in admin_model.sortable_by
             if hasattr(admin_model, model_field.name):
-                sorter = False
+                disp_fn = getattr(admin_model, model_field.name)
+                if getattr(disp_fn, "is_display", False):
+                    sorter = getattr(disp_fn, "sorter", False)
+                else:
+                    sorter = False
             assert list_field["list_configuration"]["sorter"] == sorter
             assert list_field["list_configuration"]["width"] is None
             assert list_field["list_configuration"]["is_link"] == (model_field.name in admin_model.list_display_links)

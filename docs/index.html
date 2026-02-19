@@ -15,7 +15,7 @@
     <title>FastAdmin | Documentation</title>
     <meta
       name="description"
-      content="FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin."
+      content="FastAdmin is an easy-to-use admin dashboard for FastAPI, Django, and Flask, inspired by Django Admin."
     />
     <meta name="author" content="vsdudakov@gmail.com" />
 
@@ -197,6 +197,10 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_3_0">v0.3.0</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_2_22">v0.2.22</a>
                 </li>
                 
@@ -303,7 +307,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.2.22</li>
+                    <li><strong>Version:</strong> 0.3.0</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -320,7 +324,7 @@
                     </li>
                     <li>
                       <strong>Updated:</strong>
-                      22 April 2025
+                      18 February 2026
                     </li>
                   </ul>
                 </div>
@@ -334,7 +338,7 @@
               
                 
 <p class="text-4">
-  <a href='https://github.com/vsdudakov/fastadmin' target='_blank'>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin.
+  <a href='https://github.com/vsdudakov/fastadmin' target='_blank'>FastAdmin</a> is an easy-to-use admin dashboard for FastAPI, Django, and Flask, inspired by Django Admin.
 </p>
 
 
@@ -352,7 +356,7 @@
               
                 
 <p class="text-4">
-  FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way.
+  FastAdmin is built with relationships in mind and admiration for Django Admin. Its design focuses on making it as easy as possible to configure your admin dashboard for FastAPI, Django, or Flask.
 </p>
 
 
@@ -370,7 +374,7 @@
               
                 
 <p class="text-4">
-  FastAdmin is designed to be minimalistic, functional and yet familiar.
+  FastAdmin aims to be minimal, functional, and familiar.
 </p>
 
 
@@ -402,7 +406,7 @@
 
 
 <p class="alert alert-info">
-  If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href='mailto:vsdudakov@gmail.com' target='_blank'>us</a>.
+  If you have questions beyond this documentation, feel free to <a href='mailto:vsdudakov@gmail.com' target='_blank'>email us</a>.
 </p>
 
 
@@ -425,7 +429,7 @@
 
 
 <p class="lead">
-  Follow the steps below to setup FastAdmin:
+  Follow the steps below to set up FastAdmin:
 </p>
 
 
@@ -441,7 +445,7 @@
                 
                   
 <p class="text-4">
-  Install the package using pip:
+  Install the package with pip:
 </p>
 
 
@@ -463,7 +467,7 @@
 
 
 <p class="alert alert-info">
-  Note: For zsh and macos use: <code>pip install fastadmin[fastapi,django]</code>
+  On zsh and macOS, use quotes: <code>pip install 'fastadmin[fastapi,django]'</code>
 </p>
 
 
@@ -487,13 +491,13 @@
 <pre>
   <code class="language-bash">
 
-pip install fastadmin[fastapi,django]  # for fastapi with django orm
-pip install fastadmin[fastapi,tortoise-orm]  # for fastapi with tortoise orm
-pip install fastadmin[fastapi,pony]  # for fastapi with pony orm
-pip install fastadmin[fastapi,sqlalchemy]  # for fastapi with sqlalchemy orm
-pip install fastadmin[django]  # for django with django orm
-pip install fastadmin[django,pony]  # for django with pony orm
-pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
+pip install fastadmin[fastapi,django]        # FastAPI with Django ORM
+pip install fastadmin[fastapi,tortoise-orm]  # FastAPI with Tortoise ORM
+pip install fastadmin[fastapi,pony]          # FastAPI with Pony ORM
+pip install fastadmin[fastapi,sqlalchemy]    # FastAPI with SQLAlchemy (includes greenlet)
+pip install fastadmin[django]                # Django with Django ORM
+pip install fastadmin[django,pony]           # Django with Pony ORM
+pip install fastadmin[flask,sqlalchemy]      # Flask with SQLAlchemy (includes greenlet)
 
   </code>
 </pre>
@@ -505,7 +509,7 @@ pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
                 
                   
 <p class="text-4">
-  Install the package using poetry:
+  Or install with Poetry:
 </p>
 
 
@@ -533,13 +537,13 @@ pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
 <pre>
   <code class="language-bash">
 
-poetry add 'fastadmin[fastapi,django]'  # for fastapi with django orm
-poetry add 'fastadmin[fastapi,tortoise-orm]'  # for fastapi with tortoise orm
-poetry add 'fastadmin[fastapi,pony]'  # for fastapi with pony orm
-poetry add 'fastadmin[fastapi,sqlalchemy]'  # for fastapi with sqlalchemy orm
-poetry add 'fastadmin[django]'  # for django with django orm
-poetry add 'fastadmin[django,pony]'  # for django with pony orm
-poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
+poetry add 'fastadmin[fastapi,django]'
+poetry add 'fastadmin[fastapi,tortoise-orm]'
+poetry add 'fastadmin[fastapi,pony]'
+poetry add 'fastadmin[fastapi,sqlalchemy]'
+poetry add 'fastadmin[django]'
+poetry add 'fastadmin[django,pony]'
+poetry add 'fastadmin[flask,sqlalchemy]'
 
   </code>
 </pre>
@@ -550,8 +554,26 @@ poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
 
                 
                   
+
+
+
+
+<p class="alert alert-info">
+  When using SQLAlchemy, the <code>greenlet</code> package is required (included in the <code>fastadmin[sqlalchemy]</code> extra).
+</p>
+
+
+
+
+
+
+
+
+
+                
+                  
 <p class="text-4">
-  Configure required settings using virtual environment variables:
+  Configure the required settings with environment variables:
 </p>
 
 
@@ -573,7 +595,7 @@ poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
 
 
 <p class="alert alert-info">
-  Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href='https://vsdudakov.github.io/fastadmin#settings'>here</a>
+  You can add these variables to a <code>.env</code> file and load them with python-dotenv. See <a href='https://vsdudakov.github.io/fastadmin#settings'>all settings</a> in the full documentation.
 </p>
 
 
@@ -620,7 +642,7 @@ export ADMIN_SECRET_KEY=secret_key
 
 
 <p class="lead">
-  Setup FastAdmin for a framework
+  Set up FastAdmin for your framework
 </p>
 
 
@@ -803,7 +825,7 @@ app.register_blueprint(admin_app, url_prefix="/admin")
     </li>
     
     <li class="nav-item" role="presentation">
-        <button class="nav-link " id="sql_alchemy" data-bs-toggle="tab" data-bs-target="#sql_alchemy-pane" type="button" role="tab" aria-controls="sql_alchemy" aria-selected="false">SQL Alchemy</button>
+        <button class="nav-link " id="sql_alchemy" data-bs-toggle="tab" data-bs-target="#sql_alchemy-pane" type="button" role="tab" aria-controls="sql_alchemy" aria-selected="false">SQLAlchemy</button>
     </li>
     
     <li class="nav-item" role="presentation">
@@ -870,14 +892,14 @@ class UserAdmin(TortoiseModelAdmin):
     }
 
     async def authenticate(self, username: str, password: str) -> int | None:
-        user = await self.model_cls.filter(phone=username, is_superuser=True).first()
+        user = await self.model_cls.filter(username=username, is_superuser=True).first()
         if not user:
             return None
         if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
             return None
         return user.id
 
-    async def change_password(self, id: UUID | int, password: str) -> None:
+    async def change_password(self, id: UUID | int | str, password: str) -> None:
         user = await self.model_cls.filter(id=id).first()
         if not user:
             return
@@ -1021,7 +1043,7 @@ class UserAdmin(SqlAlchemyModelAdmin):
                 return None
             return obj.id
 
-    async def change_password(self, id: uuid.UUID | int, password: str) -> None:
+    async def change_password(self, id: uuid.UUID | int | str, password: str) -> None:
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
             hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
@@ -1145,7 +1167,7 @@ class UserAdmin(PonyORMModelAdmin):
               
                 
 <p class="text-4">
-  There are settings with default values:
+  The following settings have default values:
 </p>
 
 
@@ -1167,7 +1189,7 @@ class UserAdmin(PonyORMModelAdmin):
 
 
 <p class="alert alert-info">
-  Note: Export virtual environment variables or create <code>.env</code> file with variables and use <code>python-dotenv</code> package.
+  Set environment variables or create a <code>.env</code> file and load it with the <code>python-dotenv</code> package.
 </p>
 
 
@@ -1255,7 +1277,7 @@ class Settings:
 
 
 <p class="alert alert-warning">
-  Note: Settings without default values are required.
+  Settings without default values are required.
 </p>
 
 
@@ -1286,7 +1308,7 @@ class Settings:
 
 
 <p class="lead">
-  Register Dashboard widgets
+  Register dashboard widgets
 </p>
 
 
@@ -1324,7 +1346,7 @@ class Settings:
     </li>
     
     <li class="nav-item" role="presentation">
-        <button class="nav-link " id="dashboard_sql_alchemy" data-bs-toggle="tab" data-bs-target="#dashboard_sql_alchemy-pane" type="button" role="tab" aria-controls="dashboard_sql_alchemy" aria-selected="false">SQL Alchemy</button>
+        <button class="nav-link " id="dashboard_sql_alchemy" data-bs-toggle="tab" data-bs-target="#dashboard_sql_alchemy-pane" type="button" role="tab" aria-controls="dashboard_sql_alchemy" aria-selected="false">SQLAlchemy</button>
     </li>
     
     <li class="nav-item" role="presentation">
@@ -1526,17 +1548,15 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
 
 
 
+<p class="alert alert-info">
+  See the Tortoise ORM example above.
+</p>
 
 
 
 
 
 
-<pre>
-  <code class="language-python">
-See example for Tortoise ORM
-  </code>
-</pre>
 
 
 
@@ -1550,17 +1570,15 @@ See example for Tortoise ORM
 
 
 
+<p class="alert alert-info">
+  See the Tortoise ORM example above.
+</p>
 
 
 
 
 
 
-<pre>
-  <code class="language-python">
-See example for Tortoise ORM
-  </code>
-</pre>
 
 
 
@@ -1579,7 +1597,7 @@ See example for Tortoise ORM
                 
                   
 <p class="text-4">
-  There are methods and attributes for Dashboard Widget Admin:
+  The following methods and attributes are available for dashboard widget admins:
 </p>
 
 
@@ -1647,7 +1665,7 @@ class DashboardWidgetAdmin:
 
 
 <p class="alert alert-warning">
-  Note: Please see <a href='https://ant-design-charts.antgroup.com/en/examples' target='_blank'>antd charts</a> for <code>x_field_filter_widget_props</code>.
+  See <a href='https://ant-design-charts.antgroup.com/en/examples' target='_blank'>antd charts</a> for <code>x_field_filter_widget_props</code>.
 </p>
 
 
@@ -1666,7 +1684,7 @@ class DashboardWidgetAdmin:
                 
                   
 <p class="text-4">
-  There are widget types which fastadmin dashboard supports:
+  The FastAdmin dashboard supports the following widget types:
 </p>
 
 
@@ -1718,7 +1736,7 @@ class DashboardWidgetType(str, Enum):
 
 
 <p class="alert alert-warning">
-  Note: Please see <a href='=https://ant-design-charts.antgroup.com/en/examples' target='_blank'>antd charts</a> for more details (e.g. to see how they look like).
+  See <a href='https://ant-design-charts.antgroup.com/en/examples' target='_blank'>antd charts</a> for more details (e.g. how they look).
 </p>
 
 
@@ -1771,7 +1789,7 @@ class DashboardWidgetType(str, Enum):
     </li>
     
     <li class="nav-item" role="presentation">
-        <button class="nav-link " id="models_sql_alchemy" data-bs-toggle="tab" data-bs-target="#models_sql_alchemy-pane" type="button" role="tab" aria-controls="models_sql_alchemy" aria-selected="false">SQL Alchemy</button>
+        <button class="nav-link " id="models_sql_alchemy" data-bs-toggle="tab" data-bs-target="#models_sql_alchemy-pane" type="button" role="tab" aria-controls="models_sql_alchemy" aria-selected="false">SQLAlchemy</button>
     </li>
     
     <li class="nav-item" role="presentation">
@@ -1861,7 +1879,7 @@ class UserAdmin(TortoiseModelAdmin):
             return None
         return user.id
 
-    async def change_password(self, id: UUID | int, password: str) -> None:
+    async def change_password(self, id: UUID | int | str, password: str) -> None:
         user = await self.model_cls.filter(id=id).first()
         if not user:
             return
@@ -1919,7 +1937,7 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 <p class="alert alert-info">
-  See example for Tortoise ORM
+  See the Tortoise ORM example
 </p>
 
 
@@ -1941,7 +1959,7 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 <p class="alert alert-info">
-  See example for Tortoise ORM
+  See the Tortoise ORM example
 </p>
 
 
@@ -1971,7 +1989,7 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 <p class="alert alert-info">
-  You have to implement methods authenticate and change_password in Modal Admin for User model. See example above.
+  You must implement <code>authenticate</code> and <code>change_password</code> in the model admin for the User model. See the example above.
 </p>
 
 
@@ -1992,7 +2010,7 @@ class UserAdmin(TortoiseModelAdmin):
                 
                   
 <p class="text-4">
-  There are methods and attributes for Model Admin:
+  The following methods and attributes are available for model admins:
 </p>
 
 
@@ -2247,7 +2265,7 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def orm_get_obj(self, id: UUID | int) -> Any | None:
+    async def orm_get_obj(self, id: UUID | int | str) -> Any | None:
         """This method is used to get orm/db model object.
 
         :params id: an id of object.
@@ -2264,7 +2282,7 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def orm_delete_obj(self, id: UUID | int) -> None:
+    async def orm_delete_obj(self, id: UUID | int | str) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.
@@ -2335,6 +2353,22 @@ class BaseModelAdmin:
         if self.list_display:
             fields_for_serialize |= set(self.list_display)
         return fields_for_serialize
+
+    def resolve_sort_by(self, sort_by: str) -> str:
+        """Resolve sort_by to the actual ORM ordering expression.
+
+        For display columns with sorter=str, returns that string; otherwise returns sort_by.
+        """
+        if not sort_by:
+            return sort_by
+        field_name = sort_by.lstrip("-")
+        display_fn = getattr(self, field_name, None)
+        if display_fn and getattr(display_fn, "is_display", False):
+            sorter = getattr(display_fn, "sorter", False)
+            if isinstance(sorter, str):
+                prefix = "-" if sort_by.startswith("-") else ""
+                return f"{prefix}{sorter}"
+        return sort_by
 
     async def serialize_obj_attributes(
         self, obj: Any, attributes_to_serizalize: list[ModelFieldWidgetSchema]
@@ -2419,11 +2453,12 @@ class BaseModelAdmin:
         :params filters: a dict of filters.
         :return: A tuple of list of dict and total count.
         """
+        resolved_sort_by = self.resolve_sort_by(sort_by) if sort_by else None
         objs, total = await self.orm_get_list(
             offset=offset,
             limit=limit,
             search=search,
-            sort_by=sort_by,
+            sort_by=resolved_sort_by,
             filters=filters,
         )
         serialized_objs = []
@@ -2431,7 +2466,7 @@ class BaseModelAdmin:
             serialized_objs.append(await self.serialize_obj(obj, list_view=True))
         return serialized_objs, total
 
-    async def get_obj(self, id: UUID | int) -> dict | None:
+    async def get_obj(self, id: UUID | int | str) -> dict | None:
         """This method is used to get serialized object by id.
 
         :params id: an id of object.
@@ -2442,7 +2477,7 @@ class BaseModelAdmin:
             return None
         return await self.serialize_obj(obj)
 
-    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
+    async def save_model(self, id: UUID | int | str | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
         :params id: an id of object.
@@ -2476,7 +2511,7 @@ class BaseModelAdmin:
 
         return await self.serialize_obj(obj)
 
-    async def delete_model(self, id: UUID | int) -> None:
+    async def delete_model(self, id: UUID | int | str) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.
@@ -2503,7 +2538,10 @@ class BaseModelAdmin:
         :params filters: a dict of filters.
         :return: A StringIO or BytesIO object.
         """
-        objs, _ = await self.orm_get_list(offset=offset, limit=limit, search=search, sort_by=sort_by, filters=filters)
+        resolved_sort_by = self.resolve_sort_by(sort_by) if sort_by else None
+        objs, _ = await self.orm_get_list(
+            offset=offset, limit=limit, search=search, sort_by=resolved_sort_by, filters=filters
+        )
         fields = self.get_model_fields_with_widget_types(with_m2m=False)
 
         export_fields = [f.name for f in fields]
@@ -2575,7 +2613,7 @@ class BaseModelAdmin:
                 
                   
 <p class="text-4">
-  Specific methods and attributes for Model Admin:
+  Model-admin-specific methods and attributes:
 </p>
 
 
@@ -2640,7 +2678,7 @@ class ModelAdmin(BaseModelAdmin):
         """
         raise NotImplementedError
 
-    async def change_password(self, id: UUID | int, password: str) -> None:
+    async def change_password(self, id: UUID | int | str, password: str) -> None:
         """This method is used to change user password.
 
         :params id: An user id.
@@ -2648,7 +2686,7 @@ class ModelAdmin(BaseModelAdmin):
         """
         raise NotImplementedError
 
-    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
+    async def save_model(self, id: UUID | int | str | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
         :params id: an id of object.
@@ -2682,7 +2720,7 @@ class ModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  There are form field types for model admin:
+  The following form field types are available for model admins:
 </p>
 
 
@@ -2751,7 +2789,7 @@ class WidgetType(str, Enum):
 
 
 <p class="alert alert-warning">
-  Note: Please see <a href='https://ant.design/components/overview' target='_blank'>antd components</a> for more details (e.g. to see how they look like).
+  See <a href='https://ant.design/components/overview' target='_blank'>antd components</a> for more details (e.g. how they look).
 </p>
 
 
@@ -2804,7 +2842,7 @@ class WidgetType(str, Enum):
     </li>
     
     <li class="nav-item" role="presentation">
-        <button class="nav-link " id="inlines_sql_alchemy" data-bs-toggle="tab" data-bs-target="#inlines_sql_alchemy-pane" type="button" role="tab" aria-controls="inlines_sql_alchemy" aria-selected="false">SQL Alchemy</button>
+        <button class="nav-link " id="inlines_sql_alchemy" data-bs-toggle="tab" data-bs-target="#inlines_sql_alchemy-pane" type="button" role="tab" aria-controls="inlines_sql_alchemy" aria-selected="false">SQLAlchemy</button>
     </li>
     
     <li class="nav-item" role="presentation">
@@ -2901,7 +2939,7 @@ class UserAdmin(TortoiseModelAdmin):
             return None
         return user.id
 
-    async def change_password(self, id: UUID | int, password: str) -> None:
+    async def change_password(self, id: UUID | int | str, password: str) -> None:
         user = await self.model_cls.filter(id=id).first()
         if not user:
             return
@@ -2954,7 +2992,7 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 <p class="alert alert-info">
-  See example for Tortoise ORM
+  See the Tortoise ORM example
 </p>
 
 
@@ -2976,7 +3014,7 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 <p class="alert alert-info">
-  See example for Tortoise ORM
+  See the Tortoise ORM example
 </p>
 
 
@@ -3002,7 +3040,7 @@ class UserAdmin(TortoiseModelAdmin):
                 
                   
 <p class="text-4">
-  There are methods and attributes for Inline Model Admin:
+  The following methods and attributes are available for inline model admins:
 </p>
 
 
@@ -3024,7 +3062,7 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 <p class="alert alert-info">
-  See BaseModelAdmin class methods and attributes in model admin section.
+  See the BaseModelAdmin methods and attributes in the model admin section.
 </p>
 
 
@@ -3038,7 +3076,7 @@ class UserAdmin(TortoiseModelAdmin):
                 
                   
 <p class="text-4">
-  Specific methods and attributes for Inline Model Admin:
+  Inline-model-specific methods and attributes:
 </p>
 
 
@@ -3110,7 +3148,7 @@ class InlineModelAdmin(BaseModelAdmin):
 
 
 <p class="alert alert-info">
-  See what's new added, changed, fixed, improved or updated in the latest versions.
+  See what was added, changed, fixed, or improved in the latest versions.
 </p>
 
 
@@ -3125,13 +3163,38 @@ class InlineModelAdmin(BaseModelAdmin):
 
               
               
+                <section id="v0_3_0">
+                <h3>v0.3.0</h3>
+
+                
+                  
+<p class="text-4">
+  Clean up documentation. Update dependencies. Fix linters and tests. Frontend refactoring.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
+              
                 <section id="v0_2_22">
                 <h3>v0.2.22</h3>
 
                 
                   
 <p class="text-4">
-  Fix upload base64 widget. Add new props disableCropImage. Fixed examples.
+  Fix upload base64 widget; add disableCropImage prop. Fix examples.
 </p>
 
 
@@ -3156,7 +3219,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix for cleaning async select fields on form.
+  Fix cleaning of async select fields on forms.
 </p>
 
 
@@ -3181,7 +3244,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix for _id fields. Bump packages for backend and frontend.
+  Fix _id fields handling. Bump backend and frontend packages.
 </p>
 
 
@@ -3206,7 +3269,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix for is_pk for tortoise orm.
+  Fix is_pk for Tortoise ORM.
 </p>
 
 
@@ -3231,7 +3294,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fixes for m2m fk's sqlalchemy postgres. Convert str to int for them.
+  Fix M2M/FK handling for SQLAlchemy with PostgreSQL (convert str to int).
 </p>
 
 
@@ -3256,7 +3319,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fixes for fk sqlalchemy postgres. Convert str to int for them.
+  Fix FK handling for SQLAlchemy with PostgreSQL (convert str to int).
 </p>
 
 
@@ -3281,7 +3344,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Added new setting ADMIN_DISABLE_CROP_IMAGE. So,we can configure crop images on upload.
+  Add ADMIN_DISABLE_CROP_IMAGE setting to configure image cropping on upload.
 </p>
 
 
@@ -3306,7 +3369,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix password logic for user.
+  Fix password logic for user model.
 </p>
 
 
@@ -3331,7 +3394,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Make permissions functions awaitable. Bump frontend/backend packages.
+  Make permission functions awaitable. Bump frontend and backend packages.
 </p>
 
 
@@ -3381,7 +3444,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Remove python-dotenv dep. Bump django. Add django example.
+  Remove python-dotenv dependency. Bump Django. Add Django example.
 </p>
 
 
@@ -3406,7 +3469,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fixes for examples. Fixes for Pony ORM (delete, update m2m). Allow sorting by custom columns. Fix for list_display ordering.
+  Fix examples. Fix Pony ORM (delete, update M2M). Allow sorting by custom columns. Fix list_display ordering.
 </p>
 
 
@@ -3431,7 +3494,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix issue empty m2m. Optimisation on unit tests. Fix for pony orm. Optimisation on search for tortoise orm.
+  Fix empty M2M issue. Optimize unit tests. Fix Pony ORM. Optimize Tortoise ORM search.
 </p>
 
 
@@ -3456,7 +3519,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix issue with modal inline dialogs. Fix issue with m2m multiple select.
+  Fix modal inline dialogs. Fix M2M multiple select.
 </p>
 
 
@@ -3481,7 +3544,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix sqlalchemy delete functionality. Add more examples.
+  Fix SQLAlchemy delete functionality. Add more examples.
 </p>
 
 
@@ -3506,7 +3569,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix helpers function. Add regexps.
+  Fix helper functions. Add regex support.
 </p>
 
 
@@ -3531,7 +3594,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Add edit btn for async select.
+  Add edit button for async select.
 </p>
 
 
@@ -3556,7 +3619,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix for async select in inlines.
+  Fix async select in inlines.
 </p>
 
 
@@ -3581,7 +3644,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix dashboard widgets and auto register inlines.
+  Fix dashboard widgets and auto-register inlines.
 </p>
 
 
@@ -3606,7 +3669,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix filters issue on lists. Remove jinja from dependencies.
+  Fix filter issue on list views. Remove Jinja from dependencies.
 </p>
 
 
@@ -3631,7 +3694,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Fix bugs with datetime.
+  Fix datetime-related bugs.
 </p>
 
 
@@ -3656,7 +3719,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Update packages. Fix linters and tests in vite frontend. Removed pydantic from dependencies.
+  Update packages. Fix linters and tests in Vite frontend. Remove Pydantic from dependencies.
 </p>
 
 
@@ -3681,7 +3744,7 @@ class InlineModelAdmin(BaseModelAdmin):
                 
                   
 <p class="text-4">
-  Update packages. Use vite instead obsolete react-scripts.
+  Update packages. Use Vite instead of deprecated react-scripts.
 </p>
 
 
@@ -3720,7 +3783,7 @@ class InlineModelAdmin(BaseModelAdmin):
             </ul>
           -->
           <p class="text-center">
-            Copyright &copy; 2025 FastAdmin. All Rights Reserved.
+            Copyright &copy; 2026 FastAdmin. All Rights Reserved.
           </p>
         </div>
       </footer>

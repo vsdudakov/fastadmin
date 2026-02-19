@@ -43,57 +43,63 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.3.0",
+            "changes": [
+                "Clean up documentation. Update dependencies. Fix linters and tests. Frontend refactoring.",
+            ],
+        },
+        {
             "version": "0.2.22",
             "changes": [
-                "Fix upload base64 widget. Add new props disableCropImage. Fixed examples.",
+                "Fix upload base64 widget; add disableCropImage prop. Fix examples.",
             ],
         },
         {
             "version": "0.2.21",
             "changes": [
-                "Fix for cleaning async select fields on form.",
+                "Fix cleaning of async select fields on forms.",
             ],
         },
         {
             "version": "0.2.20",
             "changes": [
-                "Fix for _id fields. Bump packages for backend and frontend.",
+                "Fix _id fields handling. Bump backend and frontend packages.",
             ],
         },
         {
             "version": "0.2.19",
             "changes": [
-                "Fix for is_pk for tortoise orm.",
+                "Fix is_pk for Tortoise ORM.",
             ],
         },
         {
             "version": "0.2.18",
             "changes": [
-                "Fixes for m2m fk's sqlalchemy postgres. Convert str to int for them.",
+                "Fix M2M/FK handling for SQLAlchemy with PostgreSQL (convert str to int).",
             ],
         },
         {
             "version": "0.2.17",
             "changes": [
-                "Fixes for fk sqlalchemy postgres. Convert str to int for them.",
+                "Fix FK handling for SQLAlchemy with PostgreSQL (convert str to int).",
             ],
         },
         {
             "version": "0.2.16",
             "changes": [
-                "Added new setting ADMIN_DISABLE_CROP_IMAGE. So,we can configure crop images on upload.",
+                "Add ADMIN_DISABLE_CROP_IMAGE setting to configure image cropping on upload.",
             ],
         },
         {
             "version": "0.2.15",
             "changes": [
-                "Fix password logic for user.",
+                "Fix password logic for user model.",
             ],
         },
         {
             "version": "0.2.14",
             "changes": [
-                "Make permissions functions awaitable. Bump frontend/backend packages.",
+                "Make permission functions awaitable. Bump frontend and backend packages.",
             ],
         },
         {
@@ -105,79 +111,79 @@ def get_versions():
         {
             "version": "0.2.12",
             "changes": [
-                "Remove python-dotenv dep. Bump django. Add django example.",
+                "Remove python-dotenv dependency. Bump Django. Add Django example.",
             ],
         },
         {
             "version": "0.2.11",
             "changes": [
-                "Fixes for examples. Fixes for Pony ORM (delete, update m2m). Allow sorting by custom columns. Fix for list_display ordering.",
+                "Fix examples. Fix Pony ORM (delete, update M2M). Allow sorting by custom columns. Fix list_display ordering.",
             ],
         },
         {
             "version": "0.2.10",
             "changes": [
-                "Fix issue empty m2m. Optimisation on unit tests. Fix for pony orm. Optimisation on search for tortoise orm.",
+                "Fix empty M2M issue. Optimize unit tests. Fix Pony ORM. Optimize Tortoise ORM search.",
             ],
         },
         {
             "version": "0.2.9",
             "changes": [
-                "Fix issue with modal inline dialogs. Fix issue with m2m multiple select.",
+                "Fix modal inline dialogs. Fix M2M multiple select.",
             ],
         },
         {
             "version": "0.2.8",
             "changes": [
-                "Fix sqlalchemy delete functionality. Add more examples.",
+                "Fix SQLAlchemy delete functionality. Add more examples.",
             ],
         },
         {
             "version": "0.2.7",
             "changes": [
-                "Fix helpers function. Add regexps.",
+                "Fix helper functions. Add regex support.",
             ],
         },
         {
             "version": "0.2.6",
             "changes": [
-                "Add edit btn for async select.",
+                "Add edit button for async select.",
             ],
         },
         {
             "version": "0.2.5",
             "changes": [
-                "Fix for async select in inlines.",
+                "Fix async select in inlines.",
             ],
         },
         {
             "version": "0.2.4",
             "changes": [
-                "Fix dashboard widgets and auto register inlines.",
+                "Fix dashboard widgets and auto-register inlines.",
             ],
         },
         {
             "version": "0.2.3",
             "changes": [
-                "Fix filters issue on lists. Remove jinja from dependencies.",
+                "Fix filter issue on list views. Remove Jinja from dependencies.",
             ],
         },
         {
             "version": "0.2.2",
             "changes": [
-                "Fix bugs with datetime.",
+                "Fix datetime-related bugs.",
             ],
         },
         {
             "version": "0.2.1",
             "changes": [
-                "Update packages. Fix linters and tests in vite frontend. Removed pydantic from dependencies.",
+                "Update packages. Fix linters and tests in Vite frontend. Remove Pydantic from dependencies.",
             ],
         },
         {
             "version": "0.2.0",
             "changes": [
-                "Update packages. Use vite instead obsolete react-scripts.",
+                "Update packages. Use Vite instead of deprecated react-scripts.",
             ],
         },
     ]
@@ -297,73 +303,77 @@ def get_page_context(page_url):
             return [
                 {
                     "type": "text",
-                    "content": f"<a href='{GITHUB_URL}' target='_blank'>FastAdmin</a> is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin.",
+                    "content": f"<a href='{GITHUB_URL}' target='_blank'>FastAdmin</a> is an easy-to-use admin dashboard for FastAPI, Django, and Flask, inspired by Django Admin.",
                 },
                 {
                     "type": "text",
-                    "content": "FastAdmin was built with relations in mind and admiration for the excellent and popular Django Admin. It's engraved in its design that you may configure your admin dashboard for FastAPI/Django/Flask easiest way.",
+                    "content": "FastAdmin is built with relationships in mind and admiration for Django Admin. Its design focuses on making it as easy as possible to configure your admin dashboard for FastAPI, Django, or Flask.",
                 },
                 {
                     "type": "text",
-                    "content": "FastAdmin is designed to be minimalistic, functional and yet familiar.",
+                    "content": "FastAdmin aims to be minimal, functional, and familiar.",
                 },
             ]
         case "#getting_started":
             return [
                 {
                     "type": "alert-info",
-                    "content": f"If you have any questions that are beyond the scope of the documentation, Please feel free to email <a href='mailto:{AUTHOR_EMAIL}' target='_blank'>us</a>.",
+                    "content": f"If you have questions beyond this documentation, feel free to <a href='mailto:{AUTHOR_EMAIL}' target='_blank'>email us</a>.",
                 },
             ]
         case "#installation":
             return [
                 {
                     "type": "text-lead",
-                    "content": f"Follow the steps below to setup {NAME}:",
+                    "content": f"Follow the steps below to set up {NAME}:",
                 },
                 {
                     "type": "text",
-                    "content": "Install the package using pip:",
+                    "content": "Install the package with pip:",
                 },
                 {
                     "type": "alert-info",
-                    "content": "Note: For zsh and macos use: <code>pip install fastadmin[fastapi,django]</code>",
+                    "content": "On zsh and macOS, use quotes: <code>pip install 'fastadmin[fastapi,django]'</code>",
                 },
                 {
                     "type": "code-bash",
                     "content": """
-pip install fastadmin[fastapi,django]  # for fastapi with django orm
-pip install fastadmin[fastapi,tortoise-orm]  # for fastapi with tortoise orm
-pip install fastadmin[fastapi,pony]  # for fastapi with pony orm
-pip install fastadmin[fastapi,sqlalchemy]  # for fastapi with sqlalchemy orm
-pip install fastadmin[django]  # for django with django orm
-pip install fastadmin[django,pony]  # for django with pony orm
-pip install fastadmin[flask,sqlalchemy]  # for flask with sqlalchemy
+pip install fastadmin[fastapi,django]        # FastAPI with Django ORM
+pip install fastadmin[fastapi,tortoise-orm]  # FastAPI with Tortoise ORM
+pip install fastadmin[fastapi,pony]          # FastAPI with Pony ORM
+pip install fastadmin[fastapi,sqlalchemy]    # FastAPI with SQLAlchemy (includes greenlet)
+pip install fastadmin[django]                # Django with Django ORM
+pip install fastadmin[django,pony]           # Django with Pony ORM
+pip install fastadmin[flask,sqlalchemy]      # Flask with SQLAlchemy (includes greenlet)
 """,
                 },
                 {
                     "type": "text",
-                    "content": "Install the package using poetry:",
+                    "content": "Or install with Poetry:",
                 },
                 {
                     "type": "code-bash",
                     "content": """
-poetry add 'fastadmin[fastapi,django]'  # for fastapi with django orm
-poetry add 'fastadmin[fastapi,tortoise-orm]'  # for fastapi with tortoise orm
-poetry add 'fastadmin[fastapi,pony]'  # for fastapi with pony orm
-poetry add 'fastadmin[fastapi,sqlalchemy]'  # for fastapi with sqlalchemy orm
-poetry add 'fastadmin[django]'  # for django with django orm
-poetry add 'fastadmin[django,pony]'  # for django with pony orm
-poetry add 'fastadmin[flask,sqlalchemy]'  # for flask with sqlalchemy
+poetry add 'fastadmin[fastapi,django]'
+poetry add 'fastadmin[fastapi,tortoise-orm]'
+poetry add 'fastadmin[fastapi,pony]'
+poetry add 'fastadmin[fastapi,sqlalchemy]'
+poetry add 'fastadmin[django]'
+poetry add 'fastadmin[django,pony]'
+poetry add 'fastadmin[flask,sqlalchemy]'
 """,
                 },
                 {
+                    "type": "alert-info",
+                    "content": "When using SQLAlchemy, the <code>greenlet</code> package is required (included in the <code>fastadmin[sqlalchemy]</code> extra).",
+                },
+                {
                     "type": "text",
-                    "content": "Configure required settings using virtual environment variables:",
+                    "content": "Configure the required settings with environment variables:",
                 },
                 {
                     "type": "alert-info",
-                    "content": "Note: You can add these variables to .env and use python-dotenv to load them. See all settings <a href='https://vsdudakov.github.io/fastadmin#settings'>here</a>",
+                    "content": "You can add these variables to a <code>.env</code> file and load them with python-dotenv. See <a href='https://vsdudakov.github.io/fastadmin#settings'>all settings</a> in the full documentation.",
                 },
                 {
                     "type": "code-bash",
@@ -378,7 +388,7 @@ export ADMIN_SECRET_KEY=secret_key
             return [
                 {
                     "type": "text-lead",
-                    "content": f"Setup {NAME} for a framework",
+                    "content": f"Set up {NAME} for your framework",
                 },
                 {
                     "type": "tabs",
@@ -422,7 +432,7 @@ export ADMIN_SECRET_KEY=secret_key
                             ],
                         },
                         {
-                            "name": "SQL Alchemy",
+                            "name": "SQLAlchemy",
                             "id": "sql_alchemy",
                             "content": [
                                 {"type": "code-python", "content": inspect.getsource(quick_tutorial_sqlalchemy)}
@@ -441,16 +451,16 @@ export ADMIN_SECRET_KEY=secret_key
             return [
                 {
                     "type": "text",
-                    "content": "There are settings with default values:",
+                    "content": "The following settings have default values:",
                 },
                 {
                     "type": "alert-info",
-                    "content": "Note: Export virtual environment variables or create <code>.env</code> file with variables and use <code>python-dotenv</code> package.",
+                    "content": "Set environment variables or create a <code>.env</code> file and load it with the <code>python-dotenv</code> package.",
                 },
                 {"type": "code-python", "content": inspect.getsource(Settings)},
                 {
                     "type": "alert-warning",
-                    "content": "Note: Settings without default values are required.",
+                    "content": "Settings without default values are required.",
                 },
             ]
         # widgets
@@ -458,7 +468,7 @@ export ADMIN_SECRET_KEY=secret_key
             return [
                 {
                     "type": "text-lead",
-                    "content": "Register Dashboard widgets",
+                    "content": "Register dashboard widgets",
                 },
                 {
                     "type": "tabs",
@@ -475,14 +485,14 @@ export ADMIN_SECRET_KEY=secret_key
                             "content": [{"type": "code-python", "content": inspect.getsource(dashboard_djangoorm)}],
                         },
                         {
-                            "name": "SQL Alchemy",
+                            "name": "SQLAlchemy",
                             "id": "dashboard_sql_alchemy",
-                            "content": [{"type": "code-python", "content": "See example for Tortoise ORM"}],
+                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example above."}],
                         },
                         {
                             "name": "Pony ORM",
                             "id": "dashboard_pony_orm",
-                            "content": [{"type": "code-python", "content": "See example for Tortoise ORM"}],
+                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example above."}],
                         },
                     ],
                 },
@@ -491,24 +501,24 @@ export ADMIN_SECRET_KEY=secret_key
             return [
                 {
                     "type": "text",
-                    "content": "There are methods and attributes for Dashboard Widget Admin:",
+                    "content": "The following methods and attributes are available for dashboard widget admins:",
                 },
                 {"type": "code-python", "content": inspect.getsource(DashboardWidgetAdmin)},
                 {
                     "type": "alert-warning",
-                    "content": f"Note: Please see <a href='{ANTD_CHARTS_EXAMPLES}' target='_blank'>antd charts</a> for <code>x_field_filter_widget_props</code>.",
+                    "content": f"See <a href='{ANTD_CHARTS_EXAMPLES}' target='_blank'>antd charts</a> for <code>x_field_filter_widget_props</code>.",
                 },
             ]
         case "#widget-chart-types":
             return [
                 {
                     "type": "text",
-                    "content": "There are widget types which fastadmin dashboard supports:",
+                    "content": "The FastAdmin dashboard supports the following widget types:",
                 },
                 {"type": "code-python", "content": inspect.getsource(DashboardWidgetType)},
                 {
                     "type": "alert-warning",
-                    "content": f"Note: Please see <a href='={ANTD_CHARTS_EXAMPLES}' target='_blank'>antd charts</a> for more details (e.g. to see how they look like).",
+                    "content": f"See <a href='{ANTD_CHARTS_EXAMPLES}' target='_blank'>antd charts</a> for more details (e.g. how they look).",
                 },
             ]
         # models
@@ -529,14 +539,14 @@ export ADMIN_SECRET_KEY=secret_key
                             "content": [{"type": "alert-info", "content": "See example for Tortoise ORM"}],
                         },
                         {
-                            "name": "SQL Alchemy",
+                            "name": "SQLAlchemy",
                             "id": "models_sql_alchemy",
-                            "content": [{"type": "alert-info", "content": "See example for Tortoise ORM"}],
+                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example"}],
                         },
                         {
                             "name": "Pony ORM",
                             "id": "models_pony_orm",
-                            "content": [{"type": "alert-info", "content": "See example for Tortoise ORM"}],
+                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example"}],
                         },
                     ],
                 },
@@ -545,19 +555,19 @@ export ADMIN_SECRET_KEY=secret_key
             return [
                 {
                     "type": "alert-info",
-                    "content": "You have to implement methods authenticate and change_password in Modal Admin for User model. See example above.",
+                    "content": "You must implement <code>authenticate</code> and <code>change_password</code> in the model admin for the User model. See the example above.",
                 },
             ]
         case "#model-methods-and-attributes":
             return [
                 {
                     "type": "text",
-                    "content": "There are methods and attributes for Model Admin:",
+                    "content": "The following methods and attributes are available for model admins:",
                 },
                 {"type": "code-python", "content": inspect.getsource(BaseModelAdmin)},
                 {
                     "type": "text",
-                    "content": "Specific methods and attributes for Model Admin:",
+                    "content": "Model-admin-specific methods and attributes:",
                 },
                 {"type": "code-python", "content": inspect.getsource(ModelAdmin)},
             ]
@@ -565,12 +575,12 @@ export ADMIN_SECRET_KEY=secret_key
             return [
                 {
                     "type": "text",
-                    "content": "There are form field types for model admin:",
+                    "content": "The following form field types are available for model admins:",
                 },
                 {"type": "code-python", "content": inspect.getsource(WidgetType)},
                 {
                     "type": "alert-warning",
-                    "content": "Note: Please see <a href='https://ant.design/components/overview' target='_blank'>antd components</a> for more details (e.g. to see how they look like).",
+                    "content": "See <a href='https://ant.design/components/overview' target='_blank'>antd components</a> for more details (e.g. how they look).",
                 },
             ]
         # inlines
@@ -591,14 +601,14 @@ export ADMIN_SECRET_KEY=secret_key
                             "content": [{"type": "alert-info", "content": "See example for Tortoise ORM"}],
                         },
                         {
-                            "name": "SQL Alchemy",
+                            "name": "SQLAlchemy",
                             "id": "inlines_sql_alchemy",
-                            "content": [{"type": "alert-info", "content": "See example for Tortoise ORM"}],
+                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example"}],
                         },
                         {
                             "name": "Pony ORM",
                             "id": "inlines_pony_orm",
-                            "content": [{"type": "alert-info", "content": "See example for Tortoise ORM"}],
+                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example"}],
                         },
                     ],
                 },
@@ -607,15 +617,15 @@ export ADMIN_SECRET_KEY=secret_key
             return [
                 {
                     "type": "text",
-                    "content": "There are methods and attributes for Inline Model Admin:",
+                    "content": "The following methods and attributes are available for inline model admins:",
                 },
                 {
                     "type": "alert-info",
-                    "content": "See BaseModelAdmin class methods and attributes in model admin section.",
+                    "content": "See the BaseModelAdmin methods and attributes in the model admin section.",
                 },
                 {
                     "type": "text",
-                    "content": "Specific methods and attributes for Inline Model Admin:",
+                    "content": "Inline-model-specific methods and attributes:",
                 },
                 {"type": "code-python", "content": inspect.getsource(InlineModelAdmin)},
             ]
@@ -624,7 +634,7 @@ export ADMIN_SECRET_KEY=secret_key
             return [
                 {
                     "type": "alert-info",
-                    "content": "See what's new added, changed, fixed, improved or updated in the latest versions.",
+                    "content": "See what was added, changed, fixed, or improved in the latest versions.",
                 },
             ]
         case _:
@@ -645,7 +655,7 @@ export ADMIN_SECRET_KEY=secret_key
 def get_context():
     return {
         "title": f"{NAME} | Documentation",
-        "description": f"{NAME} is an easy-to-use Admin Dashboard App for FastAPI/Django/Flask inspired by Django Admin.",
+        "description": f"{NAME} is an easy-to-use admin dashboard for FastAPI, Django, and Flask, inspired by Django Admin.",
         "author": {
             "name": AUTHOR_NAME,
             "email": AUTHOR_EMAIL,

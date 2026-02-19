@@ -6,12 +6,14 @@ from uuid import UUID
 from fastadmin.models.schemas import ModelFieldWidgetSchema
 
 
-def sanitize_filter_value(value: str) -> bool | None | str:
-    """Sanitize value
+def sanitize_filter_value(value: str | list) -> bool | None | str | list:
+    """Sanitize value (string or list for __in filters).
 
-    :params value: a value.
+    :params value: a value (str or list of str for __in).
     :return: A sanitized value.
     """
+    if isinstance(value, list):
+        return [sanitize_filter_value(v) for v in value]
     match value:
         case "false":
             return False
@@ -21,6 +23,31 @@ def sanitize_filter_value(value: str) -> bool | None | str:
             return None
         case _:
             return value
+
+
+def parse_list_filters_from_query_params(keys_fn, getlist_fn, exclude: set[str]) -> dict[str, str | list[str]]:
+    """Build filters dict from query params, supporting __in as list (comma-separated or repeated keys).
+
+    :param keys_fn: Callable that returns param keys (e.g. request.query_params.keys).
+    :param getlist_fn: Callable(key) that returns list of values (e.g. request.query_params.getlist).
+    :param exclude: Keys to skip (e.g. search, sort_by, offset, limit).
+    :return: Dict mapping param key to str or list[str] for __in params.
+    """
+    result: dict[str, str | list[str]] = {}
+    for key in keys_fn():
+        if key in exclude:
+            continue
+        values = getlist_fn(key)
+        if not values:
+            continue
+        if key.endswith("__in"):
+            if len(values) == 1 and "," in values[0]:
+                result[key] = [x.strip() for x in values[0].split(",") if x.strip()]
+            else:
+                result[key] = values
+        else:
+            result[key] = values[0]
+    return result
 
 
 def sanitize_filter_key(key: str, fields: list[ModelFieldWidgetSchema]) -> tuple[str, str]:
@@ -52,18 +79,28 @@ def is_valid_uuid(uuid_to_test: str) -> bool:
     return str(uuid_obj) == uuid_to_test
 
 
-def is_valid_id(id: UUID | int) -> bool:
+def is_valid_id(id: UUID | int | str) -> bool:
     """Check if id is a valid id.
 
-    :param id: An id to test.
+    :param id: An id to test (UUID, int, or string PK).
     :return: True if id is a valid id, False otherwise.
     """
+    if isinstance(id, str):
+        if not id:
+            return False
+        if is_valid_uuid(id):
+            return True
+        try:
+            int(id)
+            return True
+        except ValueError:
+            return True  # string PK (e.g. non-numeric)
     if is_valid_uuid(str(id)):
         return True
     try:
         int(id)
         return True
-    except ValueError:
+    except (ValueError, TypeError):
         pass
     return False
 
@@ -82,8 +119,8 @@ def is_valid_base64(value: str) -> bool:
 
 
 def get_template(template: Path, context: dict) -> str:
-    with Path.open(template, "r") as file:
+    with template.open("r") as file:
         content = file.read()
         for key, value in context.items():
-            content = content.replace(f"{{{{{key}}}}}", value)
+            content = content.replace(f"{{{{{key}}}}}", str(value))
         return content

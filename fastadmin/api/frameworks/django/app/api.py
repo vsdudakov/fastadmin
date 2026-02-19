@@ -12,7 +12,7 @@ from django.http import StreamingHttpResponse
 from django.http.request import HttpRequest
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.helpers import is_valid_id
+from fastadmin.api.helpers import is_valid_id, parse_list_filters_from_query_params
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.settings import settings
@@ -164,18 +164,22 @@ async def list_objs(request: HttpRequest, model: str) -> JsonResponse:
     if request.method != "GET":
         return JsonResponse({"error": "Method not allowed"}, status=405)
     try:
-        filters = request.GET.dict()
-        search = filters.get("search", None)
-        sort_by = filters.get("sort_by", None)
-        offset = int(filters.get("offset", 0))
-        limit = int(filters.get("limit", 10))
+        search = request.GET.get("search") or None
+        sort_by = request.GET.get("sort_by") or None
+        offset = int(request.GET.get("offset", 0))
+        limit = int(request.GET.get("limit", 10))
+        list_filters = parse_list_filters_from_query_params(
+            request.GET.keys,
+            request.GET.getlist,
+            exclude={"search", "sort_by", "offset", "limit"},
+        )
 
         objs, total = await api_service.list(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             search=search,
             sort_by=sort_by,
-            filters=filters,
+            filters=list_filters,
             offset=offset,
             limit=limit,
         )
@@ -192,7 +196,7 @@ async def list_objs(request: HttpRequest, model: str) -> JsonResponse:
 
 
 @csrf_exempt
-async def get(request: HttpRequest, model: str, id: UUID | int) -> JsonResponse:
+async def get(request: HttpRequest, model: str, id: UUID | int | str) -> JsonResponse:
     """This method is used to get an object.
 
     :params model: a name of model.
@@ -202,7 +206,7 @@ async def get(request: HttpRequest, model: str, id: UUID | int) -> JsonResponse:
     if request.method != "GET":
         return JsonResponse({"error": "Method not allowed"}, status=405)
     if not is_valid_id(id):
-        return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
+        return JsonResponse({"error": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
     try:
         obj = await api_service.get(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
@@ -237,7 +241,7 @@ async def add(request: HttpRequest, model: str) -> JsonResponse:
 
 
 @csrf_exempt
-async def change_password(request: HttpRequest, id: UUID | int) -> JsonResponse:
+async def change_password(request: HttpRequest, id: UUID | int | str) -> JsonResponse:
     """This method is used to change a password.
 
     :params id: an id of object.
@@ -247,7 +251,7 @@ async def change_password(request: HttpRequest, id: UUID | int) -> JsonResponse:
     if request.method != "PATCH":
         return JsonResponse({"error": "Method not allowed"}, status=405)
     if not is_valid_id(id):
-        return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
+        return JsonResponse({"error": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
     try:
         await api_service.change_password(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
@@ -261,7 +265,7 @@ async def change_password(request: HttpRequest, id: UUID | int) -> JsonResponse:
 
 
 @csrf_exempt
-async def change(request: HttpRequest, model: str, id: UUID | int) -> JsonResponse:
+async def change(request: HttpRequest, model: str, id: UUID | int | str) -> JsonResponse:
     """This method is used to change an object.
 
     :params model: a name of model.
@@ -272,7 +276,7 @@ async def change(request: HttpRequest, model: str, id: UUID | int) -> JsonRespon
     if request.method != "PATCH":
         return JsonResponse({"error": "Method not allowed"}, status=405)
     if not is_valid_id(id):
-        return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
+        return JsonResponse({"error": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
     try:
         obj = await api_service.change(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
@@ -299,9 +303,13 @@ async def export(request: HttpRequest, model: str) -> JsonResponse:
     """
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
-    filters = request.GET.dict()
-    search = filters.get("search", None)
-    sort_by = filters.get("sort_by", None)
+    search = request.GET.get("search") or None
+    sort_by = request.GET.get("sort_by") or None
+    list_filters = parse_list_filters_from_query_params(
+        request.GET.keys,
+        request.GET.getlist,
+        exclude={"search", "sort_by", "offset", "limit"},
+    )
     try:
         payload = ExportInputSchema(**json.loads(request.body))
         file_name, content_type, stream = await api_service.export(
@@ -310,7 +318,7 @@ async def export(request: HttpRequest, model: str) -> JsonResponse:
             payload,
             search=search,
             sort_by=sort_by,
-            filters=filters,
+            filters=list_filters,
         )
         response = StreamingHttpResponse(stream, content_type=content_type)
         response.headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
@@ -324,7 +332,7 @@ async def export(request: HttpRequest, model: str) -> JsonResponse:
 async def delete(
     request: HttpRequest,
     model: str,
-    id: UUID | int,
+    id: UUID | int | str,
 ) -> JsonResponse:
     """This method is used to delete an object.
 
@@ -335,7 +343,7 @@ async def delete(
     if request.method != "DELETE":
         return JsonResponse({"error": "Method not allowed"}, status=405)
     if not is_valid_id(id):
-        return JsonResponse({"error": "Invalid id. It must be a UUID or an integer."}, status=422)
+        return JsonResponse({"error": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
     try:
         deleted_id = await api_service.delete(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),

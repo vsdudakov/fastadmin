@@ -6,25 +6,19 @@ import {
   Col,
   Empty,
   Input,
+  message,
   Row,
   Select,
-  message,
 } from "antd";
 import querystring from "query-string";
 import type React from "react";
 import { useCallback, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
-
 import { CrudContainer } from "@/components/crud-container";
-import {
-  EModelPermission,
-  type IModelAction,
-} from "@/interfaces/configuration";
-import { ConfigurationContext } from "@/providers/ConfigurationProvider";
-
 import { ExportBtn } from "@/components/export-btn";
 import { TableOrCards } from "@/components/table-or-cards";
+import { ROUTES } from "@/constants/routes";
 import { deleteFetcher, getFetcher, postFetcher } from "@/fetchers/fetchers";
 import { getConfigurationModel } from "@/helpers/configuration";
 import { handleError } from "@/helpers/forms";
@@ -33,6 +27,11 @@ import { transformFiltersToServer } from "@/helpers/transform";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useTableColumns } from "@/hooks/useTableColumns";
 import { useTableQuery } from "@/hooks/useTableQuery";
+import {
+  EModelPermission,
+  type IModelAction,
+} from "@/interfaces/configuration";
+import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 export const List: React.FC = () => {
   const { configuration } = useContext(ConfigurationContext);
@@ -126,8 +125,7 @@ export const List: React.FC = () => {
     useCallback(
       (fieldName: string, value: any) => {
         // onApplyFilter
-        filters[fieldName] = value;
-        setFilters({ ...filters });
+        setFilters({ ...filters, [fieldName]: value });
         setPage(defaultPage);
         setPageSize(defaultPageSize);
       },
@@ -136,8 +134,9 @@ export const List: React.FC = () => {
     useCallback(
       (fieldName: string) => {
         // onResetFilter
-        delete filters[fieldName];
-        setFilters({ ...filters });
+        const rest = { ...filters };
+        delete rest[fieldName];
+        setFilters(rest);
         setPage(defaultPage);
         setPageSize(defaultPageSize);
       },
@@ -167,7 +166,7 @@ export const List: React.FC = () => {
       breadcrumbs={
         <Breadcrumb
           items={[
-            { title: <Link to="/">{_t("Dashboard")}</Link> },
+            { title: <Link to={ROUTES.HOME}>{_t("Dashboard")}</Link> },
             {
               title: (
                 <Link to={`/list/${model}`}>

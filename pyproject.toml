@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastadmin"
-version = "0.2.22"
+version = "0.3.0"
 description = "FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin."
 authors = ["Seva D <vsdudakov@gmail.com>"]
 license = "MIT"
@@ -26,14 +26,15 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.12"
 pyjwt = "^2.6.0"
-asgiref = "^3.7.0"
+asgiref = "^3.11.1"
 fastapi = { version = "0.*", optional = true }
 flask = { version = "3.*", optional = true }
-django = { version = "5.*", optional = true }
-tortoise-orm = { version = "0.*", optional = true }
+django = { version = "6.*", optional = true }
+tortoise-orm = { version = "1.*", optional = true }
 sqlalchemy = { version = "2.*", extras = ["asyncio"], optional = true }
+greenlet = { version = "^3.0", optional = true }
 pony = { version = "0.*", optional = true }
 
 [tool.poetry.extras]
@@ -41,7 +42,7 @@ fastapi = ["fastapi"]
 flask = ["flask"]
 django = ["django"]
 tortoise-orm = ["tortoise-orm"]
-sqlalchemy = ["sqlalchemy"]
+sqlalchemy = ["sqlalchemy", "greenlet"]
 pony = ["pony"]
 
 [tool.poetry.group.dev.dependencies]

@@ -37,7 +37,7 @@ class ListQuerySchema:
     offset: int | None = 0
     sort_by: str | None = None
     search: str | None = None
-    filters: dict[str, str] | None = None
+    filters: dict[str, str | list[str]] | None = None
 
 
 @dataclass

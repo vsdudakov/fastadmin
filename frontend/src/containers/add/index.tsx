@@ -6,17 +6,17 @@ import {
   Col,
   Empty,
   Form,
+  message,
   Row,
   Space,
-  message,
 } from "antd";
 import type React from "react";
 import { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
-
 import { CrudContainer } from "@/components/crud-container";
 import { FormContainer } from "@/components/form-container";
+import { ROUTES } from "@/constants/routes";
 import { postFetcher } from "@/fetchers/fetchers";
 import { getConfigurationModel } from "@/helpers/configuration";
 import { handleError } from "@/helpers/forms";
@@ -68,7 +68,7 @@ export const Add: React.FC = () => {
       breadcrumbs={
         <Breadcrumb
           items={[
-            { title: <Link to="/">{_t("Dashboard")}</Link> },
+            { title: <Link to={ROUTES.HOME}>{_t("Dashboard")}</Link> },
             {
               title: (
                 <Link to={`/list/${model}`}>

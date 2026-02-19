@@ -239,7 +239,7 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def orm_get_obj(self, id: UUID | int) -> Any | None:
+    async def orm_get_obj(self, id: UUID | int | str) -> Any | None:
         """This method is used to get orm/db model object.
 
         :params id: an id of object.
@@ -256,7 +256,7 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def orm_delete_obj(self, id: UUID | int) -> None:
+    async def orm_delete_obj(self, id: UUID | int | str) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.
@@ -327,6 +327,22 @@ class BaseModelAdmin:
         if self.list_display:
             fields_for_serialize |= set(self.list_display)
         return fields_for_serialize
+
+    def resolve_sort_by(self, sort_by: str) -> str:
+        """Resolve sort_by to the actual ORM ordering expression.
+
+        For display columns with sorter=str, returns that string; otherwise returns sort_by.
+        """
+        if not sort_by:
+            return sort_by
+        field_name = sort_by.lstrip("-")
+        display_fn = getattr(self, field_name, None)
+        if display_fn and getattr(display_fn, "is_display", False):
+            sorter = getattr(display_fn, "sorter", False)
+            if isinstance(sorter, str):
+                prefix = "-" if sort_by.startswith("-") else ""
+                return f"{prefix}{sorter}"
+        return sort_by
 
     async def serialize_obj_attributes(
         self, obj: Any, attributes_to_serizalize: list[ModelFieldWidgetSchema]
@@ -411,11 +427,12 @@ class BaseModelAdmin:
         :params filters: a dict of filters.
         :return: A tuple of list of dict and total count.
         """
+        resolved_sort_by = self.resolve_sort_by(sort_by) if sort_by else None
         objs, total = await self.orm_get_list(
             offset=offset,
             limit=limit,
             search=search,
-            sort_by=sort_by,
+            sort_by=resolved_sort_by,
             filters=filters,
         )
         serialized_objs = []
@@ -423,7 +440,7 @@ class BaseModelAdmin:
             serialized_objs.append(await self.serialize_obj(obj, list_view=True))
         return serialized_objs, total
 
-    async def get_obj(self, id: UUID | int) -> dict | None:
+    async def get_obj(self, id: UUID | int | str) -> dict | None:
         """This method is used to get serialized object by id.
 
         :params id: an id of object.
@@ -434,7 +451,7 @@ class BaseModelAdmin:
             return None
         return await self.serialize_obj(obj)
 
-    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
+    async def save_model(self, id: UUID | int | str | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
         :params id: an id of object.
@@ -468,7 +485,7 @@ class BaseModelAdmin:
 
         return await self.serialize_obj(obj)
 
-    async def delete_model(self, id: UUID | int) -> None:
+    async def delete_model(self, id: UUID | int | str) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.
@@ -495,7 +512,10 @@ class BaseModelAdmin:
         :params filters: a dict of filters.
         :return: A StringIO or BytesIO object.
         """
-        objs, _ = await self.orm_get_list(offset=offset, limit=limit, search=search, sort_by=sort_by, filters=filters)
+        resolved_sort_by = self.resolve_sort_by(sort_by) if sort_by else None
+        objs, _ = await self.orm_get_list(
+            offset=offset, limit=limit, search=search, sort_by=resolved_sort_by, filters=filters
+        )
         fields = self.get_model_fields_with_widget_types(with_m2m=False)
 
         export_fields = [f.name for f in fields]
@@ -616,7 +636,7 @@ class ModelAdmin(BaseModelAdmin):
         """
         raise NotImplementedError
 
-    async def change_password(self, id: UUID | int, password: str) -> None:
+    async def change_password(self, id: UUID | int | str, password: str) -> None:
         """This method is used to change user password.
 
         :params id: An user id.
@@ -624,7 +644,7 @@ class ModelAdmin(BaseModelAdmin):
         """
         raise NotImplementedError
 
-    async def save_model(self, id: UUID | int | None, payload: dict) -> dict | None:
+    async def save_model(self, id: UUID | int | str | None, payload: dict) -> dict | None:
         """This method is used to save orm/db model object.
 
         :params id: an id of object.

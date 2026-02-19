@@ -24,6 +24,7 @@ import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { buildListPath, ROUTES } from "@/constants/routes";
 import { postFetcher } from "@/fetchers/fetchers";
 import { getTitleFromModel } from "@/helpers/title";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -68,7 +69,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
 
   useEffect(() => {
     if (!signedIn) {
-      navigate("/sign-in");
+      navigate(ROUTES.SIGN_IN);
     }
   }, [navigate, signedIn]);
 
@@ -82,10 +83,10 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
   const onClickSideBarMenuItem = (item: any) => {
     switch (item.key) {
       case "dashboard":
-        navigate("/");
+        navigate(ROUTES.HOME);
         break;
       default:
-        navigate(`/list/${item.key}`);
+        navigate(buildListPath(item.key));
         break;
     }
   };
@@ -131,13 +132,21 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
         <meta name="description" content={title} />
       </Helmet>
       <Layout style={{ minHeight: "100vh" }}>
-        <Header style={{ background: colorPrimary, paddingInline: 20 }}>
-          <Row justify="space-between">
+        <Header
+          style={{
+            background: colorPrimary,
+            paddingInline: 24,
+            height: 56,
+            lineHeight: "56px",
+            boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
+          }}
+        >
+          <Row justify="space-between" align="middle">
             <Col>
-              <Space>
+              <Space size="middle">
                 {isMobile && (
                   <Menu
-                    style={{ background: colorPrimary }}
+                    style={{ background: "transparent", minWidth: 0 }}
                     theme="light"
                     mode="horizontal"
                     defaultSelectedKeys={[model || "dashboard"]}
@@ -154,38 +163,47 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                   />
                 )}
 
-                <Link to="/">
+                <Link
+                  to={ROUTES.HOME}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    margin: 0,
+                    lineHeight: 1,
+                    verticalAlign: "middle",
+                  }}
+                >
                   <Image
-                    src={
-                      (window as any).SERVER_DOMAIN +
-                      configuration.site_header_logo
-                    }
+                    src={`${window.SERVER_DOMAIN ?? ""}${configuration.site_header_logo ?? ""}`}
                     preview={false}
                     height={32}
                     alt={configuration.site_name}
-                    style={{ marginTop: -2 }}
                   />
-                </Link>
-
-                {!isMobile && (
-                  <Link to="/">
+                  {!isMobile && (
                     <span
                       style={{
                         color: colorBgContainer,
                         fontSize: 18,
-                        marginLeft: 10,
+                        fontWeight: 600,
+                        letterSpacing: "-0.01em",
                       }}
                     >
                       {configuration.site_name}
                     </span>
-                  </Link>
-                )}
+                  )}
+                </Link>
               </Space>
             </Col>
             <Col>
-              <Space>
+              <Space size="middle">
                 {!isMobile && (
-                  <span style={{ color: colorBgContainer, marginRight: 5 }}>
+                  <span
+                    style={{
+                      color: "rgba(255, 255, 255, 0.9)",
+                      fontSize: 14,
+                    }}
+                  >
                     {
                       (signedInUser || ({} as any))[
                         configuration.username_field
@@ -195,7 +213,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                 )}
 
                 <Menu
-                  style={{ background: colorPrimary }}
+                  style={{ background: "transparent", minWidth: 0 }}
                   theme="light"
                   mode="horizontal"
                   items={[
@@ -220,13 +238,24 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
         </Header>
         <Layout>
           {!isMobile && (
-            <Sider style={{ background: colorBgContainer, borderRadius: 8 }}>
-              <div style={{ padding: 10 }}>
+            <Sider
+              width={260}
+              style={{
+                background: colorBgContainer,
+                borderRadius: 0,
+                boxShadow: "1px 0 0 rgba(0, 0, 0, 0.06)",
+              }}
+            >
+              <div style={{ padding: 16 }}>
                 <Input
                   value={search}
                   onChange={onSearch}
                   placeholder={_t("Search By Menu") as string}
-                  prefix={<SearchOutlined />}
+                  prefix={
+                    <SearchOutlined style={{ color: "rgba(0,0,0,0.25)" }} />
+                  }
+                  allowClear
+                  style={{ borderRadius: 6 }}
                 />
               </div>
               <Menu
@@ -235,19 +264,30 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                 defaultSelectedKeys={[model || "dashboard"]}
                 style={{
                   borderRight: 0,
-                  overflowY: "scroll",
+                  padding: "0 12px 24px",
+                  height: "calc(100vh - 56px - 72px)",
+                  overflowY: "auto",
                 }}
                 items={items as any}
                 onClick={onClickSideBarMenuItem}
               />
             </Sider>
           )}
-          <Layout style={{ padding: 16 }}>
-            <Row justify="space-between">
+          <Layout style={{ padding: 24, minHeight: "calc(100vh - 56px)" }}>
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ marginBottom: 16 }}
+            >
               <Col>{breadcrumbs}</Col>
               {viewOnSite && (
                 <Col>
-                  <a href={viewOnSite} target="_blank" rel="noreferrer">
+                  <a
+                    href={viewOnSite}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ fontSize: 14 }}
+                  >
                     <LinkOutlined /> {_t("View on site")}
                   </a>
                 </Col>
@@ -255,16 +295,20 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
             </Row>
             <Card
               title={
-                <Row justify="space-between">
+                <Row justify="space-between" align="middle">
                   <Col>
-                    <Title style={{ margin: 0, marginTop: 15 }} level={5}>
+                    <Title style={{ margin: 0 }} level={5}>
                       {title}
                     </Title>
                   </Col>
                   {headerActions ? <Col>{headerActions}</Col> : null}
                 </Row>
               }
-              style={{ marginTop: 16 }}
+              style={{
+                marginTop: 0,
+                borderRadius: 8,
+                boxShadow: "0 1px 4px rgba(0, 0, 0, 0.06)",
+              }}
             >
               <Skeleton loading={isLoading} active={true}>
                 {children}

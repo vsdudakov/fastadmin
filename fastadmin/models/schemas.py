@@ -63,7 +63,7 @@ class ListConfigurationFieldSchema:
 
     index: int | None
 
-    sorter: bool | None
+    sorter: bool | str | None
     width: str | None
     is_link: bool | None
     empty_value_display: str

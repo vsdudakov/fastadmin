@@ -1,17 +1,16 @@
-## Admin Dashboard App for FastAPI/Flask/Django
+# Admin Dashboard for FastAPI / Flask / Django
 
 [![codecov](https://codecov.io/gh/vsdudakov/fastadmin/branch/main/graph/badge.svg?token=RNGX5HOW3T)](https://codecov.io/gh/vsdudakov/fastadmin)
 [![License](https://img.shields.io/github/license/vsdudakov/fastadmin)](https://github.com/vsdudakov/fastadmin/blob/master/LICENSE)
 [![PyPi](https://badgen.net/pypi/v/fastadmin)](https://pypi.org/project/fastadmin/)
-[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
 
 ## Screenshots
 
-![SignIn View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/signin.png)
-![List View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/list.png)
-![Change View](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/change.png)
+![Sign-in view](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/signin.png)
+![List view](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/list.png)
+![Change view](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/change.png)
 
 <p align="center">
   <a href="https://twitter.com/intent/tweet?text=Admin%20Dashboard%20For%20FastAPI&url=https://github.com/vsdudakov/fastadmin&hashtags=FastAPI,AdminDashboard">
@@ -36,7 +35,9 @@
 {% endif %}
 {% endfor %}
 ## Documentation
-See full documentation [here](https://vsdudakov.github.io/fastadmin).
+
+Full documentation is available at [vsdudakov.github.io/fastadmin](https://vsdudakov.github.io/fastadmin).
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE) file for details.
+
+This project is licensed under the MIT License — see the [LICENSE](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE) file for details.

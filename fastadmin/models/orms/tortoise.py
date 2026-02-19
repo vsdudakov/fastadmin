@@ -272,7 +272,7 @@ class TortoiseMixin:
 
         return await qs, total
 
-    async def orm_get_obj(self, id: UUID | int) -> Any | None:
+    async def orm_get_obj(self, id: UUID | int | str) -> Any | None:
         """This method is used to get orm/db model object.
 
         :params id: an id of object.
@@ -299,7 +299,7 @@ class TortoiseMixin:
         await obj.save(update_fields=payload.keys() if id else None)
         return obj
 
-    async def orm_delete_obj(self, id: UUID | int) -> None:
+    async def orm_delete_obj(self, id: UUID | int | str) -> None:
         """This method is used to delete orm/db model object.
 
         :params id: an id of object.

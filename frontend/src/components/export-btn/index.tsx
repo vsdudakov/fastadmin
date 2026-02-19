@@ -7,10 +7,10 @@ import {
   Form,
   InputNumber,
   Modal,
+  message,
   Row,
   Select,
   Space,
-  message,
 } from "antd";
 import fileDownload from "js-file-download";
 import querystring from "query-string";

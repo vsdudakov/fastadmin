@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import Response, StreamingResponse
 
 from fastadmin.api.exceptions import AdminApiException
+from fastadmin.api.helpers import parse_list_filters_from_query_params
 from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.models.schemas import ConfigurationSchema
@@ -132,12 +133,17 @@ async def list_objs(
     :return: A list of objects.
     """
     try:
+        list_filters = parse_list_filters_from_query_params(
+            request.query_params.keys,
+            request.query_params.getlist,
+            exclude={"search", "sort_by", "offset", "limit"},
+        )
         objs, total = await api_service.list(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             search=search,
             sort_by=sort_by,
-            filters=request.query_params._dict,
+            filters=list_filters,
             offset=offset,
             limit=limit,
         )
@@ -153,7 +159,7 @@ async def list_objs(
 async def get(
     request: Request,
     model: str,
-    id: UUID | int,
+    id: UUID | int | str,
 ) -> Any:
     """This method is used to get an object.
 
@@ -196,9 +202,9 @@ async def add(
 @router.patch("/change-password/{id}")
 async def change_password(
     request: Request,
-    id: UUID | int,
+    id: UUID | int | str,
     payload: dict,
-) -> UUID | int:
+) -> UUID | int | str:
     """This method is used to change password.
 
     :params id: an id of object.
@@ -216,7 +222,7 @@ async def change_password(
 async def change(
     request: Request,
     model: str,
-    id: UUID | int,
+    id: UUID | int | str,
     payload: dict,
 ) -> Any:
     """This method is used to change an object.
@@ -250,13 +256,18 @@ async def export(
     :return: A stream of export data.
     """
     try:
+        list_filters = parse_list_filters_from_query_params(
+            request.query_params.keys,
+            request.query_params.getlist,
+            exclude={"search", "sort_by", "offset", "limit"},
+        )
         file_name, content_type, stream = await api_service.export(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             payload,
             search=search,
             sort_by=sort_by,
-            filters=request.query_params._dict,
+            filters=list_filters,
         )
         headers = {"Content-Disposition": f'attachment; filename="{file_name}"'}
         return StreamingResponse(
@@ -272,8 +283,8 @@ async def export(
 async def delete(
     request: Request,
     model: str,
-    id: UUID | int,
-) -> UUID | int:
+    id: UUID | int | str,
+) -> UUID | int | str:
     """This method is used to delete an object.
 
     :params model: a name of model.

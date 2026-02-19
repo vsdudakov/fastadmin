@@ -208,7 +208,7 @@ class ApiService:
                     raise AdminApiException(422, detail=f"Search by {field} is not allowed")
 
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
-        query_filters: dict[tuple[str, str], bool | str | None] | None = None
+        query_filters: dict[tuple[str, str], bool | str | None | list] | None = None
         if query_params.filters:
             for k in query_params.filters:
                 if k in exclude_filter_fields:
@@ -247,7 +247,7 @@ class ApiService:
         self,
         session_id: str | None,
         model: str,
-        id: UUID | int,
+        id: UUID | int | str,
     ) -> dict:
         current_user_id = await get_user_id_from_session_id(session_id)
         if not current_user_id:
@@ -257,7 +257,10 @@ class ApiService:
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
-        obj = await admin_model.get_obj(id)
+        try:
+            obj = await admin_model.get_obj(id)
+        except (ValueError, TypeError):
+            raise AdminApiException(404, detail=f"{model} not found.") from None
         if not obj:
             raise AdminApiException(404, detail=f"{model} not found.")
         return obj
@@ -280,7 +283,7 @@ class ApiService:
     async def change_password(
         self,
         session_id: str | None,
-        id: UUID | int,
+        id: UUID | int | str,
         payload: dict,
     ) -> None:
         current_user_id = await get_user_id_from_session_id(session_id)
@@ -300,17 +303,27 @@ class ApiService:
                 404, detail=f"{settings.ADMIN_USER_MODEL} admin class has no change_password method."
             )
 
-        if inspect.iscoroutinefunction(admin_model.change_password):
-            change_password_fn = admin_model.change_password
-        else:
-            change_password_fn = sync_to_async(admin_model.change_password)  # type: ignore [arg-type]
-        await change_password_fn(id, payload.password)
+        try:
+            user = await admin_model.get_obj(id)
+        except (ValueError, TypeError):
+            raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} not found.") from None
+        if not user:
+            raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} not found.")
+
+        try:
+            if inspect.iscoroutinefunction(admin_model.change_password):
+                change_password_fn = admin_model.change_password
+            else:
+                change_password_fn = sync_to_async(admin_model.change_password)  # type: ignore [arg-type]
+            await change_password_fn(id, payload.password)
+        except (ValueError, TypeError):
+            raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} not found.") from None
 
     async def change(
         self,
         session_id: str | None,
         model: str,
-        id: UUID | int,
+        id: UUID | int | str,
         payload: dict,
     ) -> dict:
         current_user_id = await get_user_id_from_session_id(session_id)
@@ -321,7 +334,10 @@ class ApiService:
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
-        obj = await admin_model.save_model(id, payload)
+        try:
+            obj = await admin_model.save_model(id, payload)
+        except (ValueError, TypeError):
+            raise AdminApiException(404, detail=f"{model} not found.") from None
         if not obj:
             raise AdminApiException(404, detail=f"{model} not found.")
         return obj
@@ -360,7 +376,7 @@ class ApiService:
                     raise AdminApiException(422, detail=f"Search by {field} is not allowed")
 
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
-        query_filters: dict[tuple[str, str], bool | str | None] | None = None
+        query_filters: dict[tuple[str, str], bool | str | None | list] | None = None
         if query_params.filters:
             for k in query_params.filters:
                 if k in exclude_filter_fields:
@@ -407,8 +423,8 @@ class ApiService:
         self,
         session_id: str | None,
         model: str,
-        id: UUID | int,
-    ) -> UUID | int:
+        id: UUID | int | str,
+    ) -> UUID | int | str:
         current_user_id = await get_user_id_from_session_id(session_id)
         if not current_user_id:
             raise AdminApiException(401, detail="User is not authenticated.")
@@ -419,7 +435,10 @@ class ApiService:
 
         if str(current_user_id) == str(id) and model == settings.ADMIN_USER_MODEL:
             raise AdminApiException(403, detail="You cannot delete yourself.")
-        await admin_model.delete_model(id)
+        try:
+            await admin_model.delete_model(id)
+        except (ValueError, TypeError):
+            raise AdminApiException(404, detail=f"{model} not found.") from None
         return id
 
     async def action(self, session_id: str | None, model: str, action: str, payload: ActionInputSchema) -> None:

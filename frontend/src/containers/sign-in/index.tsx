@@ -36,21 +36,38 @@ export const SignIn: React.FC = () => {
 
   return (
     <SignInContainer title={`${_t("Sign In")}`}>
-      <Card>
+      <Card
+        style={{
+          maxWidth: 420,
+          margin: "0 auto",
+          borderRadius: 12,
+          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.08)",
+          border: "none",
+        }}
+      >
         <Row justify="center">
           <Col>
-            <Space style={{ marginBottom: 20 }}>
+            <Space
+              direction="vertical"
+              align="center"
+              size="middle"
+              style={{ width: "100%", marginBottom: 32 }}
+            >
               <Image
-                src={
-                  (window as any).SERVER_DOMAIN +
-                  configuration.site_sign_in_logo
-                }
-                height={80}
+                src={`${window.SERVER_DOMAIN ?? ""}${configuration.site_sign_in_logo ?? ""}`}
+                height={72}
                 alt={configuration.site_name}
                 preview={false}
+                style={{ display: "block" }}
               />
               <span
-                style={{ color: colorPrimary, fontSize: 36, fontWeight: 600 }}
+                style={{
+                  color: colorPrimary,
+                  fontSize: 28,
+                  fontWeight: 600,
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.3,
+                }}
               >
                 {configuration.site_name}
               </span>
@@ -63,6 +80,8 @@ export const SignIn: React.FC = () => {
           onFinish={onFinish}
           autoComplete="off"
           layout="vertical"
+          requiredMark={false}
+          size="large"
         >
           <Form.Item
             label={getTitleFromFieldName(
@@ -71,30 +90,33 @@ export const SignIn: React.FC = () => {
             name="username"
             rules={[{ required: true }]}
           >
-            <Input />
+            <Input
+              placeholder={getTitleFromFieldName(
+                configuration?.username_field || "username",
+              )}
+            />
           </Form.Item>
 
           <Form.Item
-            label="Password"
+            label={_t("Password")}
             name="password"
             rules={[{ required: true }]}
           >
-            <Input.Password />
+            <Input.Password placeholder={_t("Password")} />
           </Form.Item>
 
-          <Row justify="end">
-            <Col>
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loadingSignIn}
-                >
-                  {_t("Sign In")}
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item style={{ marginBottom: 0, marginTop: 8 }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loadingSignIn}
+              block
+              size="large"
+              style={{ height: 44, fontWeight: 600 }}
+            >
+              {_t("Sign In")}
+            </Button>
+          </Form.Item>
         </Form>
       </Card>
     </SignInContainer>

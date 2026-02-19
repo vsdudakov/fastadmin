@@ -48,10 +48,11 @@ async def test_retrieve_404_admin_class_found(session_id, admin_models, event, c
 async def test_retrieve_404_obj_not_found(session_id, event, client):
     assert session_id
 
+    # "invalid" is valid as string PK; lookup fails → 404
     r = await client.get(
         f"/api/retrieve/{event.get_model_name()}/invalid",
     )
-    assert r.status_code == 422, r.text
+    assert r.status_code == 404, r.text
     r = await client.get(
         f"/api/retrieve/{event.get_model_name()}/-1",
     )

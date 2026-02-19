@@ -50,6 +50,7 @@ async def test_change_password_401(user, client):
 
 async def test_change_password_404_obj_not_found(session_id, client):
     assert session_id
+    # "invalid" is valid as string PK; lookup fails → 404
     r = await client.patch(
         "/api/change-password/invalid",
         json={
@@ -57,7 +58,7 @@ async def test_change_password_404_obj_not_found(session_id, client):
             "confirm_password": "test",
         },
     )
-    assert r.status_code == 422, r.text
+    assert r.status_code == 404, r.text
 
     r = await client.patch(
         "/api/change-password/-1",
@@ -66,5 +67,4 @@ async def test_change_password_404_obj_not_found(session_id, client):
             "confirm_password": "test",
         },
     )
-    # we ignore
-    assert r.status_code == 200, r.text
+    assert r.status_code == 404, r.text  # non-existent user id
