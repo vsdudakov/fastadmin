@@ -58,4 +58,26 @@ describe("getConfigurationModel", () => {
     };
     expect(getConfigurationModel(config, "InlineModel")).toEqual(inlineModel);
   });
+
+  it("returns undefined when inlines exist but none match", () => {
+    const config: IConfiguration = {
+      models: [
+        baseModel,
+        {
+          ...baseModel,
+          name: "Post",
+          inlines: [
+            { ...baseModel, name: "Comment", fk_name: "post_id" } as any,
+          ],
+        },
+      ],
+      dashboard_widgets: [],
+      primary_color: "#000",
+      site_name: "Admin",
+      username_field: "username",
+      site_favicon: "",
+    };
+
+    expect(getConfigurationModel(config, "MissingInline")).toBeUndefined();
+  });
 });

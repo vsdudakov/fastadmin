@@ -31,12 +31,14 @@ describe("useIsMobile", () => {
       value: 1024,
       writable: true,
     });
-    const { result, rerender } = renderHook(() => useIsMobile());
+    const { result, rerender, unmount } = renderHook(() => useIsMobile());
     expect(result.current).toBe(false);
     (window as any).innerWidth = 500;
     resizeHandler();
     rerender();
     expect(result.current).toBe(true);
+    unmount();
+    expect(removeSpy).toHaveBeenCalledWith("resize", resizeHandler);
     addSpy.mockRestore();
     removeSpy.mockRestore();
   });

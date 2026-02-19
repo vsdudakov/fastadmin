@@ -42,6 +42,21 @@ describe("getTitleFromModel", () => {
     expect(getTitleFromModel(model, true)).toBe("Events");
   });
 
+  it("appends s when plural=true and verbose_name_plural is missing", () => {
+    const model: IModel = {
+      name: "AuditLog",
+      verbose_name: "Audit log",
+      fields: [],
+      list_display: [],
+      list_filter: [],
+      sortable_by: [],
+      search_fields: [],
+      actions: [],
+      permissions: [],
+    };
+    expect(getTitleFromModel(model, true)).toBe("Audit logs");
+  });
+
   it("derives title from model name when no verbose_name", () => {
     const model: IModel = {
       name: "BaseEvent",
@@ -55,5 +70,20 @@ describe("getTitleFromModel", () => {
     };
     expect(getTitleFromModel(model)).toBe("Base Event");
     expect(getTitleFromModel(model, true)).toBe("Base Events");
+  });
+
+  it("falls back to raw model name when regex has no matches", () => {
+    const model: IModel = {
+      name: "event",
+      fields: [],
+      list_display: [],
+      list_filter: [],
+      sortable_by: [],
+      search_fields: [],
+      actions: [],
+      permissions: [],
+    };
+    expect(getTitleFromModel(model)).toBe("event");
+    expect(getTitleFromModel(model, true)).toBe("events");
   });
 });

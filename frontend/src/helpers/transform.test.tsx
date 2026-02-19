@@ -82,6 +82,11 @@ describe("transform", () => {
     it("returns false when JSON.parse throws", () => {
       expect(isJson("")).toBe(false);
     });
+    it("returns false when JSON.stringify throws", () => {
+      const circular: Record<string, unknown> = {};
+      circular.self = circular;
+      expect(isJson(circular)).toBe(false);
+    });
   });
 
   describe("isSlug", () => {
@@ -90,6 +95,13 @@ describe("transform", () => {
     });
     it("returns false for non-string", () => {
       expect(isSlug(123)).toBe(false);
+    });
+    it("returns false when slugify throws", () => {
+      const badValue = new String("hello-world");
+      badValue.toString = () => {
+        throw new Error("boom");
+      };
+      expect(isSlug(badValue)).toBe(false);
     });
   });
 

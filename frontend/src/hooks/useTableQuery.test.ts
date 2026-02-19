@@ -78,6 +78,38 @@ describe("useTableQuery", () => {
     expect(result.current.sortBy).toBe("-name");
   });
 
+  it("onTableChange resets page when pageSize changes", () => {
+    const { result } = renderHook(() => useTableQuery());
+    act(() => result.current.setPage(4));
+
+    act(() =>
+      result.current.onTableChange(
+        { current: 3, pageSize: 25 },
+        {},
+        { field: "name", order: "ascend" },
+      ),
+    );
+
+    expect(result.current.page).toBe(1);
+    expect(result.current.pageSize).toBe(25);
+  });
+
+  it("onTableChange keeps sortBy unchanged when sorter has no field", () => {
+    const { result } = renderHook(() => useTableQuery());
+    act(() => result.current.setSortBy("name"));
+
+    act(() =>
+      result.current.onTableChange(
+        { current: 2, pageSize: 10 },
+        {},
+        { order: "ascend" },
+      ),
+    );
+
+    expect(result.current.page).toBe(2);
+    expect(result.current.sortBy).toBe("name");
+  });
+
   it("resetTable resets state", () => {
     const { result } = renderHook(() => useTableQuery());
     act(() => {
