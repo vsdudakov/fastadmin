@@ -197,6 +197,14 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_3_2">v0.3.2</a>
+                </li>
+                
+                <li class="nav-item">
+                  <a class="nav-link" href="#v0_3_1">v0.3.1</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_3_0">v0.3.0</a>
                 </li>
                 
@@ -307,7 +315,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.3.0</li>
+                    <li><strong>Version:</strong> 0.3.2</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -324,7 +332,7 @@
                     </li>
                     <li>
                       <strong>Updated:</strong>
-                      18 February 2026
+                      19 February 2026
                     </li>
                   </ul>
                 </div>
@@ -2799,6 +2807,53 @@ class WidgetType(str, Enum):
 
 
                 
+                  
+<p class="text-4">
+  Use <code>formfield_overrides</code> to customize widget props per field. You can set <code>label</code> for a custom field label and <code>help</code> for description text below the field:
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
+formfield_overrides = {
+    "username": (
+        WidgetType.SlugInput,
+        {
+            "required": True,
+            "label": "Custom label",
+            "help": "Detailed description of the field",
+        },
+    ),
+}
+  </code>
+</pre>
+
+
+
+                
                 </section>
 
               
@@ -3162,6 +3217,56 @@ class InlineModelAdmin(BaseModelAdmin):
               
 
               
+              
+                <section id="v0_3_2">
+                <h3>v0.3.2</h3>
+
+                
+                  
+<p class="text-4">
+  Add formfield_overrides example. Add label and help props.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
+              
+                <section id="v0_3_1">
+                <h3>v0.3.1</h3>
+
+                
+                  
+<p class="text-4">
+  Fix sqlalchemy required fields. Fix CI.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
               
                 <section id="v0_3_0">
                 <h3>v0.3.0</h3>

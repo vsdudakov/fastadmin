@@ -43,6 +43,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.3.2",
+            "changes": [
+                "Add formfield_overrides example. Add label and help props.",
+            ],
+        },
+        {
             "version": "0.3.1",
             "changes": [
                 "Fix sqlalchemy required fields. Fix CI.",
@@ -587,6 +593,23 @@ export ADMIN_SECRET_KEY=secret_key
                 {
                     "type": "alert-warning",
                     "content": "See <a href='https://ant.design/components/overview' target='_blank'>antd components</a> for more details (e.g. how they look).",
+                },
+                {
+                    "type": "text",
+                    "content": "Use <code>formfield_overrides</code> to customize widget props per field. You can set <code>label</code> for a custom field label and <code>help</code> for description text below the field:",
+                },
+                {
+                    "type": "code-python",
+                    "content": '''formfield_overrides = {
+    "username": (
+        WidgetType.SlugInput,
+        {
+            "required": True,
+            "label": "Custom label",
+            "help": "Detailed description of the field",
+        },
+    ),
+}''',
                 },
             ]
         # inlines
