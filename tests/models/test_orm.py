@@ -322,3 +322,22 @@ def test_get_form_widget_event(event):
                 assert field.form_widget_props
             case _:
                 raise ValueError(f"Unexpected field: {field.name}")
+
+
+def test_nullable_foreign_key_form_required(event):
+    """Nullable FK (base) must have required=False; non-nullable FK (tournament) required=True.
+
+    Suitable for all ORMs: Django/Tortoise use field.null, Pony uses is_required,
+    SQLAlchemy uses the underlying FK column's nullable.
+    """
+    admin_model = get_admin_model(event.__class__)
+    fields = admin_model.get_model_fields_with_widget_types()
+    by_name = {f.name: f for f in fields}
+    assert "base" in by_name, "Event should have base (nullable FK) field"
+    assert "tournament" in by_name, "Event should have tournament (required FK) field"
+    assert (
+        by_name["base"].form_widget_props["required"] is False
+    ), "nullable FK base_id should be optional in admin form"
+    assert (
+        by_name["tournament"].form_widget_props["required"] is True
+    ), "non-nullable FK tournament_id should be required in admin form"

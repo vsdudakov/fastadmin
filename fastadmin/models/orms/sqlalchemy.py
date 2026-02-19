@@ -70,11 +70,14 @@ class SqlAlchemyMixin:
             is_immutable = (
                 is_pk or bool(getattr(orm_model_field, "onupdate", None))
             ) and field_name not in self.readonly_fields
-            required = (
-                not getattr(orm_model_field, "nullable", False)
-                and not getattr(orm_model_field, "default", False)
-                and not is_m2m
-            )
+            # For columns, use the column's nullable; for relationships (MANYTOONE/ONETOONE),
+            # the relationship object has no nullable — use the underlying FK column's nullable.
+            nullable = getattr(orm_model_field, "nullable", False)
+            if field_type in ("ONETOONE", "MANYTOONE"):
+                fk_column = next((c for c in mapper.c if c.key == column_name), None)
+                if fk_column is not None:
+                    nullable = getattr(fk_column, "nullable", False)
+            required = not nullable and not getattr(orm_model_field, "default", False) and not is_m2m
             choices = (
                 orm_model_field.type._object_lookup
                 if hasattr(orm_model_field, "type") and hasattr(orm_model_field.type, "_object_lookup")

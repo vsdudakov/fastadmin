@@ -43,6 +43,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.3.1",
+            "changes": [
+                "Fix sqlalchemy required fields. Fix CI.",
+            ],
+        },
+        {
             "version": "0.3.0",
             "changes": [
                 "Clean up documentation. Update dependencies. Fix linters and tests. Frontend refactoring.",
