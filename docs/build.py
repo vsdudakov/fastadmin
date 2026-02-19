@@ -43,6 +43,14 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.3.3",
+            "changes": [
+                "Fix DetachedInstanceError when session is closed after commit.",
+                "Fix list display widths.",
+                "Fix flask issues.",
+            ],
+        },
+        {
             "version": "0.3.2",
             "changes": [
                 "Add formfield_overrides example. Add label and help props.",

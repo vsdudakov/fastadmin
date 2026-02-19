@@ -12,7 +12,7 @@ import {
   Space,
 } from "antd";
 import type React from "react";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CrudContainer } from "@/components/crud-container";
@@ -55,6 +55,15 @@ export const Change: React.FC = () => {
       queryFn: () => getFetcher(`/retrieve/${model}/${id}`),
       refetchOnWindowFocus: false,
     });
+
+  // Memoize so FormContainer's setFieldsValue(initialValues) effect doesn't see a new ref every render and cause an update loop / blank screen
+  const initialValues = useMemo(
+    () =>
+      initialChangeValues != null
+        ? transformDataFromServer(initialChangeValues)
+        : undefined,
+    [initialChangeValues],
+  );
 
   const {
     mutate: mutateAdd,
@@ -174,7 +183,7 @@ export const Change: React.FC = () => {
           onFinish={onFinish}
           mode="change"
           hasOperationError={isError || isErrorAdd}
-          initialValues={transformDataFromServer(initialChangeValues)}
+          initialValues={initialValues}
         >
           <Row gutter={[8, 8]} justify="space-between">
             <Col>

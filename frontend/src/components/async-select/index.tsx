@@ -20,7 +20,7 @@ import {
 import debounce from "lodash.debounce";
 import querystring from "query-string";
 import type React from "react";
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { FormContainer } from "@/components/form-container";
@@ -79,6 +79,14 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
       enabled: !!openChange,
       refetchOnWindowFocus: false,
     });
+
+  const asyncSelectChangeInitialValues = useMemo(
+    () =>
+      initialChangeValues != null
+        ? transformDataFromServer(initialChangeValues)
+        : undefined,
+    [initialChangeValues],
+  );
 
   const {
     mutate: mutateAdd,
@@ -275,7 +283,7 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
             onFinish={onFinishChange}
             mode="inline-change"
             hasOperationError={isErrorChange}
-            initialValues={transformDataFromServer(initialChangeValues)}
+            initialValues={asyncSelectChangeInitialValues}
           >
             <Row justify="end">
               <Col>

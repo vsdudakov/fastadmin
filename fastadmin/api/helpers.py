@@ -1,5 +1,3 @@
-import base64
-import binascii
 from pathlib import Path
 from uuid import UUID
 
@@ -103,19 +101,6 @@ def is_valid_id(id: UUID | int | str) -> bool:
     except (ValueError, TypeError):
         pass
     return False
-
-
-def is_valid_base64(value: str) -> bool:
-    """Check if a string is a valid base64.
-
-    :param value: A string to test.
-    :return: True if s is a valid base64, False otherwise.
-    """
-    try:
-        base64.decodebytes(value.encode("ascii"))
-        return True
-    except binascii.Error:
-        return False
 
 
 def get_template(template: Path, context: dict) -> str:

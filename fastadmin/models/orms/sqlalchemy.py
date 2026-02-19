@@ -329,6 +329,15 @@ class SqlAlchemyMixin:
         async with sessionmaker() as session:
             return await session.get(self.model_cls, id)
 
+    async def orm_serialize_obj_by_id(self, id: UUID | int | str) -> dict | None:
+        """Serialize object by id inside a single session to avoid DetachedInstanceError."""
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            obj = await session.get(self.model_cls, id)
+            if obj is None:
+                return None
+            return await self.serialize_obj(obj)
+
     def _get_foreign_key_fields(self) -> list[str]:
         """Returns a list of foreign key fields for the model.
 

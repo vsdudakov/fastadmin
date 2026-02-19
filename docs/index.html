@@ -2281,6 +2281,16 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
+    async def orm_serialize_obj_by_id(self, id: UUID | int | str) -> dict | None:
+        """Serialize object by id (e.g. in a single session to avoid DetachedInstanceError).
+
+        Override in ORM layer to run get+serialize inside one session when needed.
+        """
+        obj = await self.orm_get_obj(id)
+        if obj is None:
+            return None
+        return await self.serialize_obj(obj)
+
     async def orm_save_obj(self, id: UUID | Any | None, payload: dict) -> Any:
         """This method is used to save orm/db model object.
 
@@ -2395,6 +2405,23 @@ class BaseModelAdmin:
         serialized_dict["__str__"] = await str_fn()
         return serialized_dict
 
+    async def _serialize_obj_after_save(self, obj: Any) -> dict:
+        """Serialize object after save; re-fetch if detached (e.g. SQLAlchemy after commit)."""
+        try:
+            return await self.serialize_obj(obj)
+        except Exception as exc:
+            # SQLAlchemy DetachedInstanceError when session is closed after commit
+            if exc.__class__.__name__ != "DetachedInstanceError":
+                raise
+            pk_name = self.get_model_pk_name(self.model_cls)
+            pk = getattr(obj, pk_name, None)
+            if pk is None:
+                raise
+            result = await self.orm_serialize_obj_by_id(pk)
+            if result is None:
+                raise
+            return result
+
     async def serialize_obj(self, obj: Any, list_view: bool = False) -> dict:
         """Serialize orm model obj to dict.
 
@@ -2438,8 +2465,13 @@ class BaseModelAdmin:
             return value
         match field.form_widget_type:
             case WidgetType.TimePicker:
-                return datetime.datetime.fromisoformat(value).time()
-            case WidgetType.DatePicker | WidgetType.DateTimePicker:
+                try:
+                    return datetime.datetime.fromisoformat(value).time()
+                except ValueError:
+                    return datetime.time.fromisoformat(value)
+            case WidgetType.DatePicker:
+                return datetime.datetime.fromisoformat(value).date()
+            case WidgetType.DateTimePicker:
                 return datetime.datetime.fromisoformat(value)
             case _:
                 return value
@@ -2517,7 +2549,7 @@ class BaseModelAdmin:
             if m2m_field.name in payload:
                 await self.orm_save_m2m_ids(obj, m2m_field.column_name, payload[m2m_field.name])
 
-        return await self.serialize_obj(obj)
+        return await self._serialize_obj_after_save(obj)
 
     async def delete_model(self, id: UUID | int | str) -> None:
         """This method is used to delete orm/db model object.

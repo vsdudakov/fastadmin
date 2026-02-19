@@ -15,7 +15,7 @@ import {
 } from "antd";
 import querystring from "query-string";
 import type React from "react";
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ExportBtn } from "@/components/export-btn";
@@ -140,6 +140,14 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
       enabled: !!openChange,
       refetchOnWindowFocus: false,
     });
+
+  const inlineChangeInitialValues = useMemo(
+    () =>
+      initialChangeValues != null
+        ? transformDataFromServer(initialChangeValues)
+        : undefined,
+    [initialChangeValues],
+  );
 
   const {
     mutate: mutateAdd,
@@ -480,7 +488,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
             onFinish={onFinishChange}
             mode="inline-change"
             hasOperationError={isErrorChange}
-            initialValues={transformDataFromServer(initialChangeValues)}
+            initialValues={inlineChangeInitialValues}
           >
             <Row justify="end">
               <Col>

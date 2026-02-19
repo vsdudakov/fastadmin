@@ -31,7 +31,8 @@ lint:
 	@echo "Run frontend linters"
 	@exec make -C frontend lint
 
-# -n auto : fix django
+# Use -n 1: -n auto causes flaky failures with Django+SQLite (database is locked, 500s). conftest
+# uses a per-worker DB and SQLite timeout when xdist is used, but parallel runs remain unreliable.
 .PHONY: test
 test:
 	@exec poetry run pytest -n 1 --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=80 -s tests

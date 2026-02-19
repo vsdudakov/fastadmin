@@ -1,4 +1,5 @@
 import logging
+import os
 
 from flask import Blueprint
 
@@ -12,6 +13,11 @@ views_router = Blueprint(
 )
 
 
+def _get_admin_prefix() -> str:
+    """Return admin URL prefix from env at request time so it respects os.environ set after import."""
+    return os.getenv("ADMIN_PREFIX", settings.ADMIN_PREFIX)
+
+
 @views_router.route("/")
 def index():
     """This method is used to render index page.
@@ -21,6 +27,6 @@ def index():
     return get_template(
         ROOT_DIR / "templates" / "index.html",
         {
-            "ADMIN_PREFIX": settings.ADMIN_PREFIX,
+            "ADMIN_PREFIX": _get_admin_prefix(),
         },
     )

@@ -198,7 +198,7 @@ async def generate_models_schema(
                         empty_value_display=admin_model_obj.empty_value_display,
                         filter_widget_type=None,
                         filter_widget_props=None,
-                        width=None,
+                        width=admin_model_obj.list_display_widths.get(field_name, None),
                     ),
                     add_configuration=None,
                     change_configuration=None,
