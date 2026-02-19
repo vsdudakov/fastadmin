@@ -1,4 +1,4 @@
-import { Col, Collapse, Divider, Form, Row } from "antd";
+import {Col, Collapse, Divider, Form, Row, Typography} from "antd";
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -102,7 +102,10 @@ export const FormContainer: React.FC<IFormContainer> = ({
         <Form.Item
           key={field.name}
           name={field.name}
-          label={getTitleFromFieldName(field.name)}
+          label={
+            getConf(field).form_widget_props?.label 
+            ? getConf(field)?.form_widget_props?.label 
+            : getTitleFromFieldName(field.name)}
           rules={
             [
               ...(getConf(field).required
@@ -167,6 +170,11 @@ export const FormContainer: React.FC<IFormContainer> = ({
           }
         >
           {getWidget(getConf(field))}
+          {getConf(field).form_widget_props?.help && 
+            <Typography.Text type={"secondary"} style={{marginTop: ".35rem", display: "flex"}}>
+              {getConf(field).form_widget_props?.help}
+            </Typography.Text>
+          }
         </Form.Item>
       ));
     },
