@@ -13,7 +13,7 @@ test("Renders SignInContainer", () => {
       <SignInUserContext.Provider
         value={{
           signedIn: false,
-          signedInUser: null,
+          signedInUser: undefined,
           signedInUserRefetch: () => Promise.resolve(undefined as any),
         }}
       >

@@ -31,8 +31,8 @@ describe("Cards", () => {
         ]}
         rowSelection={{ selectedRowKeys: [], onChange: onRowSelectionChange }}
         expandable={{
-          expandIcon: ({ expanded, onExpand }) => (
-            <button type="button" onClick={onExpand}>
+          expandIcon: ({ expanded, onExpand, record }) => (
+            <button type="button" onClick={(event) => onExpand(record, event)}>
               {expanded ? "Collapse" : "Expand"}
             </button>
           ),

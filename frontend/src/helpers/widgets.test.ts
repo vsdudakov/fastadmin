@@ -32,7 +32,7 @@ describe("getWidgetCls", () => {
 
   it("returns DatePicker.RangePicker with placeholder", () => {
     const [, props] = getWidgetCls(EFieldWidgetType.RangePicker, _t);
-    expect(props.placeholder).toEqual(["Start", "End"]);
+    expect((props as any).placeholder).toEqual(["Start", "End"]);
   });
 
   it("returns default Input for unknown type", () => {

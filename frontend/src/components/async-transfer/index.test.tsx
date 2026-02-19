@@ -75,14 +75,18 @@ describe("AsyncTransfer", () => {
     act(() => {
       transferPropsRef.current.onSearch("right", "should-not-apply");
     });
-    let lastQuery = mockUseQuery.mock.calls.at(-1)?.[0] as any;
+    let lastQuery = mockUseQuery.mock.calls[
+      mockUseQuery.mock.calls.length - 1
+    ]?.[0] as any;
     expect(lastQuery.queryKey[1]).not.toContain("should-not-apply");
 
     act(() => {
       transferPropsRef.current.onSearch("left", "john");
     });
     await waitFor(() => {
-      lastQuery = mockUseQuery.mock.calls.at(-1)?.[0] as any;
+      lastQuery = mockUseQuery.mock.calls[
+        mockUseQuery.mock.calls.length - 1
+      ]?.[0] as any;
       expect(lastQuery.queryKey[1]).toContain("search=john");
     });
   });
