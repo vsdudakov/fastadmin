@@ -43,6 +43,10 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.3.4",
+            "changes": ["Fix sort by and search by relations. Fix examples."],
+        },
+        {
             "version": "0.3.3",
             "changes": [
                 "Fix DetachedInstanceError when session is closed after commit.",
