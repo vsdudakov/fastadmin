@@ -1,7 +1,12 @@
+import os
 import typing as tp
 import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+
+os.environ["ADMIN_USER_MODEL"] = "User"
+os.environ["ADMIN_USER_MODEL_USERNAME_FIELD"] = "username"
+os.environ["ADMIN_SECRET_KEY"] = "secret"
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -76,14 +81,9 @@ class BaseEventModelAdmin(PonyORMModelAdmin):
 @register(Event)
 class EventModelAdmin(PonyORMModelAdmin):
     actions = ("make_is_active", "make_is_not_active")
-    list_display = (
-        "id",
-        "name_with_price",
-        "rating",
-        "event_type",
-        "is_active",
-        "started",
-    )
+    list_display = ("id", "tournament", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_filter = ("tournament", "event_type", "is_active")
+    search_fields = ("name", "tournament__name")
 
     @action(description="Make event active")
     @db_session
@@ -115,7 +115,8 @@ class EventModelAdmin(PonyORMModelAdmin):
 
 
 def init_db():
-    db.bind(provider="sqlite", filename=":memory:", create_db=True)
+    # Use shared in-memory sqlite DB so tables are visible across connections/threads.
+    db.bind(provider="sqlite", filename=":sharedmemory:", create_db=True)
     db.generate_mapping(create_tables=True)
 
 

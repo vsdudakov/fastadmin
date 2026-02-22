@@ -1,4 +1,6 @@
+import inspect
 from enum import EnumMeta
+from types import SimpleNamespace
 from typing import Any
 from uuid import UUID
 
@@ -272,8 +274,9 @@ class PonyORMMixin:
         if search and self.search_fields:
             ids = []
             for search_field in self.search_fields:
+                pony_search_field = search_field.replace("__", ".")
                 # Pony string filter for case-insensitive search
-                filter_expr = f'"{search.lower()}" in m.{search_field}.lower()'
+                filter_expr = f'"{search.lower()}" in m.{pony_search_field}.lower()'
                 qs_ids = qs.filter(filter_expr)
                 objs = list(qs_ids)
                 ids += [o.id for o in objs]
@@ -308,6 +311,54 @@ class PonyORMMixin:
         :return: An object.
         """
         return self.model_cls.select(**{self.get_model_pk_name(self.model_cls): id}).first()
+
+    @sync_to_async
+    @db_session
+    def orm_serialize_obj_by_id(self, id: UUID | int | str) -> dict | None:
+        """Serialize object by id in one db_session (avoids detached access)."""
+        obj = self.model_cls.select(**{self.get_model_pk_name(self.model_cls): id}).first()
+        if not obj:
+            return None
+
+        fields = self.get_model_fields_with_widget_types()
+        fields_for_serialize = self.get_fields_for_serialize()
+        obj_dict: dict[str, Any] = {}
+
+        for field in fields:
+            if field.name not in fields_for_serialize:
+                continue
+            if field.is_m2m:
+                rel_model_cls = getattr(self.model_cls, field.column_name).py_type
+                rel_key_id = self.get_model_pk_name(rel_model_cls)
+                obj_dict[field.name] = [getattr(o, rel_key_id) for o in getattr(obj, field.column_name)]
+            else:
+                relation_attr = getattr(self.model_cls, field.column_name, None)
+                if relation_attr and getattr(relation_attr, "is_relation", False):
+                    rel_obj = getattr(obj, field.column_name)
+                    if rel_obj is None:
+                        obj_dict[field.name] = None
+                    else:
+                        rel_model_cls = relation_attr.py_type
+                        rel_key_id = self.get_model_pk_name(rel_model_cls)
+                        obj_dict[field.name] = getattr(rel_obj, rel_key_id)
+                else:
+                    obj_dict[field.name] = getattr(obj, field.column_name)
+
+        obj_dict["__str__"] = str(obj)
+        proxy = SimpleNamespace(**obj_dict)
+        for field_name in fields_for_serialize:
+            display_field_function = getattr(self, field_name, None)
+            if not display_field_function or not hasattr(display_field_function, "is_display"):
+                continue
+            if inspect.iscoroutinefunction(display_field_function):
+                # Async display functions are not expected in Pony sync session context.
+                continue
+            try:
+                obj_dict[field_name] = display_field_function(proxy)
+            except (AttributeError, TypeError, KeyError):
+                obj_dict[field_name] = display_field_function(obj)
+
+        return obj_dict
 
     @sync_to_async
     @db_session

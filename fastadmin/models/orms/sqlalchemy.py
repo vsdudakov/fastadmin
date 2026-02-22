@@ -12,6 +12,66 @@ from fastadmin.settings import settings
 
 
 class SqlAlchemyMixin:
+    def _build_search_condition(self, field_path: str, search: str) -> Any | None:
+        """Build SQLAlchemy search condition for simple and nested fields.
+
+        Supports direct fields (e.g. ``name``) and relation paths using
+        Django-style separator (e.g. ``tournament__name``).
+        """
+
+        def recurse(model_cls: Any, parts: list[str]) -> Any | None:
+            attr = getattr(model_cls, parts[0], None)
+            if attr is None:
+                return None
+
+            if len(parts) == 1:
+                return attr.ilike(f"%{search}%")
+
+            rel_property = getattr(attr, "property", None)
+            if rel_property is None:
+                return None
+
+            related_model = getattrs(rel_property, "mapper.class_")
+            if related_model is None:
+                return None
+
+            nested_condition = recurse(related_model, parts[1:])
+            if nested_condition is None:
+                return None
+
+            if getattr(rel_property, "uselist", False):
+                return attr.any(nested_condition)
+            return attr.has(nested_condition)
+
+        return recurse(self.model_cls, field_path.split("__"))
+
+    def _resolve_ordering_field(self, ordering_field: str) -> str:
+        """Resolve ordering field for SQLAlchemy.
+
+        Relation keys (e.g. `tournament`) are not direct SQL columns.
+        For MANYTOONE/ONETOONE relations, sort by local FK column
+        (e.g. `tournament_id`) instead.
+        """
+        if not ordering_field:
+            return ordering_field
+
+        prefix = "-" if ordering_field.startswith("-") else ""
+        field_name = ordering_field.lstrip("-")
+
+        # Keep nested paths unchanged (join/loader strategy specific)
+        if "__" in field_name:
+            return ordering_field
+
+        mapper = inspect(self.model_cls)
+        relation = next((rel for rel in mapper.relationships if rel.key == field_name), None)
+        if relation and getattrs(relation, "direction.name") in ("MANYTOONE", "ONETOONE"):
+            local_columns = list(getattr(relation, "local_columns", []))
+            if local_columns:
+                return f"{prefix}{local_columns[0].key}"
+            return f"{prefix}{field_name}_id"
+
+        return ordering_field
+
     @staticmethod
     def get_model_pk_name(orm_model_cls: Any) -> str:
         """This method is used to get model pk name.
@@ -252,6 +312,7 @@ class SqlAlchemyMixin:
         """
 
         def convert_sort_by(sort_by: str) -> str:
+            sort_by = self._resolve_ordering_field(sort_by)
             if sort_by.startswith("-"):
                 return sort_by[1:] + " desc"
             return sort_by
@@ -296,7 +357,11 @@ class SqlAlchemyMixin:
             if search and self.search_fields:
                 q = []
                 for field in self.search_fields:
-                    q.append(getattr(self.model_cls, field).ilike(f"%{search}%"))
+                    condition = self._build_search_condition(field, search)
+                    if condition is not None:
+                        q.append(condition)
+                if not q:
+                    return [], 0
                 qs = qs.where(or_(*q))
 
             if sort_by:

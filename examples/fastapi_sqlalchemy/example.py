@@ -1,7 +1,12 @@
+import os
 import typing as tp
 import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+
+os.environ["ADMIN_USER_MODEL"] = "User"
+os.environ["ADMIN_USER_MODEL_USERNAME_FIELD"] = "username"
+os.environ["ADMIN_SECRET_KEY"] = "secret"
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -77,7 +82,9 @@ class BaseEventModelAdmin(SqlAlchemyModelAdmin):
 @register(Event, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 class EventModelAdmin(SqlAlchemyModelAdmin):
     actions = ("make_is_active", "make_is_not_active")
-    list_display = ("id", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_display = ("id", "tournament", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_filter = ("tournament", "event_type", "is_active")
+    search_fields = ("name", "tournament__name")
 
     @action(description="Make event active")
     async def make_is_active(self, ids):

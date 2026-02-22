@@ -139,14 +139,9 @@ class BaseEventModelAdmin(DjangoModelAdmin):
 @register(Event)
 class EventModelAdmin(DjangoModelAdmin):
     actions = ("make_is_active", "make_is_not_active")
-    list_display = (
-        "id",
-        "name_with_price",
-        "rating",
-        "event_type",
-        "is_active",
-        "started",
-    )
+    list_display = ("id", "tournament", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_filter = ("tournament", "event_type", "is_active")
+    search_fields = ("name", "tournament__name")
 
     @action(description="Make event active")
     def make_is_active(self, ids):

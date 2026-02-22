@@ -9,9 +9,9 @@ repository = "https://github.com/vsdudakov/fastadmin"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.10"
-django = "^5.2"
-fastadmin = {"version" = "^0.2.21", extras = ["django"]}
+python = "^3.13"
+django = "^6"
+fastadmin = {"version" = "^0.3.3", extras = ["django"]}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

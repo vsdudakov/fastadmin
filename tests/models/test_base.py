@@ -224,6 +224,9 @@ async def test_serialize_obj_after_save_detached_paths():
     class DetachedInstanceError(Exception):
         pass
 
+    class DatabaseSessionIsOver(Exception):
+        pass
+
     base = ModelAdmin(Model)
     obj = type("Obj", (), {"id": 10})()
 
@@ -255,6 +258,12 @@ async def test_serialize_obj_after_save_detached_paths():
         return {"id": _id}
 
     base.orm_serialize_obj_by_id = serialize_by_id_ok  # type: ignore[method-assign]
+    assert await base._serialize_obj_after_save(obj) == {"id": 10}
+
+    async def raise_session_over(_obj):
+        raise DatabaseSessionIsOver("session over")
+
+    base.serialize_obj = raise_session_over  # type: ignore[method-assign]
     assert await base._serialize_obj_after_save(obj) == {"id": 10}
 
 

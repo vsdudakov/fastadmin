@@ -36,6 +36,14 @@ from fastadmin.settings import settings
 logger = logging.getLogger(__name__)
 
 
+def is_allowed_field_or_path(field: str, allowed_fields: set[str]) -> bool:
+    """Allow direct fields and nested paths from allowed base fields."""
+    if field in allowed_fields:
+        return True
+    base_field = field.split("__", 1)[0]
+    return base_field in allowed_fields
+
+
 def convert_id(id: str | int | UUID) -> int | UUID | None:
     """Convert the given id to int or UUID.
 
@@ -200,11 +208,11 @@ class ApiService:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
         # validations
-        fields = admin_model.get_fields_for_serialize()
+        fields = set(admin_model.get_fields_for_serialize())
 
         if query_params.search and admin_model.search_fields:
             for field in admin_model.search_fields:
-                if field not in fields:
+                if not is_allowed_field_or_path(field, fields):
                     raise AdminApiException(422, detail=f"Search by {field} is not allowed")
 
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
@@ -227,7 +235,7 @@ class ApiService:
                 raise AdminApiException(422, detail=f"Sort by {query_params.sort_by} is not allowed")
         elif admin_model.ordering:
             for ordering_field in admin_model.ordering:
-                if ordering_field.strip("-") not in fields:
+                if not is_allowed_field_or_path(ordering_field.strip("-"), fields):
                     raise AdminApiException(422, detail=f"Sort by {ordering_field} is not allowed")
 
         if admin_model.list_select_related:
@@ -368,11 +376,11 @@ class ApiService:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
 
         # validations
-        fields = admin_model.get_fields_for_serialize()
+        fields = set(admin_model.get_fields_for_serialize())
 
         if query_params.search and admin_model.search_fields:
             for field in admin_model.search_fields:
-                if field not in fields:
+                if not is_allowed_field_or_path(field, fields):
                     raise AdminApiException(422, detail=f"Search by {field} is not allowed")
 
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
@@ -395,7 +403,7 @@ class ApiService:
                 raise AdminApiException(422, detail=f"Sort by {query_params.sort_by} is not allowed")
         elif admin_model.ordering:
             for ordering_field in admin_model.ordering:
-                if ordering_field.strip("-") not in fields:
+                if not is_allowed_field_or_path(ordering_field.strip("-"), fields):
                     raise AdminApiException(422, detail=f"Sort by {ordering_field} is not allowed")
 
         content_type = "text/plain"

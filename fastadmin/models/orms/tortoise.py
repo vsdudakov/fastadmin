@@ -11,6 +11,31 @@ from fastadmin.settings import settings
 
 
 class TortoiseMixin:
+    def _resolve_ordering_field(self, ordering_field: str) -> str:
+        """Resolve ordering field for Tortoise.
+
+        Tortoise 1.x does not allow ordering by relation names directly
+        (e.g. `tournament`). For FK/O2O relation fields, order by their
+        backing id field instead (e.g. `tournament_id`).
+        """
+        if not ordering_field:
+            return ordering_field
+
+        prefix = "-" if ordering_field.startswith("-") else ""
+        field_name = ordering_field.lstrip("-")
+
+        # Respect explicit nested ordering (e.g. relation__name)
+        if "__" in field_name:
+            return ordering_field
+
+        orm_field = self.model_cls._meta.fields_map.get(field_name)
+        if not orm_field:
+            return ordering_field
+
+        if orm_field.__class__.__name__ in ("ForeignKeyFieldInstance", "OneToOneFieldInstance"):
+            return f"{prefix}{field_name}_id"
+        return ordering_field
+
     @staticmethod
     def get_model_pk_name(orm_model_cls: Any) -> str:
         """This method is used to get model pk name.
@@ -257,9 +282,9 @@ class TortoiseMixin:
             )
 
         if sort_by:
-            qs = qs.order_by(sort_by)
+            qs = qs.order_by(self._resolve_ordering_field(sort_by))
         elif self.ordering:
-            qs = qs.order_by(*self.ordering)
+            qs = qs.order_by(*(self._resolve_ordering_field(field) for field in self.ordering))
 
         total = await qs.count()
 

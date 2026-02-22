@@ -442,6 +442,116 @@ async def test_sqlalchemy_orm_get_list_filter_operators(event, session_with_type
     assert isinstance(objs, list)
 
 
+async def test_sqlalchemy_orm_get_list_search_nested_relation(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    admin_model.search_fields = ["name", "tournament__name"]
+
+    objs, total = await admin_model.orm_get_list(search="Test Tournament")
+    assert isinstance(total, int)
+    assert total > 0
+    assert any(getattr(obj, "id", None) == event.id for obj in objs)
+
+
+def test_sqlalchemy_resolve_ordering_field_for_relation(monkeypatch):
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms import sqlalchemy as sqlalchemy_orm
+    from fastadmin.models.orms.sqlalchemy import SqlAlchemyModelAdmin
+
+    relation = SimpleNamespace(
+        key="tournament",
+        direction=SimpleNamespace(name="MANYTOONE"),
+        local_columns=[SimpleNamespace(key="tournament_id")],
+    )
+    fake_mapper = SimpleNamespace(c=[], relationships=[relation])
+    monkeypatch.setattr(sqlalchemy_orm, "inspect", lambda _model_cls: fake_mapper)
+
+    class FakeModel:
+        pass
+
+    admin = SqlAlchemyModelAdmin(FakeModel)
+    assert admin._resolve_ordering_field("tournament") == "tournament_id"
+    assert admin._resolve_ordering_field("-tournament") == "-tournament_id"
+    assert admin._resolve_ordering_field("tournament__name") == "tournament__name"
+
+
+def test_sqlalchemy_build_search_condition_edge_cases(session_with_type):
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms.sqlalchemy import SqlAlchemyModelAdmin
+
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    class LeafAttr:
+        @staticmethod
+        def ilike(_value):
+            return "leaf-ilike"
+
+    class RelatedLeafModel:
+        name = LeafAttr()
+
+    class RelationRoot:
+        child = SimpleNamespace(
+            property=SimpleNamespace(mapper=SimpleNamespace(class_=RelatedLeafModel), uselist=True),
+            any=lambda _condition: "any-condition",
+            has=lambda _condition: "has-condition",
+        )
+
+    class NoRelationPropertyRoot:
+        child = SimpleNamespace()
+
+    class NoRelatedModelRoot:
+        child = SimpleNamespace(property=SimpleNamespace(mapper=SimpleNamespace(), uselist=False))
+
+    class MissingNestedFieldRoot:
+        child = SimpleNamespace(
+            property=SimpleNamespace(mapper=SimpleNamespace(class_=SimpleNamespace()), uselist=False)
+        )
+
+    admin = SqlAlchemyModelAdmin(RelationRoot)
+    assert admin._build_search_condition("missing", "a") is None
+
+    admin.model_cls = NoRelationPropertyRoot
+    assert admin._build_search_condition("child__name", "a") is None
+
+    admin.model_cls = NoRelatedModelRoot
+    assert admin._build_search_condition("child__name", "a") is None
+
+    admin.model_cls = MissingNestedFieldRoot
+    assert admin._build_search_condition("child__name", "a") is None
+
+    admin.model_cls = RelationRoot
+    assert admin._build_search_condition("child__name", "a") == "any-condition"
+
+
+def test_sqlalchemy_resolve_ordering_field_edge_cases(monkeypatch):
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms import sqlalchemy as sqlalchemy_orm
+    from fastadmin.models.orms.sqlalchemy import SqlAlchemyModelAdmin
+
+    relation = SimpleNamespace(
+        key="tournament",
+        direction=SimpleNamespace(name="MANYTOONE"),
+        local_columns=[],
+    )
+    fake_mapper = SimpleNamespace(c=[], relationships=[relation])
+    monkeypatch.setattr(sqlalchemy_orm, "inspect", lambda _model_cls: fake_mapper)
+
+    class FakeModel:
+        pass
+
+    admin = SqlAlchemyModelAdmin(FakeModel)
+    assert admin._resolve_ordering_field("") == ""
+    assert admin._resolve_ordering_field("tournament") == "tournament_id"
+
+
 async def test_sqlalchemy_orm_serialize_obj_by_id(event, session_with_type):
     _, session_type = session_with_type
     if session_type != "sqlalchemy":
@@ -452,6 +562,18 @@ async def test_sqlalchemy_orm_serialize_obj_by_id(event, session_with_type):
     obj = await admin_model.orm_serialize_obj_by_id(event.id)
     assert obj is not None
     assert str(obj["id"]) == str(event.id)
+
+
+async def test_sqlalchemy_orm_get_list_search_without_valid_fields_returns_empty(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    admin_model.search_fields = ["does_not_exist"]
+    objs, total = await admin_model.orm_get_list(search="irrelevant")
+    assert objs == []
+    assert total == 0
 
 
 async def test_sqlalchemy_orm_save_obj_fk_string_conversion(tournament, session_with_type):
@@ -613,6 +735,19 @@ async def test_ponyorm_orm_get_list_filter_operators():
     assert fake_query.filters
 
 
+async def test_ponyorm_orm_get_list_search_nested_relation(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "ponyorm":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    admin_model.search_fields = ["name", "tournament__name"]
+    objs, total = await admin_model.orm_get_list(search="Test Tournament")
+    assert isinstance(total, int)
+    assert total > 0
+    assert any(getattr(obj, "id", None) == event.id for obj in objs)
+
+
 async def test_ponyorm_edge_cases(event, session_with_type):
     from types import SimpleNamespace
 
@@ -643,6 +778,110 @@ async def test_ponyorm_edge_cases(event, session_with_type):
         )
     ]
     assert await admin_model.serialize_obj_attributes(SimpleNamespace(id=-1), attrs) == {}
+
+
+async def test_ponyorm_serialize_obj_by_id_relation_values_are_primitives(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "ponyorm":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    obj = await admin_model.orm_serialize_obj_by_id(event.id)
+    assert obj is not None
+    assert isinstance(obj.get("tournament"), int)
+    assert obj.get("base") is None or isinstance(obj.get("base"), int)
+
+
+async def test_ponyorm_serialize_obj_by_id_none_when_missing(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "ponyorm":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    assert await admin_model.orm_serialize_obj_by_id(-1) is None
+
+
+async def test_ponyorm_serialize_obj_by_id_display_and_relation_edge_cases(session_with_type):
+    from types import SimpleNamespace
+
+    _, session_type = session_with_type
+    if session_type != "ponyorm":
+        return
+
+    from fastadmin.models.orms.ponyorm import PonyORMModelAdmin
+
+    class FakeRelatedModel:
+        _pk_ = SimpleNamespace(name="id")
+
+    relation_attr = SimpleNamespace(is_relation=True, py_type=FakeRelatedModel)
+
+    class FakeEntity:
+        relation = None
+        skip = "skip-value"
+
+        def __str__(self):
+            return "entity"
+
+    class FakeQuery:
+        @staticmethod
+        def first():
+            return FakeEntity()
+
+    class FakeModel:
+        _pk_ = SimpleNamespace(name="id")
+        relation = relation_attr
+
+        @staticmethod
+        def select(**_kwargs):
+            return FakeQuery()
+
+    admin_model = PonyORMModelAdmin(FakeModel)
+    admin_model.get_model_fields_with_widget_types = lambda: [  # type: ignore[method-assign]
+        ModelFieldWidgetSchema(
+            name="skip",
+            column_name="skip",
+            is_m2m=False,
+            is_pk=False,
+            is_immutable=False,
+            form_widget_type=WidgetType.Input,
+            form_widget_props={},
+            filter_widget_type=WidgetType.Input,
+            filter_widget_props={},
+        ),
+        ModelFieldWidgetSchema(
+            name="relation",
+            column_name="relation",
+            is_m2m=False,
+            is_pk=False,
+            is_immutable=False,
+            form_widget_type=WidgetType.Input,
+            form_widget_props={},
+            filter_widget_type=WidgetType.Input,
+            filter_widget_props={},
+        ),
+    ]
+    admin_model.get_fields_for_serialize = lambda: {"relation", "async_display", "sync_display"}  # type: ignore[method-assign]
+
+    async def async_display(_obj):
+        return "async-skipped"
+
+    async_display.is_display = True  # type: ignore[attr-defined]
+
+    def sync_display(obj):
+        if isinstance(obj, SimpleNamespace):
+            raise AttributeError("force fallback from proxy")
+        return "fallback-ok"
+
+    sync_display.is_display = True  # type: ignore[attr-defined]
+
+    admin_model.async_display = async_display  # type: ignore[method-assign]
+    admin_model.sync_display = sync_display  # type: ignore[method-assign]
+
+    obj = await admin_model.orm_serialize_obj_by_id(1)
+    assert obj is not None
+    assert obj["relation"] is None
+    assert obj["sync_display"] == "fallback-ok"
+    assert "async_display" not in obj
 
 
 def test_tortoise_field_mapping_special_cases():
@@ -691,6 +930,38 @@ def test_tortoise_field_mapping_special_cases():
     admin.formfield_overrides = {"tags": (WidgetType.Upload, {})}
     mapped_no_upload = admin.get_model_fields_with_widget_types(with_upload=False)
     assert "tags" not in [f.name for f in mapped_no_upload]
+
+
+def test_tortoise_resolve_ordering_field_for_relation():
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms.tortoise import TortoiseModelAdmin
+
+    fake_fk = type("ForeignKeyFieldInstance", (), {})()
+    fake_fk.name = "tournament"
+
+    fake_model = type(
+        "FakeTortoiseModelForOrdering",
+        (),
+        {"_meta": SimpleNamespace(pk_attr="id", fields_map={"tournament": fake_fk})},
+    )
+    admin = TortoiseModelAdmin(fake_model)
+
+    assert admin._resolve_ordering_field("tournament") == "tournament_id"
+    assert admin._resolve_ordering_field("-tournament") == "-tournament_id"
+    assert admin._resolve_ordering_field("tournament__name") == "tournament__name"
+
+
+def test_tortoise_resolve_ordering_field_edge_cases():
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms.tortoise import TortoiseModelAdmin
+
+    fake_model = type("FakeTortoiseModelForOrderingEdges", (), {"_meta": SimpleNamespace(pk_attr="id", fields_map={})})
+    admin = TortoiseModelAdmin(fake_model)
+
+    assert admin._resolve_ordering_field("") == ""
+    assert admin._resolve_ordering_field("unknown") == "unknown"
 
 
 def test_django_field_mapping_special_cases():

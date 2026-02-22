@@ -8,3 +8,4 @@ run:
 .PHONY: install
 install:
 	poetry install
+	poetry run pip install -e ../../

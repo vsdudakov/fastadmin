@@ -372,12 +372,12 @@ class BaseModelAdmin:
         return serialized_dict
 
     async def _serialize_obj_after_save(self, obj: Any) -> dict:
-        """Serialize object after save; re-fetch if detached (e.g. SQLAlchemy after commit)."""
+        """Serialize object after save; re-fetch if detached/session is over."""
         try:
             return await self.serialize_obj(obj)
         except Exception as exc:
-            # SQLAlchemy DetachedInstanceError when session is closed after commit
-            if exc.__class__.__name__ != "DetachedInstanceError":
+            # ORM-specific detached/session-over cases after commit.
+            if exc.__class__.__name__ not in {"DetachedInstanceError", "DatabaseSessionIsOver"}:
                 raise
             pk_name = self.get_model_pk_name(self.model_cls)
             pk = getattr(obj, pk_name, None)
