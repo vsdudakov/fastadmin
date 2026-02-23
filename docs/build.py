@@ -43,10 +43,16 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.3.5",
+            "changes": [
+                "Enhance get_orm_list method to support prefetch_related_fields and additional_search_fields.",
+                "Add request/user context on BaseModelAdmin for per-request custom logic.",
+            ],
+        },
+        {
             "version": "0.3.4",
             "changes": [
                 "Fix sort by and search by relations. Fix examples.",
-                "Add request/user context on BaseModelAdmin for per-request custom logic.",
             ],
         },
         {

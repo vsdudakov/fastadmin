@@ -197,6 +197,10 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_3_5">v0.3.5</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_3_4">v0.3.4</a>
                 </li>
                 
@@ -323,7 +327,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.3.4</li>
+                    <li><strong>Version:</strong> 0.3.5</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -1643,6 +1647,9 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
 <pre>
   <code class="language-python">
 class DashboardWidgetAdmin:
+    _request_context: ContextVar[Any | None]
+    _user_context: ContextVar[Any | None]
+
     title: str
     dashboard_widget_type: DashboardWidgetType
     x_field: str
@@ -1651,6 +1658,25 @@ class DashboardWidgetAdmin:
     x_field_filter_widget_type: WidgetType | None = None
     x_field_filter_widget_props: dict[str, Any] | None = None
     x_field_periods: list[str] | None = None
+
+    def __init__(self) -> None:
+        self._request_context = ContextVar(f"fastadmin_dashboard_request_context_{id(self)}", default=None)
+        self._user_context = ContextVar(f"fastadmin_dashboard_user_context_{id(self)}", default=None)
+
+    @property
+    def request(self) -> Any | None:
+        """Current request object for this async context."""
+        return self._request_context.get()
+
+    @property
+    def user(self) -> Any | None:
+        """Current authenticated user object for this async context."""
+        return self._user_context.get()
+
+    def set_context(self, request: Any | None = None, user: Any | None = None) -> None:
+        """Set request/user context for the current async task."""
+        self._request_context.set(request)
+        self._user_context.set(user)
 
     async def get_data(
         self,
@@ -3389,13 +3415,13 @@ class InlineModelAdmin(BaseModelAdmin):
 
               
               
-                <section id="v0_3_4">
-                <h3>v0.3.4</h3>
+                <section id="v0_3_5">
+                <h3>v0.3.5</h3>
 
                 
                   
 <p class="text-4">
-  Fix sort by and search by relations. Fix examples.
+  Enhance get_orm_list method to support prefetch_related_fields and additional_search_fields.
 </p>
 
 
@@ -3414,6 +3440,31 @@ class InlineModelAdmin(BaseModelAdmin):
                   
 <p class="text-4">
   Add request/user context on BaseModelAdmin for per-request custom logic.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
+              
+                <section id="v0_3_4">
+                <h3>v0.3.4</h3>
+
+                
+                  
+<p class="text-4">
+  Fix sort by and search by relations. Fix examples.
 </p>
 
 
