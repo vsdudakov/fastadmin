@@ -722,6 +722,9 @@ class ModelAdmin(BaseModelAdmin):
 
 
 class DashboardWidgetAdmin:
+    _request_context: ContextVar[Any | None]
+    _user_context: ContextVar[Any | None]
+
     title: str
     dashboard_widget_type: DashboardWidgetType
     x_field: str
@@ -730,6 +733,25 @@ class DashboardWidgetAdmin:
     x_field_filter_widget_type: WidgetType | None = None
     x_field_filter_widget_props: dict[str, Any] | None = None
     x_field_periods: list[str] | None = None
+
+    def __init__(self) -> None:
+        self._request_context = ContextVar(f"fastadmin_dashboard_request_context_{id(self)}", default=None)
+        self._user_context = ContextVar(f"fastadmin_dashboard_user_context_{id(self)}", default=None)
+
+    @property
+    def request(self) -> Any | None:
+        """Current request object for this async context."""
+        return self._request_context.get()
+
+    @property
+    def user(self) -> Any | None:
+        """Current authenticated user object for this async context."""
+        return self._user_context.get()
+
+    def set_context(self, request: Any | None = None, user: Any | None = None) -> None:
+        """Set request/user context for the current async task."""
+        self._request_context.set(request)
+        self._user_context.set(user)
 
     async def get_data(
         self,

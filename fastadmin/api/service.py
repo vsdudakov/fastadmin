@@ -505,8 +505,9 @@ class ApiService:
         session_id: str | None,
         request: Any | None = None,
     ) -> ConfigurationSchema:
-        current_user_id = await get_user_id_from_session_id(session_id)
-        if not current_user_id:
+        try:
+            current_user_id, current_user = await self._get_authenticated_user(session_id)
+        except AdminApiException:
             return ConfigurationSchema(
                 site_name=settings.ADMIN_SITE_NAME,
                 site_sign_in_logo=settings.ADMIN_SITE_SIGN_IN_LOGO,
@@ -521,12 +522,6 @@ class ApiService:
                 dashboard_widgets=[],
             )
 
-        admin_user_model = get_admin_model(settings.ADMIN_USER_MODEL)
-        current_user = (
-            await admin_user_model.get_obj(current_user_id)
-            if admin_user_model and hasattr(admin_user_model, "get_obj")
-            else None
-        )
         admin_models = cast(dict[Any, ModelAdmin | InlineModelAdmin], get_admin_models())
         models = cast(
             Sequence[ModelSchema],

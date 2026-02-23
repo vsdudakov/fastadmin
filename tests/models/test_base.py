@@ -66,6 +66,19 @@ def test_base_model_admin_request_and_user_context():
     assert admin.user == user
 
 
+def test_dashboard_widget_admin_request_and_user_context():
+    widget = DashboardWidgetAdmin()
+    assert widget.request is None
+    assert widget.user is None
+
+    request = {"path": "/api/dashboard-widget/TestWidget"}
+    user = {"id": 1, "username": "admin"}
+    widget.set_context(request=request, user=user)
+
+    assert widget.request == request
+    assert widget.user == user
+
+
 async def test_export_wrong_format(mocker):
     class Model:
         pass
