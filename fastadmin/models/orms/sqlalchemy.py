@@ -300,6 +300,8 @@ class SqlAlchemyMixin:
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
+        prefetch_related_fields: list[str] | None = None,
+        additional_search_fields: list[str] | None = None,
     ) -> tuple[list[Any], int]:
         """This method is used to get list of orm/db model objects.
 
@@ -308,6 +310,8 @@ class SqlAlchemyMixin:
         :params search: a search query.
         :params sort_by: a sort by field name.
         :params filters: a dict of filters.
+        :params prefetch_related_fields: a list of related fields to prefetch.
+        :params additional_search_fields: a list of additional search fields.
         :return: A tuple of list of objects and total count.
         """
 
@@ -354,9 +358,13 @@ class SqlAlchemyMixin:
                             q.append(model_field.ilike(f"%{value}%"))
                 qs = qs.where(and_(*q))
 
-            if search and self.search_fields:
+            search_fields = list(self.search_fields)
+            if additional_search_fields:
+                search_fields.extend(additional_search_fields)
+
+            if search and search_fields:
                 q = []
-                for field in self.search_fields:
+                for field in search_fields:
                     condition = self._build_search_condition(field, search)
                     if condition is not None:
                         q.append(condition)
@@ -376,6 +384,28 @@ class SqlAlchemyMixin:
             if self.list_select_related:
                 for field in self.list_select_related:
                     qs = qs.options(selectinload(getattr(self.model_cls, field)))
+
+            if prefetch_related_fields:
+                for field_path in prefetch_related_fields:
+                    parts = field_path.split("__")
+                    current_model = self.model_cls
+                    attr = getattr(current_model, parts[0], None)
+                    if attr is None:
+                        continue
+                    option = selectinload(attr)
+                    current_model = getattrs(attr, "property.mapper.class_")
+                    for part in parts[1:]:
+                        if current_model is None:
+                            break
+                        nested_attr = getattr(current_model, part, None)
+                        if nested_attr is None:
+                            break
+                        next_model = getattrs(nested_attr, "property.mapper.class_")
+                        if next_model is None:
+                            break
+                        option = option.selectinload(nested_attr)
+                        current_model = next_model
+                    qs = qs.options(option)
 
             if offset is not None and limit is not None:
                 qs = qs.offset(offset)

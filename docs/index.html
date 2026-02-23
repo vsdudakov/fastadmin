@@ -340,7 +340,7 @@
                     </li>
                     <li>
                       <strong>Updated:</strong>
-                      22 February 2026
+                      23 February 2026
                     </li>
                   </ul>
                 </div>
@@ -2269,6 +2269,8 @@ class BaseModelAdmin:
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
+        prefetch_related_fields: list[str] | None = None,
+        additional_search_fields: list[str] | None = None,
     ) -> tuple[list[Any], int]:
         """This method is used to get list of orm/db model objects.
 
@@ -2277,6 +2279,8 @@ class BaseModelAdmin:
         :params search: a search query.
         :params sort_by: a sort by field name.
         :params filters: a dict of filters.
+        :params prefetch_related_fields: a list of related fields to prefetch.
+        :params additional_search_fields: a list of additional search fields.
         :return: A tuple of list of objects and total count.
         """
         raise NotImplementedError
@@ -2752,6 +2756,64 @@ class ModelAdmin(BaseModelAdmin):
             if password_values:
                 await self.change_password(pk, password_values[0])
         return obj
+
+  </code>
+</pre>
+
+
+
+                
+                  
+<p class="text-4">
+  You can customize relation loading and relation search by overriding <code>orm_get_list</code> and forwarding <code>prefetch_related_fields</code> and <code>additional_search_fields</code>:
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
+class TaskAdmin(TortoiseModelAdmin):
+    search_fields = ("title",)
+
+    async def orm_get_list(
+        self,
+        offset=None,
+        limit=None,
+        search=None,
+        sort_by=None,
+        filters=None,
+    ):
+        return await super().orm_get_list(
+            offset=offset,
+            limit=limit,
+            search=search,
+            sort_by=sort_by,
+            filters=filters,
+            prefetch_related_fields=["user"],
+            additional_search_fields=["user__email"],
+        )
 
   </code>
 </pre>

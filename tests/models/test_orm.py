@@ -456,6 +456,64 @@ async def test_sqlalchemy_orm_get_list_search_nested_relation(event, session_wit
     assert any(getattr(obj, "id", None) == event.id for obj in objs)
 
 
+async def test_sqlalchemy_orm_get_list_supports_additional_search_and_prefetch(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    admin_model.search_fields = ["name"]
+    objs, total = await admin_model.orm_get_list(
+        search="Test Tournament",
+        prefetch_related_fields=["tournament"],
+        additional_search_fields=["tournament__name"],
+    )
+
+    assert isinstance(total, int)
+    assert total > 0
+    assert any(getattr(obj, "id", None) == event.id for obj in objs)
+
+
+async def test_sqlalchemy_orm_get_list_prefetch_edge_cases(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    objs, total = await admin_model.orm_get_list(
+        prefetch_related_fields=[
+            "does_not_exist",
+            "tournament__does_not_exist",
+            "tournament__events",
+            "tournament__name",
+        ]
+    )
+    assert isinstance(total, int)
+    assert isinstance(objs, list)
+
+
+async def test_sqlalchemy_orm_get_list_prefetch_no_related_model(event, session_with_type, monkeypatch):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    from fastadmin.models.orms import sqlalchemy as sqlalchemy_orm
+
+    admin_model = get_admin_model(event.__class__)
+    original_getattrs = sqlalchemy_orm.getattrs
+
+    def fake_getattrs(obj, attr_path, default=None):
+        if attr_path == "property.mapper.class_":
+            return None
+        return original_getattrs(obj, attr_path, default=default)
+
+    monkeypatch.setattr(sqlalchemy_orm, "getattrs", fake_getattrs)
+
+    objs, total = await admin_model.orm_get_list(prefetch_related_fields=["tournament__events"])
+    assert isinstance(total, int)
+    assert isinstance(objs, list)
+
+
 def test_sqlalchemy_resolve_ordering_field_for_relation(monkeypatch):
     from types import SimpleNamespace
 
@@ -748,6 +806,24 @@ async def test_ponyorm_orm_get_list_search_nested_relation(event, session_with_t
     assert any(getattr(obj, "id", None) == event.id for obj in objs)
 
 
+async def test_ponyorm_orm_get_list_supports_additional_search_and_prefetch(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "ponyorm":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    admin_model.search_fields = ["name"]
+    objs, total = await admin_model.orm_get_list(
+        search="Test Tournament",
+        prefetch_related_fields=["tournament"],
+        additional_search_fields=["tournament__name"],
+    )
+
+    assert isinstance(total, int)
+    assert total > 0
+    assert any(getattr(obj, "id", None) == event.id for obj in objs)
+
+
 async def test_ponyorm_edge_cases(event, session_with_type):
     from types import SimpleNamespace
 
@@ -962,6 +1038,44 @@ def test_tortoise_resolve_ordering_field_edge_cases():
 
     assert admin._resolve_ordering_field("") == ""
     assert admin._resolve_ordering_field("unknown") == "unknown"
+
+
+async def test_tortoise_orm_get_list_supports_additional_search_and_prefetch(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "tortoiseorm":
+        return
+
+    from fastadmin.models.orms.tortoise import TortoiseModelAdmin
+
+    admin_model = TortoiseModelAdmin(event.__class__)
+    admin_model.search_fields = ["name"]
+    objs, total = await admin_model.orm_get_list(
+        search="Test Tournament",
+        prefetch_related_fields=["tournament"],
+        additional_search_fields=["tournament__name"],
+    )
+
+    assert isinstance(total, int)
+    assert total > 0
+    assert any(getattr(obj, "id", None) == event.id for obj in objs)
+
+
+async def test_django_orm_get_list_supports_additional_search_and_prefetch(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "djangoorm":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    admin_model.search_fields = ["name"]
+    objs, total = await admin_model.orm_get_list(
+        search="Test Tournament",
+        prefetch_related_fields=["tournament"],
+        additional_search_fields=["tournament__name"],
+    )
+
+    assert isinstance(total, int)
+    assert total > 0
+    assert any(getattr(obj, "id", None) == event.id for obj in objs)
 
 
 def test_django_field_mapping_special_cases():
