@@ -3,6 +3,7 @@ import datetime
 import inspect
 import json
 from collections.abc import Sequence
+from contextvars import ContextVar
 from io import BytesIO, StringIO
 from typing import Any
 from uuid import UUID
@@ -15,6 +16,9 @@ from fastadmin.models.schemas import DashboardWidgetType, ModelFieldWidgetSchema
 
 class BaseModelAdmin:
     """Base class for model admin"""
+
+    _request_context: ContextVar[Any | None]
+    _user_context: ContextVar[Any | None]
 
     # Use it only if you use several orms in your project.
     model_name_prefix: str | None = None
@@ -198,6 +202,23 @@ class BaseModelAdmin:
         :params model_cls: an orm/db model class.
         """
         self.model_cls = model_cls
+        self._request_context = ContextVar(f"fastadmin_admin_request_context_{id(self)}", default=None)
+        self._user_context = ContextVar(f"fastadmin_admin_user_context_{id(self)}", default=None)
+
+    @property
+    def request(self) -> Any | None:
+        """Current request object for this async context."""
+        return self._request_context.get()
+
+    @property
+    def user(self) -> Any | None:
+        """Current authenticated user object for this async context."""
+        return self._user_context.get()
+
+    def set_context(self, request: Any | None = None, user: Any | None = None) -> None:
+        """Set request/user context for the current async task."""
+        self._request_context.set(request)
+        self._user_context.set(user)
 
     @staticmethod
     def get_model_pk_name(orm_model_cls: Any) -> str:

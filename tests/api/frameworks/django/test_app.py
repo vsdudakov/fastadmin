@@ -133,4 +133,5 @@ async def test_django_dashboard_widget_success():
         min_x_field="created_at",
         max_x_field=None,
         period_x_field=None,
+        request=request,
     )

@@ -72,6 +72,8 @@ async def test_flask_delete_invalid_id_422():
 async def test_flask_dashboard_widget_success():
     from unittest.mock import AsyncMock, patch
 
+    from flask import request as flask_request
+
     from fastadmin.api.frameworks.flask import api as flask_api
     from tests.environment.flask_app.dev import app as flask_app
 
@@ -94,4 +96,5 @@ async def test_flask_dashboard_widget_success():
         min_x_field="created_at",
         max_x_field=None,
         period_x_field=None,
+        request=flask_request,
     )

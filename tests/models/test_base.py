@@ -50,6 +50,22 @@ async def test_not_implemented_methods():
         await DashboardWidgetAdmin().get_data()
 
 
+def test_base_model_admin_request_and_user_context():
+    class Model:
+        pass
+
+    admin = ModelAdmin(Model)
+    assert admin.request is None
+    assert admin.user is None
+
+    request = {"path": "/api/list/Event"}
+    user = {"id": 1, "username": "admin"}
+    admin.set_context(request=request, user=user)
+
+    assert admin.request == request
+    assert admin.user == user
+
+
 async def test_export_wrong_format(mocker):
     class Model:
         pass

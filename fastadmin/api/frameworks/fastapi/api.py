@@ -35,6 +35,7 @@ async def sign_in(
         session_id = await api_service.sign_in(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             payload,
+            request=request,
         )
 
         response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
@@ -78,7 +79,10 @@ async def me(
         if not user_id:
             raise AdminApiException(401, "User is not authenticated.")
         return await api_service.get(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), settings.ADMIN_USER_MODEL, user_id
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            settings.ADMIN_USER_MODEL,
+            user_id,
+            request=request,
         )
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
@@ -107,6 +111,7 @@ async def dashboard_widget(
             min_x_field=min_x_field,
             max_x_field=max_x_field,
             period_x_field=period_x_field,
+            request=request,
         )
         return data
     except AdminApiException as e:
@@ -146,6 +151,7 @@ async def list_objs(
             filters=list_filters,
             offset=offset,
             limit=limit,
+            request=request,
         )
         return {
             "total": total,
@@ -172,6 +178,7 @@ async def get(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             id,
+            request=request,
         )
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
@@ -194,6 +201,7 @@ async def add(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             payload,
+            request=request,
         )
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
@@ -212,7 +220,12 @@ async def change_password(
     :return: An object.
     """
     try:
-        await api_service.change_password(request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), id, payload)
+        await api_service.change_password(
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            id,
+            payload,
+            request=request,
+        )
         return id
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
@@ -233,7 +246,13 @@ async def change(
     :return: An object.
     """
     try:
-        return await api_service.change(request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), model, id, payload)
+        return await api_service.change(
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
+            id,
+            payload,
+            request=request,
+        )
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
 
@@ -268,6 +287,7 @@ async def export(
             search=search,
             sort_by=sort_by,
             filters=list_filters,
+            request=request,
         )
         headers = {"Content-Disposition": f'attachment; filename="{file_name}"'}
         return StreamingResponse(
@@ -296,6 +316,7 @@ async def delete(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             id,
+            request=request,
         )
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
@@ -321,6 +342,7 @@ async def action(
             model,
             action,
             payload,
+            request=request,
         )
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
@@ -337,4 +359,5 @@ async def configuration(
     """
     return await api_service.get_configuration(
         request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+        request=request,
     )

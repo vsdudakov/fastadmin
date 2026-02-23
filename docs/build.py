@@ -44,7 +44,10 @@ def get_versions():
     return [
         {
             "version": "0.3.4",
-            "changes": ["Fix sort by and search by relations. Fix examples."],
+            "changes": [
+                "Fix sort by and search by relations. Fix examples.",
+                "Add request/user context on BaseModelAdmin for per-request custom logic.",
+            ],
         },
         {
             "version": "0.3.3",
@@ -589,6 +592,25 @@ export ADMIN_SECRET_KEY=secret_key
                     "content": "The following methods and attributes are available for model admins:",
                 },
                 {"type": "code-python", "content": inspect.getsource(BaseModelAdmin)},
+                {
+                    "type": "alert-info",
+                    "content": "Use <code>self.request</code> and <code>self.user</code> in your admin methods (permissions, save hooks, actions) to access request-scoped context.",
+                },
+                {
+                    "type": "code-python",
+                    "content": """class EventAdmin(TortoiseModelAdmin):
+    async def has_change_permission(self, user_id=None):
+        # request/user are available for current request context
+        if self.user and self.user.get("is_superuser"):
+            return True
+        return False
+
+    async def save_model(self, id, payload):
+        if self.request:
+            payload["changed_from_ip"] = getattr(self.request, "client", None)
+        return await super().save_model(id, payload)
+""",
+                },
                 {
                     "type": "text",
                     "content": "Model-admin-specific methods and attributes:",

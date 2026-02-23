@@ -101,6 +101,8 @@ def get_admin_or_admin_inline_model(orm_model_cls: str) -> ModelAdmin | InlineMo
 async def generate_models_schema(
     admin_models: dict[Any, ModelAdmin | InlineModelAdmin],
     user_id: UUID | int | None = None,
+    user: Any | None = None,
+    request: Any | None = None,
     inline_parent_admin_modal: ModelAdmin | None = None,
 ) -> list[ModelSchema | InlineModelSchema]:
     """Generate models schema
@@ -111,6 +113,8 @@ async def generate_models_schema(
     """
     models_schemas: list[ModelSchema | InlineModelSchema] = []
     for orm_model_cls, admin_model_obj in admin_models.items():
+        if hasattr(admin_model_obj, "set_context"):
+            admin_model_obj.set_context(request=request, user=user)
         orm_model_fields = admin_model_obj.get_model_fields_with_widget_types()
         orm_model_fields_for_serialize = admin_model_obj.get_fields_for_serialize()
 
@@ -258,6 +262,8 @@ async def generate_models_schema(
                     view_on_site=admin_model_obj.view_on_site,
                     inlines=await generate_models_schema(
                         {inline.model: inline(inline.model) for inline in admin_model_obj.inlines},
+                        user=user,
+                        request=request,
                         inline_parent_admin_modal=admin_model_obj,
                         user_id=user_id,
                     ),  # type: ignore [arg-type]

@@ -102,10 +102,31 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
 
 
 class ApiService:
+    @staticmethod
+    def _bind_admin_context(
+        admin_model: ModelAdmin | InlineModelAdmin | Any, request: Any | None, user: Any | None
+    ) -> None:
+        if hasattr(admin_model, "set_context"):
+            admin_model.set_context(request=request, user=user)
+
+    async def _get_authenticated_user(self, session_id: str | None) -> tuple[UUID | int, Any | None]:
+        current_user_id = await get_user_id_from_session_id(session_id)
+        if not current_user_id:
+            raise AdminApiException(401, detail="User is not authenticated.")
+
+        admin_user_model = get_admin_model(settings.ADMIN_USER_MODEL)
+        current_user = (
+            await admin_user_model.get_obj(current_user_id)
+            if admin_user_model and hasattr(admin_user_model, "get_obj")
+            else None
+        )
+        return current_user_id, current_user
+
     async def sign_in(
         self,
         session_id: str | None,
         payload: SignInInputSchema,
+        request: Any | None = None,
     ) -> str:
         model = settings.ADMIN_USER_MODEL
         admin_model = get_admin_model(model)
@@ -118,6 +139,7 @@ class ApiService:
         else:
             authenticate_fn = sync_to_async(admin_model.authenticate)  # type: ignore [arg-type]
 
+        self._bind_admin_context(admin_model, request=request, user=None)
         user_id = await authenticate_fn(payload.username, payload.password)
 
         if not user_id or not isinstance(user_id, int | UUID):
@@ -139,10 +161,9 @@ class ApiService:
     async def sign_out(
         self,
         session_id: str | None,
+        request: Any | None = None,
     ) -> bool:
-        current_user_id = await get_user_id_from_session_id(session_id)
-        if not current_user_id:
-            raise AdminApiException(401, detail="User is not authenticated.")
+        _current_user_id, _current_user = await self._get_authenticated_user(session_id)
 
         return True
 
@@ -153,10 +174,9 @@ class ApiService:
         min_x_field: str | None = None,
         max_x_field: str | None = None,
         period_x_field: str | None = None,
+        request: Any | None = None,
     ) -> dict[str, str | int | float]:
-        current_user_id = await get_user_id_from_session_id(session_id)
-        if not current_user_id:
-            raise AdminApiException(401, detail="User is not authenticated.")
+        _current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         query_params = DashboardWidgetQuerySchema(
             min_x_field=min_x_field,
@@ -167,6 +187,8 @@ class ApiService:
         dashboard_widget_model = admin_dashboard_widgets.get(model)
         if not dashboard_widget_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
+
+        self._bind_admin_context(dashboard_widget_model, request=request, user=current_user)
 
         if inspect.iscoroutinefunction(dashboard_widget_model.get_data):
             get_data = dashboard_widget_model.get_data
@@ -190,10 +212,9 @@ class ApiService:
         filters: dict | None = None,
         offset: int | None = 0,
         limit: int | None = 10,
+        request: Any | None = None,
     ) -> tuple[list[dict], int]:
-        current_user_id = await get_user_id_from_session_id(session_id)
-        if not current_user_id:
-            raise AdminApiException(401, detail="User is not authenticated.")
+        _current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         query_params = ListQuerySchema(
             search=search,
@@ -206,6 +227,7 @@ class ApiService:
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
+        self._bind_admin_context(admin_model, request=request, user=current_user)
 
         # validations
         fields = set(admin_model.get_fields_for_serialize())
@@ -256,14 +278,14 @@ class ApiService:
         session_id: str | None,
         model: str,
         id: UUID | int | str,
+        request: Any | None = None,
     ) -> dict:
-        current_user_id = await get_user_id_from_session_id(session_id)
-        if not current_user_id:
-            raise AdminApiException(401, detail="User is not authenticated.")
+        _current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
+        self._bind_admin_context(admin_model, request=request, user=current_user)
 
         try:
             obj = await admin_model.get_obj(id)
@@ -278,14 +300,14 @@ class ApiService:
         session_id: str | None,
         model: str,
         payload: dict,
+        request: Any | None = None,
     ) -> dict:
-        current_user_id = await get_user_id_from_session_id(session_id)
-        if not current_user_id:
-            raise AdminApiException(401, detail="User is not authenticated.")
+        _current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
+        self._bind_admin_context(admin_model, request=request, user=current_user)
         return await admin_model.save_model(None, payload)  # type: ignore [return-value]
 
     async def change_password(
@@ -293,14 +315,14 @@ class ApiService:
         session_id: str | None,
         id: UUID | int | str,
         payload: dict,
+        request: Any | None = None,
     ) -> None:
-        current_user_id = await get_user_id_from_session_id(session_id)
-        if not current_user_id:
-            raise AdminApiException(401, detail="User is not authenticated.")
+        _current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         admin_model = get_admin_model(settings.ADMIN_USER_MODEL)
         if not admin_model:
             raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} model is not registered.")
+        self._bind_admin_context(admin_model, request=request, user=current_user)
 
         payload = ChangePasswordInputSchema(**payload)
         if payload.password != payload.confirm_password:
@@ -333,14 +355,14 @@ class ApiService:
         model: str,
         id: UUID | int | str,
         payload: dict,
+        request: Any | None = None,
     ) -> dict:
-        current_user_id = await get_user_id_from_session_id(session_id)
-        if not current_user_id:
-            raise AdminApiException(401, detail="User is not authenticated.")
+        _current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
+        self._bind_admin_context(admin_model, request=request, user=current_user)
 
         try:
             obj = await admin_model.save_model(id, payload)
@@ -358,10 +380,9 @@ class ApiService:
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
+        request: Any | None = None,
     ) -> tuple[str, str, StringIO | BytesIO | None]:
-        current_user_id = await get_user_id_from_session_id(session_id)
-        if not current_user_id:
-            raise AdminApiException(401, detail="User is not authenticated.")
+        _current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         query_params = ListQuerySchema(
             search=search,
@@ -374,6 +395,7 @@ class ApiService:
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
+        self._bind_admin_context(admin_model, request=request, user=current_user)
 
         # validations
         fields = set(admin_model.get_fields_for_serialize())
@@ -432,14 +454,14 @@ class ApiService:
         session_id: str | None,
         model: str,
         id: UUID | int | str,
+        request: Any | None = None,
     ) -> UUID | int | str:
-        current_user_id = await get_user_id_from_session_id(session_id)
-        if not current_user_id:
-            raise AdminApiException(401, detail="User is not authenticated.")
+        current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
+        self._bind_admin_context(admin_model, request=request, user=current_user)
 
         if str(current_user_id) == str(id) and model == settings.ADMIN_USER_MODEL:
             raise AdminApiException(403, detail="You cannot delete yourself.")
@@ -449,14 +471,20 @@ class ApiService:
             raise AdminApiException(404, detail=f"{model} not found.") from None
         return id
 
-    async def action(self, session_id: str | None, model: str, action: str, payload: ActionInputSchema) -> None:
-        current_user_id = await get_user_id_from_session_id(session_id)
-        if not current_user_id:
-            raise AdminApiException(401, detail="User is not authenticated.")
+    async def action(
+        self,
+        session_id: str | None,
+        model: str,
+        action: str,
+        payload: ActionInputSchema,
+        request: Any | None = None,
+    ) -> None:
+        _current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
+        self._bind_admin_context(admin_model, request=request, user=current_user)
 
         if action not in admin_model.actions:
             raise AdminApiException(422, detail=f"{action} action is not in actions setting.")
@@ -475,6 +503,7 @@ class ApiService:
     async def get_configuration(
         self,
         session_id: str | None,
+        request: Any | None = None,
     ) -> ConfigurationSchema:
         current_user_id = await get_user_id_from_session_id(session_id)
         if not current_user_id:
@@ -492,8 +521,17 @@ class ApiService:
                 dashboard_widgets=[],
             )
 
+        admin_user_model = get_admin_model(settings.ADMIN_USER_MODEL)
+        current_user = (
+            await admin_user_model.get_obj(current_user_id)
+            if admin_user_model and hasattr(admin_user_model, "get_obj")
+            else None
+        )
         admin_models = cast(dict[Any, ModelAdmin | InlineModelAdmin], get_admin_models())
-        models = cast(Sequence[ModelSchema], await generate_models_schema(admin_models, user_id=current_user_id))
+        models = cast(
+            Sequence[ModelSchema],
+            await generate_models_schema(admin_models, user_id=current_user_id, user=current_user, request=request),
+        )
         dashboard_widgets = generate_dashboard_widgets_schema()
         return ConfigurationSchema(
             site_name=settings.ADMIN_SITE_NAME,
