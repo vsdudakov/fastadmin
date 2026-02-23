@@ -594,6 +594,34 @@ export ADMIN_SECRET_KEY=secret_key
                     "content": "Model-admin-specific methods and attributes:",
                 },
                 {"type": "code-python", "content": inspect.getsource(ModelAdmin)},
+                {
+                    "type": "text",
+                    "content": "You can customize relation loading and relation search by overriding <code>orm_get_list</code> and forwarding <code>prefetch_related_fields</code> and <code>additional_search_fields</code>:",
+                },
+                {
+                    "type": "code-python",
+                    "content": """class TaskAdmin(TortoiseModelAdmin):
+    search_fields = ("title",)
+
+    async def orm_get_list(
+        self,
+        offset=None,
+        limit=None,
+        search=None,
+        sort_by=None,
+        filters=None,
+    ):
+        return await super().orm_get_list(
+            offset=offset,
+            limit=limit,
+            search=search,
+            sort_by=sort_by,
+            filters=filters,
+            prefetch_related_fields=["user"],
+            additional_search_fields=["user__email"],
+        )
+""",
+                },
             ]
         case "#model-form-field-types":
             return [

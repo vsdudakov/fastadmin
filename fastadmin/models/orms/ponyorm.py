@@ -224,6 +224,8 @@ class PonyORMMixin:
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
+        prefetch_related_fields: list[str] | None = None,
+        additional_search_fields: list[str] | None = None,
     ) -> tuple[list[Any], int]:
         """This method is used to get list of orm/db model objects.
 
@@ -232,6 +234,8 @@ class PonyORMMixin:
         :params search: a search query.
         :params sort_by: a sort by field name.
         :params filters: a dict of filters.
+        :params prefetch_related_fields: a list of related fields to prefetch.
+        :params additional_search_fields: a list of additional search fields.
         :return: A tuple of list of objects and total count.
         """
 
@@ -271,9 +275,13 @@ class PonyORMMixin:
                 filter_expr = f""""{value}" {pony_condition}  m.{field}"""
                 qs = qs.filter(filter_expr)
 
-        if search and self.search_fields:
+        search_fields = list(self.search_fields)
+        if additional_search_fields:
+            search_fields.extend(additional_search_fields)
+
+        if search and search_fields:
             ids = []
-            for search_field in self.search_fields:
+            for search_field in search_fields:
                 pony_search_field = search_field.replace("__", ".")
                 # Pony string filter for case-insensitive search
                 filter_expr = f'"{search.lower()}" in m.{pony_search_field}.lower()'
@@ -295,6 +303,9 @@ class PonyORMMixin:
 
         if self.list_select_related:
             qs = qs.prefetch(*[getattr(self.model_cls, field) for field in self.list_select_related])
+
+        if prefetch_related_fields:
+            qs = qs.prefetch(*[getattr(self.model_cls, field) for field in prefetch_related_fields])
 
         if offset is not None and limit is not None:
             qs = qs.limit(limit, offset=offset)

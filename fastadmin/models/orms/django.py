@@ -245,6 +245,8 @@ class DjangoORMMixin:
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
+        prefetch_related_fields: list[str] | None = None,
+        additional_search_fields: list[str] | None = None,
     ) -> tuple[list[Any], int]:
         """This method is used to get list of orm/db model objects.
 
@@ -253,9 +255,14 @@ class DjangoORMMixin:
         :params search: a search query.
         :params sort_by: a sort by field name.
         :params filters: a dict of filters.
+        :params prefetch_related_fields: a list of related fields to prefetch.
+        :params additional_search_fields: a list of additional search fields.
         :return: A tuple of list of objects and total count.
         """
         qs = self.model_cls.objects.all()
+
+        if prefetch_related_fields:
+            qs = qs.prefetch_related(*prefetch_related_fields)
 
         if filters:
             for field_with_condition, value in filters.items():
@@ -263,8 +270,12 @@ class DjangoORMMixin:
                 condition = field_with_condition[1]
                 qs = qs.filter(**{f"{field}__{condition}" if condition != "exact" else field: value})
 
-        if search and self.search_fields:
-            search_conditions = [Q(**{f + "__icontains": search}) for f in self.search_fields]
+        search_fields = list(self.search_fields)
+        if additional_search_fields:
+            search_fields.extend(additional_search_fields)
+
+        if search and search_fields:
+            search_conditions = [Q(**{f + "__icontains": search}) for f in search_fields]
             search_q = search_conditions[0] if len(search_conditions) == 1 else operator.or_(*search_conditions)
             qs = qs.filter(search_q)
 
