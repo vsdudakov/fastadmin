@@ -1,4 +1,3 @@
-import operator
 from base64 import b64decode
 from typing import Any
 from uuid import UUID
@@ -276,7 +275,9 @@ class DjangoORMMixin:
 
         if search and search_fields:
             search_conditions = [Q(**{f + "__icontains": search}) for f in search_fields]
-            search_q = search_conditions[0] if len(search_conditions) == 1 else operator.or_(*search_conditions)
+            search_q = search_conditions[0]
+            for condition in search_conditions[1:]:
+                search_q |= condition
             qs = qs.filter(search_q)
 
         if sort_by:
