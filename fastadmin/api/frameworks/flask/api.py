@@ -30,6 +30,7 @@ async def sign_in() -> Response:
         session_id = await api_service.sign_in(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             payload,
+            request=request,
         )
         response = make_response({})
         response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
@@ -74,7 +75,10 @@ async def me() -> dict:
         if not user_id:
             raise AdminApiException(401, "User is not authenticated.")
         return await api_service.get(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None), settings.ADMIN_USER_MODEL, user_id
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            settings.ADMIN_USER_MODEL,
+            user_id,
+            request=request,
         )
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
@@ -104,6 +108,7 @@ async def dashboard_widget(model: str) -> dict:
             min_x_field=min_x_field,
             max_x_field=max_x_field,
             period_x_field=period_x_field,
+            request=request,
         )
         return data
     except AdminApiException as e:
@@ -142,6 +147,7 @@ async def list_objs(model: str) -> dict:
             filters=list_filters,
             offset=offset,
             limit=limit,
+            request=request,
         )
         return {
             "total": total,
@@ -174,6 +180,7 @@ async def get(model: str, id: UUID | int | str) -> dict:
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             id,
+            request=request,
         )
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
@@ -195,6 +202,7 @@ async def add(model: str) -> dict:
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             payload,
+            request=request,
         )
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
@@ -220,6 +228,7 @@ async def change_password(id: UUID | int | str) -> UUID | int | str:
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             id,
             payload,
+            request=request,
         )
         return id
     except AdminApiException as e:
@@ -248,6 +257,7 @@ async def change(model: str, id: UUID | int | str) -> dict:
             model,
             id,
             payload,
+            request=request,
         )
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
@@ -283,6 +293,7 @@ async def export(model: str) -> Response:
             search=search,
             sort_by=sort_by,
             filters=list_filters,
+            request=request,
         )
         response = Response(stream, mimetype=content_type)
         response.headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
@@ -313,6 +324,7 @@ async def delete(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             id,
+            request=request,
         )
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
@@ -340,6 +352,7 @@ async def action(
             model,
             action,
             payload,
+            request=request,
         )
         return {}
     except AdminApiException as e:
@@ -357,5 +370,6 @@ async def configuration() -> dict:
     """
     obj = await api_service.get_configuration(
         request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+        request=request,
     )
     return asdict(obj)

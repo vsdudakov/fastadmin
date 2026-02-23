@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from io import StringIO
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import UUID, uuid4
 
 import jwt
@@ -68,6 +68,36 @@ async def test_dashboard_widget_with_sync_get_data(monkeypatch):
     assert result["results"] == [{"x": "A", "y": 1}]
 
 
+async def test_dashboard_widget_binds_request_and_user_context(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    current_user = {"id": 1, "username": "admin"}
+    monkeypatch.setattr(
+        "fastadmin.api.service.get_admin_model",
+        lambda _model: SimpleNamespace(get_obj=AsyncMock(return_value=current_user)),
+    )
+
+    class SyncWidget:
+        def __init__(self):
+            self.request = None
+            self.user = None
+
+        def set_context(self, request=None, user=None):
+            self.request = request
+            self.user = user
+
+        def get_data(self, min_x_field=None, max_x_field=None, period_x_field=None):
+            return {"results": [{"x": "A", "y": 1}]}
+
+    widget = SyncWidget()
+    monkeypatch.setitem(admin_dashboard_widgets, "SyncWidgetContext", widget)
+
+    request = object()
+    result = await ApiService().dashboard_widget("sid", "SyncWidgetContext", request=request)
+    assert result["results"] == [{"x": "A", "y": 1}]
+    assert widget.request is request
+    assert widget.user == current_user
+
+
 async def test_list_skips_excluded_filter_fields(monkeypatch):
     monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
     admin_model = SimpleNamespace(
@@ -90,6 +120,33 @@ async def test_list_skips_excluded_filter_fields(monkeypatch):
         sort_by=None,
         filters={},
     )
+
+
+async def test_list_binds_request_and_user_context(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    current_user = {"id": 1, "username": "admin"}
+    monkeypatch.setattr(
+        "fastadmin.api.service.get_admin_model",
+        lambda _model: SimpleNamespace(get_obj=AsyncMock(return_value=current_user)),
+    )
+
+    set_context = Mock()
+    admin_model = SimpleNamespace(
+        search_fields=[],
+        ordering=[],
+        list_select_related=[],
+        get_fields_for_serialize=lambda: ["name"],
+        get_model_fields_with_widget_types=list,
+        get_list=AsyncMock(return_value=([{"name": "x"}], 1)),
+        set_context=set_context,
+    )
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    request = object()
+    items, total = await ApiService().list("sid", "Event", request=request)
+    assert total == 1
+    assert items == [{"name": "x"}]
+    set_context.assert_called_once_with(request=request, user=current_user)
 
 
 async def test_change_password_admin_model_not_registered(monkeypatch):

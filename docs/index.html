@@ -2058,6 +2058,9 @@ class UserAdmin(TortoiseModelAdmin):
 class BaseModelAdmin:
     """Base class for model admin"""
 
+    _request_context: ContextVar[Any | None]
+    _user_context: ContextVar[Any | None]
+
     # Use it only if you use several orms in your project.
     model_name_prefix: str | None = None
 
@@ -2240,6 +2243,23 @@ class BaseModelAdmin:
         :params model_cls: an orm/db model class.
         """
         self.model_cls = model_cls
+        self._request_context = ContextVar(f"fastadmin_admin_request_context_{id(self)}", default=None)
+        self._user_context = ContextVar(f"fastadmin_admin_user_context_{id(self)}", default=None)
+
+    @property
+    def request(self) -> Any | None:
+        """Current request object for this async context."""
+        return self._request_context.get()
+
+    @property
+    def user(self) -> Any | None:
+        """Current authenticated user object for this async context."""
+        return self._user_context.get()
+
+    def set_context(self, request: Any | None = None, user: Any | None = None) -> None:
+        """Set request/user context for the current async task."""
+        self._request_context.set(request)
+        self._user_context.set(user)
 
     @staticmethod
     def get_model_pk_name(orm_model_cls: Any) -> str:
@@ -2656,6 +2676,55 @@ class BaseModelAdmin:
         :return: A boolean value.
         """
         return True
+
+  </code>
+</pre>
+
+
+
+                
+                  
+
+
+
+
+<p class="alert alert-info">
+  Use <code>self.request</code> and <code>self.user</code> in your admin methods (permissions, save hooks, actions) to access request-scoped context.
+</p>
+
+
+
+
+
+
+
+
+
+                
+                  
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
+class EventAdmin(TortoiseModelAdmin):
+    async def has_change_permission(self, user_id=None):
+        # request/user are available for current request context
+        if self.user and self.user.get("is_superuser"):
+            return True
+        return False
+
+    async def save_model(self, id, payload):
+        if self.request:
+            payload["changed_from_ip"] = getattr(self.request, "client", None)
+        return await super().save_model(id, payload)
 
   </code>
 </pre>
@@ -3327,6 +3396,24 @@ class InlineModelAdmin(BaseModelAdmin):
                   
 <p class="text-4">
   Fix sort by and search by relations. Fix examples.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Add request/user context on BaseModelAdmin for per-request custom logic.
 </p>
 
 

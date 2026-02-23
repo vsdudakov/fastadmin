@@ -25,4 +25,5 @@ async def test_fastapi_dashboard_widget_success():
         min_x_field=None,
         max_x_field=None,
         period_x_field=None,
+        request=request,
     )

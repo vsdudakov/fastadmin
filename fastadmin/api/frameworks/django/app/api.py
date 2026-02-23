@@ -64,6 +64,7 @@ async def sign_in(request: HttpRequest) -> JsonResponse:
         session_id = await api_service.sign_in(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             payload,
+            request=request,
         )
 
         response = JsonResponse({})
@@ -111,7 +112,10 @@ async def me(request: HttpRequest) -> JsonResponse:
         if not user_id:
             raise AdminApiException(401, "User is not authenticated.")
         obj = await api_service.get(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None), settings.ADMIN_USER_MODEL, user_id
+            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            settings.ADMIN_USER_MODEL,
+            user_id,
+            request=request,
         )
         return JsonResponse(obj)
 
@@ -143,6 +147,7 @@ async def dashboard_widget(request: HttpRequest, model: str) -> JsonResponse:
             min_x_field=min_x_field,
             max_x_field=max_x_field,
             period_x_field=period_x_field,
+            request=request,
         )
         return JsonResponse(data)
     except AdminApiException as e:
@@ -182,6 +187,7 @@ async def list_objs(request: HttpRequest, model: str) -> JsonResponse:
             filters=list_filters,
             offset=offset,
             limit=limit,
+            request=request,
         )
         return JsonResponse(
             {
@@ -212,6 +218,7 @@ async def get(request: HttpRequest, model: str, id: UUID | int | str) -> JsonRes
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             id,
+            request=request,
         )
         return JsonResponse(obj)
 
@@ -234,6 +241,7 @@ async def add(request: HttpRequest, model: str) -> JsonResponse:
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             json.loads(request.body),
+            request=request,
         )
         return JsonResponse(obj)
     except AdminApiException as e:
@@ -257,6 +265,7 @@ async def change_password(request: HttpRequest, id: UUID | int | str) -> JsonRes
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             id,
             json.loads(request.body),
+            request=request,
         )
         return JsonResponse(id, safe=False)
 
@@ -283,6 +292,7 @@ async def change(request: HttpRequest, model: str, id: UUID | int | str) -> Json
             model,
             id,
             json.loads(request.body),
+            request=request,
         )
         return JsonResponse(obj)
 
@@ -319,6 +329,7 @@ async def export(request: HttpRequest, model: str) -> JsonResponse:
             search=search,
             sort_by=sort_by,
             filters=list_filters,
+            request=request,
         )
         response = StreamingHttpResponse(stream, content_type=content_type)
         response.headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
@@ -349,6 +360,7 @@ async def delete(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             id,
+            request=request,
         )
         return JsonResponse(deleted_id, safe=False)
 
@@ -378,6 +390,7 @@ async def action(
             model,
             action,
             payload,
+            request=request,
         )
         return JsonResponse({})
 
@@ -397,5 +410,6 @@ async def configuration(request: HttpRequest) -> JsonResponse:
 
     obj = await api_service.get_configuration(
         request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+        request=request,
     )
     return JsonResponse(asdict(obj))
