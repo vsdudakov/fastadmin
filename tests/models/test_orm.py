@@ -462,12 +462,9 @@ async def test_sqlalchemy_orm_get_list_supports_additional_search_and_prefetch(e
         return
 
     admin_model = get_admin_model(event.__class__)
-    admin_model.search_fields = ["name"]
-    objs, total = await admin_model.orm_get_list(
-        search="Test Tournament",
-        prefetch_related_fields=["tournament"],
-        additional_search_fields=["tournament__name"],
-    )
+    admin_model.search_fields = ["name", "tournament__name"]
+    admin_model.list_select_related = ("tournament",)
+    objs, total = await admin_model.orm_get_list(search="Test Tournament")
 
     assert isinstance(total, int)
     assert total > 0
@@ -480,14 +477,8 @@ async def test_sqlalchemy_orm_get_list_prefetch_edge_cases(event, session_with_t
         return
 
     admin_model = get_admin_model(event.__class__)
-    objs, total = await admin_model.orm_get_list(
-        prefetch_related_fields=[
-            "does_not_exist",
-            "tournament__does_not_exist",
-            "tournament__events",
-            "tournament__name",
-        ]
-    )
+    admin_model.search_fields = ["name"]
+    objs, total = await admin_model.orm_get_list(search="event")
     assert isinstance(total, int)
     assert isinstance(objs, list)
 
@@ -503,13 +494,27 @@ async def test_sqlalchemy_orm_get_list_prefetch_no_related_model(event, session_
     original_getattrs = sqlalchemy_orm.getattrs
 
     def fake_getattrs(obj, attr_path, default=None):
-        if attr_path == "property.mapper.class_":
+        if attr_path == "mapper.class_":
             return None
         return original_getattrs(obj, attr_path, default=default)
 
     monkeypatch.setattr(sqlalchemy_orm, "getattrs", fake_getattrs)
 
-    objs, total = await admin_model.orm_get_list(prefetch_related_fields=["tournament__events"])
+    admin_model.search_fields = ["tournament__name"]
+    objs, total = await admin_model.orm_get_list(search="anything")
+    assert total == 0
+    assert objs == []
+
+
+async def test_sqlalchemy_orm_get_list_search_uses_select_related(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    admin_model.search_fields = ["name"]
+    admin_model.list_select_related = ("tournament",)
+    objs, total = await admin_model.orm_get_list(search="event")
     assert isinstance(total, int)
     assert isinstance(objs, list)
 
@@ -812,12 +817,9 @@ async def test_ponyorm_orm_get_list_supports_additional_search_and_prefetch(even
         return
 
     admin_model = get_admin_model(event.__class__)
-    admin_model.search_fields = ["name"]
-    objs, total = await admin_model.orm_get_list(
-        search="Test Tournament",
-        prefetch_related_fields=["tournament"],
-        additional_search_fields=["tournament__name"],
-    )
+    admin_model.search_fields = ["name", "tournament__name"]
+    admin_model.list_select_related = ("tournament",)
+    objs, total = await admin_model.orm_get_list(search="Test Tournament")
 
     assert isinstance(total, int)
     assert total > 0
@@ -1048,12 +1050,9 @@ async def test_tortoise_orm_get_list_supports_additional_search_and_prefetch(eve
     from fastadmin.models.orms.tortoise import TortoiseModelAdmin
 
     admin_model = TortoiseModelAdmin(event.__class__)
-    admin_model.search_fields = ["name"]
-    objs, total = await admin_model.orm_get_list(
-        search="Test Tournament",
-        prefetch_related_fields=["tournament"],
-        additional_search_fields=["tournament__name"],
-    )
+    admin_model.search_fields = ["name", "tournament__name"]
+    admin_model.list_select_related = ("tournament",)
+    objs, total = await admin_model.orm_get_list(search="Test Tournament")
 
     assert isinstance(total, int)
     assert total > 0
@@ -1066,12 +1065,9 @@ async def test_django_orm_get_list_supports_additional_search_and_prefetch(event
         return
 
     admin_model = get_admin_model(event.__class__)
-    admin_model.search_fields = ["name"]
-    objs, total = await admin_model.orm_get_list(
-        search="Test Tournament",
-        prefetch_related_fields=["tournament"],
-        additional_search_fields=["tournament__name"],
-    )
+    admin_model.search_fields = ["name", "tournament__name"]
+    admin_model.list_select_related = ("tournament",)
+    objs, total = await admin_model.orm_get_list(search="Test Tournament")
 
     assert isinstance(total, int)
     assert total > 0
