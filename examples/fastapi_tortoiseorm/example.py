@@ -75,9 +75,10 @@ class BaseEventModelAdmin(TortoiseModelAdmin):
 @register(Event)
 class EventModelAdmin(TortoiseModelAdmin):
     actions = ("make_is_active", "make_is_not_active")
-    list_display = ("id", "tournament", "name_with_price", "rating", "event_type", "is_active", "started")
-    list_filter = ("tournament", "event_type", "is_active")
+    list_display = ("id", "tournament_name", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_filter = ("event_type", "is_active")
     search_fields = ("name", "tournament__name")
+    list_select_related = ("tournament",)
 
     @action(description="Make event active")
     async def make_is_active(self, ids):
@@ -90,6 +91,11 @@ class EventModelAdmin(TortoiseModelAdmin):
     @display
     async def started(self, obj):
         return bool(obj.start_time)
+
+    @display
+    async def tournament_name(self, obj):
+        tournament = await obj.tournament
+        return tournament.name
 
     @display()
     async def name_with_price(self, obj):

@@ -2,10 +2,22 @@ import { Checkbox, Tag } from "antd";
 import dayjs from "dayjs";
 import slugify from "slugify";
 
-export const isDayJs = (v: string): boolean => {
-  const iso8601Regex =
-    /^(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2}))?)$/;
-  return iso8601Regex.test(v);
+export const isTime = (v: string): boolean => {
+  // Accept common backend time shapes, including:
+  // HH:mm:ss(.ffffff), HH:mm(:ss)
+  // with optional timezone suffix.
+  const timeLikeRegex =
+    /^\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:?\d{2})?$/;
+  return timeLikeRegex.test(v);
+};
+
+export const isDateTime = (v: string): boolean => {
+  // Accept common backend date/datetime shapes, including:
+  // YYYY-MM-DD, YYYY-MM-DDTHH:mm:ss(.ffffff), YYYY-MM-DD HH:mm(:ss)
+  // with optional timezone suffix.
+  const dateLikeRegex =
+    /^\d{4}-\d{2}-\d{2}(?:[T\s]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+  return dateLikeRegex.test(v);
 };
 
 export const isNumeric = (v: string): boolean => {
@@ -75,13 +87,13 @@ export const transformFiltersToServer = (data: any) => {
   const filters = transformDataToServer(data);
   const filtersData: Record<string, string | string[]> = {};
   for (const [k, v] of Object.entries(filters)) {
-    if (isArray(v) && v.length === 2 && v.every(isDayJs)) {
+    if (isArray(v) && v.length === 2 && v.every(isDateTime)) {
       filtersData[`${k}__gte`] = v[0];
       filtersData[`${k}__lte`] = v[1];
     } else if (isArray(v)) {
       // Serialize __in as comma-separated so one query param works (status__in=active,inactive)
       filtersData[`${k}__in`] = v.join(",");
-    } else if (isDayJs(v) || isNumeric(v) || isBoolean(v)) {
+    } else if (isDateTime(v) || isTime(v) || isNumeric(v) || isBoolean(v)) {
       filtersData[k] = v as string;
     } else {
       filtersData[`${k}__icontains`] = String(v);
@@ -100,8 +112,11 @@ export const transformValueFromServer = (value: any): any => {
   if (isBoolean(value)) {
     return value !== "false" && !!value;
   }
-  if (isDayJs(value)) {
+  if (isDateTime(value)) {
     return dayjs(value);
+  }
+  if (isTime(value)) {
+    return dayjs(`1970-01-01T${value}`);
   }
   return value;
 };
@@ -148,8 +163,11 @@ export const transformColumnValueFromServer = (
   if (isBoolean(value)) {
     return <Checkbox checked={value} />;
   }
-  if (isDayJs(value)) {
+  if (isDateTime(value)) {
     return dayjs(value).format(dateTimeFormat);
+  }
+  if (isTime(value)) {
+    return value;
   }
   return value;
 };

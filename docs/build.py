@@ -43,6 +43,13 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.3.6",
+            "changes": [
+                "Fix datetime/time handling in transform helpers.",
+                "Revert get_orm_list method to original implementation. We can use list_select_related and search_fields for prefetch_related_fields and additional_search_fields.",
+            ],
+        },
+        {
             "version": "0.3.5",
             "changes": [
                 "Enhance get_orm_list method to support prefetch_related_fields and additional_search_fields.",
@@ -622,34 +629,6 @@ export ADMIN_SECRET_KEY=secret_key
                     "content": "Model-admin-specific methods and attributes:",
                 },
                 {"type": "code-python", "content": inspect.getsource(ModelAdmin)},
-                {
-                    "type": "text",
-                    "content": "You can customize relation loading and relation search by overriding <code>orm_get_list</code> and forwarding <code>prefetch_related_fields</code> and <code>additional_search_fields</code>:",
-                },
-                {
-                    "type": "code-python",
-                    "content": """class TaskAdmin(TortoiseModelAdmin):
-    search_fields = ("title",)
-
-    async def orm_get_list(
-        self,
-        offset=None,
-        limit=None,
-        search=None,
-        sort_by=None,
-        filters=None,
-    ):
-        return await super().orm_get_list(
-            offset=offset,
-            limit=limit,
-            search=search,
-            sort_by=sort_by,
-            filters=filters,
-            prefetch_related_fields=["user"],
-            additional_search_fields=["user__email"],
-        )
-""",
-                },
             ]
         case "#model-form-field-types":
             return [

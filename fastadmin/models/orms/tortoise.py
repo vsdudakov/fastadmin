@@ -254,8 +254,6 @@ class TortoiseMixin:
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
-        prefetch_related_fields: list[str] | None = None,
-        additional_search_fields: list[str] | None = None,
     ) -> tuple[list[Any], int]:
         """This method is used to get list of orm/db model objects.
 
@@ -264,14 +262,9 @@ class TortoiseMixin:
         :params search: a search query.
         :params sort_by: a sort by field name.
         :params filters: a dict of filters.
-        :params prefetch_related_fields: a list of related fields to prefetch.
-        :params additional_search_fields: a list of additional search fields.
         :return: A tuple of list of objects and total count.
         """
         qs = self.model_cls.all()
-
-        if prefetch_related_fields:
-            qs = qs.prefetch_related(*prefetch_related_fields).distinct()
 
         if filters:
             for field_with_condition, value in filters.items():
@@ -280,9 +273,6 @@ class TortoiseMixin:
                 qs = qs.filter(**{f"{field}__{condition}" if condition != "exact" else field: value})
 
         search_fields = list(self.search_fields)
-        if additional_search_fields:
-            search_fields.extend(additional_search_fields)
-
         if search and search_fields:
             qs = qs.filter(
                 functools.reduce(

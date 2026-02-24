@@ -197,6 +197,10 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_3_6">v0.3.6</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_3_5">v0.3.5</a>
                 </li>
                 
@@ -327,7 +331,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.3.5</li>
+                    <li><strong>Version:</strong> 0.3.6</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -344,7 +348,7 @@
                     </li>
                     <li>
                       <strong>Updated:</strong>
-                      23 February 2026
+                      24 February 2026
                     </li>
                   </ul>
                 </div>
@@ -2315,8 +2319,6 @@ class BaseModelAdmin:
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
-        prefetch_related_fields: list[str] | None = None,
-        additional_search_fields: list[str] | None = None,
     ) -> tuple[list[Any], int]:
         """This method is used to get list of orm/db model objects.
 
@@ -2325,8 +2327,6 @@ class BaseModelAdmin:
         :params search: a search query.
         :params sort_by: a sort by field name.
         :params filters: a dict of filters.
-        :params prefetch_related_fields: a list of related fields to prefetch.
-        :params additional_search_fields: a list of additional search fields.
         :return: A tuple of list of objects and total count.
         """
         raise NotImplementedError
@@ -2858,64 +2858,6 @@ class ModelAdmin(BaseModelAdmin):
 
 
                 
-                  
-<p class="text-4">
-  You can customize relation loading and relation search by overriding <code>orm_get_list</code> and forwarding <code>prefetch_related_fields</code> and <code>additional_search_fields</code>:
-</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-                
-                  
-
-
-
-
-
-
-
-
-
-
-<pre>
-  <code class="language-python">
-class TaskAdmin(TortoiseModelAdmin):
-    search_fields = ("title",)
-
-    async def orm_get_list(
-        self,
-        offset=None,
-        limit=None,
-        search=None,
-        sort_by=None,
-        filters=None,
-    ):
-        return await super().orm_get_list(
-            offset=offset,
-            limit=limit,
-            search=search,
-            sort_by=sort_by,
-            filters=filters,
-            prefetch_related_fields=["user"],
-            additional_search_fields=["user__email"],
-        )
-
-  </code>
-</pre>
-
-
-
-                
                 </section>
 
               
@@ -3414,6 +3356,49 @@ class InlineModelAdmin(BaseModelAdmin):
               
 
               
+              
+                <section id="v0_3_6">
+                <h3>v0.3.6</h3>
+
+                
+                  
+<p class="text-4">
+  Fix datetime/time handling in transform helpers.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Revert get_orm_list method to original implementation. We can use list_select_related and search_fields for prefetch_related_fields and additional_search_fields.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
               
                 <section id="v0_3_5">
                 <h3>v0.3.5</h3>

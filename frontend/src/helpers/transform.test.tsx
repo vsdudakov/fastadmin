@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   isArray,
   isBoolean,
-  isDayJs,
+  isDateTime,
   isJson,
   isNumeric,
   isSlug,
   isString,
+  isTime,
   transformColumnValueFromServer,
   transformDataFromServer,
   transformDataToServer,
@@ -16,14 +17,20 @@ import {
 } from "./transform";
 
 describe("transform", () => {
-  describe("isDayJs", () => {
+  describe("isDateTime/isTime", () => {
     it("returns true for ISO date strings", () => {
-      expect(isDayJs("2024-01-15")).toBe(true);
-      expect(isDayJs("2024-01-15T12:00:00Z")).toBe(true);
+      expect(isDateTime("2024-01-15")).toBe(true);
+      expect(isDateTime("2024-01-15T12:00:00Z")).toBe(true);
+      expect(isDateTime("2024-01-15T12:00:00.123456")).toBe(true);
+      expect(isDateTime("2024-01-15 12:00")).toBe(true);
+      expect(isTime("12:00:00")).toBe(true);
+      expect(isTime("12:00")).toBe(true);
     });
     it("returns false for non-dates", () => {
-      expect(isDayJs("hello")).toBe(false);
-      expect(isDayJs("12")).toBe(false);
+      expect(isDateTime("hello")).toBe(false);
+      expect(isDateTime("12")).toBe(false);
+      expect(isTime("hello")).toBe(false);
+      expect(isTime("12")).toBe(false);
     });
   });
 
@@ -182,6 +189,17 @@ describe("transform", () => {
       expect(r).toBeDefined();
       expect(r && typeof (r as any).format === "function").toBe(true);
     });
+    it("converts datetime strings without timezone", () => {
+      const r = transformValueFromServer("2024-01-15T12:00:00.123456");
+      expect(r).toBeDefined();
+      expect(r && typeof (r as any).isValid === "function").toBe(true);
+    });
+    it("converts time strings", () => {
+      const r = transformValueFromServer("12:00:00");
+      expect(r).toBeDefined();
+      expect(r && typeof (r as any).isValid === "function").toBe(true);
+      expect(r && (r as any).isValid()).toBe(true);
+    });
   });
 
   describe("transformDataFromServer", () => {
@@ -211,6 +229,9 @@ describe("transform", () => {
         "YYYY-MM-DD",
       );
       expect(r).toMatch(/^2024-01-15/);
+    });
+    it("keeps time-only strings unchanged", () => {
+      expect(transformColumnValueFromServer("12:00:00")).toBe("12:00:00");
     });
     it("returns value as-is for other types", () => {
       expect(transformColumnValueFromServer("hello")).toBe("hello");

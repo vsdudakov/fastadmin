@@ -248,8 +248,6 @@ class BaseModelAdmin:
         search: str | None = None,
         sort_by: str | None = None,
         filters: dict | None = None,
-        prefetch_related_fields: list[str] | None = None,
-        additional_search_fields: list[str] | None = None,
     ) -> tuple[list[Any], int]:
         """This method is used to get list of orm/db model objects.
 
@@ -258,8 +256,6 @@ class BaseModelAdmin:
         :params search: a search query.
         :params sort_by: a sort by field name.
         :params filters: a dict of filters.
-        :params prefetch_related_fields: a list of related fields to prefetch.
-        :params additional_search_fields: a list of additional search fields.
         :return: A tuple of list of objects and total count.
         """
         raise NotImplementedError
