@@ -43,6 +43,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.3.10",
+            "changes": [
+                "Fix file download issue for actions.",
+            ],
+        },
+        {
             "version": "0.3.9",
             "changes": [
                 "Add response types for actions.",
