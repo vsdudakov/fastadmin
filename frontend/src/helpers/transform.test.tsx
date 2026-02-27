@@ -170,6 +170,16 @@ describe("transform", () => {
         name__icontains: "foo",
       });
     });
+    it("handles empty arrays for __in filters", () => {
+      expect(transformFiltersToServer({ status: [] })).toEqual({
+        status__in: "",
+      });
+    });
+    it("handles empty string values as icontains", () => {
+      expect(transformFiltersToServer({ status: "" })).toEqual({
+        status__icontains: "",
+      });
+    });
   });
 
   describe("transformValueFromServer", () => {

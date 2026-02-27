@@ -125,7 +125,18 @@ export const List: React.FC = () => {
     useCallback(
       (fieldName: string, value: any) => {
         // onApplyFilter
-        setFilters({ ...filters, [fieldName]: value });
+        if (
+          (Array.isArray(value) && value.length === 0) ||
+          value === null ||
+          value === undefined
+        ) {
+          // reset filter
+          const rest = { ...filters };
+          delete rest[fieldName];
+          setFilters(rest);
+        } else {
+          setFilters({ ...filters, [fieldName]: value });
+        }
         setPage(defaultPage);
         setPageSize(defaultPageSize);
       },

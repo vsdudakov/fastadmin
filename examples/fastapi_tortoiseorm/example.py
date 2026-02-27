@@ -75,8 +75,18 @@ class BaseEventModelAdmin(TortoiseModelAdmin):
 @register(Event)
 class EventModelAdmin(TortoiseModelAdmin):
     actions = ("make_is_active", "make_is_not_active")
-    list_display = ("id", "tournament_name", "name_with_price", "rating", "event_type", "is_active", "started")
-    list_filter = ("event_type", "is_active")
+    list_display = (
+        "id",
+        "tournament_name",
+        "name_with_price",
+        "rating",
+        "event_type",
+        "is_active",
+        "started",
+        "start_time",
+        "date",
+    )
+    list_filter = ("event_type", "is_active", "start_time", "date", "event_type")
     search_fields = ("name", "tournament__name")
     list_select_related = ("tournament",)
 
@@ -119,6 +129,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         db_url="sqlite://:memory:",
         modules={"models": ["models"]},
         generate_schemas=True,
+        use_tz=False,
+        timezone="UTC",
     ):
         await create_superuser()
         yield

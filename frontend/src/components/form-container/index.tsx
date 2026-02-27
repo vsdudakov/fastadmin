@@ -138,7 +138,11 @@ export const FormContainer: React.FC<IFormContainer> = ({
                 ? [
                     {
                       validator: async (_: any, value: string) => {
-                        if (!isJson(value)) {
+                        if (
+                          value !== undefined &&
+                          value !== null &&
+                          !isJson(value)
+                        ) {
                           throw new Error(_t("Invalid JSON") as string);
                         }
                       },

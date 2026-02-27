@@ -43,6 +43,15 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.3.7",
+            "changes": [
+                "Fix filter reset issue.",
+                "Fix date/time handling in transform helpers.",
+                "Fix examples.",
+                "Fix JSON textarea handling.",
+            ],
+        },
+        {
             "version": "0.3.6",
             "changes": [
                 "Fix datetime/time handling in transform helpers.",

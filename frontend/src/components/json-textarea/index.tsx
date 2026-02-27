@@ -17,9 +17,10 @@ export const JsonTextArea: React.FC<IJsonTextAreaProps> = ({
   ...props
 }) => {
   const { token } = useToken();
-  const jsonValue = !isString(value)
-    ? JSON.stringify(value, null, "\t")
-    : value;
+  const jsonValue =
+    value !== undefined && value !== null && !isString(value)
+      ? JSON.stringify(value, null, "\t")
+      : value;
   const rowsCount = jsonValue?.split(/\r\n|\r|\n/)?.length;
   return (
     <Input.TextArea

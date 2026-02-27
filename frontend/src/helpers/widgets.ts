@@ -44,7 +44,7 @@ export const getWidgetCls = (
     case EFieldWidgetType.PasswordInput:
       return [PasswordInput, { parentId: id }];
     case EFieldWidgetType.TextArea:
-      return [Input.TextArea, {}];
+      return [Input.TextArea, { autoSize: { minRows: 4, maxRows: 16 } }];
     case EFieldWidgetType.RichTextArea:
       return [TextEditor, {}];
     case EFieldWidgetType.JsonTextArea:
