@@ -43,6 +43,13 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.3.8",
+            "changes": [
+                "Fix inline add/change issue.",
+                "Fix inline filter reset issue.",
+            ],
+        },
+        {
             "version": "0.3.7",
             "changes": [
                 "Fix filter reset issue.",

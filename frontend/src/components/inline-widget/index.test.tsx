@@ -200,6 +200,7 @@ vi.mock("@/helpers/forms", () => ({
 vi.mock("@/helpers/transform", () => ({
   transformDataFromServer: (v: unknown) => v,
   transformFiltersToServer: () => ({}),
+  transformDataToServer: (v: unknown) => v,
 }));
 
 vi.mock("@/fetchers/fetchers", () => ({
@@ -383,6 +384,10 @@ describe("InlineWidget", () => {
     expect(mockSetPageSize).toHaveBeenCalledWith(10);
 
     onResetFilter("status");
+    expect(mockSetFilters).toHaveBeenCalledWith({});
+
+    // applying an "empty" filter value should behave like reset
+    onApplyFilter("status", []);
     expect(mockSetFilters).toHaveBeenCalledWith({});
 
     onDeleteItem({ id: "42" });

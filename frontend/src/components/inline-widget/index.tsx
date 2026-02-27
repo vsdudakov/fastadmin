@@ -31,6 +31,7 @@ import { handleError } from "@/helpers/forms";
 import { getTitleFromModel } from "@/helpers/title";
 import {
   transformDataFromServer,
+  transformDataToServer,
   transformFiltersToServer,
 } from "@/helpers/transform";
 import { useTableColumns } from "@/hooks/useTableColumns";
@@ -225,7 +226,18 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
     useCallback(
       (fieldName: string, value: any) => {
         // onApplyFilter
-        setFilters({ ...filters, [fieldName]: value });
+        if (
+          (Array.isArray(value) && value.length === 0) ||
+          value === null ||
+          value === undefined
+        ) {
+          // reset filter
+          const rest = { ...filters };
+          delete rest[fieldName];
+          setFilters(rest);
+        } else {
+          setFilters({ ...filters, [fieldName]: value });
+        }
         setPage(defaultPage);
         setPageSize(defaultPageSize);
       },
@@ -259,11 +271,11 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
   );
 
   const onFinishAdd = (payload: any) => {
-    mutateAdd(payload);
+    mutateAdd(transformDataToServer(payload));
   };
 
   const onFinishChange = (payload: any) => {
-    mutateChange(payload);
+    mutateChange(transformDataToServer(payload));
   };
 
   const tableHeader = useCallback(
