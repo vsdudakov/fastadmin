@@ -7,7 +7,13 @@ from werkzeug.exceptions import HTTPException
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import is_valid_id, parse_list_filters_from_query_params
-from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
+from fastadmin.api.schemas import (
+    ActionInputSchema,
+    ActionResponseSchema,
+    ActionResponseType,
+    ExportInputSchema,
+    SignInInputSchema,
+)
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.settings import settings
 
@@ -336,25 +342,30 @@ async def delete(
 async def action(
     model: str,
     action: str,
-) -> dict:
+) -> Response:
     """This method is used to perform an action.
 
     :params model: a name of model.
     :params action: a name of action.
     :params payload: a payload object.
-    :return: A list of objects.
+    :return: action result.
     """
     try:
         request_payload: dict = request.json
         payload: ActionInputSchema = ActionInputSchema(**request_payload)
-        await api_service.action(
+        response = await api_service.action(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             action,
             payload,
             request=request,
         )
-        return {}
+        if not response:
+            response = ActionResponseSchema(
+                type=ActionResponseType.MESSAGE,
+                data="Successfully applied",
+            )
+        return make_response(asdict(response))
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code

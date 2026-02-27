@@ -43,6 +43,13 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.3.9",
+            "changes": [
+                "Add response types for actions.",
+                "Fix Decimal fields handling.",
+            ],
+        },
+        {
             "version": "0.3.8",
             "changes": [
                 "Fix inline add/change issue.",

@@ -197,6 +197,10 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_3_9">v0.3.9</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_3_8">v0.3.8</a>
                 </li>
                 
@@ -339,7 +343,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.3.8</li>
+                    <li><strong>Version:</strong> 0.3.9</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -2110,7 +2114,7 @@ class BaseModelAdmin:
     # @action(
     #     description="Mark selected stories as published",
     # )
-    # async def make_published(self, objs: list[Any]) -> None:
+    # async def make_published(self, objs: list[Any]) -> ActionResponseSchema | None:
     #     ...
     actions: Sequence[str] = ()
 
@@ -2463,7 +2467,14 @@ class BaseModelAdmin:
         :params attributes_to_serizalize: a list of attributes to serialize.
         :return: A dict of serialized attributes.
         """
-        serialized_dict = {field.name: getattr(obj, field.column_name) for field in attributes_to_serizalize}
+        serialized_dict: dict[str, Any] = {}
+        for field in attributes_to_serizalize:
+            value = getattr(obj, field.column_name)
+            if isinstance(value, Decimal):
+                # Avoid scientific notation for Decimal values in API responses,
+                # e.g. 3.75E+3 -> "3750"
+                value = format(value, "f")
+            serialized_dict[field.name] = value
         if inspect.iscoroutinefunction(obj.__str__):
             str_fn = obj.__str__
         else:
@@ -3364,6 +3375,49 @@ class InlineModelAdmin(BaseModelAdmin):
               
 
               
+              
+                <section id="v0_3_9">
+                <h3>v0.3.9</h3>
+
+                
+                  
+<p class="text-4">
+  Add response types for actions.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Fix Decimal fields handling.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
               
                 <section id="v0_3_8">
                 <h3>v0.3.8</h3>

@@ -5,7 +5,7 @@ def action(function=None, *, description: str | None = None):
     @action(
         description="Mark selected stories as published",
     )
-    async def make_published(self, objs: list[Any]) -> None:
+    async def make_published(self, objs: list[Any]) -> ActionResponseSchema | None:
         ...
 
     :param function: A function to decorate.

@@ -10,6 +10,13 @@ class ExportFormat(str, Enum):
     JSON = "JSON"
 
 
+class ActionResponseType(str, Enum):
+    """Action response type"""
+
+    DOWNLOAD_BASE64 = "DOWNLOAD_BASE64"
+    MESSAGE = "MESSAGE"
+
+
 @dataclass
 class DashboardWidgetQuerySchema:
     """DashboardWidge query schema"""
@@ -70,3 +77,12 @@ class ActionInputSchema:
     """Action input schema"""
 
     ids: list[int | UUID]
+
+
+@dataclass
+class ActionResponseSchema:
+    """Action response schema"""
+
+    type: ActionResponseType
+    data: str
+    file_name: str | None = None

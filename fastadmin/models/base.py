@@ -4,6 +4,7 @@ import inspect
 import json
 from collections.abc import Sequence
 from contextvars import ContextVar
+from decimal import Decimal
 from io import BytesIO, StringIO
 from typing import Any
 from uuid import UUID
@@ -31,7 +32,7 @@ class BaseModelAdmin:
     # @action(
     #     description="Mark selected stories as published",
     # )
-    # async def make_published(self, objs: list[Any]) -> None:
+    # async def make_published(self, objs: list[Any]) -> ActionResponseSchema | None:
     #     ...
     actions: Sequence[str] = ()
 
@@ -384,7 +385,14 @@ class BaseModelAdmin:
         :params attributes_to_serizalize: a list of attributes to serialize.
         :return: A dict of serialized attributes.
         """
-        serialized_dict = {field.name: getattr(obj, field.column_name) for field in attributes_to_serizalize}
+        serialized_dict: dict[str, Any] = {}
+        for field in attributes_to_serizalize:
+            value = getattr(obj, field.column_name)
+            if isinstance(value, Decimal):
+                # Avoid scientific notation for Decimal values in API responses,
+                # e.g. 3.75E+3 -> "3750"
+                value = format(value, "f")
+            serialized_dict[field.name] = value
         if inspect.iscoroutinefunction(obj.__str__):
             str_fn = obj.__str__
         else:

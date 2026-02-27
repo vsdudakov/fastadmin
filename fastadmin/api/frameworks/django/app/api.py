@@ -13,7 +13,13 @@ from django.http.request import HttpRequest
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import is_valid_id, parse_list_filters_from_query_params
-from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
+from fastadmin.api.schemas import (
+    ActionInputSchema,
+    ActionResponseSchema,
+    ActionResponseType,
+    ExportInputSchema,
+    SignInInputSchema,
+)
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.settings import settings
 
@@ -379,21 +385,25 @@ async def action(
     :params model: a name of model.
     :params action: a name of action.
     :params payload: a payload object.
-    :return: A list of objects.
+    :return: action result.
     """
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
     try:
         payload = ActionInputSchema(**json.loads(request.body))
-        await api_service.action(
+        response = await api_service.action(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             action,
             payload,
             request=request,
         )
-        return JsonResponse({})
-
+        if not response:
+            response = ActionResponseSchema(
+                type=ActionResponseType.MESSAGE,
+                data="Successfully applied",
+            )
+        return JsonResponse(asdict(response))
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 

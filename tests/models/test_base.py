@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import uuid4
 
 import pytest
@@ -244,6 +245,35 @@ async def test_serialize_obj_attributes_with_async_str():
     result = await base.serialize_obj_attributes(AsyncStrObj(), fields)
     assert result["value"] == 7
     assert result["__str__"] == "async-obj"
+
+
+async def test_serialize_obj_attributes_decimal_formatted():
+    class Obj:
+        value = Decimal("3.75E+3")
+
+        def __str__(self):  # type: ignore[override]
+            return "obj"
+
+    class Model:
+        pass
+
+    base = ModelAdmin(Model)
+    fields = [
+        ModelFieldWidgetSchema(
+            name="value",
+            column_name="value",
+            is_m2m=False,
+            is_pk=False,
+            is_immutable=False,
+            form_widget_type=WidgetType.InputNumber,
+            form_widget_props={},
+            filter_widget_type=WidgetType.InputNumber,
+            filter_widget_props={},
+        )
+    ]
+    result = await base.serialize_obj_attributes(Obj(), fields)
+    assert result["value"] == "3750"
+    assert "E" not in result["value"]
 
 
 async def test_serialize_obj_after_save_detached_paths():

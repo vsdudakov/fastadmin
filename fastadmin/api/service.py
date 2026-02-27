@@ -14,6 +14,7 @@ from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import sanitize_filter_key, sanitize_filter_value
 from fastadmin.api.schemas import (
     ActionInputSchema,
+    ActionResponseSchema,
     ChangePasswordInputSchema,
     DashboardWidgetDataOutputSchema,
     DashboardWidgetQuerySchema,
@@ -478,7 +479,7 @@ class ApiService:
         action: str,
         payload: ActionInputSchema,
         request: Any | None = None,
-    ) -> None:
+    ) -> ActionResponseSchema | None:
         _current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         admin_model = get_admin_or_admin_inline_model(model)
@@ -498,7 +499,7 @@ class ApiService:
         else:
             action_function_fn = sync_to_async(action_function)
 
-        await action_function_fn(payload.ids)
+        return await action_function_fn(payload.ids)
 
     async def get_configuration(
         self,

@@ -12,7 +12,9 @@ async def test_action(session_id, admin_models, event, client):
     )
     assert r.status_code == 200, r.text
     item = r.json()
-    assert not item
+    assert item["type"] == "MESSAGE"
+    assert item["data"] == "Successfully applied"
+    assert item["file_name"] is None
     updated_event = await event_admin_model.get_obj(event.id)
     assert updated_event["is_active"]
 

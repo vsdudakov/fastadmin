@@ -1,4 +1,5 @@
 import logging
+from dataclasses import asdict
 from typing import Any
 from uuid import UUID
 
@@ -7,7 +8,13 @@ from fastapi.responses import Response, StreamingResponse
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import parse_list_filters_from_query_params
-from fastadmin.api.schemas import ActionInputSchema, ExportInputSchema, SignInInputSchema
+from fastadmin.api.schemas import (
+    ActionInputSchema,
+    ActionResponseSchema,
+    ActionResponseType,
+    ExportInputSchema,
+    SignInInputSchema,
+)
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.models.schemas import ConfigurationSchema
 from fastadmin.settings import settings
@@ -328,22 +335,28 @@ async def action(
     model: str,
     action: str,
     payload: ActionInputSchema,
-) -> None:
+) -> dict:
     """This method is used to perform an action.
 
     :params model: a name of model.
     :params action: a name of action.
     :params payload: a payload object.
-    :return: A list of objects.
+    :return: action result.
     """
     try:
-        return await api_service.action(
+        response = await api_service.action(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             action,
             payload,
             request=request,
         )
+        if not response:
+            response = ActionResponseSchema(
+                type=ActionResponseType.MESSAGE,
+                data="Successfully applied",
+            )
+        return asdict(response)
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
 

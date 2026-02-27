@@ -2,7 +2,10 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { EModelPermission } from "@/interfaces/configuration";
+import {
+  EActionResponseType,
+  EModelPermission,
+} from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 import { List } from "./index";
 
@@ -25,6 +28,7 @@ const {
   mockMessageSuccess,
   mockMessageError,
   mockHandleError,
+  mockFileDownload,
 } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
   mockUseMutation: vi.fn(),
@@ -44,6 +48,7 @@ const {
   mockMessageSuccess: vi.fn(),
   mockMessageError: vi.fn(),
   mockHandleError: vi.fn(),
+  mockFileDownload: vi.fn(),
 }));
 
 vi.mock("@tanstack/react-query", () => ({
@@ -205,6 +210,10 @@ vi.mock("@/hooks/useTableQuery", () => ({
   useTableQuery: (...args: unknown[]) => mockUseTableQuery(...args),
 }));
 
+vi.mock("js-file-download", () => ({
+  default: (...args: unknown[]) => mockFileDownload(...args),
+}));
+
 describe("List container", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -344,8 +353,8 @@ describe("List container", () => {
       onError: (error: Error) => void;
     };
     const actionMutation = mockUseMutation.mock.calls[1][0] as {
-      onSuccess: () => void;
-      onError: () => void;
+      onSuccess: (response: any) => void;
+      onError: (response?: any) => void;
     };
 
     deleteMutation.onSuccess();
@@ -356,11 +365,27 @@ describe("List container", () => {
     deleteMutation.onError(new Error("delete failed"));
     expect(mockHandleError).toHaveBeenCalledWith(expect.any(Error));
 
-    actionMutation.onSuccess();
+    actionMutation.onSuccess({
+      type: EActionResponseType.MESSAGE,
+      data: "Successfully applied",
+      file_name: null,
+    });
     expect(mockMessageSuccess).toHaveBeenCalledWith("Successfully applied");
+
+    actionMutation.onSuccess({
+      type: EActionResponseType.DOWNLOAD_BASE64,
+      data: "Zm9v", // "foo"
+      file_name: "file.txt",
+    });
+    expect(mockFileDownload).toHaveBeenCalledWith("foo", "file.txt");
 
     actionMutation.onError();
     expect(mockMessageError).toHaveBeenCalledWith("Server error");
+
+    actionMutation.onError({
+      response: { data: { detail: "Custom error" } },
+    });
+    expect(mockMessageError).toHaveBeenCalledWith("Custom error");
 
     mockGetConfigurationModel.mockReturnValue(undefined);
     rerender(

@@ -13,11 +13,11 @@ import {
   Select,
   Space,
 } from "antd";
+import fileDownload from "js-file-download";
 import querystring from "query-string";
 import type React from "react";
 import { useCallback, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-
 import { ExportBtn } from "@/components/export-btn";
 import { FormContainer } from "@/components/form-container";
 import { TableOrCards } from "@/components/table-or-cards";
@@ -37,7 +37,9 @@ import {
 import { useTableColumns } from "@/hooks/useTableColumns";
 import { useTableQuery } from "@/hooks/useTableQuery";
 import {
+  EActionResponseType,
   EModelPermission,
+  type IActionResponse,
   type IInlineModel,
   type IModelAction,
 } from "@/interfaces/configuration";
@@ -197,13 +199,29 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
 
   const { mutate: mutateAction, isPending: isLoadingAction } = useMutation({
     mutationFn: (data: any) => postFetcher(`/action/${model}/${action}`, data),
-    onSuccess: () => {
+    onSuccess: (response: IActionResponse) => {
+      switch (response?.type) {
+        case EActionResponseType.MESSAGE:
+          message.success(response.data);
+          break;
+        case EActionResponseType.DOWNLOAD_BASE64: {
+          const fileBase64 = response.data;
+          const fileBuffer = atob(fileBase64);
+          const fileName = response.file_name || "file.bin";
+          fileDownload(fileBuffer, fileName);
+          break;
+        }
+      }
       resetTable(modelConfiguration?.preserve_filters);
       refetch();
-      message.success(_t("Successfully applied"));
     },
-    onError: () => {
-      message.error(_t("Server error"));
+    onError: (response: any) => {
+      const detail = response?.response?.data?.detail;
+      if (detail) {
+        message.error(detail);
+      } else {
+        message.error(_t("Server error"));
+      }
     },
   });
 

@@ -10,6 +10,7 @@ import {
   Row,
   Select,
 } from "antd";
+import fileDownload from "js-file-download";
 import querystring from "query-string";
 import type React from "react";
 import { useCallback, useContext } from "react";
@@ -28,7 +29,9 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useTableColumns } from "@/hooks/useTableColumns";
 import { useTableQuery } from "@/hooks/useTableQuery";
 import {
+  EActionResponseType,
   EModelPermission,
+  type IActionResponse,
   type IModelAction,
 } from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
@@ -94,13 +97,29 @@ export const List: React.FC = () => {
   const { mutate: mutateAction, isPending: isLoadingAction } = useMutation({
     mutationFn: (payload: any) =>
       postFetcher(`/action/${model}/${action}`, payload),
-    onSuccess: () => {
+    onSuccess: (response: IActionResponse) => {
+      switch (response?.type) {
+        case EActionResponseType.MESSAGE:
+          message.success(response.data);
+          break;
+        case EActionResponseType.DOWNLOAD_BASE64: {
+          const fileBase64 = response.data;
+          const fileBuffer = atob(fileBase64);
+          const fileName = response.file_name || "file.bin";
+          fileDownload(fileBuffer, fileName);
+          break;
+        }
+      }
       resetTable(modelConfiguration?.preserve_filters);
       refetch();
-      message.success(_t("Successfully applied"));
     },
-    onError: () => {
-      message.error(_t("Server error"));
+    onError: (response: any) => {
+      const detail = response?.response?.data?.detail;
+      if (detail) {
+        message.error(detail);
+      } else {
+        message.error(_t("Server error"));
+      }
     },
   });
 

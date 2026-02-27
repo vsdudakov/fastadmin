@@ -43,6 +43,11 @@ export enum EExportFormat {
   JSON = "JSON",
 }
 
+export enum EActionResponseType {
+  DOWNLOAD_BASE64 = "DOWNLOAD_BASE64",
+  MESSAGE = "MESSAGE",
+}
+
 export interface IModelAction {
   name: string;
   description?: string;
@@ -142,4 +147,10 @@ export interface IConfiguration {
   disable_crop_image?: boolean;
   models: IModel[];
   dashboard_widgets: IDashboardWidget[];
+}
+
+export interface IActionResponse {
+  type: EActionResponseType;
+  data: string;
+  file_name?: string;
 }

@@ -32,6 +32,10 @@ try:
 except ModuleNotFoundError:  # pragma: no cover
     logging.info("TortoiseORM is not installed")  # pragma: no cover
 
+# api
+from fastadmin.api.exceptions import AdminApiException  # noqa: F401
+from fastadmin.api.schemas import ActionResponseSchema, ActionResponseType  # noqa: F401
+
 # models
 from fastadmin.models.base import DashboardWidgetAdmin, InlineModelAdmin, ModelAdmin  # noqa: F401
 from fastadmin.models.decorators import action, display, register, register_widget  # noqa: F401
