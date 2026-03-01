@@ -1347,6 +1347,19 @@ files = [
 cli = ["click (>=5.0)"]
 
 [[package]]
+name = "python-multipart"
+version = "0.0.22"
+description = "A streaming multipart parser for Python"
+optional = true
+python-versions = ">=3.10"
+groups = ["main"]
+markers = "extra == \"fastapi\""
+files = [
+    {file = "python_multipart-0.0.22-py3-none-any.whl", hash = "sha256:2b2cd894c83d21bf49d702499531c7bafd057d730c201782048f7945d82de155"},
+    {file = "python_multipart-0.0.22.tar.gz", hash = "sha256:7340bef99a7e0032613f56dc36027b959fd3b30a787ed62d310e951f7c3a3a58"},
+]
+
+[[package]]
 name = "pytokens"
 version = "0.4.1"
 description = "A Fast, spec compliant Python 3.14+ tokenizer that runs on older Pythons."
@@ -1676,7 +1689,7 @@ watchdog = ["watchdog (>=2.3)"]
 
 [extras]
 django = ["django"]
-fastapi = ["fastapi"]
+fastapi = ["fastapi", "python-multipart"]
 flask = ["flask"]
 pony = ["pony"]
 sqlalchemy = ["greenlet", "sqlalchemy"]
@@ -1685,4 +1698,4 @@ tortoise-orm = ["tortoise-orm"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "d99ffc4d860311b16f26acbbfc6f50d814dc90d7c64be47a8ad0aa788c3f5688"
+content-hash = "7c9d3ee6236dc7803e1fa31f431586ea5d4577ce735670cfb22d8ee49e67d89a"
