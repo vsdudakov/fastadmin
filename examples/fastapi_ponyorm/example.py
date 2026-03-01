@@ -1,5 +1,4 @@
 import os
-import typing as tp
 import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
@@ -61,7 +60,6 @@ class UserModelAdmin(PonyORMModelAdmin):
 
     def upload_file(
         self,
-        obj: tp.Any,
         field_name: str,
         file_name: str,
         file_content: bytes,

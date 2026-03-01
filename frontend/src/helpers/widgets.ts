@@ -96,9 +96,9 @@ export const getWidgetCls = (
         { style: { width: "100%" }, placeholder: [_t("Start"), _t("End")] },
       ];
     case EFieldWidgetType.UploadFile:
-      return [UploadFile, { parentId: id }];
+      return [UploadFile, {}];
     case EFieldWidgetType.UploadImage:
-      return [UploadImage, { parentId: id }];
+      return [UploadImage, {}];
     default:
       return [Input, {}];
   }

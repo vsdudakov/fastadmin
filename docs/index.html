@@ -197,6 +197,10 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_4_1">v0.4.1</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_4_0">v0.4.0</a>
                 </li>
                 
@@ -355,7 +359,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.4.0</li>
+                    <li><strong>Version:</strong> 0.4.1</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -953,7 +957,7 @@ class UserAdmin(TortoiseModelAdmin):
         user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         await user.save(update_fields=("hash_password",))
 
-    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
         # save file to media directory or s3/filestorage, then return the file url
         return f"/media/{file_name}"
 
@@ -980,8 +984,6 @@ class UserAdmin(TortoiseModelAdmin):
 
 <pre>
   <code class="language-python">
-import typing as tp
-
 from django.db import models
 
 from fastadmin import DjangoModelAdmin, register
@@ -1014,7 +1016,7 @@ class UserAdmin(DjangoModelAdmin):
             return None
         return obj.id
 
-    def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
+    def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
         # save file to media directory or s3/filestorage, then return the file url
         return f"/media/{file_name}"
 
@@ -1041,7 +1043,6 @@ class UserAdmin(DjangoModelAdmin):
 
 <pre>
   <code class="language-python">
-import typing as tp
 import uuid
 
 import bcrypt
@@ -1107,7 +1108,7 @@ class UserAdmin(SqlAlchemyModelAdmin):
             await session.execute(query)
             await session.commit()
 
-    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
         # save file to media directory or s3/filestorage, then return the file url
         return f"/media/{file_name}"
 
@@ -1134,7 +1135,6 @@ class UserAdmin(SqlAlchemyModelAdmin):
 
 <pre>
   <code class="language-python">
-import typing as tp
 import uuid
 
 import bcrypt
@@ -1188,7 +1188,7 @@ class UserAdmin(PonyORMModelAdmin):
         obj.hash_password = hash_password
         commit()
 
-    def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
+    def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
         # save file to media directory or s3/filestorage, then return the file url
         return f"/media/{file_name}"
 
@@ -1883,7 +1883,6 @@ class DashboardWidgetType(str, Enum):
 
 <pre>
   <code class="language-python">
-import typing as tp
 from uuid import UUID
 
 import bcrypt
@@ -1962,11 +1961,9 @@ class UserAdmin(TortoiseModelAdmin):
     async def deactivate(self, ids: list[int]) -> None:
         await self.model_cls.filter(id__in=ids).update(is_active=False)
 
-    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
         # save file to media directory or s3/filestorage, then return the file url
         url = f"/media/{file_name}"
-        setattr(obj, field_name, url)
-        await obj.save(update_fields=(field_name,))
         return url
 
   </code>
@@ -2628,14 +2625,12 @@ class BaseModelAdmin:
 
     async def upload_file(
         self,
-        obj: Any,
         field_name: str,
         file_name: str,
         file_content: bytes,
     ) -> str:
         """This method is used to upload files.
 
-        :params obj: an object.
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
@@ -3401,6 +3396,31 @@ class InlineModelAdmin(BaseModelAdmin):
               
 
               
+              
+                <section id="v0_4_1">
+                <h3>v0.4.1</h3>
+
+                
+                  
+<p class="text-4">
+  Fix upload file functionality. Fix examples.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
               
                 <section id="v0_4_0">
                 <h3>v0.4.0</h3>

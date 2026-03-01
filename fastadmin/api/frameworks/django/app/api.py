@@ -311,22 +311,18 @@ async def change(request: HttpRequest, model: str, id: UUID | int | str) -> Json
 async def upload_file(
     request: HttpRequest,
     model: str,
-    id: UUID | int | str,
     field_name: str,
 ) -> JsonResponse:
     """This method is used to upload files.
 
     :params request: a request object.
     :params model: a name of model.
-    :params id: an id of object.
     :params field_name: a name of field.
     :return: A file url.
     """
 
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
-    if not is_valid_id(id):
-        return JsonResponse({"error": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
     try:
         file: UploadedFile = request.FILES.get("file")
         if not file:
@@ -336,7 +332,6 @@ async def upload_file(
         file_url = await api_service.upload_file(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
-            id,
             field_name,
             file_name,
             file_content,

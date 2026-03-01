@@ -24,13 +24,17 @@ class User(BaseModel):
     is_superuser = fields.BooleanField(default=False)
 
     avatar_url = fields.TextField(null=True)
-    attachment_url = fields.TextField()
 
     def __str__(self):
         return self.username
 
     class Meta:
         table = "user"
+
+
+class UserAttachment(BaseModel):
+    user = fields.ForeignKeyField("models.User", related_name="attachments", on_delete=fields.CASCADE)
+    attachment_url = fields.TextField()
 
 
 class Tournament(BaseModel):

@@ -1,4 +1,3 @@
-import typing as tp
 from uuid import UUID
 
 import bcrypt
@@ -77,9 +76,7 @@ class UserAdmin(TortoiseModelAdmin):
     async def deactivate(self, ids: list[int]) -> None:
         await self.model_cls.filter(id__in=ids).update(is_active=False)
 
-    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
         # save file to media directory or s3/filestorage, then return the file url
         url = f"/media/{file_name}"
-        setattr(obj, field_name, url)
-        await obj.save(update_fields=(field_name,))
         return url

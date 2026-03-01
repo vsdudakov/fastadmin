@@ -360,7 +360,6 @@ class ApiService:
         self,
         session_id: str | None,
         model: str,
-        id: UUID | int | str,
         field_name: str,
         file_name: str,
         file_content: bytes,
@@ -374,26 +373,18 @@ class ApiService:
         self._bind_admin_context(admin_model, request=request, user=current_user)
 
         try:
-            obj = await admin_model.get_obj(id)
-        except Exception as e:
-            raise AdminApiException(500, detail=f"Error getting {model} {id}: {e}") from e
-        if not obj:
-            raise AdminApiException(404, detail=f"{model} not found.")
-
-        try:
             if inspect.iscoroutinefunction(admin_model.upload_file):
                 upload_file_fn = admin_model.upload_file
             else:
                 upload_file_fn = sync_to_async(admin_model.upload_file)  # type: ignore [arg-type]
 
             return await upload_file_fn(
-                obj,
                 field_name,
                 file_name,
                 file_content,
             )
         except Exception as e:
-            raise AdminApiException(500, detail=f"Error uploading file for {model} {id}: {e}") from e
+            raise AdminApiException(500, detail=f"Error uploading file for {model}: {e}") from e
 
     async def export(
         self,

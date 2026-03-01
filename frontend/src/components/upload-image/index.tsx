@@ -19,9 +19,8 @@ const serverDomain = window.SERVER_DOMAIN ?? "";
 const serverUrl = window.SERVER_URL ?? "";
 
 export interface IUploadImage {
-  parentId: string;
-  model?: string;
-  fieldName?: string;
+  model: string;
+  fieldName: string;
   value?: string;
   onChange?: (value: string | undefined) => void;
   disableCropImage?: boolean;
@@ -31,7 +30,6 @@ export const UploadImage: React.FC<IUploadImage> = ({
   value,
   onChange,
   disableCropImage,
-  parentId,
   model,
   fieldName,
   ...rest
@@ -80,7 +78,7 @@ export const UploadImage: React.FC<IUploadImage> = ({
 
   const action =
     model && fieldName
-      ? `${serverUrl}/upload-file/${model}/${parentId}/${fieldName}`
+      ? `${serverUrl}/upload-file/${model}/${fieldName}`
       : undefined;
 
   return (

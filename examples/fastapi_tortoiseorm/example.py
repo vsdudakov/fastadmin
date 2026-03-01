@@ -1,5 +1,4 @@
 import os
-import typing as tp
 import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
@@ -10,12 +9,33 @@ os.environ["ADMIN_SECRET_KEY"] = "secret"
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from models import BaseEvent, Event, Tournament, User
+from models import BaseEvent, Event, Tournament, User, UserAttachment
 from tortoise.contrib.fastapi import RegisterTortoise
 
 from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, WidgetType, action, display
 from fastadmin import fastapi_app as admin_app
 from fastadmin import register
+
+
+class UserAttachmentModelInline(TortoiseInlineModelAdmin):
+    model = UserAttachment
+    formfield_overrides = {  # noqa: RUF012
+        "attachment_url": (
+            WidgetType.UploadFile,
+            {
+                "required": True,
+            },
+        ),
+    }
+
+    async def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> None:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
 
 
 @register(User)
@@ -35,13 +55,8 @@ class UserModelAdmin(TortoiseModelAdmin):
                 # "disableCropImage": True,
             },
         ),
-        "attachment_url": (
-            WidgetType.UploadFile,
-            {
-                "required": True,
-            },
-        ),
     }
+    inlines = (UserAttachmentModelInline,)
 
     async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
         obj = await self.model_cls.filter(username=username, password=password, is_superuser=True).first()
@@ -59,7 +74,6 @@ class UserModelAdmin(TortoiseModelAdmin):
 
     async def upload_file(
         self,
-        obj: tp.Any,
         field_name: str,
         file_name: str,
         file_content: bytes,
@@ -128,7 +142,6 @@ async def create_superuser():
         username="admin",
         password="admin",
         is_superuser=True,
-        attachment_url="/media/attachment.txt",
     )
 
 

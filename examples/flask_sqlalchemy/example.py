@@ -1,6 +1,5 @@
 import asyncio
 import os
-import typing as tp
 import uuid
 
 os.environ["ADMIN_USER_MODEL"] = "User"
@@ -61,7 +60,6 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
 
     async def upload_file(
         self,
-        obj: tp.Any,
         field_name: str,
         file_name: str,
         file_content: bytes,

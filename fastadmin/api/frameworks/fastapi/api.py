@@ -265,11 +265,10 @@ async def change(
         raise HTTPException(e.status_code, detail=e.detail) from None
 
 
-@router.post("/upload-file/{model}/{id}/{field_name}")
+@router.post("/upload-file/{model}/{field_name}")
 async def upload_file(
     request: Request,
     model: str,
-    id: UUID | int | str,
     field_name: str,
     file: UploadFile,
 ) -> str:
@@ -277,7 +276,6 @@ async def upload_file(
 
     :params request: a request object.
     :params model: a name of model.
-    :params id: an id of object.
     :params field_name: a name of field.
     :params file: a file object.
     :return: A file url.
@@ -290,7 +288,6 @@ async def upload_file(
         return await api_service.upload_file(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
-            id,
             field_name,
             file_name,
             file_content,

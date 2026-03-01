@@ -1,4 +1,3 @@
-import typing as tp
 import uuid
 
 import bcrypt
@@ -64,6 +63,6 @@ class UserAdmin(SqlAlchemyModelAdmin):
             await session.execute(query)
             await session.commit()
 
-    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
         # save file to media directory or s3/filestorage, then return the file url
         return f"/media/{file_name}"

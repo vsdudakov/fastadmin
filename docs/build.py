@@ -43,6 +43,12 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.4.1",
+            "changes": [
+                "Fix upload file functionality. Fix examples.",
+            ],
+        },
+        {
             "version": "0.4.0",
             "changes": [
                 "Add new upload file functionality (without backward compatibility). See documentation for details.",

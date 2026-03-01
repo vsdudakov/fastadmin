@@ -137,20 +137,21 @@ async def test_django_dashboard_widget_success():
     )
 
 
-async def test_django_upload_file_invalid_id_422():
-    """upload_file returns 422 when id is invalid."""
+async def test_django_upload_file_missing_file_400():
+    """upload_file returns 400 when request has no file."""
     from unittest.mock import MagicMock
 
     from fastadmin.api.frameworks.django.app.api import upload_file
 
     request = MagicMock()
     request.method = "POST"
-    response = await upload_file(request, "Event", "", "file")
-    assert response.status_code == 422
+    request.FILES.get.return_value = None
+    response = await upload_file(request, "Event", "file")
+    assert response.status_code == 400
 
 
 async def test_django_upload_file_success():
-    """upload_file returns JSON response with uploaded file url."""
+    """upload_file returns JSON response with uploaded file url (no id in route)."""
     from unittest.mock import AsyncMock, MagicMock, patch
 
     from fastadmin.api.frameworks.django.app import api as django_api_module
@@ -171,14 +172,13 @@ async def test_django_upload_file_success():
         "upload_file",
         AsyncMock(return_value="/media/x.txt"),
     ) as mock_upload:
-        response = await upload_file(request, "Event", 1, "file")
+        response = await upload_file(request, "Event", "file")
 
     assert response.status_code == 200
     assert response.content == b'"/media/x.txt"'
     mock_upload.assert_awaited_once_with(
         "sid",
         "Event",
-        1,
         "file",
         "x.txt",
         b"content",

@@ -6,7 +6,7 @@ from fastadmin.api.frameworks.fastapi.app import exception_handler
 
 
 async def test_upload_file_empty_filename():
-    """upload_file raises 422 when file has no filename."""
+    """upload_file raises 422 when file has no filename (no id in route)."""
     from fastapi import HTTPException
 
     from fastadmin.api.frameworks.fastapi import api as fastapi_api
@@ -19,7 +19,7 @@ async def test_upload_file_empty_filename():
     mock_file.read = MagicMock(return_value=b"content")
 
     with pytest.raises(HTTPException) as exc_info:
-        await fastapi_api.upload_file(request, "Event", 1, "file", mock_file)
+        await fastapi_api.upload_file(request, "Event", "file", mock_file)
     assert exc_info.value.status_code == 422
     assert "File name not found" in str(exc_info.value.detail)
 

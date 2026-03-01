@@ -53,6 +53,6 @@ class UserAdmin(TortoiseModelAdmin):
         user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         await user.save(update_fields=("hash_password",))
 
-    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
         # save file to media directory or s3/filestorage, then return the file url
         return f"/media/{file_name}"

@@ -504,7 +504,7 @@ class UserAdmin(TortoiseModelAdmin):
         user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         await user.save(update_fields=("hash_password",))
 
-    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
         # save file to media directory or s3/filestorage, then return the file url
         return f"/media/{file_name}"
 
@@ -529,8 +529,6 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 ```python
-import typing as tp
-
 from django.db import models
 
 from fastadmin import DjangoModelAdmin, register
@@ -563,7 +561,7 @@ class UserAdmin(DjangoModelAdmin):
             return None
         return obj.id
 
-    def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
+    def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
         # save file to media directory or s3/filestorage, then return the file url
         return f"/media/{file_name}"
 
@@ -588,7 +586,6 @@ class UserAdmin(DjangoModelAdmin):
 
 
 ```python
-import typing as tp
 import uuid
 
 import bcrypt
@@ -654,7 +651,7 @@ class UserAdmin(SqlAlchemyModelAdmin):
             await session.execute(query)
             await session.commit()
 
-    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
         # save file to media directory or s3/filestorage, then return the file url
         return f"/media/{file_name}"
 
@@ -679,7 +676,6 @@ class UserAdmin(SqlAlchemyModelAdmin):
 
 
 ```python
-import typing as tp
 import uuid
 
 import bcrypt
@@ -733,7 +729,7 @@ class UserAdmin(PonyORMModelAdmin):
         obj.hash_password = hash_password
         commit()
 
-    def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
+    def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
         # save file to media directory or s3/filestorage, then return the file url
         return f"/media/{file_name}"
 

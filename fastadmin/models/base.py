@@ -534,14 +534,12 @@ class BaseModelAdmin:
 
     async def upload_file(
         self,
-        obj: Any,
         field_name: str,
         file_name: str,
         file_content: bytes,
     ) -> str:
         """This method is used to upload files.
 
-        :params obj: an object.
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.

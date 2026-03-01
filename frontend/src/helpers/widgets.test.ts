@@ -25,14 +25,26 @@ describe("getWidgetCls", () => {
     expect(props).toEqual({ parentId: "form-id" });
   });
 
-  it("returns UploadFile with parentId when id given", () => {
-    const [, props] = getWidgetCls(EFieldWidgetType.UploadFile, _t, "form-id");
-    expect(props).toEqual({ parentId: "form-id" });
+  it("returns UploadFile with empty props (upload without parentId)", () => {
+    const [Cls, props] = getWidgetCls(EFieldWidgetType.UploadFile, _t);
+    expect(Cls).toBeDefined();
+    expect(props).toEqual({});
   });
 
-  it("returns UploadImage with parentId when id given", () => {
+  it("returns UploadFile with empty props when id given (id ignored)", () => {
+    const [, props] = getWidgetCls(EFieldWidgetType.UploadFile, _t, "form-id");
+    expect(props).toEqual({});
+  });
+
+  it("returns UploadImage with empty props (upload without parentId)", () => {
+    const [Cls, props] = getWidgetCls(EFieldWidgetType.UploadImage, _t);
+    expect(Cls).toBeDefined();
+    expect(props).toEqual({});
+  });
+
+  it("returns UploadImage with empty props when id given (id ignored)", () => {
     const [, props] = getWidgetCls(EFieldWidgetType.UploadImage, _t, "form-id");
-    expect(props).toEqual({ parentId: "form-id" });
+    expect(props).toEqual({});
   });
 
   it("returns DatePicker.RangePicker with placeholder", () => {

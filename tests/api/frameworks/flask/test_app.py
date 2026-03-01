@@ -111,7 +111,7 @@ async def test_flask_upload_file_no_file():
     from tests.environment.flask_app.dev import app as flask_app
 
     with flask_app.test_request_context(
-        path="/api/upload-file/Event/1/file",
+        path="/api/upload-file/Event/file",
         method="POST",
     ):
         request = flask_api.request
@@ -119,24 +119,9 @@ async def test_flask_upload_file_no_file():
         request.files.to_dict.return_value = {}
         request.cookies = {}
         with pytest.raises(HTTPException) as exc_info:
-            await flask_api.upload_file("Event", 1, "file")
+            await flask_api.upload_file("Event", "file")
         assert exc_info.value.code == 422
         assert "File not found" in str(exc_info.value.description)
-
-
-async def test_flask_upload_file_invalid_id_422():
-    """upload_file raises 422 when id is invalid."""
-    from fastadmin.api.frameworks.flask import api as flask_api
-    from tests.environment.flask_app.dev import app as flask_app
-
-    with flask_app.test_request_context(
-        path="/api/upload-file/Event//file",
-        method="POST",
-    ):
-        with pytest.raises(HTTPException) as exc_info:
-            await flask_api.upload_file("Event", "", "file")
-        assert exc_info.value.code == 422
-        assert "Invalid id" in str(exc_info.value.description)
 
 
 async def test_flask_upload_file_empty_filename():
@@ -147,7 +132,7 @@ async def test_flask_upload_file_empty_filename():
     from tests.environment.flask_app.dev import app as flask_app
 
     with flask_app.test_request_context(
-        path="/api/upload-file/Event/1/file",
+        path="/api/upload-file/Event/file",
         method="POST",
     ):
         request = flask_api.request
@@ -158,7 +143,7 @@ async def test_flask_upload_file_empty_filename():
         request.files.to_dict.return_value = {"file": mock_file}
         request.cookies = {}
         with pytest.raises(HTTPException) as exc_info:
-            await flask_api.upload_file("Event", 1, "file")
+            await flask_api.upload_file("Event", "file")
         assert exc_info.value.code == 422
         assert "File name not found" in str(exc_info.value.description)
 
@@ -172,12 +157,12 @@ async def test_flask_upload_file_admin_exception():
     from tests.environment.flask_app.dev import app as flask_app
 
     with flask_app.test_request_context(
-        path="/api/upload-file/Event/1/file",
+        path="/api/upload-file/Event/file",
         method="POST",
     ):
         request = flask_api.request
         mock_file = MagicMock()
-        mock_file.name = "x.txt"
+        mock_file.filename = "x.txt"
         mock_file.read.return_value = b"content"
         request.files = MagicMock()
         request.files.to_dict.return_value = {"file": mock_file}
@@ -191,6 +176,6 @@ async def test_flask_upload_file_admin_exception():
             ),
             pytest.raises(HTTPException) as exc_info,
         ):
-            await flask_api.upload_file("Event", 1, "file")
+            await flask_api.upload_file("Event", "file")
         assert exc_info.value.code == 500
         assert "upload failed" in str(exc_info.value.description)

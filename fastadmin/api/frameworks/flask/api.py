@@ -271,23 +271,17 @@ async def change(model: str, id: UUID | int | str) -> dict:
         raise http_exception from e
 
 
-@api_router.route("/upload-file/<string:model>/<string:id>/<string:field_name>", methods=["POST"])
+@api_router.route("/upload-file/<string:model>/<string:field_name>", methods=["POST"])
 async def upload_file(
     model: str,
-    id: UUID | int | str,
     field_name: str,
 ) -> str:
     """This method is used to upload files.
 
     :params model: a name of model.
-    :params id: an id of object.
     :params field_name: a name of field.
     :return: A file url.
     """
-    if not is_valid_id(id):
-        http_exception = HTTPException("Invalid id. It must be a UUID, an integer, or a non-empty string.")
-        http_exception.code = 422
-        raise http_exception
     try:
         files = request.files.to_dict()
         file = files.get("file")
@@ -304,7 +298,6 @@ async def upload_file(
         return await api_service.upload_file(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
-            id,
             field_name,
             file_name,
             file_content,

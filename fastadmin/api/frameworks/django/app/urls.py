@@ -37,7 +37,7 @@ def get_admin_urls():
             path("api/add/<str:model>", add),
             path("api/change-password/<str:id>", change_password),
             path("api/change/<str:model>/<str:id>", change),
-            path("api/upload-file/<str:model>/<str:id>/<str:field_name>", upload_file),
+            path("api/upload-file/<str:model>/<str:field_name>", upload_file),
             path("api/export/<str:model>", export),
             path("api/delete/<str:model>/<str:id>", delete),
             path("api/action/<str:model>/<str:action>", action),

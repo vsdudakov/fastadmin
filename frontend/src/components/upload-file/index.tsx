@@ -11,9 +11,8 @@ const serverUrl = window.SERVER_URL ?? "";
 export type UploadFileValue = string | undefined;
 
 export interface IUploadFileProps {
-  parentId: string;
-  model?: string;
-  fieldName?: string;
+  model: string;
+  fieldName: string;
   value?: UploadFileValue;
   onChange?: (value: UploadFileValue) => void;
   accept?: string;
@@ -25,7 +24,6 @@ export const UploadFile: React.FC<IUploadFileProps> = ({
   value,
   onChange,
   accept,
-  parentId,
   model,
   fieldName,
   ...rest
@@ -71,7 +69,7 @@ export const UploadFile: React.FC<IUploadFileProps> = ({
 
   const action =
     model && fieldName
-      ? `${serverUrl}/upload-file/${model}/${parentId}/${fieldName}`
+      ? `${serverUrl}/upload-file/${model}/${fieldName}`
       : undefined;
 
   return (

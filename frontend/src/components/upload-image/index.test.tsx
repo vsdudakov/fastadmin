@@ -147,7 +147,12 @@ describe("UploadImage", () => {
   it("renders defaultFileList from value and calls onChange on upload", async () => {
     const onChange = vi.fn();
     renderWithConfig(
-      <UploadImage parentId="single" onChange={onChange} value="/initial" />,
+      <UploadImage
+        model="test"
+        fieldName="image"
+        onChange={onChange}
+        value="/initial"
+      />,
     );
 
     expect(screen.getByTestId("default-file-list").textContent).toBe(
@@ -165,7 +170,7 @@ describe("UploadImage", () => {
   });
 
   it("previews url and uploaded file", async () => {
-    renderWithConfig(<UploadImage parentId="preview" />);
+    renderWithConfig(<UploadImage model="test" fieldName="image" />);
 
     expect(screen.getByTestId("modal-open").textContent).toBe("false");
     fireEvent.click(screen.getByText("trigger-preview-url"));
@@ -187,7 +192,7 @@ describe("UploadImage", () => {
 
   it("toggles crop wrapper by configuration and prop", () => {
     const { rerender } = renderWithConfig(
-      <UploadImage parentId="crop-on" disableCropImage={false} />,
+      <UploadImage model="test" fieldName="image" disableCropImage={false} />,
       false,
     );
     expect(screen.queryByTestId("img-crop")).toBeTruthy();
@@ -206,7 +211,7 @@ describe("UploadImage", () => {
           } as any
         }
       >
-        <UploadImage parentId="crop-off-by-config" />
+        <UploadImage model="test" fieldName="image" />
       </ConfigurationContext.Provider>,
     );
     expect(screen.queryByTestId("img-crop")).toBeNull();
@@ -225,7 +230,7 @@ describe("UploadImage", () => {
           } as any
         }
       >
-        <UploadImage parentId="crop-off-by-prop" disableCropImage={true} />
+        <UploadImage model="test" fieldName="image" disableCropImage={true} />
       </ConfigurationContext.Provider>,
     );
     expect(screen.queryByTestId("img-crop")).toBeNull();
@@ -234,7 +239,12 @@ describe("UploadImage", () => {
   it("calls onChange with path from response.url object", async () => {
     const onChange = vi.fn();
     renderWithConfig(
-      <UploadImage parentId="single" onChange={onChange} value="/initial" />,
+      <UploadImage
+        model="test"
+        fieldName="image"
+        onChange={onChange}
+        value="/initial"
+      />,
     );
     fireEvent.click(screen.getByText("trigger-upload-response-url"));
     await vi.waitFor(() => {
@@ -244,7 +254,11 @@ describe("UploadImage", () => {
 
   it("renders defaultFileList with full url when value starts with http", () => {
     renderWithConfig(
-      <UploadImage parentId="single" value="https://example.com/photo.jpg" />,
+      <UploadImage
+        model="test"
+        fieldName="image"
+        value="https://example.com/photo.jpg"
+      />,
     );
     expect(screen.getByTestId("default-file-list").textContent).toBe(
       "https://example.com/photo.jpg",
@@ -252,7 +266,7 @@ describe("UploadImage", () => {
   });
 
   it("handles upload when onChange is not provided", () => {
-    renderWithConfig(<UploadImage parentId="no-change" />);
+    renderWithConfig(<UploadImage model="test" fieldName="image" />);
     fireEvent.click(screen.getByText("trigger-upload"));
     fireEvent.click(screen.getByText("trigger-empty-upload"));
   });

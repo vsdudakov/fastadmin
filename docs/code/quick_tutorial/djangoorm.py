@@ -1,5 +1,3 @@
-import typing as tp
-
 from django.db import models
 
 from fastadmin import DjangoModelAdmin, register
@@ -32,6 +30,6 @@ class UserAdmin(DjangoModelAdmin):
             return None
         return obj.id
 
-    def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
+    def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
         # save file to media directory or s3/filestorage, then return the file url
         return f"/media/{file_name}"

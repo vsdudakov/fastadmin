@@ -82,21 +82,28 @@ describe("UploadFile", () => {
   });
 
   it("renders defaultFileList from value", () => {
-    render(<UploadFile parentId="form-1" value="/existing/file.pdf" />);
+    render(
+      <UploadFile model="test" fieldName="file" value="/existing/file.pdf" />,
+    );
     expect(screen.getByTestId("default-file-list").textContent).toContain(
       "/existing/file.pdf",
     );
   });
 
   it("renders empty list when value is undefined", () => {
-    render(<UploadFile parentId="form-1" />);
+    render(<UploadFile model="test" fieldName="file" />);
     expect(screen.getByTestId("default-file-list").textContent).toBe("none");
   });
 
   it("calls onChange with path when upload succeeds", async () => {
     const onChange = vi.fn();
     render(
-      <UploadFile parentId="form-1" value="/initial" onChange={onChange} />,
+      <UploadFile
+        model="test"
+        fieldName="file"
+        value="/initial"
+        onChange={onChange}
+      />,
     );
 
     fireEvent.click(screen.getByText("trigger-upload"));
@@ -108,7 +115,12 @@ describe("UploadFile", () => {
   it("calls onChange with undefined when fileList is empty", async () => {
     const onChange = vi.fn();
     render(
-      <UploadFile parentId="form-1" value="/initial" onChange={onChange} />,
+      <UploadFile
+        model="test"
+        fieldName="file"
+        value="/initial"
+        onChange={onChange}
+      />,
     );
 
     fireEvent.click(screen.getByText("trigger-empty-upload"));
@@ -120,7 +132,12 @@ describe("UploadFile", () => {
   it("calls onChange with path from response.url object", async () => {
     const onChange = vi.fn();
     render(
-      <UploadFile parentId="form-1" value="/initial" onChange={onChange} />,
+      <UploadFile
+        model="test"
+        fieldName="file"
+        value="/initial"
+        onChange={onChange}
+      />,
     );
     fireEvent.click(screen.getByText("trigger-upload-response-url"));
     await vi.waitFor(() => {
@@ -131,7 +148,12 @@ describe("UploadFile", () => {
   it("calls onChange with path from file.url when response has no path", async () => {
     const onChange = vi.fn();
     render(
-      <UploadFile parentId="form-1" value="/initial" onChange={onChange} />,
+      <UploadFile
+        model="test"
+        fieldName="file"
+        value="/initial"
+        onChange={onChange}
+      />,
     );
     fireEvent.click(screen.getByText("trigger-upload-fallback-url"));
     await vi.waitFor(() => {
@@ -140,7 +162,7 @@ describe("UploadFile", () => {
   });
 
   it("does not throw when onChange is not provided", () => {
-    render(<UploadFile parentId="form-1" />);
+    render(<UploadFile model="test" fieldName="file" />);
     fireEvent.click(screen.getByText("trigger-upload"));
     fireEvent.click(screen.getByText("trigger-empty-upload"));
   });

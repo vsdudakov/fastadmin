@@ -1,4 +1,3 @@
-import typing as tp
 import uuid
 
 from django.db import models
@@ -110,7 +109,6 @@ class UserModelAdmin(DjangoModelAdmin):
 
     def upload_file(
         self,
-        obj: tp.Any,
         field_name: str,
         file_name: str,
         file_content: bytes,

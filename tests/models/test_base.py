@@ -45,7 +45,7 @@ async def test_not_implemented_methods():
         await base.change_password(1, "secret")
 
     with pytest.raises(NotImplementedError):
-        await base.upload_file(None, "file", "name.txt", b"content")
+        await base.upload_file("file", "name.txt", b"content")
 
     with pytest.raises(NotImplementedError):
         await DashboardWidgetAdmin().get_data()
