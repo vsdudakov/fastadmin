@@ -76,14 +76,14 @@ files = [
 
 [[package]]
 name = "fastadmin"
-version = "0.3.11"
+version = "0.4.0"
 description = "FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin."
 optional = false
 python-versions = "<4.0,>=3.12"
 groups = ["main"]
 files = [
-    {file = "fastadmin-0.3.11-py3-none-any.whl", hash = "sha256:42965a4edddd9388adc2d62cd0953e6a2de677caccbf2d0b39959966875c0e48"},
-    {file = "fastadmin-0.3.11.tar.gz", hash = "sha256:44c463c0adea9f5f7104b79532b66be170cfd2ab2e89bf690ce62e576e02e3d2"},
+    {file = "fastadmin-0.4.0-py3-none-any.whl", hash = "sha256:dd097f26ef9d119b1337f4f4454fcd8712faf1df18e613bdaaa704007aa700c8"},
+    {file = "fastadmin-0.4.0.tar.gz", hash = "sha256:597e62bb39a7ef7bbf02f7d032d58793817275f1846269962eea914cec0bf26f"},
 ]
 
 [package.dependencies]
@@ -95,7 +95,7 @@ sqlalchemy = {version = "==2.*", extras = ["asyncio"], optional = true, markers 
 
 [package.extras]
 django = ["django (==6.*)"]
-fastapi = ["fastapi (==0.*)"]
+fastapi = ["fastapi (==0.*)", "python-multipart (==0.*)"]
 flask = ["flask (==3.*)"]
 pony = ["pony (==0.*)"]
 sqlalchemy = ["greenlet (>=3.0,<4.0)", "sqlalchemy[asyncio] (==2.*)"]
@@ -489,4 +489,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13"
-content-hash = "d8609835a6efdb29f000df55c8e7a581096141157291d7602fed4c1432921a4f"
+content-hash = "f460600db5f5d42fe2b43aa172f4ddf3bd551287d2464e0b3bf726ce51f89d57"
