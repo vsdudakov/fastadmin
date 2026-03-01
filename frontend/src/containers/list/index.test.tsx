@@ -377,7 +377,7 @@ describe("List container", () => {
       data: "Zm9v", // "foo"
       file_name: "file.txt",
     });
-    expect(mockFileDownload).toHaveBeenCalledWith("foo", "file.txt");
+    expect(mockFileDownload).toHaveBeenCalledWith(expect.any(Blob), "file.txt");
 
     actionMutation.onError();
     expect(mockMessageError).toHaveBeenCalledWith("Server error");

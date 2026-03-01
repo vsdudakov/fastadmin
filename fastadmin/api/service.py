@@ -1,6 +1,5 @@
 import inspect
 import logging
-import re
 from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
 from io import BytesIO, StringIO
@@ -45,27 +44,6 @@ def is_allowed_field_or_path(field: str, allowed_fields: set[str]) -> bool:
     return base_field in allowed_fields
 
 
-def convert_id(id: str | int | UUID) -> int | UUID | None:
-    """Convert the given id to int or UUID.
-
-    :param id: A string value.
-    :return: An int or UUID value. Or None if the given id is invalid.
-    """
-    if isinstance(id, int | UUID):
-        return id
-
-    # Check if the input_str is an integer
-    if re.fullmatch(r"\d+", id):
-        return int(id)
-
-    # Check if the input_str is a valid UUID
-    if re.fullmatch(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", id):
-        return UUID(id)
-
-    logger.warning("Invalid id: %s", id)
-    return None
-
-
 async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | None:
     """This method is used to get user id from session_id.
 
@@ -95,7 +73,6 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
     if not user_id:
         return None
 
-    user_id = convert_id(user_id)
     if not user_id or not await admin_model.get_obj(user_id):
         return None
 
@@ -290,8 +267,9 @@ class ApiService:
 
         try:
             obj = await admin_model.get_obj(id)
-        except (ValueError, TypeError):
-            raise AdminApiException(404, detail=f"{model} not found.") from None
+        except Exception as e:
+            logger.error("Error getting %s %s: %s", model, id, e)
+            raise AdminApiException(500, detail=f"Error getting {model} {id}: {e}") from e
         if not obj:
             raise AdminApiException(404, detail=f"{model} not found.")
         return obj
@@ -309,7 +287,11 @@ class ApiService:
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
         self._bind_admin_context(admin_model, request=request, user=current_user)
-        return await admin_model.save_model(None, payload)  # type: ignore [return-value]
+        try:
+            return await admin_model.save_model(None, payload)  # type: ignore [return-value]
+        except Exception as e:
+            logger.error("Error adding %s: %s", model, e)
+            raise AdminApiException(500, detail=f"Error adding {model}: {e}") from e
 
     async def change_password(
         self,
@@ -336,8 +318,8 @@ class ApiService:
 
         try:
             user = await admin_model.get_obj(id)
-        except (ValueError, TypeError):
-            raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} not found.") from None
+        except Exception as e:
+            raise AdminApiException(500, detail=f"Error getting {settings.ADMIN_USER_MODEL} {id}: {e}") from e
         if not user:
             raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} not found.")
 
@@ -367,8 +349,9 @@ class ApiService:
 
         try:
             obj = await admin_model.save_model(id, payload)
-        except (ValueError, TypeError):
-            raise AdminApiException(404, detail=f"{model} not found.") from None
+        except Exception as e:
+            logger.error("Error changing %s %s: %s", model, id, e)
+            raise AdminApiException(500, detail=f"Error changing {model} {id}: {e}") from e
         if not obj:
             raise AdminApiException(404, detail=f"{model} not found.")
         return obj
@@ -468,8 +451,9 @@ class ApiService:
             raise AdminApiException(403, detail="You cannot delete yourself.")
         try:
             await admin_model.delete_model(id)
-        except (ValueError, TypeError):
-            raise AdminApiException(404, detail=f"{model} not found.") from None
+        except Exception as e:
+            logger.error("Error deleting %s %s: %s", model, id, e)
+            raise AdminApiException(500, detail=f"Error deleting {model} {id}: {e}") from e
         return id
 
     async def action(

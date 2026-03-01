@@ -2,25 +2,16 @@ from datetime import datetime, timedelta, timezone
 from io import StringIO
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import jwt
 import pytest
 
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.schemas import ExportFormat, ExportInputSchema, SignInInputSchema
-from fastadmin.api.service import ApiService, convert_id, get_user_id_from_session_id
+from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.models.base import admin_dashboard_widgets
 from fastadmin.settings import settings
-
-
-def test_convert_id():
-    assert convert_id("1") == 1
-    assert convert_id("1000") == 1000
-    assert convert_id(1000) == 1000
-    assert convert_id("123e4567-e89b-12d3-a456-426614174000") == UUID("123e4567-e89b-12d3-a456-426614174000")
-    assert convert_id(UUID("123e4567-e89b-12d3-a456-426614174000")) == UUID("123e4567-e89b-12d3-a456-426614174000")
-    assert convert_id("invalid") is None
 
 
 async def test_get_user_id_from_session_id_without_user_id(monkeypatch):
@@ -194,6 +185,62 @@ async def test_change_password_handles_change_password_value_error(monkeypatch):
     with pytest.raises(AdminApiException) as exc_info:
         await ApiService().change_password("sid", 1, {"password": "x", "confirm_password": "x"})
     assert exc_info.value.status_code == 404
+
+
+async def test_get_raises_500_when_get_obj_raises(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    admin_model = SimpleNamespace(get_obj=AsyncMock(side_effect=RuntimeError("db error")))
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().get("sid", "Event", 1)
+    assert exc_info.value.status_code == 500
+    assert "Error getting" in exc_info.value.detail
+    assert "db error" in exc_info.value.detail
+
+
+async def test_add_raises_500_when_save_model_raises(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    admin_model = SimpleNamespace(save_model=AsyncMock(side_effect=ValueError("validation failed")))
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().add("sid", "Event", {"name": "x"})
+    assert exc_info.value.status_code == 500
+    assert "Error adding" in exc_info.value.detail
+    assert "validation failed" in exc_info.value.detail
+
+
+async def test_change_password_raises_500_when_get_obj_raises(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+
+    async def get_obj_side_effect(id):
+        if id == 1:
+            return {"id": 1}  # current user for _get_authenticated_user
+        raise RuntimeError("db error")  # target user 999
+
+    admin_model = SimpleNamespace(
+        get_obj=AsyncMock(side_effect=get_obj_side_effect),
+        change_password=AsyncMock(),
+    )
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().change_password("sid", 999, {"password": "x", "confirm_password": "x"})
+    assert exc_info.value.status_code == 500
+    assert "Error getting" in exc_info.value.detail
+
+
+async def test_change_raises_500_when_save_model_raises(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    admin_model = SimpleNamespace(save_model=AsyncMock(side_effect=ValueError("update failed")))
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().change("sid", "Event", 1, {"name": "y"})
+    assert exc_info.value.status_code == 500
+    assert "Error changing" in exc_info.value.detail
+    assert "update failed" in exc_info.value.detail
 
 
 async def test_export_invalid_search_field(monkeypatch):

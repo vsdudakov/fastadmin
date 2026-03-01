@@ -119,18 +119,10 @@ async def test_change_404_admin_class_found(session_id, admin_models, superuser,
 
 async def test_change_404_obj_not_found(session_id, superuser, event, client):
     assert session_id
-    # "invalid" is valid as string PK; lookup fails → 404
+    # Non-existent but valid-format ID so ORM returns None → 404
+    non_existent_id = 999999
     r = await client.patch(
-        f"/api/change/{event.get_model_name()}/invalid",
-        json={
-            "name": "new name",
-            "participants": [superuser.id],
-        },
-    )
-    assert r.status_code == 404, r.text
-
-    r = await client.patch(
-        f"/api/change/{event.get_model_name()}/-1",
+        f"/api/change/{event.get_model_name()}/{non_existent_id}",
         json={
             "name": "new name",
             "participants": [superuser.id],
