@@ -25,8 +25,13 @@ describe("getWidgetCls", () => {
     expect(props).toEqual({ parentId: "form-id" });
   });
 
-  it("returns UploadInput with parentId when id given", () => {
-    const [, props] = getWidgetCls(EFieldWidgetType.Upload, _t, "form-id");
+  it("returns UploadFile with parentId when id given", () => {
+    const [, props] = getWidgetCls(EFieldWidgetType.UploadFile, _t, "form-id");
+    expect(props).toEqual({ parentId: "form-id" });
+  });
+
+  it("returns UploadImage with parentId when id given", () => {
+    const [, props] = getWidgetCls(EFieldWidgetType.UploadImage, _t, "form-id");
     expect(props).toEqual({ parentId: "form-id" });
   });
 

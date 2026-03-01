@@ -15,7 +15,8 @@ import { PasswordInput } from "@/components/password-input";
 import { PhoneNumberInput } from "@/components/phone-number-input";
 import { SlugInput } from "@/components/slug-input";
 import { TextEditor } from "@/components/texteditor-field";
-import { UploadInput } from "@/components/upload-input";
+import { UploadFile } from "@/components/upload-file";
+import { UploadImage } from "@/components/upload-image";
 import { EFieldWidgetType } from "@/interfaces/configuration";
 
 export const getWidgetCls = (
@@ -94,8 +95,10 @@ export const getWidgetCls = (
         DatePicker.RangePicker,
         { style: { width: "100%" }, placeholder: [_t("Start"), _t("End")] },
       ];
-    case EFieldWidgetType.Upload:
-      return [UploadInput, { parentId: id }];
+    case EFieldWidgetType.UploadFile:
+      return [UploadFile, { parentId: id }];
+    case EFieldWidgetType.UploadImage:
+      return [UploadImage, { parentId: id }];
     default:
       return [Input, {}];
   }

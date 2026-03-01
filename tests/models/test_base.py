@@ -45,7 +45,7 @@ async def test_not_implemented_methods():
         await base.change_password(1, "secret")
 
     with pytest.raises(NotImplementedError):
-        await base.orm_save_upload_field({}, "file", "base64")
+        await base.upload_file(None, "file", "name.txt", b"content")
 
     with pytest.raises(NotImplementedError):
         await DashboardWidgetAdmin().get_data()
@@ -397,27 +397,15 @@ def test_deserialize_value_timepicker_fallback_and_datetime():
     assert base.deserialize_value(field_dt, "2026-02-19T12:34:56").isoformat() == "2026-02-19T12:34:56"
 
 
-async def test_save_model_sync_upload_and_model_admin_password_flow():
+async def test_save_model_excludes_password_flow():
+    """save_model excludes UploadFile/UploadImage from payload; uploads use upload_file endpoint."""
+
     class DummyAdmin(ModelAdmin):
         @staticmethod
         def get_model_pk_name(_orm_model_cls):
             return "id"
 
-        def get_model_fields_with_widget_types(self, with_m2m=None, with_upload=None):
-            if with_upload:
-                return [
-                    ModelFieldWidgetSchema(
-                        name="avatar",
-                        column_name="avatar",
-                        is_m2m=False,
-                        is_pk=False,
-                        is_immutable=False,
-                        form_widget_type=WidgetType.Upload,
-                        form_widget_props={},
-                        filter_widget_type=WidgetType.Input,
-                        filter_widget_props={},
-                    )
-                ]
+        def get_model_fields_with_widget_types(self, with_m2m=None):
             if with_m2m:
                 return []
             return [
@@ -431,7 +419,7 @@ async def test_save_model_sync_upload_and_model_admin_password_flow():
                     form_widget_props={},
                     filter_widget_type=WidgetType.Input,
                     filter_widget_props={},
-                )
+                ),
             ]
 
         async def orm_save_obj(self, _id, payload):
@@ -453,9 +441,6 @@ async def test_save_model_sync_upload_and_model_admin_password_flow():
         async def orm_save_m2m_ids(self, _obj, _field, _ids):
             return None
 
-        def orm_save_upload_field(self, obj, field, base64):
-            obj[field] = base64
-
         async def change_password(self, id, password):
             self.changed = (id, password)
 
@@ -465,66 +450,12 @@ async def test_save_model_sync_upload_and_model_admin_password_flow():
         return obj
 
     admin._serialize_obj_after_save = passthrough  # type: ignore[method-assign]
-    payload = {"password": "raw", "avatar": "base64-image"}
+    payload = {"password": "raw"}
     result = await admin.save_model(None, payload)
     assert result is not None
-    assert result["avatar"] == "base64-image"
+    assert result["id"] == 42
+    assert result["password"] == "raw"
     assert admin.changed == (42, "raw")
-
-
-async def test_save_model_async_upload_field_branch():
-    class DummyAdmin(ModelAdmin):
-        @staticmethod
-        def get_model_pk_name(_orm_model_cls):
-            return "id"
-
-        def get_model_fields_with_widget_types(self, with_m2m=None, with_upload=None):
-            if with_upload:
-                return [
-                    ModelFieldWidgetSchema(
-                        name="avatar",
-                        column_name="avatar",
-                        is_m2m=False,
-                        is_pk=False,
-                        is_immutable=False,
-                        form_widget_type=WidgetType.Upload,
-                        form_widget_props={},
-                        filter_widget_type=WidgetType.Input,
-                        filter_widget_props={},
-                    )
-                ]
-            return []
-
-        async def orm_save_obj(self, _id, payload):
-            return {"id": 1, **payload}
-
-        async def orm_get_obj(self, _id):
-            return None
-
-        async def orm_get_list(self, **kwargs):
-            return [], 0
-
-        async def orm_delete_obj(self, _id):
-            return None
-
-        async def orm_get_m2m_ids(self, _obj, _field):
-            return []
-
-        async def orm_save_m2m_ids(self, _obj, _field, _ids):
-            return None
-
-        async def orm_save_upload_field(self, obj, field, base64):
-            obj[field] = base64
-
-    admin = DummyAdmin(type("Model", (), {}))
-
-    async def passthrough(obj):
-        return obj
-
-    admin._serialize_obj_after_save = passthrough  # type: ignore[method-assign]
-    result = await admin.save_model(None, {"avatar": "img"})
-    assert result is not None
-    assert result["avatar"] == "img"
 
 
 async def test_get_export_json_uses_custom_encoder():
@@ -533,7 +464,7 @@ async def test_get_export_json_uses_custom_encoder():
         def get_model_pk_name(_orm_model_cls):
             return "id"
 
-        def get_model_fields_with_widget_types(self, with_m2m=None, with_upload=None):
+        def get_model_fields_with_widget_types(self, with_m2m=None):
             return [
                 ModelFieldWidgetSchema(
                     name="id",

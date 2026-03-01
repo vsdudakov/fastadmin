@@ -356,6 +356,45 @@ class ApiService:
             raise AdminApiException(404, detail=f"{model} not found.")
         return obj
 
+    async def upload_file(
+        self,
+        session_id: str | None,
+        model: str,
+        id: UUID | int | str,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+        request: Any | None = None,
+    ) -> str:
+        _current_user_id, current_user = await self._get_authenticated_user(session_id)
+
+        admin_model = get_admin_or_admin_inline_model(model)
+        if not admin_model:
+            raise AdminApiException(404, detail=f"{model} model is not registered.")
+        self._bind_admin_context(admin_model, request=request, user=current_user)
+
+        try:
+            obj = await admin_model.get_obj(id)
+        except Exception as e:
+            raise AdminApiException(500, detail=f"Error getting {model} {id}: {e}") from e
+        if not obj:
+            raise AdminApiException(404, detail=f"{model} not found.")
+
+        try:
+            if inspect.iscoroutinefunction(admin_model.upload_file):
+                upload_file_fn = admin_model.upload_file
+            else:
+                upload_file_fn = sync_to_async(admin_model.upload_file)  # type: ignore [arg-type]
+
+            return await upload_file_fn(
+                obj,
+                field_name,
+                file_name,
+                file_content,
+            )
+        except Exception as e:
+            raise AdminApiException(500, detail=f"Error uploading file for {model} {id}: {e}") from e
+
     async def export(
         self,
         session_id: str | None,
@@ -502,7 +541,6 @@ class ApiService:
                 username_field=settings.ADMIN_USER_MODEL_USERNAME_FIELD,
                 date_format=settings.ADMIN_DATE_FORMAT,
                 datetime_format=settings.ADMIN_DATETIME_FORMAT,
-                disable_crop_image=settings.ADMIN_DISABLE_CROP_IMAGE,
                 models=[],
                 dashboard_widgets=[],
             )
@@ -522,7 +560,6 @@ class ApiService:
             username_field=settings.ADMIN_USER_MODEL_USERNAME_FIELD,
             date_format=settings.ADMIN_DATE_FORMAT,
             datetime_format=settings.ADMIN_DATETIME_FORMAT,
-            disable_crop_image=settings.ADMIN_DISABLE_CROP_IMAGE,
             models=models,
             dashboard_widgets=dashboard_widgets,
         )  # type: ignore [call-arg]

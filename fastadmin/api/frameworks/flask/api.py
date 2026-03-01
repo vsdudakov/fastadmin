@@ -271,6 +271,51 @@ async def change(model: str, id: UUID | int | str) -> dict:
         raise http_exception from e
 
 
+@api_router.route("/upload-file/<string:model>/<string:id>/<string:field_name>", methods=["POST"])
+async def upload_file(
+    model: str,
+    id: UUID | int | str,
+    field_name: str,
+) -> str:
+    """This method is used to upload files.
+
+    :params model: a name of model.
+    :params id: an id of object.
+    :params field_name: a name of field.
+    :return: A file url.
+    """
+    if not is_valid_id(id):
+        http_exception = HTTPException("Invalid id. It must be a UUID, an integer, or a non-empty string.")
+        http_exception.code = 422
+        raise http_exception
+    try:
+        files = request.files.to_dict()
+        file = files.get("file")
+        if not file:
+            http_exception = HTTPException("File not found")
+            http_exception.code = 422
+            raise http_exception from None
+        file_name = file.filename
+        if not file_name:
+            http_exception = HTTPException("File name not found")
+            http_exception.code = 422
+            raise http_exception from None
+        file_content = file.read()
+        return await api_service.upload_file(
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
+            id,
+            field_name,
+            file_name,
+            file_content,
+            request=request,
+        )
+    except AdminApiException as e:
+        http_exception = HTTPException(e.detail)
+        http_exception.code = e.status_code
+        raise http_exception from e
+
+
 @api_router.route("/export/<string:model>", methods=["POST"])
 async def export(model: str) -> Response:
     """This method is used to export a list of objects.

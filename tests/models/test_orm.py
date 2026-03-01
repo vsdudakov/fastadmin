@@ -411,17 +411,6 @@ def test_sqlalchemy_field_mapping_special_cases(monkeypatch):
     assert by_name_raw["profile"].filter_widget_type == WidgetType.Input
 
 
-def test_sqlalchemy_with_upload_false_skips_upload(user, session_with_type):
-    _, session_type = session_with_type
-    if session_type != "sqlalchemy":
-        return
-
-    admin_model = get_admin_model(user.__class__)
-    admin_model.formfield_overrides["username"] = (WidgetType.Upload, {})
-    fields = admin_model.get_model_fields_with_widget_types(with_upload=False)
-    assert "username" not in [f.name for f in fields]
-
-
 async def test_sqlalchemy_orm_get_list_filter_operators(event, session_with_type):
     _, session_type = session_with_type
     if session_type != "sqlalchemy":
@@ -732,17 +721,6 @@ def test_ponyorm_field_mapping_special_cases():
     assert by_name_raw["profile"].filter_widget_type == WidgetType.Input
 
 
-def test_ponyorm_with_upload_false_skips_upload(user, session_with_type):
-    _, session_type = session_with_type
-    if session_type != "ponyorm":
-        return
-
-    admin_model = get_admin_model(user.__class__)
-    admin_model.formfield_overrides["username"] = (WidgetType.Upload, {})
-    fields = admin_model.get_model_fields_with_widget_types(with_upload=False)
-    assert "username" not in [f.name for f in fields]
-
-
 async def test_ponyorm_orm_get_list_filter_operators():
     from types import SimpleNamespace
 
@@ -1005,10 +983,6 @@ def test_tortoise_field_mapping_special_cases():
     assert by_name["tags"].form_widget_props["mode"] == "tags"
     assert by_name["tags"].filter_widget_props["mode"] == "tags"
 
-    admin.formfield_overrides = {"tags": (WidgetType.Upload, {})}
-    mapped_no_upload = admin.get_model_fields_with_widget_types(with_upload=False)
-    assert "tags" not in [f.name for f in mapped_no_upload]
-
 
 def test_tortoise_resolve_ordering_field_for_relation():
     from types import SimpleNamespace
@@ -1094,6 +1068,7 @@ def test_django_field_mapping_special_cases():
     fields = [
         make_field("ArrayField", "tags"),
         make_field("FileField", "file"),
+        make_field("ImageField", "image"),
         make_field("URLField", "website"),
         make_field("EmailField", "email"),
         make_field("SlugField", "slug"),
@@ -1110,61 +1085,8 @@ def test_django_field_mapping_special_cases():
     assert by_name["tags"].form_widget_type == WidgetType.Select
     assert by_name["tags"].form_widget_props["mode"] == "tags"
     assert by_name["tags"].filter_widget_props["mode"] == "tags"
-    assert by_name["file"].form_widget_type == WidgetType.Upload
+    assert by_name["file"].form_widget_type == WidgetType.UploadFile
+    assert by_name["image"].form_widget_type == WidgetType.UploadImage
     assert by_name["website"].form_widget_type == WidgetType.UrlInput
     assert by_name["email"].form_widget_type == WidgetType.EmailInput
     assert by_name["slug"].form_widget_type == WidgetType.SlugInput
-
-
-def test_django_with_upload_false_skips_upload_via_override():
-    from types import SimpleNamespace
-
-    from fastadmin.models.orms.django import DjangoModelAdmin
-
-    char_field = type("CharField", (), {})()
-    char_field.name = "username"
-    char_field.primary_key = False
-    char_field.auto_now = False
-    char_field.auto_now_add = False
-    char_field.null = False
-    char_field.default = False
-    char_field.choices = None
-
-    class FakeModel:
-        _meta = SimpleNamespace(get_fields=lambda: [char_field])
-
-    admin = DjangoModelAdmin(FakeModel)
-    admin.formfield_overrides = {"username": (WidgetType.Upload, {})}
-    mapped = admin.get_model_fields_with_widget_types(with_upload=False)
-    assert mapped == []
-
-
-async def test_django_orm_save_upload_field():
-    from types import SimpleNamespace
-
-    from fastadmin.models.orms.django import DjangoModelAdmin
-
-    class FakeModel:
-        _meta = SimpleNamespace(pk=SimpleNamespace(name="id"), get_fields=list)
-
-    class CaptureFile:
-        def __init__(self):
-            self.called = False
-            self.name = None
-            self.data = None
-            self.save_flag = None
-
-        def save(self, name, data, save=True):
-            self.called = True
-            self.name = name
-            self.data = data.read()
-            self.save_flag = save
-
-    obj = SimpleNamespace(avatar=CaptureFile())
-    admin = DjangoModelAdmin(FakeModel)
-    await admin.orm_save_upload_field(obj, "avatar", "data:image/png;base64,aGVsbG8=")
-
-    assert obj.avatar.called is True
-    assert obj.avatar.name == "image.png"
-    assert obj.avatar.data == b"hello"
-    assert obj.avatar.save_flag is True

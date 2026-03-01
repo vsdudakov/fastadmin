@@ -135,3 +135,52 @@ async def test_django_dashboard_widget_success():
         period_x_field=None,
         request=request,
     )
+
+
+async def test_django_upload_file_invalid_id_422():
+    """upload_file returns 422 when id is invalid."""
+    from unittest.mock import MagicMock
+
+    from fastadmin.api.frameworks.django.app.api import upload_file
+
+    request = MagicMock()
+    request.method = "POST"
+    response = await upload_file(request, "Event", "", "file")
+    assert response.status_code == 422
+
+
+async def test_django_upload_file_success():
+    """upload_file returns JSON response with uploaded file url."""
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    from fastadmin.api.frameworks.django.app import api as django_api_module
+    from fastadmin.api.frameworks.django.app.api import upload_file
+    from fastadmin.settings import settings
+
+    request = MagicMock()
+    request.method = "POST"
+    request.COOKIES = {settings.ADMIN_SESSION_ID_KEY: "sid"}
+
+    file = MagicMock()
+    file.name = "x.txt"
+    file.read.return_value = b"content"
+    request.FILES.get.return_value = file
+
+    with patch.object(
+        django_api_module.api_service,
+        "upload_file",
+        AsyncMock(return_value="/media/x.txt"),
+    ) as mock_upload:
+        response = await upload_file(request, "Event", 1, "file")
+
+    assert response.status_code == 200
+    assert response.content == b'"/media/x.txt"'
+    mock_upload.assert_awaited_once_with(
+        "sid",
+        "Event",
+        1,
+        "file",
+        "x.txt",
+        b"content",
+        request=request,
+    )

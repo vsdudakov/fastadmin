@@ -68,6 +68,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
   const getWidget = useCallback(
     (
       configurationField: IAddConfigurationField | IChangeConfigurationField,
+      field: IModelField,
     ) => {
       if (!configurationField.form_widget_type) {
         return null;
@@ -78,14 +79,21 @@ export const FormContainer: React.FC<IFormContainer> = ({
         _t,
         id,
       );
+      const isUpload =
+        configurationField.form_widget_type === EFieldWidgetType.UploadImage ||
+        configurationField.form_widget_type === EFieldWidgetType.UploadFile;
+      const uploadProps = isUpload
+        ? { model: modelConfiguration?.name, fieldName: field.name }
+        : {};
       return (
         <Widget
           {...(widgetProps || {})}
           {...(configurationField.form_widget_props || {})}
+          {...uploadProps}
         />
       );
     },
-    [_t, id],
+    [_t, id, modelConfiguration?.name],
   );
 
   const getConf = useCallback(
@@ -176,7 +184,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
               : undefined
           }
         >
-          {getWidget(getConf(field))}
+          {getWidget(getConf(field), field)}
           {getConf(field).form_widget_props?.help && (
             <Typography.Text
               type={"secondary"}

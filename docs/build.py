@@ -43,6 +43,14 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.4.0",
+            "changes": [
+                "Add new upload file functionality (without backward compatibility). See documentation for details.",
+                "Add example for flask with sqlalchemy",
+                "Removed ADMIN_DISABLE_CROP_IMAGE setting. Use disableCropImage prop in UploadImage widget instead.",
+            ],
+        },
+        {
             "version": "0.3.11",
             "changes": [
                 "Fix API service errors.",
@@ -675,6 +683,10 @@ export ADMIN_SECRET_KEY=secret_key
                 {
                     "type": "alert-warning",
                     "content": "See <a href='https://ant.design/components/overview' target='_blank'>antd components</a> for more details (e.g. how they look).",
+                },
+                {
+                    "type": "text",
+                    "content": "For file and image fields use <code>UploadFile</code> and <code>UploadImage</code> widgets in <code>formfield_overrides</code>. Implement <code>upload_file(obj, field_name, file_name, file_content)</code> on the model admin to handle uploads; it must return the file URL (e.g. after saving to disk or S3).",
                 },
                 {
                     "type": "text",

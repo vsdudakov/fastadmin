@@ -9,6 +9,11 @@ class OrmConfig(AppConfig):
         try:
             from orm.models import User
 
-            User.objects.update_or_create(username="admin", password="admin", is_superuser=True)
+            User.objects.update_or_create(
+                username="admin",
+                password="admin",
+                is_superuser=True,
+                attachment_url="/media/attachment.txt",
+            )
         except Exception:  # noqa: BLE001, S110
             pass

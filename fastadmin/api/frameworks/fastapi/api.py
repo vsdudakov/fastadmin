@@ -4,6 +4,7 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.datastructures import UploadFile
 from fastapi.responses import Response, StreamingResponse
 
 from fastadmin.api.exceptions import AdminApiException
@@ -258,6 +259,41 @@ async def change(
             model,
             id,
             payload,
+            request=request,
+        )
+    except AdminApiException as e:
+        raise HTTPException(e.status_code, detail=e.detail) from None
+
+
+@router.post("/upload-file/{model}/{id}/{field_name}")
+async def upload_file(
+    request: Request,
+    model: str,
+    id: UUID | int | str,
+    field_name: str,
+    file: UploadFile,
+) -> str:
+    """This method is used to upload files.
+
+    :params request: a request object.
+    :params model: a name of model.
+    :params id: an id of object.
+    :params field_name: a name of field.
+    :params file: a file object.
+    :return: A file url.
+    """
+    try:
+        file_name = file.filename
+        if not file_name:
+            raise HTTPException(422, detail="File name not found")
+        file_content = await file.read()
+        return await api_service.upload_file(
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
+            id,
+            field_name,
+            file_name,
+            file_content,
             request=request,
         )
     except AdminApiException as e:

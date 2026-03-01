@@ -1,21 +1,22 @@
+import asyncio
 import os
 import typing as tp
 import uuid
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
 
 os.environ["ADMIN_USER_MODEL"] = "User"
 os.environ["ADMIN_USER_MODEL_USERNAME_FIELD"] = "username"
 os.environ["ADMIN_SECRET_KEY"] = "secret"
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from flask import Flask
+from flask_cors import CORS
 from models import Base, BaseEvent, Event, Tournament, User, sqlalchemy_engine, sqlalchemy_sessionmaker
 from sqlalchemy import select, update
 
 from fastadmin import SqlAlchemyInlineModelAdmin, SqlAlchemyModelAdmin, WidgetType, action, display
-from fastadmin import fastapi_app as admin_app
+from fastadmin import flask_app as admin_app
 from fastadmin import register
+from fastadmin.api.frameworks.flask.app import JSONProvider
+from fastadmin.settings import settings
 
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
@@ -31,8 +32,6 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
             WidgetType.UploadImage,
             {
                 "required": False,
-                # Disable crop image for upload field
-                # "disableCropImage": True,
             },
         ),
         "attachment_url": (
@@ -56,7 +55,6 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
     async def change_password(self, id: uuid.UUID | int, password: str) -> None:
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
-            # use hash password for real usage
             query = update(self.model_cls).where(User.id.in_([id])).values(password=password)
             await session.execute(query)
             await session.commit()
@@ -67,7 +65,7 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
-    ) -> None:
+    ) -> str:
         # save file to media directory or to s3/filestorage here
         return f"/media/{file_name}"
 
@@ -137,21 +135,21 @@ async def create_superuser():
         await s.commit()
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    await init_db()
-    await create_superuser()
-    yield
+def run_async_init():
+    asyncio.run(init_db())
+    asyncio.run(create_superuser())
 
 
-app = FastAPI(lifespan=lifespan)
+app = Flask(__name__)
+app.json = JSONProvider(app)
+app.register_blueprint(admin_app, url_prefix=f"/{settings.ADMIN_PREFIX}")
 
-app.mount("/admin", admin_app)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3030", "http://localhost:8090"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+CORS(
+    app,
+    origins=["http://localhost:3030", "http://localhost:8090"],
+    supports_credentials=True,
 )
+
+if __name__ == "__main__":
+    run_async_init()
+    app.run(host="0.0.0.0", port=8090, debug=True)  # noqa: S201

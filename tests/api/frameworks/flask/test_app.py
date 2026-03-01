@@ -79,14 +79,17 @@ async def test_flask_dashboard_widget_success():
 
     expected = {"labels": ["a"], "values": [1]}
 
-    with flask_app.test_request_context(
-        path="/api/dashboard-widget/Event?min_x_field=created_at",
-        method="GET",
-    ), patch.object(
-        flask_api.api_service,
-        "dashboard_widget",
-        AsyncMock(return_value=expected),
-    ) as mock_dashboard:
+    with (
+        flask_app.test_request_context(
+            path="/api/dashboard-widget/Event?min_x_field=created_at",
+            method="GET",
+        ),
+        patch.object(
+            flask_api.api_service,
+            "dashboard_widget",
+            AsyncMock(return_value=expected),
+        ) as mock_dashboard,
+    ):
         response = await flask_api.dashboard_widget("Event")
 
     assert response == expected
@@ -98,3 +101,96 @@ async def test_flask_dashboard_widget_success():
         period_x_field=None,
         request=flask_request,
     )
+
+
+async def test_flask_upload_file_no_file():
+    """upload_file raises 422 when request has no file."""
+    from unittest.mock import MagicMock
+
+    from fastadmin.api.frameworks.flask import api as flask_api
+    from tests.environment.flask_app.dev import app as flask_app
+
+    with flask_app.test_request_context(
+        path="/api/upload-file/Event/1/file",
+        method="POST",
+    ):
+        request = flask_api.request
+        request.files = MagicMock()
+        request.files.to_dict.return_value = {}
+        request.cookies = {}
+        with pytest.raises(HTTPException) as exc_info:
+            await flask_api.upload_file("Event", 1, "file")
+        assert exc_info.value.code == 422
+        assert "File not found" in str(exc_info.value.description)
+
+
+async def test_flask_upload_file_invalid_id_422():
+    """upload_file raises 422 when id is invalid."""
+    from fastadmin.api.frameworks.flask import api as flask_api
+    from tests.environment.flask_app.dev import app as flask_app
+
+    with flask_app.test_request_context(
+        path="/api/upload-file/Event//file",
+        method="POST",
+    ):
+        with pytest.raises(HTTPException) as exc_info:
+            await flask_api.upload_file("Event", "", "file")
+        assert exc_info.value.code == 422
+        assert "Invalid id" in str(exc_info.value.description)
+
+
+async def test_flask_upload_file_empty_filename():
+    """upload_file raises 422 when file has empty name."""
+    from unittest.mock import MagicMock
+
+    from fastadmin.api.frameworks.flask import api as flask_api
+    from tests.environment.flask_app.dev import app as flask_app
+
+    with flask_app.test_request_context(
+        path="/api/upload-file/Event/1/file",
+        method="POST",
+    ):
+        request = flask_api.request
+        mock_file = MagicMock()
+        mock_file.filename = ""
+        mock_file.read.return_value = b"content"
+        request.files = MagicMock()
+        request.files.to_dict.return_value = {"file": mock_file}
+        request.cookies = {}
+        with pytest.raises(HTTPException) as exc_info:
+            await flask_api.upload_file("Event", 1, "file")
+        assert exc_info.value.code == 422
+        assert "File name not found" in str(exc_info.value.description)
+
+
+async def test_flask_upload_file_admin_exception():
+    """upload_file re-raises AdminApiException as HTTPException."""
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    from fastadmin.api.exceptions import AdminApiException
+    from fastadmin.api.frameworks.flask import api as flask_api
+    from tests.environment.flask_app.dev import app as flask_app
+
+    with flask_app.test_request_context(
+        path="/api/upload-file/Event/1/file",
+        method="POST",
+    ):
+        request = flask_api.request
+        mock_file = MagicMock()
+        mock_file.name = "x.txt"
+        mock_file.read.return_value = b"content"
+        request.files = MagicMock()
+        request.files.to_dict.return_value = {"file": mock_file}
+        request.cookies = {}
+
+        with (
+            patch.object(
+                flask_api.api_service,
+                "upload_file",
+                AsyncMock(side_effect=AdminApiException(500, detail="upload failed")),
+            ),
+            pytest.raises(HTTPException) as exc_info,
+        ):
+            await flask_api.upload_file("Event", 1, "file")
+        assert exc_info.value.code == 500
+        assert "upload failed" in str(exc_info.value.description)

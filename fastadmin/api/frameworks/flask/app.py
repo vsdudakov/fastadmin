@@ -22,7 +22,7 @@ class JSONProvider(DefaultJSONProvider):
 app = Blueprint(
     "FastAdmin App",
     __name__,
-    url_prefix="/parent",
+    url_prefix="",
     static_url_path="/static",
     static_folder=ROOT_DIR / "static",
 )

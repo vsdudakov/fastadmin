@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { UploadInput } from "@/components/upload-input";
+import { UploadImage } from "@/components/upload-image";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 const { mockFromFile } = vi.hoisted(() => ({
@@ -63,12 +63,15 @@ vi.mock("antd", () => ({
   Upload: ({
     onChange,
     onPreview,
-    beforeUpload,
     defaultFileList,
   }: {
-    onChange: (info: unknown) => void;
-    onPreview: (file: unknown) => void;
-    beforeUpload: () => boolean;
+    onChange: (info: {
+      fileList: Array<{ status?: string; response?: unknown; url?: string }>;
+    }) => void;
+    onPreview: (file: {
+      url?: string;
+      originFileObj?: { name: string };
+    }) => void;
     defaultFileList?: Array<{ url: string }>;
   }) => (
     <div>
@@ -79,14 +82,23 @@ vi.mock("antd", () => ({
         type="button"
         onClick={() =>
           onChange({
-            fileList: [
-              { originFileObj: { name: "new-file" } },
-              { url: "/existing-file" },
-            ],
+            fileList: [{ status: "done", response: "/uploaded-path" }],
           })
         }
       >
         trigger-upload
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onChange({
+            fileList: [
+              { status: "done", response: { url: "/uploaded-via-url" } },
+            ],
+          })
+        }
+      >
+        trigger-upload-response-url
       </button>
       <button type="button" onClick={() => onChange({ fileList: [] })}>
         trigger-empty-upload
@@ -99,9 +111,6 @@ vi.mock("antd", () => ({
         onClick={() => onPreview({ originFileObj: { name: "preview-file" } })}
       >
         trigger-preview-file
-      </button>
-      <button type="button" onClick={() => beforeUpload()}>
-        trigger-before-upload
       </button>
     </div>
   ),
@@ -129,22 +138,16 @@ const renderWithConfig = (
     </ConfigurationContext.Provider>,
   );
 
-describe("UploadInput", () => {
+describe("UploadImage", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
   });
 
-  it("handles upload changes for single and multiple modes", async () => {
-    const onSingleChange = vi.fn();
-    const onMultipleChange = vi.fn();
-
-    const { rerender } = renderWithConfig(
-      <UploadInput
-        parentId="single"
-        onChange={onSingleChange}
-        value="/initial"
-      />,
+  it("renders defaultFileList from value and calls onChange on upload", async () => {
+    const onChange = vi.fn();
+    renderWithConfig(
+      <UploadImage parentId="single" onChange={onChange} value="/initial" />,
     );
 
     expect(screen.getByTestId("default-file-list").textContent).toBe(
@@ -152,49 +155,17 @@ describe("UploadInput", () => {
     );
     fireEvent.click(screen.getByText("trigger-upload"));
     await vi.waitFor(() => {
-      expect(onSingleChange).toHaveBeenCalledWith("/existing-file");
+      expect(onChange).toHaveBeenCalledWith("/uploaded-path");
     });
-    fireEvent.click(screen.getByText("trigger-before-upload"));
 
     fireEvent.click(screen.getByText("trigger-empty-upload"));
     await vi.waitFor(() => {
-      expect(onSingleChange).toHaveBeenCalledWith(null);
-    });
-
-    rerender(
-      <ConfigurationContext.Provider
-        value={
-          {
-            configuration: {
-              site_name: "Admin",
-              username_field: "username",
-              models: [],
-              dashboard_widgets: [],
-            },
-          } as any
-        }
-      >
-        <UploadInput
-          parentId="multiple"
-          multiple={true}
-          onChange={onMultipleChange}
-          value={["/v1", "/v2"]}
-        />
-      </ConfigurationContext.Provider>,
-    );
-
-    expect(screen.getByTestId("default-file-list").textContent).toBe("/v1,/v2");
-    fireEvent.click(screen.getByText("trigger-upload"));
-    await vi.waitFor(() => {
-      expect(onMultipleChange).toHaveBeenCalledWith([
-        "base64-new-file",
-        "/existing-file",
-      ]);
+      expect(onChange).toHaveBeenCalledWith(undefined);
     });
   });
 
   it("previews url and uploaded file", async () => {
-    renderWithConfig(<UploadInput parentId="preview" />);
+    renderWithConfig(<UploadImage parentId="preview" />);
 
     expect(screen.getByTestId("modal-open").textContent).toBe("false");
     fireEvent.click(screen.getByText("trigger-preview-url"));
@@ -216,7 +187,7 @@ describe("UploadInput", () => {
 
   it("toggles crop wrapper by configuration and prop", () => {
     const { rerender } = renderWithConfig(
-      <UploadInput parentId="crop-on" disableCropImage={false} />,
+      <UploadImage parentId="crop-on" disableCropImage={false} />,
       false,
     );
     expect(screen.queryByTestId("img-crop")).toBeTruthy();
@@ -235,7 +206,7 @@ describe("UploadInput", () => {
           } as any
         }
       >
-        <UploadInput parentId="crop-off-by-config" />
+        <UploadImage parentId="crop-off-by-config" />
       </ConfigurationContext.Provider>,
     );
     expect(screen.queryByTestId("img-crop")).toBeNull();
@@ -254,40 +225,35 @@ describe("UploadInput", () => {
           } as any
         }
       >
-        <UploadInput parentId="crop-off-by-prop" disableCropImage={true} />
+        <UploadImage parentId="crop-off-by-prop" disableCropImage={true} />
       </ConfigurationContext.Provider>,
     );
     expect(screen.queryByTestId("img-crop")).toBeNull();
   });
 
-  it("handles upload when onChange is not provided", async () => {
-    const { rerender } = renderWithConfig(
-      <UploadInput parentId="no-change-single" />,
+  it("calls onChange with path from response.url object", async () => {
+    const onChange = vi.fn();
+    renderWithConfig(
+      <UploadImage parentId="single" onChange={onChange} value="/initial" />,
     );
+    fireEvent.click(screen.getByText("trigger-upload-response-url"));
+    await vi.waitFor(() => {
+      expect(onChange).toHaveBeenCalledWith("/uploaded-via-url");
+    });
+  });
 
+  it("renders defaultFileList with full url when value starts with http", () => {
+    renderWithConfig(
+      <UploadImage parentId="single" value="https://example.com/photo.jpg" />,
+    );
+    expect(screen.getByTestId("default-file-list").textContent).toBe(
+      "https://example.com/photo.jpg",
+    );
+  });
+
+  it("handles upload when onChange is not provided", () => {
+    renderWithConfig(<UploadImage parentId="no-change" />);
     fireEvent.click(screen.getByText("trigger-upload"));
     fireEvent.click(screen.getByText("trigger-empty-upload"));
-
-    rerender(
-      <ConfigurationContext.Provider
-        value={
-          {
-            configuration: {
-              site_name: "Admin",
-              username_field: "username",
-              models: [],
-              dashboard_widgets: [],
-            },
-          } as any
-        }
-      >
-        <UploadInput parentId="no-change-multiple" multiple={true} />
-      </ConfigurationContext.Provider>,
-    );
-
-    fireEvent.click(screen.getByText("trigger-upload"));
-    await vi.waitFor(() => {
-      expect(mockFromFile).toHaveBeenCalled();
-    });
   });
 });

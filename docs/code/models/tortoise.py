@@ -41,11 +41,10 @@ class UserAdmin(TortoiseModelAdmin):
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
         "avatar_url": (
-            WidgetType.Upload,
+            WidgetType.UploadImage,
             {
                 "required": False,
-                # Disable crop image for upload field
-                # "disableCropImage": True,
+                # "disableCropImage": True,  # optional: disable image cropping
             },
         ),
     }
@@ -78,7 +77,9 @@ class UserAdmin(TortoiseModelAdmin):
     async def deactivate(self, ids: list[int]) -> None:
         await self.model_cls.filter(id__in=ids).update(is_active=False)
 
-    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
-        setattr(obj, field, base64)
-        await obj.save(update_fields=(field,))
+    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+        # save file to media directory or s3/filestorage, then return the file url
+        url = f"/media/{file_name}"
+        setattr(obj, field_name, url)
+        await obj.save(update_fields=(field_name,))
+        return url

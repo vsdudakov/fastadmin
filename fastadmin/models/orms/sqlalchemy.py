@@ -83,12 +83,10 @@ class SqlAlchemyMixin:
     def get_model_fields_with_widget_types(
         self,
         with_m2m: bool | None = None,
-        with_upload: bool | None = None,
     ) -> list[ModelFieldWidgetSchema]:
         """This method is used to get model fields with widget types.
 
         :params with_m2m: a flag to include m2m fields.
-        :params with_upload: a flag to include upload fields.
         :return: A list of ModelFieldWidgetSchema.
         """
         mapper = inspect(self.model_cls)
@@ -115,15 +113,9 @@ class SqlAlchemyMixin:
                     continue
 
             is_m2m = field_type == "MANYTOMANY"
-            w_type, _ = self.formfield_overrides.get(field_name, (None, None))
-            is_upload = w_type == WidgetType.Upload
             if with_m2m is not None and not with_m2m and is_m2m:
                 continue
             if with_m2m is not None and with_m2m and not is_m2m:
-                continue
-            if with_upload is not None and not with_upload and is_upload:
-                continue
-            if with_upload is not None and with_upload and not is_upload:
                 continue
 
             is_pk = self.get_model_pk_name(self.model_cls) == field_name
@@ -517,16 +509,6 @@ class SqlAlchemyMixin:
             if values:
                 await session.execute(orm_model_field.secondary.insert().values(values))
             await session.commit()
-
-    async def orm_save_upload_field(self, obj: Any, field: str, base64: str) -> None:
-        """This method is used to save upload field.
-
-        :params obj: an object.
-        :params field: a m2m field name.
-        :params base64: a base64 string.
-
-        :return: A list of ids.
-        """
 
 
 class SqlAlchemyModelAdmin(SqlAlchemyMixin, ModelAdmin):

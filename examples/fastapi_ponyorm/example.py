@@ -28,11 +28,17 @@ class UserModelAdmin(PonyORMModelAdmin):
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
         "avatar_url": (
-            WidgetType.Upload,
+            WidgetType.UploadImage,
             {
                 "required": False,
                 # Disable crop image for upload field
                 # "disableCropImage": True,
+            },
+        ),
+        "attachment_url": (
+            WidgetType.UploadFile,
+            {
+                "required": True,
             },
         ),
     }
@@ -53,14 +59,15 @@ class UserModelAdmin(PonyORMModelAdmin):
         obj.password = password
         commit()
 
-    @db_session
-    def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        obj = next((f for f in self.model_cls.select(id=obj.id)), None)
-        if not obj:
-            return
-        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recommend it)
-        setattr(obj, field, base64)
-        commit()
+    def upload_file(
+        self,
+        obj: tp.Any,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> str:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
 
 
 class EventInlineModelAdmin(PonyORMInlineModelAdmin):
@@ -122,7 +129,12 @@ def init_db():
 
 @db_session
 def create_superuser():
-    User(username="admin", password="admin", is_superuser=True)
+    User(
+        username="admin",
+        password="admin",
+        is_superuser=True,
+        attachment_url="/media/attachment.txt",
+    )
 
 
 @asynccontextmanager
@@ -138,7 +150,7 @@ app.mount("/admin", admin_app)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3030", "http://localhost:8090"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

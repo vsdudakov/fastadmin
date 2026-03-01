@@ -6,7 +6,7 @@ from sqlalchemy import Boolean, Integer, String, Text, select, update
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from fastadmin import SqlAlchemyModelAdmin, register
+from fastadmin import SqlAlchemyModelAdmin, WidgetType, register
 
 sqlalchemy_engine = create_async_engine(
     "sqlite+aiosqlite:///:memory:",
@@ -40,6 +40,9 @@ class UserAdmin(SqlAlchemyModelAdmin):
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "avatar_url": (WidgetType.UploadImage, {"required": False}),
+    }
 
     async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
         sessionmaker = self.get_sessionmaker()
@@ -61,10 +64,6 @@ class UserAdmin(SqlAlchemyModelAdmin):
             await session.execute(query)
             await session.commit()
 
-    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        sessionmaker = self.get_sessionmaker()
-        async with sessionmaker() as session:
-            # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
-            query = update(self.model_cls).where(User.id.in_([obj.id])).values(**{field: base64})
-            await session.execute(query)
-            await session.commit()
+    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+        # save file to media directory or s3/filestorage, then return the file url
+        return f"/media/{file_name}"

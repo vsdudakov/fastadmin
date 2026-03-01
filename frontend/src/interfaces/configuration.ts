@@ -20,7 +20,8 @@ export enum EFieldWidgetType {
   RangePicker = "RangePicker",
   RadioGroup = "RadioGroup",
   CheckboxGroup = "CheckboxGroup",
-  Upload = "Upload",
+  UploadFile = "UploadFile",
+  UploadImage = "UploadImage",
 }
 
 export enum EDashboardWidgetType {

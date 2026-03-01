@@ -232,12 +232,10 @@ class BaseModelAdmin:
     def get_model_fields_with_widget_types(
         self,
         with_m2m: bool | None = None,
-        with_upload: bool | None = None,
     ) -> list[ModelFieldWidgetSchema]:
         """This method is used to get model fields with widget types.
 
         :params with_m2m: a flag to include m2m fields.
-        :params with_upload: a flag to include upload fields.
         :return: A list of ModelFieldWidgetSchema.
         """
         raise NotImplementedError
@@ -312,17 +310,6 @@ class BaseModelAdmin:
         :params obj: an object.
         :params field: a m2m field name.
         :params ids: a list of ids.
-
-        :return: A list of ids.
-        """
-        raise NotImplementedError
-
-    async def orm_save_upload_field(self, obj: Any, field: str, base64: str) -> None:
-        """This method is used to save upload field.
-
-        :params obj: an object.
-        :params field: a m2m field name.
-        :params base64: a base64 string.
 
         :return: A list of ids.
         """
@@ -519,9 +506,8 @@ class BaseModelAdmin:
         :params payload: a payload from request.
         :return: A saved object or None.
         """
-        fields = self.get_model_fields_with_widget_types(with_m2m=False, with_upload=False)
+        fields = self.get_model_fields_with_widget_types(with_m2m=False)
         m2m_fields = self.get_model_fields_with_widget_types(with_m2m=True)
-        upload_fields = self.get_model_fields_with_widget_types(with_upload=True)
 
         fields_payload = {
             field.column_name: self.deserialize_value(field, payload[field.name])
@@ -531,14 +517,6 @@ class BaseModelAdmin:
         obj = await self.orm_save_obj(id, fields_payload)
         if not obj:
             return None
-
-        for upload_field in upload_fields:
-            if upload_field.name in payload:
-                if inspect.iscoroutinefunction(self.orm_save_upload_field):
-                    orm_save_upload_field_fn = self.orm_save_upload_field
-                else:
-                    orm_save_upload_field_fn = sync_to_async(self.orm_save_upload_field)  # type: ignore [arg-type]
-                await orm_save_upload_field_fn(obj, upload_field.column_name, payload[upload_field.name])
 
         for m2m_field in m2m_fields:
             if m2m_field.name in payload:
@@ -553,6 +531,23 @@ class BaseModelAdmin:
         :return: None.
         """
         await self.orm_delete_obj(id)
+
+    async def upload_file(
+        self,
+        obj: Any,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> str:
+        """This method is used to upload files.
+
+        :params obj: an object.
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :return: A file url.
+        """
+        raise NotImplementedError
 
     async def get_export(
         self,
@@ -713,7 +708,7 @@ class ModelAdmin(BaseModelAdmin):
         :return: A saved object or None.
         """
         obj = await super().save_model(id, payload)
-        fields = self.get_model_fields_with_widget_types(with_m2m=False, with_upload=False)
+        fields = self.get_model_fields_with_widget_types(with_m2m=False)
         password_fields = [field.name for field in fields if field.form_widget_type == WidgetType.PasswordInput]
         if obj and id is None and password_fields:
             # save hashed password for create

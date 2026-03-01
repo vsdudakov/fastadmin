@@ -197,6 +197,10 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_4_0">v0.4.0</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_3_11">v0.3.11</a>
                 </li>
                 
@@ -351,7 +355,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.3.11</li>
+                    <li><strong>Version:</strong> 0.4.0</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -922,15 +926,14 @@ class UserAdmin(TortoiseModelAdmin):
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
-    formfield_overrides = {  # noqa: RUF012
+    formfield_overrides: tp.Any = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
         "avatar_url": (
-            WidgetType.Upload,
+            WidgetType.UploadImage,
             {
                 "required": False,
-                # Disable crop image for upload field
-                # "disableCropImage": True,
+                # "disableCropImage": True,  # optional: disable image cropping
             },
         ),
     }
@@ -950,10 +953,9 @@ class UserAdmin(TortoiseModelAdmin):
         user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         await user.save(update_fields=("hash_password",))
 
-    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
-        setattr(obj, field, base64)
-        await obj.save(update_fields=(field,))
+    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+        # save file to media directory or s3/filestorage, then return the file url
+        return f"/media/{file_name}"
 
   </code>
 </pre>
@@ -978,6 +980,8 @@ class UserAdmin(TortoiseModelAdmin):
 
 <pre>
   <code class="language-python">
+import typing as tp
+
 from django.db import models
 
 from fastadmin import DjangoModelAdmin, register
@@ -988,6 +992,7 @@ class User(models.Model):
     hash_password = models.CharField(max_length=255)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
+    avatar_url = models.ImageField(null=True)
 
     def __str__(self):
         return self.username
@@ -1008,6 +1013,10 @@ class UserAdmin(DjangoModelAdmin):
         if not obj.check_password(password):
             return None
         return obj.id
+
+    def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
+        # save file to media directory or s3/filestorage, then return the file url
+        return f"/media/{file_name}"
 
   </code>
 </pre>
@@ -1040,7 +1049,7 @@ from sqlalchemy import Boolean, Integer, String, Text, select, update
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from fastadmin import SqlAlchemyModelAdmin, register
+from fastadmin import SqlAlchemyModelAdmin, WidgetType, register
 
 sqlalchemy_engine = create_async_engine(
     "sqlite+aiosqlite:///:memory:",
@@ -1074,6 +1083,9 @@ class UserAdmin(SqlAlchemyModelAdmin):
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "avatar_url": (WidgetType.UploadImage, {"required": False}),
+    }
 
     async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
         sessionmaker = self.get_sessionmaker()
@@ -1095,13 +1107,9 @@ class UserAdmin(SqlAlchemyModelAdmin):
             await session.execute(query)
             await session.commit()
 
-    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        sessionmaker = self.get_sessionmaker()
-        async with sessionmaker() as session:
-            # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
-            query = update(self.model_cls).where(User.id.in_([obj.id])).values(**{field: base64})
-            await session.execute(query)
-            await session.commit()
+    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+        # save file to media directory or s3/filestorage, then return the file url
+        return f"/media/{file_name}"
 
   </code>
 </pre>
@@ -1132,7 +1140,7 @@ import uuid
 import bcrypt
 from pony.orm import Database, LongStr, Optional, PrimaryKey, Required, commit, db_session
 
-from fastadmin import PonyORMModelAdmin, register
+from fastadmin import PonyORMModelAdmin, WidgetType, register
 
 db = Database()
 db.bind(provider="sqlite", filename=":memory:", create_db=True)
@@ -1158,6 +1166,9 @@ class UserAdmin(PonyORMModelAdmin):
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "avatar_url": (WidgetType.UploadImage, {"required": False}),
+    }
 
     @db_session
     def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
@@ -1177,14 +1188,9 @@ class UserAdmin(PonyORMModelAdmin):
         obj.hash_password = hash_password
         commit()
 
-    @db_session
-    def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        obj = next((f for f in self.model_cls.select(id=obj.id)), None)
-        if not obj:
-            return
-        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
-        setattr(obj, field, base64)
-        commit()
+    def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
+        # save file to media directory or s3/filestorage, then return the file url
+        return f"/media/{file_name}"
 
   </code>
 </pre>
@@ -1303,9 +1309,6 @@ class Settings:
     # This value is the key to securing signed data - it is vital you keep this secure,
     # or attackers could use it to generate their own signed values.
     ADMIN_SECRET_KEY: str = os.getenv("ADMIN_SECRET_KEY")
-
-    # This value disables the crop image feature in FastAdmin.
-    ADMIN_DISABLE_CROP_IMAGE: bool = os.getenv("ADMIN_DISABLE_CROP_IMAGE", False)
 
   </code>
 </pre>
@@ -1923,11 +1926,10 @@ class UserAdmin(TortoiseModelAdmin):
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
         "avatar_url": (
-            WidgetType.Upload,
+            WidgetType.UploadImage,
             {
                 "required": False,
-                # Disable crop image for upload field
-                # "disableCropImage": True,
+                # "disableCropImage": True,  # optional: disable image cropping
             },
         ),
     }
@@ -1960,10 +1962,12 @@ class UserAdmin(TortoiseModelAdmin):
     async def deactivate(self, ids: list[int]) -> None:
         await self.model_cls.filter(id__in=ids).update(is_active=False)
 
-    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
-        setattr(obj, field, base64)
-        await obj.save(update_fields=(field,))
+    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+        # save file to media directory or s3/filestorage, then return the file url
+        url = f"/media/{file_name}"
+        setattr(obj, field_name, url)
+        await obj.save(update_fields=(field_name,))
+        return url
 
   </code>
 </pre>
@@ -2322,12 +2326,10 @@ class BaseModelAdmin:
     def get_model_fields_with_widget_types(
         self,
         with_m2m: bool | None = None,
-        with_upload: bool | None = None,
     ) -> list[ModelFieldWidgetSchema]:
         """This method is used to get model fields with widget types.
 
         :params with_m2m: a flag to include m2m fields.
-        :params with_upload: a flag to include upload fields.
         :return: A list of ModelFieldWidgetSchema.
         """
         raise NotImplementedError
@@ -2402,17 +2404,6 @@ class BaseModelAdmin:
         :params obj: an object.
         :params field: a m2m field name.
         :params ids: a list of ids.
-
-        :return: A list of ids.
-        """
-        raise NotImplementedError
-
-    async def orm_save_upload_field(self, obj: Any, field: str, base64: str) -> None:
-        """This method is used to save upload field.
-
-        :params obj: an object.
-        :params field: a m2m field name.
-        :params base64: a base64 string.
 
         :return: A list of ids.
         """
@@ -2609,9 +2600,8 @@ class BaseModelAdmin:
         :params payload: a payload from request.
         :return: A saved object or None.
         """
-        fields = self.get_model_fields_with_widget_types(with_m2m=False, with_upload=False)
+        fields = self.get_model_fields_with_widget_types(with_m2m=False)
         m2m_fields = self.get_model_fields_with_widget_types(with_m2m=True)
-        upload_fields = self.get_model_fields_with_widget_types(with_upload=True)
 
         fields_payload = {
             field.column_name: self.deserialize_value(field, payload[field.name])
@@ -2621,14 +2611,6 @@ class BaseModelAdmin:
         obj = await self.orm_save_obj(id, fields_payload)
         if not obj:
             return None
-
-        for upload_field in upload_fields:
-            if upload_field.name in payload:
-                if inspect.iscoroutinefunction(self.orm_save_upload_field):
-                    orm_save_upload_field_fn = self.orm_save_upload_field
-                else:
-                    orm_save_upload_field_fn = sync_to_async(self.orm_save_upload_field)  # type: ignore [arg-type]
-                await orm_save_upload_field_fn(obj, upload_field.column_name, payload[upload_field.name])
 
         for m2m_field in m2m_fields:
             if m2m_field.name in payload:
@@ -2643,6 +2625,23 @@ class BaseModelAdmin:
         :return: None.
         """
         await self.orm_delete_obj(id)
+
+    async def upload_file(
+        self,
+        obj: Any,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> str:
+        """This method is used to upload files.
+
+        :params obj: an object.
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :return: A file url.
+        """
+        raise NotImplementedError
 
     async def get_export(
         self,
@@ -2868,7 +2867,7 @@ class ModelAdmin(BaseModelAdmin):
         :return: A saved object or None.
         """
         obj = await super().save_model(id, payload)
-        fields = self.get_model_fields_with_widget_types(with_m2m=False, with_upload=False)
+        fields = self.get_model_fields_with_widget_types(with_m2m=False)
         password_fields = [field.name for field in fields if field.form_widget_type == WidgetType.PasswordInput]
         if obj and id is None and password_fields:
             # save hashed password for create
@@ -2947,7 +2946,8 @@ class WidgetType(str, Enum):
     RangePicker = "RangePicker"
     RadioGroup = "RadioGroup"
     CheckboxGroup = "CheckboxGroup"
-    Upload = "Upload"
+    UploadFile = "UploadFile"
+    UploadImage = "UploadImage"
 
   </code>
 </pre>
@@ -2965,6 +2965,24 @@ class WidgetType(str, Enum):
 <p class="alert alert-warning">
   See <a href='https://ant.design/components/overview' target='_blank'>antd components</a> for more details (e.g. how they look).
 </p>
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  For file and image fields use <code>UploadFile</code> and <code>UploadImage</code> widgets in <code>formfield_overrides</code>. Implement <code>upload_file(obj, field_name, file_name, file_content)</code> on the model admin to handle uploads; it must return the file URL (e.g. after saving to disk or S3).
+</p>
+
+
+
+
+
+
 
 
 
@@ -3383,6 +3401,67 @@ class InlineModelAdmin(BaseModelAdmin):
               
 
               
+              
+                <section id="v0_4_0">
+                <h3>v0.4.0</h3>
+
+                
+                  
+<p class="text-4">
+  Add new upload file functionality (without backward compatibility). See documentation for details.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Add example for flask with sqlalchemy
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Removed ADMIN_DISABLE_CROP_IMAGE setting. Use disableCropImage prop in UploadImage widget instead.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
               
                 <section id="v0_3_11">
                 <h3>v0.3.11</h3>

@@ -477,15 +477,14 @@ class UserAdmin(TortoiseModelAdmin):
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
-    formfield_overrides = {  # noqa: RUF012
+    formfield_overrides: tp.Any = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
         "avatar_url": (
-            WidgetType.Upload,
+            WidgetType.UploadImage,
             {
                 "required": False,
-                # Disable crop image for upload field
-                # "disableCropImage": True,
+                # "disableCropImage": True,  # optional: disable image cropping
             },
         ),
     }
@@ -505,10 +504,9 @@ class UserAdmin(TortoiseModelAdmin):
         user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         await user.save(update_fields=("hash_password",))
 
-    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
-        setattr(obj, field, base64)
-        await obj.save(update_fields=(field,))
+    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+        # save file to media directory or s3/filestorage, then return the file url
+        return f"/media/{file_name}"
 
 ```
 
@@ -531,6 +529,8 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 ```python
+import typing as tp
+
 from django.db import models
 
 from fastadmin import DjangoModelAdmin, register
@@ -541,6 +541,7 @@ class User(models.Model):
     hash_password = models.CharField(max_length=255)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
+    avatar_url = models.ImageField(null=True)
 
     def __str__(self):
         return self.username
@@ -561,6 +562,10 @@ class UserAdmin(DjangoModelAdmin):
         if not obj.check_password(password):
             return None
         return obj.id
+
+    def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
+        # save file to media directory or s3/filestorage, then return the file url
+        return f"/media/{file_name}"
 
 ```
 
@@ -591,7 +596,7 @@ from sqlalchemy import Boolean, Integer, String, Text, select, update
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from fastadmin import SqlAlchemyModelAdmin, register
+from fastadmin import SqlAlchemyModelAdmin, WidgetType, register
 
 sqlalchemy_engine = create_async_engine(
     "sqlite+aiosqlite:///:memory:",
@@ -625,6 +630,9 @@ class UserAdmin(SqlAlchemyModelAdmin):
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "avatar_url": (WidgetType.UploadImage, {"required": False}),
+    }
 
     async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
         sessionmaker = self.get_sessionmaker()
@@ -646,13 +654,9 @@ class UserAdmin(SqlAlchemyModelAdmin):
             await session.execute(query)
             await session.commit()
 
-    async def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        sessionmaker = self.get_sessionmaker()
-        async with sessionmaker() as session:
-            # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
-            query = update(self.model_cls).where(User.id.in_([obj.id])).values(**{field: base64})
-            await session.execute(query)
-            await session.commit()
+    async def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:
+        # save file to media directory or s3/filestorage, then return the file url
+        return f"/media/{file_name}"
 
 ```
 
@@ -681,7 +685,7 @@ import uuid
 import bcrypt
 from pony.orm import Database, LongStr, Optional, PrimaryKey, Required, commit, db_session
 
-from fastadmin import PonyORMModelAdmin, register
+from fastadmin import PonyORMModelAdmin, WidgetType, register
 
 db = Database()
 db.bind(provider="sqlite", filename=":memory:", create_db=True)
@@ -707,6 +711,9 @@ class UserAdmin(PonyORMModelAdmin):
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "avatar_url": (WidgetType.UploadImage, {"required": False}),
+    }
 
     @db_session
     def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
@@ -726,14 +733,9 @@ class UserAdmin(PonyORMModelAdmin):
         obj.hash_password = hash_password
         commit()
 
-    @db_session
-    def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        obj = next((f for f in self.model_cls.select(id=obj.id)), None)
-        if not obj:
-            return
-        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
-        setattr(obj, field, base64)
-        commit()
+    def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
+        # save file to media directory or s3/filestorage, then return the file url
+        return f"/media/{file_name}"
 
 ```
 

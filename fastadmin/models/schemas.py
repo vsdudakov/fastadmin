@@ -27,7 +27,8 @@ class WidgetType(str, Enum):
     RangePicker = "RangePicker"
     RadioGroup = "RadioGroup"
     CheckboxGroup = "CheckboxGroup"
-    Upload = "Upload"
+    UploadFile = "UploadFile"
+    UploadImage = "UploadImage"
 
 
 class DashboardWidgetType(str, Enum):
@@ -172,7 +173,6 @@ class ConfigurationSchema:
     username_field: str
     date_format: str
     datetime_format: str
-    disable_crop_image: bool
     models: Sequence[ModelSchema]
     dashboard_widgets: Sequence[DashboardWidgetSchema]
 

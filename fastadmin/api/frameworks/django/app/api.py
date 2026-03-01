@@ -5,6 +5,7 @@ from datetime import datetime, time
 from functools import wraps
 from uuid import UUID
 
+from django.core.files.uploadedfile import UploadedFile
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.fields.files import FieldFile, ImageFieldFile
 from django.http import JsonResponse as BaseJsonResponse
@@ -302,6 +303,46 @@ async def change(request: HttpRequest, model: str, id: UUID | int | str) -> Json
         )
         return JsonResponse(obj)
 
+    except AdminApiException as e:
+        return JsonResponse({"detail": e.detail}, status=e.status_code)
+
+
+@csrf_exempt
+async def upload_file(
+    request: HttpRequest,
+    model: str,
+    id: UUID | int | str,
+    field_name: str,
+) -> JsonResponse:
+    """This method is used to upload files.
+
+    :params request: a request object.
+    :params model: a name of model.
+    :params id: an id of object.
+    :params field_name: a name of field.
+    :return: A file url.
+    """
+
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not is_valid_id(id):
+        return JsonResponse({"error": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
+    try:
+        file: UploadedFile = request.FILES.get("file")
+        if not file:
+            return JsonResponse({"error": "File not found"}, status=400)
+        file_name = file.name
+        file_content = file.read()
+        file_url = await api_service.upload_file(
+            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
+            id,
+            field_name,
+            file_name,
+            file_content,
+            request=request,
+        )
+        return JsonResponse(file_url, safe=False)
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 

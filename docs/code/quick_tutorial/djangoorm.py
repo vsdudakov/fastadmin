@@ -1,3 +1,5 @@
+import typing as tp
+
 from django.db import models
 
 from fastadmin import DjangoModelAdmin, register
@@ -8,6 +10,7 @@ class User(models.Model):
     hash_password = models.CharField(max_length=255)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
+    avatar_url = models.ImageField(null=True)
 
     def __str__(self):
         return self.username
@@ -28,3 +31,7 @@ class UserAdmin(DjangoModelAdmin):
         if not obj.check_password(password):
             return None
         return obj.id
+
+    def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
+        # save file to media directory or s3/filestorage, then return the file url
+        return f"/media/{file_name}"

@@ -24,6 +24,7 @@ class User(BaseModel):
     is_superuser = fields.BooleanField(default=False)
 
     avatar_url = fields.TextField(null=True)
+    attachment_url = fields.TextField()
 
     def __str__(self):
         return self.username

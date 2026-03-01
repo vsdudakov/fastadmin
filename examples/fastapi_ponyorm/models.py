@@ -29,6 +29,7 @@ class User(db.Entity, BaseModel):
     is_superuser = Required(bool, default=False)
 
     avatar_url = Optional(LongStr, nullable=True)
+    attachment_url = Required(LongStr)
 
     events = Set("Event", table="event_participants", column="event_id")
 

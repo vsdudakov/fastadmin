@@ -4,7 +4,7 @@ import uuid
 import bcrypt
 from pony.orm import Database, LongStr, Optional, PrimaryKey, Required, commit, db_session
 
-from fastadmin import PonyORMModelAdmin, register
+from fastadmin import PonyORMModelAdmin, WidgetType, register
 
 db = Database()
 db.bind(provider="sqlite", filename=":memory:", create_db=True)
@@ -30,6 +30,9 @@ class UserAdmin(PonyORMModelAdmin):
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser", "is_active")
     search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "avatar_url": (WidgetType.UploadImage, {"required": False}),
+    }
 
     @db_session
     def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
@@ -49,11 +52,6 @@ class UserAdmin(PonyORMModelAdmin):
         obj.hash_password = hash_password
         commit()
 
-    @db_session
-    def orm_save_upload_field(self, obj: tp.Any, field: str, base64: str) -> None:
-        obj = next((f for f in self.model_cls.select(id=obj.id)), None)
-        if not obj:
-            return
-        # convert base64 to bytes, upload to s3/filestorage, get url and save or save base64 as is to db (don't recomment it)
-        setattr(obj, field, base64)
-        commit()
+    def upload_file(self, obj: tp.Any, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
+        # save file to media directory or s3/filestorage, then return the file url
+        return f"/media/{file_name}"
