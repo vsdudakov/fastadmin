@@ -1,11 +1,10 @@
 import React from "react";
 import type { IConfiguration } from "@/interfaces/configuration";
 
-export const defaultConfiguration = {
+export const defaultConfiguration: IConfiguration = {
   site_name: "API Administration",
   username_field: "username",
   models: [],
-  dashboard_widgets: [],
 };
 
 interface IConfigurationContext {

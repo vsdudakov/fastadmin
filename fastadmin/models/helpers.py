@@ -2,17 +2,17 @@ from operator import attrgetter
 from typing import Any, cast
 from uuid import UUID
 
-from fastadmin.models.base import InlineModelAdmin, ModelAdmin, admin_dashboard_widgets, admin_models
+from fastadmin.models.base import InlineModelAdmin, ModelAdmin, admin_models
 from fastadmin.models.schemas import (
     AddConfigurationFieldSchema,
     ChangeConfigurationFieldSchema,
-    DashboardWidgetSchema,
     InlineModelSchema,
     ListConfigurationFieldSchema,
     ModelAction,
     ModelFieldSchema,
     ModelPermission,
     ModelSchema,
+    ModelWidgetAction,
 )
 
 try:
@@ -219,7 +219,7 @@ async def generate_models_schema(
         if await admin_model_obj.has_export_permission(user_id=user_id):
             permissions.append(ModelPermission.Export)
 
-        actions = []
+        actions: list[ModelAction] = []
         for action in admin_model_obj.actions:
             action_function = getattr(admin_model_obj, action, None)
             if not action_function or not hasattr(action_function, "is_action"):
@@ -228,7 +228,25 @@ async def generate_models_schema(
                 ModelAction(
                     name=action,
                     description=getattr(action_function, "short_description", None),
-                )
+                ),
+            )
+
+        widget_actions: list[ModelWidgetAction] = []
+        for widget_action in admin_model_obj.widget_actions:
+            widget_action_function = getattr(admin_model_obj, widget_action, None)
+            if not widget_action_function or not hasattr(widget_action_function, "is_widget_action"):
+                continue
+            widget_actions.append(
+                ModelWidgetAction(
+                    name=widget_action,
+                    title=widget_action_function.title,
+                    tab=widget_action_function.tab,
+                    width=widget_action_function.width,
+                    description=getattr(widget_action_function, "short_description", None),
+                    widget_action_type=widget_action_function.widget_action_type,
+                    widget_action_props=widget_action_function.widget_action_props,
+                    widget_action_filters=widget_action_function.widget_action_filters,
+                ),
             )
 
         model_name = orm_model_cls.__name__
@@ -267,6 +285,7 @@ async def generate_models_schema(
                         inline_parent_admin_modal=admin_model_obj,
                         user_id=user_id,
                     ),  # type: ignore [arg-type]
+                    widget_actions=widget_actions,
                 ),
             )
         else:
@@ -302,29 +321,10 @@ async def generate_models_schema(
                     fk_name=fk_name,
                     max_num=admin_model_obj.max_num,
                     min_num=admin_model_obj.min_num,
+                    widget_actions=widget_actions,
                 ),
             )
     return models_schemas
-
-
-def generate_dashboard_widgets_schema() -> list[DashboardWidgetSchema]:
-    """Generate dashboard widgets schema."""
-    dashboard_widgets_schemas: list[DashboardWidgetSchema] = []
-    for admin_dashboard_widget in admin_dashboard_widgets.values():
-        dashboard_widgets_schemas.append(
-            DashboardWidgetSchema(
-                key=admin_dashboard_widget.__class__.__name__,
-                title=admin_dashboard_widget.title,
-                dashboard_widget_type=admin_dashboard_widget.dashboard_widget_type,
-                x_field=admin_dashboard_widget.x_field,
-                y_field=admin_dashboard_widget.y_field,
-                series_field=admin_dashboard_widget.series_field,
-                x_field_filter_widget_type=admin_dashboard_widget.x_field_filter_widget_type,
-                x_field_filter_widget_props=admin_dashboard_widget.x_field_filter_widget_props,
-                x_field_periods=admin_dashboard_widget.x_field_periods,
-            ),
-        )
-    return dashboard_widgets_schemas
 
 
 def getattrs(obj: Any, attrs: str, default: Any | None = None) -> Any:

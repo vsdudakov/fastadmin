@@ -11,7 +11,6 @@ from .api import (
     change,
     change_password,
     configuration,
-    dashboard_widget,
     delete,
     export,
     get,
@@ -20,6 +19,7 @@ from .api import (
     sign_in,
     sign_out,
     upload_file,
+    widget_action,
 )
 from .views import index
 
@@ -31,7 +31,6 @@ def get_admin_urls():
             path("api/sign-in", sign_in),
             path("api/sign-out", sign_out),
             path("api/me", me),
-            path("api/dashboard-widget/<str:model>", dashboard_widget),
             path("api/list/<str:model>", list_objs),
             path("api/retrieve/<str:model>/<str:id>", get),
             path("api/add/<str:model>", add),
@@ -41,6 +40,7 @@ def get_admin_urls():
             path("api/export/<str:model>", export),
             path("api/delete/<str:model>/<str:id>", delete),
             path("api/action/<str:model>/<str:action>", action),
+            path("api/widget-action/<str:model>/<str:widget_action>", widget_action),
             path("api/configuration", configuration),
             re_path(
                 r"^%s(?P<path>.*)$" % re.escape("static"),  # noqa: UP031

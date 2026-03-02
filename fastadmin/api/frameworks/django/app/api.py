@@ -15,13 +15,16 @@ from django.http.request import HttpRequest
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import is_valid_id, parse_list_filters_from_query_params
 from fastadmin.api.schemas import (
-    ActionInputSchema,
-    ActionResponseSchema,
-    ActionResponseType,
     ExportInputSchema,
     SignInInputSchema,
 )
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
+from fastadmin.models.schemas import (
+    ActionInputSchema,
+    ActionResponseSchema,
+    ActionResponseType,
+    WidgetActionInputSchema,
+)
 from fastadmin.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -126,37 +129,6 @@ async def me(request: HttpRequest) -> JsonResponse:
         )
         return JsonResponse(obj)
 
-    except AdminApiException as e:
-        return JsonResponse({"detail": e.detail}, status=e.status_code)
-
-
-@csrf_exempt
-async def dashboard_widget(request: HttpRequest, model: str) -> JsonResponse:
-    """This method is used to get a dashboard widget data.
-
-    :params model: a dashboard widget model.
-    :params min_x_field: a min x field value.
-    :params max_x_field: a max x field value.
-    :params period_x_field: a period x field value.
-    :return: A list of objects.
-    """
-    if request.method != "GET":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-    filters = request.GET.dict()
-    min_x_field = filters.get("min_x_field", None)
-    max_x_field = filters.get("max_x_field", None)
-    period_x_field = filters.get("period_x_field", None)
-
-    try:
-        data = await api_service.dashboard_widget(
-            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
-            model,
-            min_x_field=min_x_field,
-            max_x_field=max_x_field,
-            period_x_field=period_x_field,
-            request=request,
-        )
-        return JsonResponse(data)
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
@@ -439,6 +411,35 @@ async def action(
                 type=ActionResponseType.MESSAGE,
                 data="Successfully applied",
             )
+        return JsonResponse(asdict(response))
+    except AdminApiException as e:
+        return JsonResponse({"detail": e.detail}, status=e.status_code)
+
+
+@csrf_exempt
+async def widget_action(
+    request: HttpRequest,
+    model: str,
+    widget_action: str,
+) -> JsonResponse:
+    """This method is used to perform an action.
+
+    :params model: a name of model.
+    :params widget_action: a name of action.
+    :params payload: a payload object.
+    :return: widget action result.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    try:
+        payload = WidgetActionInputSchema(**json.loads(request.body))
+        response = await api_service.widget_action(
+            request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
+            widget_action,
+            payload,
+            request=request,
+        )
         return JsonResponse(asdict(response))
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)

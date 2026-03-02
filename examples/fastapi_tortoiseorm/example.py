@@ -12,9 +12,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from models import BaseEvent, Event, Tournament, User, UserAttachment
 from tortoise.contrib.fastapi import RegisterTortoise
 
-from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, WidgetType, action, display
+from fastadmin import (
+    TortoiseInlineModelAdmin,
+    TortoiseModelAdmin,
+    WidgetActionArgumentProps,
+    WidgetActionChartProps,
+    WidgetActionFilter,
+    WidgetActionInputSchema,
+    WidgetActionProps,
+    WidgetActionResponseSchema,
+    WidgetActionType,
+    WidgetType,
+    action,
+    display,
+)
 from fastadmin import fastapi_app as admin_app
-from fastadmin import register
+from fastadmin import (
+    register,
+    widget_action,
+)
 
 
 class UserAttachmentModelInline(TortoiseInlineModelAdmin):
@@ -57,6 +73,10 @@ class UserModelAdmin(TortoiseModelAdmin):
         ),
     }
     inlines = (UserAttachmentModelInline,)
+    widget_actions = (
+        "sales_chart",
+        "sales_action",
+    )
 
     async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
         obj = await self.model_cls.filter(username=username, password=password, is_superuser=True).first()
@@ -81,6 +101,83 @@ class UserModelAdmin(TortoiseModelAdmin):
         # save file to media directory or to s3/filestorage here
         return f"/media/{file_name}"
 
+    @widget_action(
+        widget_action_type=WidgetActionType.ChartLine,
+        widget_action_props=WidgetActionChartProps(x_field="x", y_field="y"),
+        widget_action_filters=[
+            WidgetActionFilter(
+                field_name="x",
+                widget_type=WidgetType.DatePicker,
+            ),
+            WidgetActionFilter(
+                field_name="y",
+                widget_type=WidgetType.Select,
+                widget_props={
+                    "options": [
+                        {"label": "Sales", "value": "sales"},
+                    ],
+                },
+            ),
+        ],
+        tab="Analytics",
+        title="Sales over time",
+        description="Line chart of sales",
+        width=24,
+    )
+    async def sales_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        return WidgetActionResponseSchema(
+            data=[
+                {
+                    "x": "2026-01-01",
+                    "y": 100,
+                },
+                {
+                    "x": "2026-01-02",
+                    "y": 200,
+                },
+                {
+                    "x": "2026-01-03",
+                    "y": 300,
+                },
+            ],
+        )
+
+    @widget_action(
+        widget_action_type=WidgetActionType.Action,
+        widget_action_props=WidgetActionProps(
+            arguments=[
+                WidgetActionArgumentProps(
+                    name="x",
+                    widget_type=WidgetType.DatePicker,
+                    widget_props={
+                        "required": True,
+                    },
+                ),
+            ],
+        ),
+        tab="Data",
+        title="Get sales data",
+        description="Get sales data",
+        width=12,
+    )
+    async def sales_action(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        return WidgetActionResponseSchema(
+            data=[
+                {
+                    "id": 1,
+                    "name": "Sales",
+                },
+                {
+                    "id": 2,
+                    "name": "Sales",
+                },
+                {
+                    "id": 3,
+                    "name": "Sales",
+                },
+            ],
+        )
+
 
 class EventInlineModelAdmin(TortoiseInlineModelAdmin):
     model = Event
@@ -90,6 +187,32 @@ class EventInlineModelAdmin(TortoiseInlineModelAdmin):
 class TournamentModelAdmin(TortoiseModelAdmin):
     list_display = ("id", "name")
     inlines = (EventInlineModelAdmin,)
+    widget_actions = ("tournament_action",)
+
+    @widget_action(
+        widget_action_type=WidgetActionType.Action,
+        tab="Data",
+        title="Get tournament data",
+        description="Get tournament data",
+        width=12,
+    )
+    async def tournament_action(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        return WidgetActionResponseSchema(
+            data=[
+                {
+                    "id": 1,
+                    "name": "Tournament 1",
+                },
+                {
+                    "id": 2,
+                    "name": "Tournament 2",
+                },
+                {
+                    "id": 3,
+                    "name": "Tournament 3",
+                },
+            ],
+        )
 
 
 @register(BaseEvent)

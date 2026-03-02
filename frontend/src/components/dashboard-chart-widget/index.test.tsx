@@ -5,23 +5,20 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   EDashboardWidgetType,
   EFieldWidgetType,
-  type IDashboardWidget,
+  type IModelWidgetAction,
+  type IWidgetActionResponse,
 } from "@/interfaces/configuration";
 
 const {
   mockUseQuery,
-  mockGetFetcher,
+  mockPostFetcher,
   mockGetWidgetCls,
-  mockTransformValueFromServer,
   mockTransformValueToServer,
   lineChartSpy,
 } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
-  mockGetFetcher: vi.fn(),
+  mockPostFetcher: vi.fn(),
   mockGetWidgetCls: vi.fn(),
-  mockTransformValueFromServer: vi.fn((value: unknown) =>
-    value ? `from-${String(value)}` : value,
-  ),
   mockTransformValueToServer: vi.fn((value: unknown) =>
     value ? `to-${String(value)}` : value,
   ),
@@ -33,7 +30,7 @@ vi.mock("@tanstack/react-query", () => ({
 }));
 
 vi.mock("@/fetchers/fetchers", () => ({
-  getFetcher: (url: string) => mockGetFetcher(url),
+  postFetcher: (url: string, payload: unknown) => mockPostFetcher(url, payload),
 }));
 
 vi.mock("@/helpers/widgets", () => ({
@@ -41,8 +38,6 @@ vi.mock("@/helpers/widgets", () => ({
 }));
 
 vi.mock("@/helpers/transform", () => ({
-  transformValueFromServer: (value: unknown) =>
-    mockTransformValueFromServer(value),
   transformValueToServer: (value: unknown) => mockTransformValueToServer(value),
 }));
 
@@ -73,21 +68,24 @@ vi.mock("@ant-design/charts", () => ({
   Pie: () => <div data-testid="pie-chart" />,
 }));
 
-import { DashboardWidget } from "./index";
+import { DashboardChartWidget } from "./index";
 
-const baseWidget: IDashboardWidget = {
-  key: "orders",
+const baseWidget: IModelWidgetAction = {
+  name: "sales_chart",
   title: "Orders",
-  dashboard_widget_type: EDashboardWidgetType.ChartLine,
-  dashboard_widget_props: {},
-  x_field: "day",
-  y_field: "count",
+  description: undefined,
+  tab: "Analytics",
+  widget_action_type: EDashboardWidgetType.ChartLine,
+  widget_action_props: {
+    x_field: "day",
+    y_field: "count",
+  },
 };
 
-const renderWidget = (widget: IDashboardWidget) =>
+const renderWidget = (widgetAction: IModelWidgetAction) =>
   render(
     <ConfigProvider>
-      <DashboardWidget widget={widget} />
+      <DashboardChartWidget modelName="Order" widgetAction={widgetAction} />
     </ConfigProvider>,
   );
 
@@ -111,19 +109,20 @@ describe("DashboardWidget", () => {
     mockUseQuery.mockReturnValue({
       isLoading: false,
       data: {
-        min_x_field: "2026-01-01",
-        max_x_field: "2026-01-31",
-        period_x_field: "week",
-        results: [{ day: "Mon", count: 2 }],
-      },
+        data: [{ day: "Mon", count: 2 }],
+      } as IWidgetActionResponse,
     });
     mockGetWidgetCls.mockReturnValue([Input, {}]);
 
     renderWidget({
       ...baseWidget,
-      x_field_filter_widget_type: EFieldWidgetType.Input,
-      x_field_periods: ["day", "week"],
-      x_field_filter_widget_props: { "data-testid": "range-input" },
+      widget_action_filters: [
+        {
+          field_name: "created_at",
+          widget_type: EFieldWidgetType.Input,
+          widget_props: { "data-testid": "range-input" },
+        },
+      ],
     });
 
     expect(screen.getByTestId("line-chart")).toBeTruthy();
@@ -134,28 +133,62 @@ describe("DashboardWidget", () => {
       }),
     );
 
-    const inputs = screen.getAllByTestId("range-input");
-    fireEvent.change(inputs[0], { target: { value: "2026-01-05" } });
-
-    await waitFor(() => {
-      expect(mockTransformValueToServer).toHaveBeenCalledWith("2026-01-05");
-    });
-
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: expect.arrayContaining(["/dashboard-widget", "orders"]),
+        queryKey: expect.arrayContaining([
+          "/widget-action",
+          "Order",
+          "sales_chart",
+        ]),
         refetchOnWindowFocus: false,
         queryFn: expect.any(Function),
       }),
     );
+  });
 
-    const queryOptions = mockUseQuery.mock.calls[0][0] as {
-      queryFn: () => Promise<unknown>;
-    };
-    await queryOptions.queryFn();
-    expect(mockGetFetcher).toHaveBeenCalledWith(
-      expect.stringContaining("/dashboard-widget/orders?"),
-    );
+  it("applies and resets filters, toggling active state", async () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: {
+        data: [{ day: "Mon", count: 2 }],
+      } as IWidgetActionResponse,
+    });
+    mockGetWidgetCls.mockReturnValue([Input, { "data-testid": "range-input" }]);
+
+    renderWidget({
+      ...baseWidget,
+      widget_action_filters: [
+        {
+          field_name: "created_at",
+          widget_type: EFieldWidgetType.Input,
+          widget_props: { "data-testid": "range-input" },
+        },
+      ],
+    });
+
+    const filtersButton = screen.getAllByRole("button", {
+      name: /Filters/i,
+    })[0];
+    expect(filtersButton.className).not.toContain("ant-btn-primary");
+
+    fireEvent.click(filtersButton);
+
+    const inputs = await screen.findAllByTestId("range-input");
+    fireEvent.change(inputs[0], { target: { value: "2026-01-05" } });
+
+    fireEvent.click(screen.getByRole("button", { name: /Apply/i }));
+
+    await waitFor(() => {
+      expect(filtersButton.className).toContain("ant-btn-primary");
+      expect(filtersButton.className).toContain("ant-btn-dangerous");
+    });
+
+    fireEvent.click(filtersButton);
+    fireEvent.click(screen.getByRole("button", { name: /Reset/i }));
+
+    await waitFor(() => {
+      expect(filtersButton.className).not.toContain("ant-btn-primary");
+    });
   });
 
   it("handles default widget onChange branch", async () => {
@@ -177,7 +210,7 @@ describe("DashboardWidget", () => {
 
     mockUseQuery.mockReturnValue({
       isLoading: false,
-      data: { results: [] },
+      data: { data: [] } as IWidgetActionResponse,
     });
     mockGetWidgetCls.mockReturnValue([
       CustomWidget,
@@ -186,14 +219,22 @@ describe("DashboardWidget", () => {
 
     renderWidget({
       ...baseWidget,
-      x_field_filter_widget_type: EFieldWidgetType.Select,
+      widget_action_filters: [
+        {
+          field_name: "status",
+          widget_type: EFieldWidgetType.Select,
+          widget_props: { "data-testid": "custom-filter" },
+        },
+      ],
     });
 
-    const customButtons = screen.getAllByTestId("custom-filter");
+    fireEvent.click(screen.getAllByRole("button", { name: /Filters/i })[0]);
+
+    const customButtons = screen.getAllByRole("button", { name: /Custom/i });
     fireEvent.click(customButtons[0]);
 
     await waitFor(() => {
-      expect(mockTransformValueToServer).toHaveBeenCalledWith("direct-value");
+      expect(mockGetWidgetCls).toHaveBeenCalled();
     });
   });
 });

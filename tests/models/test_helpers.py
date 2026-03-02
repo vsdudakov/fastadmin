@@ -7,15 +7,21 @@ from typing import ClassVar
 import pytest
 
 from fastadmin import ModelAdmin, display
+from fastadmin.models.decorators import widget_action
 from fastadmin.models.helpers import (
-    generate_dashboard_widgets_schema,
     generate_models_schema,
     get_admin_model,
     get_admin_or_admin_inline_model,
     register_admin_model_class,
     unregister_admin_model_class,
 )
-from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
+from fastadmin.models.schemas import (
+    ModelFieldWidgetSchema,
+    ModelWidgetAction,
+    WidgetActionChartProps,
+    WidgetActionType,
+    WidgetType,
+)
 
 
 async def test_uregister_admin_model_class():
@@ -124,6 +130,7 @@ async def test_generate_models_schema_skips_display_not_in_columns():
         view_on_site = None
         inlines = ()
         actions = ()
+        widget_actions = ()
 
         @staticmethod
         def get_model_pk_name(_model):
@@ -199,6 +206,7 @@ async def test_generate_models_schema_display_sorter_not_supported():
         view_on_site = None
         inlines = ()
         actions = ()
+        widget_actions = ()
 
         @staticmethod
         def get_model_pk_name(_model):
@@ -272,6 +280,7 @@ async def test_generate_models_schema_inline_fk_name_error():
         fk_name = None
         max_num = 10
         min_num = 1
+        widget_actions = ()
 
         @staticmethod
         def get_model_pk_name(_model):
@@ -319,28 +328,154 @@ async def test_generate_models_schema_inline_fk_name_error():
         )
 
 
-async def test_generate_dashboard_widgets_schema():
-    from fastadmin.models.base import admin_dashboard_widgets
-    from fastadmin.models.schemas import DashboardWidgetType
+async def test_generate_models_schema_includes_widget_actions():
+    class PlainModel:
+        pass
 
-    class DummyWidget:
-        title = "Widget"
-        dashboard_widget_type = DashboardWidgetType.ChartLine
-        x_field = "x"
-        y_field = "y"
-        series_field = None
-        x_field_filter_widget_type = None
-        x_field_filter_widget_props = None
-        x_field_periods = None
+    class PlainAdmin:
+        model_name_prefix = None
+        list_display = ()
+        fields = ()
+        list_filter = ()
+        sortable_by = ()
+        list_display_links = ()
+        empty_value_display = "-"
+        list_display_widths: ClassVar[dict[str, str]] = {}
+        actions_on_top = False
+        actions_on_bottom = True
+        actions_selection_counter = True
+        list_per_page = 10
+        search_help_text = ""
+        search_fields = ()
+        preserve_filters = True
+        list_max_show_all = 200
+        show_full_result_count = False
+        verbose_name = None
+        verbose_name_plural = None
+        fieldsets = ()
+        save_on_top = False
+        save_as = False
+        save_as_continue = False
+        view_on_site = None
+        inlines = ()
+        actions = ()
+        widget_actions = ("sales_chart",)
 
-    prev = admin_dashboard_widgets.copy()
-    try:
-        admin_dashboard_widgets["DummyWidget"] = DummyWidget()
-        widgets = generate_dashboard_widgets_schema()
-        assert any(w.key == "DummyWidget" and w.title == "Widget" for w in widgets)
-    finally:
-        admin_dashboard_widgets.clear()
-        admin_dashboard_widgets.update(prev)
+        @staticmethod
+        def get_model_pk_name(_model):
+            return "id"
+
+        def get_model_fields_with_widget_types(self):
+            # No regular fields needed for this test.
+            return []
+
+        def get_fields_for_serialize(self):
+            return set()
+
+        async def has_add_permission(self, user_id=None):
+            return True
+
+        async def has_change_permission(self, user_id=None):
+            return True
+
+        async def has_delete_permission(self, user_id=None):
+            return True
+
+        async def has_export_permission(self, user_id=None):
+            return True
+
+        @widget_action(
+            widget_action_type=WidgetActionType.ChartLine,
+            widget_action_props=WidgetActionChartProps(x_field="x", y_field="y"),
+            tab="Analytics",
+            title="Sales over time",
+            description="Line chart of sales",
+        )
+        async def sales_chart(self, payload):
+            return None
+
+    schema = await generate_models_schema({PlainModel: PlainAdmin()})
+    assert len(schema) == 1
+    model_schema = schema[0]
+    assert model_schema.widget_actions is not None
+    assert len(model_schema.widget_actions) == 1
+
+    widget_action_schema = model_schema.widget_actions[0]
+    assert isinstance(widget_action_schema, ModelWidgetAction)
+    assert widget_action_schema.name == "sales_chart"
+    assert widget_action_schema.title == "Sales over time"
+    assert widget_action_schema.tab == "Analytics"
+    assert widget_action_schema.widget_action_type is WidgetActionType.ChartLine
+    assert isinstance(widget_action_schema.widget_action_props, WidgetActionChartProps)
+    assert widget_action_schema.widget_action_props.x_field == "x"
+    assert widget_action_schema.widget_action_props.y_field == "y"
+
+
+async def test_generate_models_schema_skips_invalid_widget_actions():
+    """generate_models_schema ignores widget_actions without a valid decorator."""
+
+    class PlainModel:
+        pass
+
+    class PlainAdmin:
+        model_name_prefix = None
+        list_display = ()
+        fields = ()
+        list_filter = ()
+        sortable_by = ()
+        list_display_links = ()
+        empty_value_display = "-"
+        list_display_widths: ClassVar[dict[str, str]] = {}
+        actions_on_top = False
+        actions_on_bottom = True
+        actions_selection_counter = True
+        list_per_page = 10
+        search_help_text = ""
+        search_fields = ()
+        preserve_filters = True
+        list_max_show_all = 200
+        show_full_result_count = False
+        verbose_name = None
+        verbose_name_plural = None
+        fieldsets = ()
+        save_on_top = False
+        save_as = False
+        save_as_continue = False
+        view_on_site = None
+        inlines = ()
+        actions = ()
+        # Listed widget actions, but neither is a valid @widget_action
+        widget_actions = ("plain", "missing")
+
+        @staticmethod
+        def get_model_pk_name(_model):
+            return "id"
+
+        def get_model_fields_with_widget_types(self):
+            return []
+
+        def get_fields_for_serialize(self):
+            return set()
+
+        async def has_add_permission(self, user_id=None):
+            return True
+
+        async def has_change_permission(self, user_id=None):
+            return True
+
+        async def has_delete_permission(self, user_id=None):
+            return True
+
+        async def has_export_permission(self, user_id=None):
+            return True
+
+        # Plain method - no is_widget_action attribute
+        def plain(self, payload):
+            return None
+
+    schema = await generate_models_schema({PlainModel: PlainAdmin()})
+    assert len(schema) == 1
+    assert schema[0].widget_actions == []
 
 
 def _load_helpers_module_with_blocked_import(blocked_prefix: str) -> ModuleType:

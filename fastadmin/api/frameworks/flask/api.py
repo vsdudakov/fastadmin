@@ -8,13 +8,16 @@ from werkzeug.exceptions import HTTPException
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import is_valid_id, parse_list_filters_from_query_params
 from fastadmin.api.schemas import (
-    ActionInputSchema,
-    ActionResponseSchema,
-    ActionResponseType,
     ExportInputSchema,
     SignInInputSchema,
 )
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
+from fastadmin.models.schemas import (
+    ActionInputSchema,
+    ActionResponseSchema,
+    ActionResponseType,
+    WidgetActionInputSchema,
+)
 from fastadmin.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -86,37 +89,6 @@ async def me() -> dict:
             user_id,
             request=request,
         )
-    except AdminApiException as e:
-        http_exception = HTTPException(e.detail)
-        http_exception.code = e.status_code
-        raise http_exception from e
-
-
-@api_router.route("/dashboard-widget/<string:model>", methods=["GET"])
-async def dashboard_widget(model: str) -> dict:
-    """This method is used to get a dashboard widget data.
-
-    :params model: a dashboard widget model.
-    :params min_x_field: a min x field value.
-    :params max_x_field: a max x field value.
-    :params period_x_field: a period x field value.
-    :return: A list of objects.
-    """
-    filters = request.args.to_dict()
-    min_x_field = filters.get("min_x_field", None)
-    max_x_field = filters.get("max_x_field", None)
-    period_x_field = filters.get("period_x_field", None)
-
-    try:
-        data = await api_service.dashboard_widget(
-            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
-            model,
-            min_x_field=min_x_field,
-            max_x_field=max_x_field,
-            period_x_field=period_x_field,
-            request=request,
-        )
-        return data
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -390,7 +362,7 @@ async def action(
     """
     try:
         request_payload: dict = request.json
-        payload: ActionInputSchema = ActionInputSchema(**request_payload)
+        payload = ActionInputSchema(**request_payload)
         response = await api_service.action(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
@@ -403,6 +375,35 @@ async def action(
                 type=ActionResponseType.MESSAGE,
                 data="Successfully applied",
             )
+        return make_response(asdict(response))
+    except AdminApiException as e:
+        http_exception = HTTPException(e.detail)
+        http_exception.code = e.status_code
+        raise http_exception from e
+
+
+@api_router.route("/widget-action/<string:model>/<string:widget_action>", methods=["POST"])
+async def widget_action(
+    model: str,
+    widget_action: str,
+) -> Response:
+    """This method is used to perform an action.
+
+    :params model: a name of model.
+    :params widget_action: a name of action.
+    :params payload: a payload object.
+    :return: action result.
+    """
+    try:
+        request_payload: dict = request.json
+        payload = WidgetActionInputSchema(**request_payload)
+        response = await api_service.widget_action(
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            model,
+            widget_action,
+            payload,
+            request=request,
+        )
         return make_response(asdict(response))
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)

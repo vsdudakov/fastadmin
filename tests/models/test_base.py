@@ -5,7 +5,7 @@ import pytest
 
 from fastadmin import ModelAdmin
 from fastadmin.api.schemas import ExportFormat
-from fastadmin.models.base import BaseModelAdmin, DashboardWidgetAdmin
+from fastadmin.models.base import BaseModelAdmin
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 
 
@@ -47,9 +47,6 @@ async def test_not_implemented_methods():
     with pytest.raises(NotImplementedError):
         await base.upload_file("file", "name.txt", b"content")
 
-    with pytest.raises(NotImplementedError):
-        await DashboardWidgetAdmin().get_data()
-
 
 def test_base_model_admin_request_and_user_context():
     class Model:
@@ -65,19 +62,6 @@ def test_base_model_admin_request_and_user_context():
 
     assert admin.request == request
     assert admin.user == user
-
-
-def test_dashboard_widget_admin_request_and_user_context():
-    widget = DashboardWidgetAdmin()
-    assert widget.request is None
-    assert widget.user is None
-
-    request = {"path": "/api/dashboard-widget/TestWidget"}
-    user = {"id": 1, "username": "admin"}
-    widget.set_context(request=request, user=user)
-
-    assert widget.request == request
-    assert widget.user == user
 
 
 async def test_export_wrong_format(mocker):

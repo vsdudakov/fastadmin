@@ -10,7 +10,13 @@ const { mockUseQuery, mockUseIsMobile, transferPropsRef } = vi.hoisted(() => ({
 }));
 
 vi.mock("@tanstack/react-query", () => ({
-  useQuery: (options: unknown) => mockUseQuery(options),
+  useQuery: (options: any) => {
+    const result = mockUseQuery(options);
+    if (options?.queryFn) {
+      options.queryFn();
+    }
+    return result;
+  },
 }));
 
 vi.mock("lodash.debounce", () => ({
@@ -19,6 +25,10 @@ vi.mock("lodash.debounce", () => ({
 
 vi.mock("@/hooks/useIsMobile", () => ({
   useIsMobile: () => mockUseIsMobile(),
+}));
+
+vi.mock("@/fetchers/fetchers", () => ({
+  getFetcher: vi.fn().mockResolvedValue({ results: [] }),
 }));
 
 vi.mock("antd", () => ({

@@ -69,38 +69,60 @@ async def test_flask_delete_invalid_id_422():
         assert exc_info.value.code == 422
 
 
-async def test_flask_dashboard_widget_success():
+async def test_flask_widget_action_success():
+    """Flask widget_action endpoint delegates to ApiService.widget_action."""
+    from dataclasses import asdict
     from unittest.mock import AsyncMock, patch
 
-    from flask import request as flask_request
-
     from fastadmin.api.frameworks.flask import api as flask_api
+    from fastadmin.models.schemas import WidgetActionResponseSchema
     from tests.environment.flask_app.dev import app as flask_app
 
-    expected = {"labels": ["a"], "values": [1]}
+    expected = WidgetActionResponseSchema(data=[])
 
     with (
         flask_app.test_request_context(
-            path="/api/dashboard-widget/Event?min_x_field=created_at",
-            method="GET",
+            path="/api/widget-action/Event/sales_chart",
+            method="POST",
+            json={"query": []},
         ),
         patch.object(
             flask_api.api_service,
-            "dashboard_widget",
+            "widget_action",
             AsyncMock(return_value=expected),
-        ) as mock_dashboard,
+        ) as mock_widget,
     ):
-        response = await flask_api.dashboard_widget("Event")
+        response = await flask_api.widget_action("Event", "sales_chart")
 
-    assert response == expected
-    mock_dashboard.assert_awaited_once_with(
-        None,
-        "Event",
-        min_x_field="created_at",
-        max_x_field=None,
-        period_x_field=None,
-        request=flask_request,
-    )
+        assert response.json == asdict(expected)
+        mock_widget.assert_awaited_once()
+
+
+async def test_flask_widget_action_admin_exception():
+    """Flask widget_action endpoint re-raises AdminApiException as HTTPException."""
+    from unittest.mock import AsyncMock, patch
+
+    from fastadmin.api.exceptions import AdminApiException
+    from fastadmin.api.frameworks.flask import api as flask_api
+    from tests.environment.flask_app.dev import app as flask_app
+
+    with (
+        flask_app.test_request_context(
+            path="/api/widget-action/Event/sales_chart",
+            method="POST",
+            json={"query": []},
+        ),
+        patch.object(
+            flask_api.api_service,
+            "widget_action",
+            AsyncMock(side_effect=AdminApiException(418, detail="boom")),
+        ),
+        pytest.raises(HTTPException) as exc_info,
+    ):
+        await flask_api.widget_action("Event", "sales_chart")
+
+    assert exc_info.value.code == 418
+    assert "boom" in str(exc_info.value.description)
 
 
 async def test_flask_upload_file_no_file():

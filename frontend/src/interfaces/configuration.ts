@@ -30,6 +30,7 @@ export enum EDashboardWidgetType {
   ChartColumn = "ChartColumn",
   ChartBar = "ChartBar",
   ChartPie = "ChartPie",
+  Action = "Action",
 }
 
 export enum EModelPermission {
@@ -52,6 +53,39 @@ export enum EActionResponseType {
 export interface IModelAction {
   name: string;
   description?: string;
+}
+
+export interface IWidgetActionChartProps {
+  x_field: string;
+  y_field: string;
+  series_field?: string;
+}
+
+export interface IWidgetActionArgumentProps {
+  name: string;
+  widget_type: EFieldWidgetType;
+  widget_props?: Record<string, any>;
+}
+
+export interface IWidgetActionProps {
+  arguments: IWidgetActionArgumentProps[];
+}
+
+export interface IWidgetActionFilter {
+  field_name: string;
+  widget_type: EFieldWidgetType;
+  widget_props?: Record<string, any>;
+}
+
+export interface IModelWidgetAction {
+  name: string;
+  title: string;
+  description?: string;
+  tab: string;
+  width?: number;
+  widget_action_type: EDashboardWidgetType;
+  widget_action_props?: IWidgetActionChartProps | IWidgetActionProps;
+  widget_action_filters?: IWidgetActionFilter[];
 }
 
 export interface IListConfigurationField {
@@ -104,6 +138,8 @@ interface IBaseModel {
   show_full_result_count?: boolean;
   verbose_name?: string;
   verbose_name_plural?: string;
+
+  widget_actions?: IModelWidgetAction[];
 }
 
 export interface IInlineModel extends IBaseModel {
@@ -121,21 +157,6 @@ export interface IModel extends IBaseModel {
   inlines?: IInlineModel[];
 }
 
-export interface IDashboardWidget {
-  key: string;
-
-  title: string;
-  dashboard_widget_type: EDashboardWidgetType;
-  dashboard_widget_props: Record<string, any>;
-
-  x_field: string;
-  x_field_filter_widget_type?: EFieldWidgetType;
-  x_field_filter_widget_props?: Record<string, any>;
-  x_field_periods?: string[];
-
-  y_field: string;
-}
-
 export interface IConfiguration {
   site_name: string;
   site_sign_in_logo?: string;
@@ -147,11 +168,28 @@ export interface IConfiguration {
   datetime_format?: string;
   disable_crop_image?: boolean;
   models: IModel[];
-  dashboard_widgets: IDashboardWidget[];
+}
+
+export interface IActionInput {
+  ids: string[];
 }
 
 export interface IActionResponse {
-  type: EActionResponseType;
   data: string;
+  type: EActionResponseType;
   file_name?: string;
+}
+
+export interface IWidgetActionQuery {
+  field_name: string;
+  widget_type: EFieldWidgetType;
+  value: any;
+}
+
+export interface IWidgetActionInput {
+  query: IWidgetActionQuery[];
+}
+
+export interface IWidgetActionResponse {
+  data: Record<string, any>[];
 }

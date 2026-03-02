@@ -34,10 +34,22 @@ except ModuleNotFoundError:  # pragma: no cover
 
 # api
 from fastadmin.api.exceptions import AdminApiException  # noqa: F401
-from fastadmin.api.schemas import ActionResponseSchema, ActionResponseType  # noqa: F401
 
 # models
-from fastadmin.models.base import DashboardWidgetAdmin, InlineModelAdmin, ModelAdmin  # noqa: F401
-from fastadmin.models.decorators import action, display, register, register_widget  # noqa: F401
+from fastadmin.models.base import InlineModelAdmin, ModelAdmin  # noqa: F401
+from fastadmin.models.decorators import action, display, register, widget_action  # noqa: F401
 from fastadmin.models.helpers import register_admin_model_class, unregister_admin_model_class  # noqa: F401
-from fastadmin.models.schemas import DashboardWidgetType, WidgetType  # noqa: F401
+from fastadmin.models.schemas import (  # noqa: F401
+    ActionInputSchema,
+    ActionResponseSchema,
+    ActionResponseType,
+    WidgetActionArgumentProps,
+    WidgetActionChartProps,
+    WidgetActionFilter,
+    WidgetActionInputSchema,
+    WidgetActionProps,
+    WidgetActionQuerySchema,
+    WidgetActionResponseSchema,
+    WidgetActionType,
+    WidgetType,
+)

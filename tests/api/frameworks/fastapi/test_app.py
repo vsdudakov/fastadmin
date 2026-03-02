@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -28,25 +28,62 @@ async def test_exception_handler():
     assert await exception_handler(None, Exception("Test")) is not None
 
 
-async def test_fastapi_dashboard_widget_success():
-    from unittest.mock import AsyncMock, MagicMock, patch
+async def test_fastapi_widget_action_success():
+    """FastAPI widget_action endpoint delegates to ApiService.widget_action."""
+    from dataclasses import asdict
 
     from fastadmin.api.frameworks.fastapi import api as fastapi_api
+    from fastadmin.models.schemas import WidgetActionInputSchema, WidgetActionResponseSchema
     from fastadmin.settings import settings
 
     request = MagicMock()
     request.cookies = {settings.ADMIN_SESSION_ID_KEY: "sid"}
-    expected = {"labels": ["a"], "values": [1]}
+    payload = WidgetActionInputSchema(query=[])
+    expected = WidgetActionResponseSchema(data=[])
 
-    with patch.object(fastapi_api.api_service, "dashboard_widget", AsyncMock(return_value=expected)) as mock_dashboard:
-        response = await fastapi_api.dashboard_widget(request, "Event")
+    with patch.object(
+        fastapi_api.api_service,
+        "widget_action",
+        AsyncMock(return_value=expected),
+    ) as mock_widget:
+        response = await fastapi_api.widget_action(request, "Event", "sales_chart", payload)
 
-    assert response == expected
-    mock_dashboard.assert_awaited_once_with(
+    assert response == asdict(expected)
+    mock_widget.assert_awaited_once_with(
         "sid",
         "Event",
-        min_x_field=None,
-        max_x_field=None,
-        period_x_field=None,
+        "sales_chart",
+        payload,
+        request=request,
+    )
+
+
+async def test_fastapi_widget_action_admin_exception():
+    """FastAPI widget_action endpoint converts AdminApiException to HTTPException."""
+    from fastapi import HTTPException
+
+    from fastadmin.api.exceptions import AdminApiException
+    from fastadmin.api.frameworks.fastapi import api as fastapi_api
+    from fastadmin.models.schemas import WidgetActionInputSchema
+    from fastadmin.settings import settings
+
+    request = MagicMock()
+    request.cookies = {settings.ADMIN_SESSION_ID_KEY: "sid"}
+    payload = WidgetActionInputSchema(query=[])
+
+    with pytest.raises(HTTPException) as exc_info, patch.object(
+        fastapi_api.api_service,
+        "widget_action",
+        AsyncMock(side_effect=AdminApiException(418, detail="boom")),
+    ) as mock_widget:
+        await fastapi_api.widget_action(request, "Event", "sales_chart", payload)
+
+    assert exc_info.value.status_code == 418
+    assert "boom" in str(exc_info.value.detail)
+    mock_widget.assert_awaited_once_with(
+        "sid",
+        "Event",
+        "sales_chart",
+        payload,
         request=request,
     )

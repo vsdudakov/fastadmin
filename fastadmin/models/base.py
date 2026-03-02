@@ -12,7 +12,7 @@ from uuid import UUID
 from asgiref.sync import sync_to_async
 
 from fastadmin.api.schemas import ExportFormat
-from fastadmin.models.schemas import DashboardWidgetType, ModelFieldWidgetSchema, WidgetType
+from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 
 
 class BaseModelAdmin:
@@ -196,6 +196,9 @@ class BaseModelAdmin:
 
     # An override to the verbose_name_plural from the model's inner Meta class.
     verbose_name_plural: str | None = None
+
+    # Widgets actions
+    widget_actions: Sequence[str] = ()
 
     def __init__(self, model_cls: Any):
         """This method is used to initialize admin class.
@@ -718,53 +721,4 @@ class ModelAdmin(BaseModelAdmin):
         return obj
 
 
-class DashboardWidgetAdmin:
-    _request_context: ContextVar[Any | None]
-    _user_context: ContextVar[Any | None]
-
-    title: str
-    dashboard_widget_type: DashboardWidgetType
-    x_field: str
-    y_field: str | None = None
-    series_field: str | None = None
-    x_field_filter_widget_type: WidgetType | None = None
-    x_field_filter_widget_props: dict[str, Any] | None = None
-    x_field_periods: list[str] | None = None
-
-    def __init__(self) -> None:
-        self._request_context = ContextVar(f"fastadmin_dashboard_request_context_{id(self)}", default=None)
-        self._user_context = ContextVar(f"fastadmin_dashboard_user_context_{id(self)}", default=None)
-
-    @property
-    def request(self) -> Any | None:
-        """Current request object for this async context."""
-        return self._request_context.get()
-
-    @property
-    def user(self) -> Any | None:
-        """Current authenticated user object for this async context."""
-        return self._user_context.get()
-
-    def set_context(self, request: Any | None = None, user: Any | None = None) -> None:
-        """Set request/user context for the current async task."""
-        self._request_context.set(request)
-        self._user_context.set(user)
-
-    async def get_data(
-        self,
-        min_x_field: str | None = None,
-        max_x_field: str | None = None,
-        period_x_field: str | None = None,
-    ) -> dict[str, Any]:
-        """This method is used to get data for dashboard widget.
-
-        :params min_x_field: A minimum value for x_field.
-        :params max_x_field: A maximum value for x_field.
-        :params period_x_field: A period value for x_field.
-        :return: A dict with data.
-        """
-        raise NotImplementedError
-
-
 admin_models: dict[Any, ModelAdmin] = {}
-admin_dashboard_widgets: dict[str, DashboardWidgetAdmin] = {}

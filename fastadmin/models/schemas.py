@@ -1,6 +1,8 @@
+import typing as tp
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
+from uuid import UUID
 
 
 class WidgetType(str, Enum):
@@ -31,14 +33,15 @@ class WidgetType(str, Enum):
     UploadImage = "UploadImage"
 
 
-class DashboardWidgetType(str, Enum):
-    """Dashboard Widget type"""
+class WidgetActionType(str, Enum):
+    """Widget action type"""
 
     ChartLine = "ChartLine"
     ChartArea = "ChartArea"
     ChartColumn = "ChartColumn"
     ChartBar = "ChartBar"
     ChartPie = "ChartPie"
+    Action = "Action"
 
 
 class ModelPermission(str, Enum):
@@ -50,12 +53,67 @@ class ModelPermission(str, Enum):
     Export = "Export"
 
 
+class ActionResponseType(str, Enum):
+    """Action response type"""
+
+    DOWNLOAD_BASE64 = "DOWNLOAD_BASE64"
+    MESSAGE = "MESSAGE"
+
+
+@dataclass
+class WidgetActionChartProps:
+    """Widget action chart props"""
+
+    x_field: str
+    y_field: str
+    series_field: str | None = None
+
+
+@dataclass
+class WidgetActionArgumentProps:
+    """Widget action chart props"""
+
+    name: str
+    widget_type: WidgetType
+    widget_props: dict | None = None
+
+
+@dataclass
+class WidgetActionProps:
+    """Widget action props"""
+
+    arguments: list[WidgetActionArgumentProps]
+
+
+@dataclass
+class WidgetActionFilter:
+    """Model widget filter action"""
+
+    field_name: str
+    widget_type: WidgetType
+    widget_props: dict | None = None
+
+
 @dataclass
 class ModelAction:
     """Action"""
 
     name: str
     description: str | None
+
+
+@dataclass
+class ModelWidgetAction:
+    """Widget action"""
+
+    name: str
+    title: str
+    description: str | None
+    tab: str
+    width: int | None
+    widget_action_type: WidgetActionType
+    widget_action_props: WidgetActionChartProps | WidgetActionProps | None = None
+    widget_action_filters: list[WidgetActionFilter] | None = None
 
 
 @dataclass
@@ -124,6 +182,8 @@ class BaseModelSchema:
     verbose_name: str | None
     verbose_name_plural: str | None
 
+    widget_actions: Sequence[ModelWidgetAction] | None
+
 
 @dataclass
 class InlineModelSchema(BaseModelSchema):
@@ -147,21 +207,6 @@ class ModelSchema(BaseModelSchema):
 
 
 @dataclass
-class DashboardWidgetSchema:
-    """Dashboard widget schema"""
-
-    key: str
-    title: str
-    dashboard_widget_type: DashboardWidgetType
-    x_field: str
-    y_field: str | None = None
-    series_field: str | None = None
-    x_field_filter_widget_type: WidgetType | None = None
-    x_field_filter_widget_props: dict | None = None
-    x_field_periods: list[str] | None = None
-
-
-@dataclass
 class ConfigurationSchema:
     """Configuration schema"""
 
@@ -174,7 +219,6 @@ class ConfigurationSchema:
     date_format: str
     datetime_format: str
     models: Sequence[ModelSchema]
-    dashboard_widgets: Sequence[DashboardWidgetSchema]
 
 
 @dataclass
@@ -190,3 +234,42 @@ class ModelFieldWidgetSchema:
     form_widget_props: dict
     filter_widget_type: WidgetType
     filter_widget_props: dict
+
+
+@dataclass
+class ActionInputSchema:
+    """Action input schema"""
+
+    ids: list[int | UUID]
+
+
+@dataclass
+class ActionResponseSchema:
+    """Action response schema"""
+
+    type: ActionResponseType
+    data: str
+    file_name: str | None = None
+
+
+@dataclass
+class WidgetActionQuerySchema:
+    """Widget action query schema"""
+
+    field_name: str
+    widget_type: WidgetType
+    value: tp.Any
+
+
+@dataclass
+class WidgetActionInputSchema:
+    """Widget action input schema"""
+
+    query: list[WidgetActionQuerySchema]
+
+
+@dataclass
+class WidgetActionResponseSchema:
+    """Widget action response schema"""
+
+    data: list[dict[str, tp.Any]]

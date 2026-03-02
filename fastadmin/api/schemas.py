@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-from uuid import UUID
 
 
 class ExportFormat(str, Enum):
@@ -8,32 +7,6 @@ class ExportFormat(str, Enum):
 
     CSV = "CSV"
     JSON = "JSON"
-
-
-class ActionResponseType(str, Enum):
-    """Action response type"""
-
-    DOWNLOAD_BASE64 = "DOWNLOAD_BASE64"
-    MESSAGE = "MESSAGE"
-
-
-@dataclass
-class DashboardWidgetQuerySchema:
-    """DashboardWidge query schema"""
-
-    min_x_field: str | None = None
-    max_x_field: str | None = None
-    period_x_field: str | None = None
-
-
-@dataclass
-class DashboardWidgetDataOutputSchema:
-    """Dashboard widget data output schema"""
-
-    results: list[dict[str, str | int | float]]
-    min_x_field: str | None = None
-    max_x_field: str | None = None
-    period_x_field: str | None = None
 
 
 @dataclass
@@ -70,19 +43,3 @@ class ExportInputSchema:
     format: ExportFormat | None = ExportFormat.CSV
     limit: int | None = 1000
     offset: int | None = 0
-
-
-@dataclass
-class ActionInputSchema:
-    """Action input schema"""
-
-    ids: list[int | UUID]
-
-
-@dataclass
-class ActionResponseSchema:
-    """Action response schema"""
-
-    type: ActionResponseType
-    data: str
-    file_name: str | None = None

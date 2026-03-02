@@ -12,25 +12,27 @@ from asgiref.sync import sync_to_async
 from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.helpers import sanitize_filter_key, sanitize_filter_value
 from fastadmin.api.schemas import (
-    ActionInputSchema,
-    ActionResponseSchema,
     ChangePasswordInputSchema,
-    DashboardWidgetDataOutputSchema,
-    DashboardWidgetQuerySchema,
     ExportFormat,
     ExportInputSchema,
     ListQuerySchema,
     SignInInputSchema,
 )
-from fastadmin.models.base import InlineModelAdmin, ModelAdmin, admin_dashboard_widgets
+from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.helpers import (
-    generate_dashboard_widgets_schema,
     generate_models_schema,
     get_admin_model,
     get_admin_models,
     get_admin_or_admin_inline_model,
 )
-from fastadmin.models.schemas import ConfigurationSchema, ModelSchema
+from fastadmin.models.schemas import (
+    ActionInputSchema,
+    ActionResponseSchema,
+    ConfigurationSchema,
+    ModelSchema,
+    WidgetActionInputSchema,
+    WidgetActionResponseSchema,
+)
 from fastadmin.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -144,42 +146,6 @@ class ApiService:
         _current_user_id, _current_user = await self._get_authenticated_user(session_id)
 
         return True
-
-    async def dashboard_widget(
-        self,
-        session_id: str | None,
-        model: str,
-        min_x_field: str | None = None,
-        max_x_field: str | None = None,
-        period_x_field: str | None = None,
-        request: Any | None = None,
-    ) -> dict[str, str | int | float]:
-        _current_user_id, current_user = await self._get_authenticated_user(session_id)
-
-        query_params = DashboardWidgetQuerySchema(
-            min_x_field=min_x_field,
-            max_x_field=max_x_field,
-            period_x_field=period_x_field,
-        )
-
-        dashboard_widget_model = admin_dashboard_widgets.get(model)
-        if not dashboard_widget_model:
-            raise AdminApiException(404, detail=f"{model} model is not registered.")
-
-        self._bind_admin_context(dashboard_widget_model, request=request, user=current_user)
-
-        if inspect.iscoroutinefunction(dashboard_widget_model.get_data):
-            get_data = dashboard_widget_model.get_data
-        else:
-            get_data = sync_to_async(dashboard_widget_model.get_data)  # type: ignore [arg-type]
-        data = await get_data(
-            min_x_field=query_params.min_x_field,
-            max_x_field=query_params.max_x_field,
-            period_x_field=query_params.period_x_field,
-        )
-
-        DashboardWidgetDataOutputSchema(**data)
-        return data
 
     async def list(
         self,
@@ -515,6 +481,35 @@ class ApiService:
 
         return await action_function_fn(payload.ids)
 
+    async def widget_action(
+        self,
+        session_id: str | None,
+        model: str,
+        widget_action: str,
+        payload: WidgetActionInputSchema,
+        request: Any | None = None,
+    ) -> WidgetActionResponseSchema:
+        _current_user_id, current_user = await self._get_authenticated_user(session_id)
+
+        admin_model = get_admin_or_admin_inline_model(model)
+        if not admin_model:
+            raise AdminApiException(404, detail=f"{model} model is not registered.")
+        self._bind_admin_context(admin_model, request=request, user=current_user)
+
+        if widget_action not in admin_model.widget_actions:
+            raise AdminApiException(422, detail=f"{widget_action} action is not in widget_actions setting.")
+
+        widget_action_function = getattr(admin_model, widget_action, None)
+        if not widget_action_function or not hasattr(widget_action_function, "is_widget_action"):
+            raise AdminApiException(422, detail=f"{widget_action} action is not registered.")
+
+        if inspect.iscoroutinefunction(widget_action_function):
+            widget_action_function_fn = widget_action_function
+        else:
+            widget_action_function_fn = sync_to_async(widget_action_function)
+
+        return await widget_action_function_fn(payload)
+
     async def get_configuration(
         self,
         session_id: str | None,
@@ -533,7 +528,6 @@ class ApiService:
                 date_format=settings.ADMIN_DATE_FORMAT,
                 datetime_format=settings.ADMIN_DATETIME_FORMAT,
                 models=[],
-                dashboard_widgets=[],
             )
 
         admin_models = cast(dict[Any, ModelAdmin | InlineModelAdmin], get_admin_models())
@@ -541,7 +535,6 @@ class ApiService:
             Sequence[ModelSchema],
             await generate_models_schema(admin_models, user_id=current_user_id, user=current_user, request=request),
         )
-        dashboard_widgets = generate_dashboard_widgets_schema()
         return ConfigurationSchema(
             site_name=settings.ADMIN_SITE_NAME,
             site_sign_in_logo=settings.ADMIN_SITE_SIGN_IN_LOGO,
@@ -552,5 +545,4 @@ class ApiService:
             date_format=settings.ADMIN_DATE_FORMAT,
             datetime_format=settings.ADMIN_DATETIME_FORMAT,
             models=models,
-            dashboard_widgets=dashboard_widgets,
         )  # type: ignore [call-arg]

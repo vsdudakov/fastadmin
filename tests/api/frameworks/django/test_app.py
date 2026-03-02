@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 from fastadmin.api.frameworks.django.app import api as django_api
@@ -33,8 +33,6 @@ async def test_json_encoder_field_file_value_error():
 
 async def test_django_get_invalid_id_422():
     """get view returns 422 when id is invalid (e.g. empty string)."""
-    from unittest.mock import MagicMock
-
     from fastadmin.api.frameworks.django.app.api import get
 
     request = MagicMock()
@@ -45,8 +43,6 @@ async def test_django_get_invalid_id_422():
 
 async def test_django_change_password_invalid_id_422():
     """change_password view returns 422 when id is invalid."""
-    from unittest.mock import MagicMock
-
     from fastadmin.api.frameworks.django.app.api import change_password
 
     request = MagicMock()
@@ -57,8 +53,6 @@ async def test_django_change_password_invalid_id_422():
 
 async def test_django_change_invalid_id_422():
     """change view returns 422 when id is invalid."""
-    from unittest.mock import MagicMock
-
     from fastadmin.api.frameworks.django.app.api import change
 
     request = MagicMock()
@@ -69,8 +63,6 @@ async def test_django_change_invalid_id_422():
 
 async def test_django_delete_invalid_id_422():
     """delete view returns 422 when id is invalid."""
-    from unittest.mock import MagicMock
-
     from fastadmin.api.frameworks.django.app.api import delete
 
     request = MagicMock()
@@ -79,62 +71,64 @@ async def test_django_delete_invalid_id_422():
     assert response.status_code == 422
 
 
-async def test_django_dashboard_widget_405():
-    """dashboard_widget returns 405 when method is not GET."""
-    from unittest.mock import MagicMock
-
-    from fastadmin.api.frameworks.django.app.api import dashboard_widget
+async def test_django_widget_action_405():
+    """widget_action returns 405 when method is not POST."""
+    from fastadmin.api.frameworks.django.app.api import widget_action
 
     request = MagicMock()
-    request.method = "POST"
-    response = await dashboard_widget(request, "SomeWidget")
+    request.method = "GET"
+    response = await widget_action(request, "Event", "sales_chart")
     assert response.status_code == 405
 
 
-async def test_django_dashboard_widget_404(session_id):
-    """dashboard_widget returns 404 when widget model is not registered."""
-    from django.http import HttpRequest
-
-    from fastadmin.api.frameworks.django.app.api import dashboard_widget
-    from fastadmin.settings import settings
-
-    request = HttpRequest()
-    request.method = "GET"
-    request.COOKIES = {settings.ADMIN_SESSION_ID_KEY: session_id}
-    response = await dashboard_widget(request, "NonExistentWidget")
-    assert response.status_code == 404
-
-
-async def test_django_dashboard_widget_success():
-    from unittest.mock import AsyncMock, MagicMock, patch
+async def test_django_widget_action_success():
+    """widget_action delegates to ApiService.widget_action and serializes response."""
+    from dataclasses import asdict
 
     from fastadmin.api.frameworks.django.app import api as django_api_module
-    from fastadmin.api.frameworks.django.app.api import dashboard_widget
+    from fastadmin.api.frameworks.django.app.api import widget_action
+    from fastadmin.models.schemas import WidgetActionResponseSchema
     from fastadmin.settings import settings
 
     request = MagicMock()
-    request.method = "GET"
-    request.GET.dict.return_value = {"min_x_field": "created_at"}
+    request.method = "POST"
+    request.body = b'{"query": []}'
     request.COOKIES = {settings.ADMIN_SESSION_ID_KEY: "sid"}
 
-    expected = {"labels": ["a"], "values": [1]}
+    expected = WidgetActionResponseSchema(data=[])
     with patch.object(
         django_api_module.api_service,
-        "dashboard_widget",
+        "widget_action",
         AsyncMock(return_value=expected),
-    ) as mock_dashboard:
-        response = await dashboard_widget(request, "Event")
+    ) as mock_widget:
+        response = await widget_action(request, "Event", "sales_chart")
 
     assert response.status_code == 200
-    assert response.content == b'{"labels": ["a"], "values": [1]}'
-    mock_dashboard.assert_awaited_once_with(
-        "sid",
-        "Event",
-        min_x_field="created_at",
-        max_x_field=None,
-        period_x_field=None,
-        request=request,
-    )
+    assert response.content == django_api.JsonResponse(asdict(expected)).content
+    mock_widget.assert_awaited_once()
+
+
+async def test_django_widget_action_admin_exception():
+    """widget_action returns JsonResponse with AdminApiException details."""
+    from fastadmin.api.exceptions import AdminApiException
+    from fastadmin.api.frameworks.django.app import api as django_api_module
+    from fastadmin.api.frameworks.django.app.api import widget_action
+    from fastadmin.settings import settings
+
+    request = MagicMock()
+    request.method = "POST"
+    request.body = b'{"query": []}'
+    request.COOKIES = {settings.ADMIN_SESSION_ID_KEY: "sid"}
+
+    with patch.object(
+        django_api_module.api_service,
+        "widget_action",
+        AsyncMock(side_effect=AdminApiException(418, detail="boom")),
+    ):
+        response = await widget_action(request, "Event", "sales_chart")
+
+    assert response.status_code == 418
+    assert response.content == django_api.JsonResponse({"detail": "boom"}).content
 
 
 async def test_django_upload_file_missing_file_400():

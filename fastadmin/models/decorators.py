@@ -1,4 +1,18 @@
-def action(function=None, *, description: str | None = None):
+import typing as tp
+
+from fastadmin.models.schemas import (
+    WidgetActionChartProps,
+    WidgetActionFilter,
+    WidgetActionProps,
+    WidgetActionType,
+)
+
+
+def action(
+    function=None,
+    *,
+    description: str | None = None,
+):
     """Conveniently add attributes to an action function:
 
     Example of usage:
@@ -20,8 +34,89 @@ def action(function=None, *, description: str | None = None):
 
     if function is None:
         return decorator
-    else:
-        return decorator(function)
+    return decorator(function)
+
+
+def widget_action(
+    function=None,
+    *,
+    tab: str = "Default",
+    title: str = "Action",
+    description: str | None = None,
+    widget_action_type: WidgetActionType = WidgetActionType.Action,
+    widget_action_props: WidgetActionChartProps | WidgetActionProps | None = None,
+    widget_action_filters: list[WidgetActionFilter] | None = None,
+    width: (
+        tp.Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24] | None
+    ) = None,  # width in 1-24 grid system
+):
+    """Conveniently add attributes to a widget action function:
+
+    Example of usage:
+    @widget_action(
+        tab="Default",
+        title="Action",
+        description="Chart of total sales by status",
+        widget_action_type=WidgetActionType.Action,
+        widget_action_props=WidgetActionChartProps(
+            x_field="date",
+            y_field="total_sales",
+            series_field="status",
+        ),
+        widget_action_filters=[WidgetActionFilter(
+            field_name="status",
+            widget_type=WidgetType.Select,
+            widget_props={
+                "mode": "multiple",
+                "options": [
+                    {
+                        "label": "Pending",
+                        "value": "Pending",
+                    },
+                    {
+                        "label": "Completed",
+                        "value": "Completed",
+                    },
+                ],
+            },
+        )],
+    )
+    async def sales_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        # filter by payload.query
+        return WidgetActionResponseSchema(
+            data=[
+                {
+                    "date": "2026-01-01",
+                    "total_sales": 100,
+                    "status": "Pending",
+                },
+                {
+                    "date": "2026-01-02",
+                    "total_sales": 200,
+                    "status": "Completed",
+                },
+            ],
+        )
+
+    :param function: A function to decorate.
+    :param description: A string value to set the function's short_description
+    """
+
+    def decorator(func):
+        func.is_widget_action = True
+        func.widget_action_type = widget_action_type
+        func.widget_action_props = widget_action_props
+        func.widget_action_filters = widget_action_filters
+        func.tab = tab
+        func.title = title
+        func.width = width
+        if description is not None:
+            func.short_description = description
+        return func
+
+    if function is None:
+        return decorator
+    return decorator(function)
 
 
 def display(function=None, *, sorter: bool | str = False):
@@ -82,18 +177,3 @@ def register(*orm_model_classes, **kwargs):
         return model_admin_cls
 
     return wrapper
-
-
-def register_widget(dashboard_widget_admin_cls):
-    """Wrapper for register dashboard widget.
-
-    :param admin_class: A class to wrap.
-    """
-    from fastadmin.models.base import DashboardWidgetAdmin, admin_dashboard_widgets
-
-    if not issubclass(dashboard_widget_admin_cls, DashboardWidgetAdmin):
-        raise ValueError("Wrapped class must subclass DashboardWidgetAdmin.")
-
-    admin_dashboard_widgets[dashboard_widget_admin_cls.__name__] = dashboard_widget_admin_cls()
-
-    return dashboard_widget_admin_cls

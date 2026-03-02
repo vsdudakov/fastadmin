@@ -43,6 +43,13 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.4.2",
+            "changes": [
+                "Replace DashboardWidgetAdmin with widget_action decorator. (no backward compatibility)",
+                "Fix mobile view.",
+            ],
+        },
+        {
             "version": "0.4.1",
             "changes": [
                 "Fix upload file functionality. Fix examples.",
@@ -372,8 +379,6 @@ def get_sections():
 
 
 def get_page_context(page_url):
-    from docs.code.dashboard import djangoorm as dashboard_djangoorm
-    from docs.code.dashboard import tortoise as dashboard_tortoise
     from docs.code.inlines import tortoise as inlines_tortoise
     from docs.code.models import tortoise as models_tortoise
     from docs.code.quick_tutorial import django as quick_tutorial_django
@@ -384,8 +389,17 @@ def get_page_context(page_url):
     from docs.code.quick_tutorial import sqlalchemy as quick_tutorial_sqlalchemy
     from docs.code.quick_tutorial import tortoise as quick_tutorial_tortoise
 
-    from fastadmin import DashboardWidgetAdmin, DashboardWidgetType, InlineModelAdmin, ModelAdmin, WidgetType
+    from fastadmin import InlineModelAdmin, ModelAdmin, WidgetType, widget_action
     from fastadmin.models.base import BaseModelAdmin
+    from fastadmin.models.schemas import (
+        WidgetActionArgumentProps,
+        WidgetActionChartProps,
+        WidgetActionFilter,
+        WidgetActionInputSchema,
+        WidgetActionProps,
+        WidgetActionResponseSchema,
+        WidgetActionType,
+    )
 
     match page_url:
         case "#introduction":
@@ -553,61 +567,63 @@ export ADMIN_SECRET_KEY=secret_key
                 },
             ]
         # widgets
-        case "#registering-widgets":
-            return [
-                {
-                    "type": "text-lead",
-                    "content": "Register dashboard widgets",
-                },
-                {
-                    "type": "tabs",
-                    "id": "register_dashboard_widgets",
-                    "content": [
-                        {
-                            "name": "Tortoise ORM",
-                            "id": "dashboard_tortoise_orm",
-                            "content": [{"type": "code-python", "content": inspect.getsource(dashboard_tortoise)}],
-                        },
-                        {
-                            "name": "Django ORM",
-                            "id": "dashboard_django_orm",
-                            "content": [{"type": "code-python", "content": inspect.getsource(dashboard_djangoorm)}],
-                        },
-                        {
-                            "name": "SQLAlchemy",
-                            "id": "dashboard_sql_alchemy",
-                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example above."}],
-                        },
-                        {
-                            "name": "Pony ORM",
-                            "id": "dashboard_pony_orm",
-                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example above."}],
-                        },
-                    ],
-                },
-            ]
         case "#widget-methods-and-attributes":
             return [
                 {
                     "type": "text",
-                    "content": "The following methods and attributes are available for dashboard widget admins:",
+                    "content": (
+                        "Use the @widget_action decorator on ModelAdmin methods to declare "
+                        "dashboard widgets and actions. The decorator attaches metadata used "
+                        "to render chart widgets and action forms on the dashboard."
+                    ),
                 },
-                {"type": "code-python", "content": inspect.getsource(DashboardWidgetAdmin)},
+                {"type": "code-python", "content": inspect.getsource(widget_action)},
+                {
+                    "type": "text",
+                    "content": (
+                        "Widget actions use the following types for configuration "
+                        "(chart props, arguments, filters and payload schema):"
+                    ),
+                },
+                {
+                    "type": "code-python",
+                    "content": "\n\n".join(
+                        [
+                            inspect.getsource(WidgetActionChartProps),
+                            inspect.getsource(WidgetActionArgumentProps),
+                            inspect.getsource(WidgetActionProps),
+                            inspect.getsource(WidgetActionFilter),
+                            inspect.getsource(WidgetActionInputSchema),
+                            inspect.getsource(WidgetActionResponseSchema),
+                        ]
+                    ),
+                },
                 {
                     "type": "alert-warning",
-                    "content": f"See <a href='{ANTD_CHARTS_EXAMPLES}' target='_blank'>antd charts</a> for <code>x_field_filter_widget_props</code>.",
+                    "content": (
+                        "If you call @widget_action() without arguments, FastAdmin uses the "
+                        "documented defaults: tab='Default', title='Action', "
+                        "widget_action_type=WidgetActionType.Action and no props or filters."
+                    ),
                 },
             ]
         case "#widget-chart-types":
             return [
                 {
                     "type": "text",
-                    "content": "The FastAdmin dashboard supports the following widget types:",
+                    "content": (
+                        "The FastAdmin dashboard supports the following widget action types for charts and actions:"
+                    ),
                 },
-                {"type": "code-python", "content": inspect.getsource(DashboardWidgetType)},
+                {"type": "code-python", "content": inspect.getsource(WidgetActionType)},
                 {
                     "type": "alert-warning",
-                    "content": f"See <a href='{ANTD_CHARTS_EXAMPLES}' target='_blank'>antd charts</a> for more details (e.g. how they look).",
+                    "content": (
+                        "Chart-* widget actions render charts on the dashboard; the Action "
+                        "type renders a simple action widget. See "
+                        f"<a href='{ANTD_CHARTS_EXAMPLES}' target='_blank'>antd charts</a> "
+                        "for more details (e.g. how they look)."
+                    ),
                 },
             ]
         # models

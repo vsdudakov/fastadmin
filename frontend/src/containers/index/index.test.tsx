@@ -19,9 +19,31 @@ vi.mock("@/components/crud-container", () => ({
   ),
 }));
 
-vi.mock("@/components/dashboard-widget", () => ({
-  DashboardWidget: ({ widget }: { widget: { title: string } }) => (
-    <div data-testid={`widget-${widget.title}`}>{widget.title}</div>
+vi.mock("@/components/dashboard-action-widget", () => ({
+  DashboardActionWidget: ({
+    modelName,
+    widgetAction,
+  }: {
+    modelName: string;
+    widgetAction: { title: string };
+  }) => (
+    <div data-testid={`widget-${modelName}-${widgetAction.title}`}>
+      {widgetAction.title}
+    </div>
+  ),
+}));
+
+vi.mock("@/components/dashboard-chart-widget", () => ({
+  DashboardChartWidget: ({
+    modelName,
+    widgetAction,
+  }: {
+    modelName: string;
+    widgetAction: { title: string };
+  }) => (
+    <div data-testid={`widget-${modelName}-${widgetAction.title}`}>
+      {widgetAction.title}
+    </div>
   ),
 }));
 
@@ -38,9 +60,30 @@ vi.mock("react-i18next", async () => {
 });
 
 vi.mock("antd", () => ({
+  theme: {
+    useToken: () => ({
+      token: {
+        colorPrimary: "#000",
+        colorBgContainer: "#fff",
+        colorTextBase: "#000",
+        colorBgBase: "#fff",
+      },
+    }),
+  },
   Row: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Col: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Empty: ({ description }: { description: string }) => <div>{description}</div>,
+  Tabs: ({
+    items,
+  }: {
+    items: Array<{ key: string; children: React.ReactNode }>;
+  }) => (
+    <div>
+      {items.map((item) => (
+        <div key={item.key}>{item.children}</div>
+      ))}
+    </div>
+  ),
 }));
 
 describe("Index container", () => {
@@ -55,7 +98,6 @@ describe("Index container", () => {
         site_name: "Admin",
         username_field: "username",
         models: [],
-        dashboard_widgets: [],
       },
     };
     render(
@@ -72,12 +114,19 @@ describe("Index container", () => {
       configuration: {
         site_name: "Admin",
         username_field: "username",
-        models: [],
-        dashboard_widgets: [
+        models: [
           {
-            title: "Orders",
-            model: "order",
-            list_display: "id",
+            name: "Order",
+            permissions: [],
+            actions: [],
+            fields: [],
+            widget_actions: [
+              {
+                name: "sales_chart",
+                title: "Orders",
+                widget_action_type: "Action",
+              },
+            ],
           },
         ],
       },
@@ -87,6 +136,6 @@ describe("Index container", () => {
         <Index />
       </ConfigurationContext.Provider>,
     );
-    expect(screen.getByTestId("widget-Orders")).toBeTruthy();
+    expect(screen.getByTestId("widget-Order-Orders")).toBeTruthy();
   });
 });

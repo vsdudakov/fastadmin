@@ -1,9 +1,8 @@
 import pytest
 
 from fastadmin import ModelAdmin, display, register
-from fastadmin.models.base import DashboardWidgetAdmin
-from fastadmin.models.decorators import register_widget
-from fastadmin.models.schemas import DashboardWidgetType
+from fastadmin.models.decorators import action, widget_action
+from fastadmin.models.schemas import WidgetActionChartProps, WidgetActionType
 
 
 def test_display_sorter_string():
@@ -55,27 +54,64 @@ async def test_register_error():
         register(Model)(InvalidModelAdmin)
 
 
-def test_register_widget_error():
-    class InvalidWidget:
-        pass
+def test_action_decorator_sets_metadata():
+    """@action sets is_action flag and optional short_description."""
 
-    with pytest.raises(ValueError, match="Wrapped class must subclass DashboardWidgetAdmin."):
-        register_widget(InvalidWidget)
+    @action(description="Do something")
+    async def do_something(objs):
+        return None
+
+    assert getattr(do_something, "is_action", False) is True
+    assert getattr(do_something, "short_description", "") == "Do something"
 
 
-def test_register_widget_success():
-    from fastadmin.models.base import admin_dashboard_widgets
+def test_widget_action_decorator_defaults():
+    """@widget_action without explicit kwargs uses documented defaults."""
 
-    class MyWidget(DashboardWidgetAdmin):
-        title = "MyWidget"
-        dashboard_widget_type = DashboardWidgetType.ChartLine
-        x_field = "x"
+    @widget_action()
+    async def default_widget(payload):
+        return None
 
-    prev = admin_dashboard_widgets.copy()
-    try:
-        returned = register_widget(MyWidget)
-        assert returned is MyWidget
-        assert "MyWidget" in admin_dashboard_widgets
-    finally:
-        admin_dashboard_widgets.clear()
-        admin_dashboard_widgets.update(prev)
+    assert getattr(default_widget, "is_widget_action", False) is True
+    assert default_widget.widget_action_type is WidgetActionType.Action
+    assert default_widget.widget_action_props is None
+    assert default_widget.tab == "Default"
+    assert default_widget.title == "Action"
+    # No description passed -> no short_description attribute
+    assert not hasattr(default_widget, "short_description")
+
+
+def test_widget_action_decorator_with_chart_props():
+    """@widget_action attaches chart props and metadata."""
+
+    props = WidgetActionChartProps(x_field="created_at", y_field="total", series_field="status")
+
+    @widget_action(
+        widget_action_type=WidgetActionType.ChartLine,
+        widget_action_props=props,
+        tab="Analytics",
+        title="Sales over time",
+        description="Line chart of sales",
+    )
+    async def sales_chart(payload):
+        return None
+
+    assert getattr(sales_chart, "is_widget_action", False) is True
+    assert sales_chart.widget_action_type is WidgetActionType.ChartLine
+    assert sales_chart.widget_action_props is props
+    assert sales_chart.tab == "Analytics"
+    assert sales_chart.title == "Sales over time"
+    assert getattr(sales_chart, "short_description", "") == "Line chart of sales"
+
+
+def test_widget_action_used_without_parentheses():
+    """@widget_action used without parentheses still sets metadata."""
+
+    @widget_action
+    async def simple_action(payload):
+        return None
+
+    assert getattr(simple_action, "is_widget_action", False) is True
+    # Defaults are preserved
+    assert simple_action.widget_action_type is WidgetActionType.Action
+    assert simple_action.widget_action_props is None

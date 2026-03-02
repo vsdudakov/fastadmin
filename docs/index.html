@@ -197,6 +197,10 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_4_2">v0.4.2</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_4_1">v0.4.1</a>
                 </li>
                 
@@ -359,7 +363,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.4.1</li>
+                    <li><strong>Version:</strong> 0.4.2</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -376,7 +380,7 @@
                     </li>
                     <li>
                       <strong>Updated:</strong>
-                      01 March 2026
+                      02 March 2026
                     </li>
                   </ul>
                 </div>
@@ -1351,290 +1355,6 @@ class Settings:
                 <h3>Registering Widgets</h3>
 
                 
-                  
-
-
-<p class="lead">
-  Register dashboard widgets
-</p>
-
-
-
-
-
-
-
-
-
-
-
-                
-                  
-
-
-
-
-
-
-
-
-
-
-
-
-<ul class="nav nav-tabs" id="register_dashboard_widgets" role="tablist">
-    
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="dashboard_tortoise_orm" data-bs-toggle="tab" data-bs-target="#dashboard_tortoise_orm-pane" type="button" role="tab" aria-controls="dashboard_tortoise_orm" aria-selected="true">Tortoise ORM</button>
-    </li>
-    
-    <li class="nav-item" role="presentation">
-        <button class="nav-link " id="dashboard_django_orm" data-bs-toggle="tab" data-bs-target="#dashboard_django_orm-pane" type="button" role="tab" aria-controls="dashboard_django_orm" aria-selected="false">Django ORM</button>
-    </li>
-    
-    <li class="nav-item" role="presentation">
-        <button class="nav-link " id="dashboard_sql_alchemy" data-bs-toggle="tab" data-bs-target="#dashboard_sql_alchemy-pane" type="button" role="tab" aria-controls="dashboard_sql_alchemy" aria-selected="false">SQLAlchemy</button>
-    </li>
-    
-    <li class="nav-item" role="presentation">
-        <button class="nav-link " id="dashboard_pony_orm" data-bs-toggle="tab" data-bs-target="#dashboard_pony_orm-pane" type="button" role="tab" aria-controls="dashboard_pony_orm" aria-selected="false">Pony ORM</button>
-    </li>
-    
-</ul>
-<div class="tab-content" id="register_dashboard_widgets-content">
-    
-    <div class="tab-pane fade show active" id="dashboard_tortoise_orm-pane" role="tabpanel" aria-labelledby="dashboard_tortoise_orm" tabindex="0">
-        
-        
-
-
-
-
-
-
-
-
-
-
-<pre>
-  <code class="language-python">
-import datetime
-
-from tortoise import Tortoise, fields
-from tortoise.models import Model
-
-from fastadmin import DashboardWidgetAdmin, DashboardWidgetType, WidgetType, register_widget
-
-
-class DashboardUser(Model):
-    username = fields.CharField(max_length=255, unique=True)
-    hash_password = fields.CharField(max_length=255)
-    is_superuser = fields.BooleanField(default=False)
-    is_active = fields.BooleanField(default=False)
-
-    def __str__(self):
-        return self.username
-
-
-@register_widget
-class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
-    title = "Users"
-    dashboard_widget_type = DashboardWidgetType.ChartLine
-
-    x_field = "date"
-    x_field_filter_widget_type = WidgetType.DatePicker
-    x_field_filter_widget_props: dict[str, str] = {"picker": "month"}  # noqa: RUF012
-    x_field_periods = ["day", "week", "month", "year"]  # noqa: RUF012
-
-    y_field = "count"
-
-    async def get_data(
-        self,
-        min_x_field: str | None = None,
-        max_x_field: str | None = None,
-        period_x_field: str | None = None,
-    ) -> dict:
-        conn = Tortoise.get_connection("default")
-
-        if not min_x_field:
-            min_x_field_date = datetime.datetime.now(tz=datetime.UTC) - datetime.timedelta(days=360)
-        else:
-            min_x_field_date = datetime.datetime.fromisoformat(min_x_field)
-        if not max_x_field:
-            max_x_field_date = datetime.datetime.now(tz=datetime.UTC) + datetime.timedelta(days=1)
-        else:
-            max_x_field_date = datetime.datetime.fromisoformat(max_x_field)
-
-        if not period_x_field or period_x_field not in (self.x_field_periods or []):
-            period_x_field = "month"
-
-        results = await conn.execute_query_dict(
-            """
-                SELECT
-                    to_char(date_trunc($1, "user"."created_at")::date, 'dd/mm/yyyy') "date",
-                    COUNT("user"."id") "count"
-                FROM "user"
-                WHERE "user"."created_at" >= $2 AND "user"."created_at" <= $3
-                GROUP BY "date" ORDER BY "date"
-            """,
-            [period_x_field, min_x_field_date, max_x_field_date],
-        )
-        return {
-            "results": results,
-            "min_x_field": min_x_field_date.isoformat(),
-            "max_x_field": max_x_field_date.isoformat(),
-            "period_x_field": period_x_field,
-        }
-
-  </code>
-</pre>
-
-
-
-        
-    </div>
-    
-    <div class="tab-pane fade " id="dashboard_django_orm-pane" role="tabpanel" aria-labelledby="dashboard_django_orm" tabindex="0">
-        
-        
-
-
-
-
-
-
-
-
-
-
-<pre>
-  <code class="language-python">
-import datetime
-
-from django.db import connection, models
-
-from fastadmin import DashboardWidgetAdmin, DashboardWidgetType, WidgetType, register_widget
-
-
-class DashboardUser(models.Model):
-    username = models.CharField(max_length=255, unique=True)
-    hash_password = models.CharField(max_length=255)
-    is_superuser = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.username
-
-
-@register_widget
-class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
-    title = "Users"
-    dashboard_widget_type = DashboardWidgetType.ChartLine
-
-    x_field = "date"
-    x_field_filter_widget_type = WidgetType.DatePicker
-    x_field_filter_widget_props: dict[str, str] = {"picker": "month"}  # noqa: RUF012
-    x_field_periods = ["day", "week", "month", "year"]  # noqa: RUF012
-
-    y_field = "count"
-
-    def get_data(  # type: ignore [override]
-        self,
-        min_x_field: str | None = None,
-        max_x_field: str | None = None,
-        period_x_field: str | None = None,
-    ) -> dict:
-        def dictfetchall(cursor):
-            columns = [col[0] for col in cursor.description]
-            return [dict(zip(columns, row, strict=True)) for row in cursor.fetchall()]
-
-        with connection.cursor() as c:
-            if not min_x_field:
-                min_x_field_date = datetime.datetime.now(tz=datetime.UTC) - datetime.timedelta(days=360)
-            else:
-                min_x_field_date = datetime.datetime.fromisoformat(min_x_field)
-            if not max_x_field:
-                max_x_field_date = datetime.datetime.now(tz=datetime.UTC) + datetime.timedelta(days=1)
-            else:
-                max_x_field_date = datetime.datetime.fromisoformat(max_x_field)
-
-            if not period_x_field or period_x_field not in (self.x_field_periods or []):
-                period_x_field = "month"
-
-            c.execute(
-                """
-                    SELECT
-                        to_char(date_trunc($1, "user"."created_at")::date, 'dd/mm/yyyy') "date",
-                        COUNT("user"."id") "count"
-                    FROM "user"
-                    WHERE "user"."created_at" >= $2 AND "user"."created_at" <= $3
-                    GROUP BY "date" ORDER BY "date"
-                """,
-                [period_x_field, min_x_field_date, max_x_field_date],
-            )
-            results = dictfetchall(c)
-            return {
-                "results": results,
-                "min_x_field": min_x_field_date.isoformat(),
-                "max_x_field": max_x_field_date.isoformat(),
-                "period_x_field": period_x_field,
-            }
-
-  </code>
-</pre>
-
-
-
-        
-    </div>
-    
-    <div class="tab-pane fade " id="dashboard_sql_alchemy-pane" role="tabpanel" aria-labelledby="dashboard_sql_alchemy" tabindex="0">
-        
-        
-
-
-
-
-<p class="alert alert-info">
-  See the Tortoise ORM example above.
-</p>
-
-
-
-
-
-
-
-
-
-        
-    </div>
-    
-    <div class="tab-pane fade " id="dashboard_pony_orm-pane" role="tabpanel" aria-labelledby="dashboard_pony_orm" tabindex="0">
-        
-        
-
-
-
-
-<p class="alert alert-info">
-  See the Tortoise ORM example above.
-</p>
-
-
-
-
-
-
-
-
-
-        
-    </div>
-    
-</div>
-
-                
                 </section>
 
               
@@ -1644,7 +1364,7 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
                 
                   
 <p class="text-4">
-  The following methods and attributes are available for dashboard widget admins:
+  Use the @widget_action decorator on ModelAdmin methods to declare dashboard widgets and actions. The decorator attaches metadata used to render chart widgets and action forms on the dashboard.
 </p>
 
 
@@ -1673,52 +1393,170 @@ class UsersDashboardWidgetAdmin(DashboardWidgetAdmin):
 
 <pre>
   <code class="language-python">
-class DashboardWidgetAdmin:
-    _request_context: ContextVar[Any | None]
-    _user_context: ContextVar[Any | None]
+def widget_action(
+    function=None,
+    *,
+    tab: str = "Default",
+    title: str = "Action",
+    description: str | None = None,
+    widget_action_type: WidgetActionType = WidgetActionType.Action,
+    widget_action_props: WidgetActionChartProps | WidgetActionProps | None = None,
+    widget_action_filters: list[WidgetActionFilter] | None = None,
+    width: (
+        tp.Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24] | None
+    ) = None,  # width in 1-24 grid system
+):
+    """Conveniently add attributes to a widget action function:
 
-    title: str
-    dashboard_widget_type: DashboardWidgetType
+    Example of usage:
+    @widget_action(
+        tab="Default",
+        title="Action",
+        description="Chart of total sales by status",
+        widget_action_type=WidgetActionType.Action,
+        widget_action_props=WidgetActionChartProps(
+            x_field="date",
+            y_field="total_sales",
+            series_field="status",
+        ),
+        widget_action_filters=[WidgetActionFilter(
+            field_name="status",
+            widget_type=WidgetType.Select,
+            widget_props={
+                "mode": "multiple",
+                "options": [
+                    {
+                        "label": "Pending",
+                        "value": "Pending",
+                    },
+                    {
+                        "label": "Completed",
+                        "value": "Completed",
+                    },
+                ],
+            },
+        )],
+    )
+    async def sales_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        # filter by payload.query
+        return WidgetActionResponseSchema(
+            data=[
+                {
+                    "date": "2026-01-01",
+                    "total_sales": 100,
+                    "status": "Pending",
+                },
+                {
+                    "date": "2026-01-02",
+                    "total_sales": 200,
+                    "status": "Completed",
+                },
+            ],
+        )
+
+    :param function: A function to decorate.
+    :param description: A string value to set the function's short_description
+    """
+
+    def decorator(func):
+        func.is_widget_action = True
+        func.widget_action_type = widget_action_type
+        func.widget_action_props = widget_action_props
+        func.widget_action_filters = widget_action_filters
+        func.tab = tab
+        func.title = title
+        func.width = width
+        if description is not None:
+            func.short_description = description
+        return func
+
+    if function is None:
+        return decorator
+    return decorator(function)
+
+  </code>
+</pre>
+
+
+
+                
+                  
+<p class="text-4">
+  Widget actions use the following types for configuration (chart props, arguments, filters and payload schema):
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
+@dataclass
+class WidgetActionChartProps:
+    """Widget action chart props"""
+
     x_field: str
-    y_field: str | None = None
+    y_field: str
     series_field: str | None = None
-    x_field_filter_widget_type: WidgetType | None = None
-    x_field_filter_widget_props: dict[str, Any] | None = None
-    x_field_periods: list[str] | None = None
 
-    def __init__(self) -> None:
-        self._request_context = ContextVar(f"fastadmin_dashboard_request_context_{id(self)}", default=None)
-        self._user_context = ContextVar(f"fastadmin_dashboard_user_context_{id(self)}", default=None)
 
-    @property
-    def request(self) -> Any | None:
-        """Current request object for this async context."""
-        return self._request_context.get()
+@dataclass
+class WidgetActionArgumentProps:
+    """Widget action chart props"""
 
-    @property
-    def user(self) -> Any | None:
-        """Current authenticated user object for this async context."""
-        return self._user_context.get()
+    name: str
+    widget_type: WidgetType
+    widget_props: dict | None = None
 
-    def set_context(self, request: Any | None = None, user: Any | None = None) -> None:
-        """Set request/user context for the current async task."""
-        self._request_context.set(request)
-        self._user_context.set(user)
 
-    async def get_data(
-        self,
-        min_x_field: str | None = None,
-        max_x_field: str | None = None,
-        period_x_field: str | None = None,
-    ) -> dict[str, Any]:
-        """This method is used to get data for dashboard widget.
+@dataclass
+class WidgetActionProps:
+    """Widget action props"""
 
-        :params min_x_field: A minimum value for x_field.
-        :params max_x_field: A maximum value for x_field.
-        :params period_x_field: A period value for x_field.
-        :return: A dict with data.
-        """
-        raise NotImplementedError
+    arguments: list[WidgetActionArgumentProps]
+
+
+@dataclass
+class WidgetActionFilter:
+    """Model widget filter action"""
+
+    field_name: str
+    widget_type: WidgetType
+    widget_props: dict | None = None
+
+
+@dataclass
+class WidgetActionInputSchema:
+    """Widget action input schema"""
+
+    query: list[WidgetActionQuerySchema]
+
+
+@dataclass
+class WidgetActionResponseSchema:
+    """Widget action response schema"""
+
+    data: list[dict[str, tp.Any]]
 
   </code>
 </pre>
@@ -1734,7 +1572,7 @@ class DashboardWidgetAdmin:
 
 
 <p class="alert alert-warning">
-  See <a href='https://ant-design-charts.antgroup.com/en/examples' target='_blank'>antd charts</a> for <code>x_field_filter_widget_props</code>.
+  If you call @widget_action() without arguments, FastAdmin uses the documented defaults: tab='Default', title='Action', widget_action_type=WidgetActionType.Action and no props or filters.
 </p>
 
 
@@ -1753,7 +1591,7 @@ class DashboardWidgetAdmin:
                 
                   
 <p class="text-4">
-  The FastAdmin dashboard supports the following widget types:
+  The FastAdmin dashboard supports the following widget action types for charts and actions:
 </p>
 
 
@@ -1782,14 +1620,15 @@ class DashboardWidgetAdmin:
 
 <pre>
   <code class="language-python">
-class DashboardWidgetType(str, Enum):
-    """Dashboard Widget type"""
+class WidgetActionType(str, Enum):
+    """Widget action type"""
 
     ChartLine = "ChartLine"
     ChartArea = "ChartArea"
     ChartColumn = "ChartColumn"
     ChartBar = "ChartBar"
     ChartPie = "ChartPie"
+    Action = "Action"
 
   </code>
 </pre>
@@ -1805,7 +1644,7 @@ class DashboardWidgetType(str, Enum):
 
 
 <p class="alert alert-warning">
-  See <a href='https://ant-design-charts.antgroup.com/en/examples' target='_blank'>antd charts</a> for more details (e.g. how they look).
+  Chart-* widget actions render charts on the dashboard; the Action type renders a simple action widget. See <a href='https://ant-design-charts.antgroup.com/en/examples' target='_blank'>antd charts</a> for more details (e.g. how they look).
 </p>
 
 
@@ -1889,7 +1728,16 @@ import bcrypt
 from tortoise import fields
 from tortoise.models import Model
 
-from fastadmin import TortoiseModelAdmin, WidgetType, action, register
+from fastadmin import TortoiseModelAdmin, WidgetType, action, register, widget_action
+from fastadmin.models.schemas import (
+    WidgetActionArgumentProps,
+    WidgetActionChartProps,
+    WidgetActionFilter,
+    WidgetActionInputSchema,
+    WidgetActionProps,
+    WidgetActionResponseSchema,
+    WidgetActionType,
+)
 
 
 class ModelUser(Model):
@@ -1923,7 +1771,7 @@ class UserAdmin(TortoiseModelAdmin):
     )
     formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
-        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "hash_password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
         "avatar_url": (
             WidgetType.UploadImage,
             {
@@ -1937,9 +1785,13 @@ class UserAdmin(TortoiseModelAdmin):
         "activate",
         "deactivate",
     )
+    widget_actions = (
+        "users_chart",
+        "users_action",
+    )
 
     async def authenticate(self, username: str, password: str) -> int | None:
-        user = await self.model_cls.filter(phone=username, is_superuser=True).first()
+        user = await self.model_cls.filter(username=username, is_superuser=True).first()
         if not user:
             return None
         if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
@@ -1965,6 +1817,71 @@ class UserAdmin(TortoiseModelAdmin):
         # save file to media directory or s3/filestorage, then return the file url
         url = f"/media/{file_name}"
         return url
+
+    @widget_action(
+        widget_action_type=WidgetActionType.ChartLine,
+        widget_action_props=WidgetActionChartProps(x_field="x", y_field="y"),
+        widget_action_filters=[
+            WidgetActionFilter(
+                field_name="x",
+                widget_type=WidgetType.DatePicker,
+            ),
+        ],
+        tab="Analytics",
+        title="Users over time",
+        description="Line chart of active users over time",
+        width=24,
+    )
+    async def users_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        # In a real project you would aggregate using payload.query filters.
+        return WidgetActionResponseSchema(
+            data=[
+                {
+                    "x": "2026-01-01",
+                    "y": 10,
+                },
+                {
+                    "x": "2026-01-02",
+                    "y": 15,
+                },
+                {
+                    "x": "2026-01-03",
+                    "y": 7,
+                },
+            ],
+        )
+
+    @widget_action(
+        widget_action_type=WidgetActionType.Action,
+        widget_action_props=WidgetActionProps(
+            arguments=[
+                WidgetActionArgumentProps(
+                    name="since",
+                    widget_type=WidgetType.DatePicker,
+                    widget_props={
+                        "required": True,
+                    },
+                ),
+            ],
+        ),
+        tab="Data",
+        title="Export users",
+        description="Return a simple table of users created since a date",
+        width=12,
+    )
+    async def users_action(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        return WidgetActionResponseSchema(
+            data=[
+                {
+                    "id": 1,
+                    "username": "alice",
+                },
+                {
+                    "id": 2,
+                    "username": "bob",
+                },
+            ],
+        )
 
   </code>
 </pre>
@@ -2287,6 +2204,9 @@ class BaseModelAdmin:
 
     # An override to the verbose_name_plural from the model's inner Meta class.
     verbose_name_plural: str | None = None
+
+    # Widgets actions
+    widget_actions: Sequence[str] = ()
 
     def __init__(self, model_cls: Any):
         """This method is used to initialize admin class.
@@ -3396,6 +3316,49 @@ class InlineModelAdmin(BaseModelAdmin):
               
 
               
+              
+                <section id="v0_4_2">
+                <h3>v0.4.2</h3>
+
+                
+                  
+<p class="text-4">
+  Replace DashboardWidgetAdmin with widget_action decorator. (no backward compatibility)
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Fix mobile view.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
               
                 <section id="v0_4_1">
                 <h3>v0.4.1</h3>

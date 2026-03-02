@@ -8,9 +8,19 @@ import jwt
 import pytest
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.schemas import ExportFormat, ExportInputSchema, SignInInputSchema
+from fastadmin.api.schemas import (
+    ExportFormat,
+    ExportInputSchema,
+    SignInInputSchema,
+)
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
-from fastadmin.models.base import admin_dashboard_widgets
+from fastadmin.models.decorators import widget_action
+from fastadmin.models.schemas import (
+    WidgetActionChartProps,
+    WidgetActionInputSchema,
+    WidgetActionResponseSchema,
+    WidgetActionType,
+)
 from fastadmin.settings import settings
 
 
@@ -36,57 +46,139 @@ async def test_sign_in_converts_uuid_to_string(monkeypatch):
     assert payload["user_id"] == str(user_id)
 
 
-async def test_dashboard_widget_with_sync_get_data(monkeypatch):
+async def test_widget_action_with_sync_handler(monkeypatch):
+    """widget_action supports sync handlers decorated with @widget_action."""
+
     monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
 
-    class SyncWidget:
-        def get_data(self, min_x_field=None, max_x_field=None, period_x_field=None):
-            return {
-                "results": [{"x": "A", "y": 1}],
-                "min_x_field": min_x_field,
-                "max_x_field": max_x_field,
-                "period_x_field": period_x_field,
-            }
-
-    monkeypatch.setitem(admin_dashboard_widgets, "SyncWidget", SyncWidget())
-    result = await ApiService().dashboard_widget(
-        "sid",
-        "SyncWidget",
-        min_x_field="a",
-        max_x_field="b",
-        period_x_field="month",
-    )
-    assert result["results"] == [{"x": "A", "y": 1}]
-
-
-async def test_dashboard_widget_binds_request_and_user_context(monkeypatch):
-    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
     current_user = {"id": 1, "username": "admin"}
-    monkeypatch.setattr(
-        "fastadmin.api.service.get_admin_model",
-        lambda _model: SimpleNamespace(get_obj=AsyncMock(return_value=current_user)),
-    )
+    admin_user_model = SimpleNamespace(get_obj=AsyncMock(return_value=current_user))
 
-    class SyncWidget:
+    class Admin:
+        widget_actions = ("sales_chart",)
+
         def __init__(self):
-            self.request = None
-            self.user = None
+            self.context = []
 
         def set_context(self, request=None, user=None):
-            self.request = request
-            self.user = user
+            self.context.append((request, user))
 
-        def get_data(self, min_x_field=None, max_x_field=None, period_x_field=None):
-            return {"results": [{"x": "A", "y": 1}]}
+        @widget_action(
+            widget_action_type=WidgetActionType.ChartLine,
+            widget_action_props=WidgetActionChartProps(x_field="x", y_field="y"),
+            tab="Analytics",
+            title="Sales over time",
+            description="Line chart of sales",
+        )
+        def sales_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+            assert isinstance(payload, WidgetActionInputSchema)
+            return WidgetActionResponseSchema(data=[])
 
-    widget = SyncWidget()
-    monkeypatch.setitem(admin_dashboard_widgets, "SyncWidgetContext", widget)
+    admin = Admin()
+
+    def fake_get_admin_model(model_name):
+        if model_name == settings.ADMIN_USER_MODEL:
+            return admin_user_model
+        return None
+
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", fake_get_admin_model)
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin)
 
     request = object()
-    result = await ApiService().dashboard_widget("sid", "SyncWidgetContext", request=request)
-    assert result["results"] == [{"x": "A", "y": 1}]
-    assert widget.request is request
-    assert widget.user == current_user
+    result = await ApiService().widget_action(
+        "sid",
+        "Event",
+        "sales_chart",
+        WidgetActionInputSchema(query=[]),
+        request=request,
+    )
+    assert isinstance(result, WidgetActionResponseSchema)
+    # set_context was bound with request and authenticated user
+    assert admin.context == [(request, current_user)]
+
+
+async def test_widget_action_not_in_widget_actions(monkeypatch):
+    """widget_action raises 422 when name is not listed in widget_actions."""
+
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+
+    current_user = {"id": 1, "username": "admin"}
+    admin_user_model = SimpleNamespace(get_obj=AsyncMock(return_value=current_user))
+    admin_model = SimpleNamespace(widget_actions=(), set_context=Mock())
+
+    def fake_get_admin_model(model_name):
+        if model_name == settings.ADMIN_USER_MODEL:
+            return admin_user_model
+        return None
+
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", fake_get_admin_model)
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().widget_action(
+            "sid",
+            "Event",
+            "unknown_widget",
+            WidgetActionInputSchema(query=[]),
+        )
+    assert exc_info.value.status_code == 422
+    assert exc_info.value.detail == "unknown_widget action is not in widget_actions setting."
+
+
+async def test_widget_action_not_registered(monkeypatch):
+    """widget_action raises 422 when attribute is missing or not decorated."""
+
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+
+    current_user = {"id": 1, "username": "admin"}
+    admin_user_model = SimpleNamespace(get_obj=AsyncMock(return_value=current_user))
+    # sales_chart is listed but underlying attribute is missing -> not registered
+    admin_model = SimpleNamespace(widget_actions=("sales_chart",), set_context=Mock())
+
+    def fake_get_admin_model(model_name):
+        if model_name == settings.ADMIN_USER_MODEL:
+            return admin_user_model
+        return None
+
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", fake_get_admin_model)
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().widget_action(
+            "sid",
+            "Event",
+            "sales_chart",
+            WidgetActionInputSchema(query=[]),
+        )
+    assert exc_info.value.status_code == 422
+    assert exc_info.value.detail == "sales_chart action is not registered."
+
+
+async def test_widget_action_model_not_registered(monkeypatch):
+    """widget_action raises 404 when model is not registered."""
+
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+
+    current_user = {"id": 1, "username": "admin"}
+    admin_user_model = SimpleNamespace(get_obj=AsyncMock(return_value=current_user))
+
+    def fake_get_admin_model(model_name):
+        if model_name == settings.ADMIN_USER_MODEL:
+            return admin_user_model
+        return None
+
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", fake_get_admin_model)
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: None)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().widget_action(
+            "sid",
+            "Event",
+            "sales_chart",
+            WidgetActionInputSchema(query=[]),
+        )
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "Event model is not registered."
 
 
 async def test_list_skips_excluded_filter_fields(monkeypatch):
