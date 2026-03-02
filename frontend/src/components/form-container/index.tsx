@@ -7,6 +7,7 @@ import { InlineWidget } from "@/components/inline-widget";
 import { getTitleFromFieldName, getTitleFromModel } from "@/helpers/title";
 import { isJson, isSlug } from "@/helpers/transform";
 import { getWidgetCls } from "@/helpers/widgets";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   EFieldWidgetType,
   type IAddConfigurationField,
@@ -41,6 +42,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
   initialValues,
 }) => {
   const { t: _t } = useTranslation("FormContainer");
+  const isMobile = useIsMobile();
 
   const [activeKey, setActiveKey] = useState<string[]>(
     (modelConfiguration?.fieldsets || [])
@@ -285,7 +287,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
           <Divider />
         </>
       )}
-      <Row gutter={[32, 32]}>
+      <Row gutter={isMobile ? [16, 16] : [32, 32]}>
         <Col
           xs={24}
           xl={mode === "inline-add" || mode === "inline-change" ? 24 : 12}

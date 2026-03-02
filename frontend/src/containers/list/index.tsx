@@ -218,7 +218,13 @@ export const List: React.FC = () => {
       }
       viewOnSite={modelConfiguration?.view_on_site}
       headerActions={
-        <Row style={{ marginTop: 10, marginBottom: 10 }} gutter={[8, 8]}>
+        <Row
+          style={{
+            marginTop: isMobile ? 4 : 10,
+            marginBottom: isMobile ? 8 : 10,
+          }}
+          gutter={[8, 8]}
+        >
           {(modelConfiguration?.actions || []).length > 0 &&
             modelConfiguration?.actions_on_top && (
               <Col>

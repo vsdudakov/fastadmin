@@ -249,11 +249,11 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
             </Row>
             <pre
               style={{
-                marginTop: 16,
+                marginTop: 12,
                 maxHeight: 240,
                 overflow: "auto",
                 background: "#fafafa",
-                padding: 12,
+                padding: 8,
                 borderRadius: 4,
                 border: "1px solid #f0f0f0",
               }}

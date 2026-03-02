@@ -5,6 +5,7 @@ import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/constants/routes";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { SignInUserContext } from "@/providers/SignInUserProvider";
 
 interface ISignInContainer {
@@ -18,6 +19,7 @@ export const SignInContainer: React.FC<ISignInContainer> = ({
 }) => {
   const { signedIn } = useContext(SignInUserContext);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (signedIn) {
@@ -31,7 +33,7 @@ export const SignInContainer: React.FC<ISignInContainer> = ({
         minHeight: "100vh",
         background:
           "linear-gradient(160deg, #f0f5ff 0%, #f5f5f5 50%, #e8f4f8 100%)",
-        padding: 24,
+        padding: isMobile ? 16 : 24,
       }}
     >
       <Helmet defaultTitle={title}>

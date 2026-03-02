@@ -8,6 +8,7 @@ import { SignInContainer } from "@/components/sign-in-container";
 import { postFetcher } from "@/fetchers/fetchers";
 import { handleError } from "@/helpers/forms";
 import { getTitleFromFieldName } from "@/helpers/title";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 import { SignInUserContext } from "@/providers/SignInUserProvider";
 
@@ -18,6 +19,7 @@ export const SignIn: React.FC = () => {
   } = theme.useToken();
   const { configuration } = useContext(ConfigurationContext);
   const { signedInUserRefetch } = useContext(SignInUserContext);
+  const isMobile = useIsMobile();
   const { t: _t } = useTranslation("SignIn");
 
   const { mutate: mutateSignIn, isPending: loadingSignIn } = useMutation({
@@ -39,9 +41,11 @@ export const SignIn: React.FC = () => {
       <Card
         style={{
           maxWidth: 420,
-          margin: "0 auto",
+          margin: isMobile ? "0 auto" : "24px auto",
           borderRadius: 12,
-          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.08)",
+          boxShadow: isMobile
+            ? "0 4px 16px rgba(0, 0, 0, 0.06)"
+            : "0 8px 24px rgba(0, 0, 0, 0.08)",
           border: "none",
         }}
       >
@@ -50,8 +54,8 @@ export const SignIn: React.FC = () => {
             <Space
               direction="vertical"
               align="center"
-              size="middle"
-              style={{ width: "100%", marginBottom: 32 }}
+              size="small"
+              style={{ width: "100%", marginBottom: isMobile ? 20 : 32 }}
             >
               <Image
                 src={`${window.SERVER_DOMAIN ?? ""}${configuration.site_sign_in_logo ?? ""}`}

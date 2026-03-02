@@ -150,3 +150,52 @@ code {
   border-bottom-left-radius: var(--admin-radius-sm);
   border-bottom-right-radius: var(--admin-radius-sm);
 }
+
+/* Mobile-first spacing adjustments */
+@media (max-width: 768px) {
+  body {
+    padding: 0;
+  }
+
+  /* Reduce global layout padding on small screens */
+  .ant-layout {
+    padding: var(--admin-spacing-xs) !important;
+  }
+
+  .ant-layout-content {
+    padding: var(--admin-spacing-xs) !important;
+  }
+
+  /* Tighter card padding and radius for mobile */
+  .ant-card {
+    border-radius: var(--admin-radius-sm);
+  }
+
+  .ant-card-head {
+    padding-inline: var(--admin-spacing-sm);
+    padding-block: var(--admin-spacing-xs);
+  }
+
+  .ant-card-body {
+    padding: var(--admin-spacing-sm);
+  }
+
+  /* Tighter form spacing for mobile ergonomics */
+  .ant-form-vertical .ant-form-item {
+    margin-bottom: 12px;
+  }
+
+  .ant-form-item-label > label {
+    margin-bottom: 4px;
+  }
+
+  /* Reduce table density slightly on mobile */
+  .ant-table-wrapper .ant-table {
+    border-radius: var(--admin-radius-sm);
+  }
+
+  .ant-table-wrapper .ant-table-thead > tr > th,
+  .ant-table-wrapper .ant-table-tbody > tr > td {
+    padding: 8px 12px;
+  }
+}

@@ -135,15 +135,15 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
         <Header
           style={{
             background: colorPrimary,
-            paddingInline: 24,
-            height: 56,
-            lineHeight: "56px",
+            paddingInline: isMobile ? 0 : 20,
+            height: isMobile ? 48 : 56,
+            lineHeight: isMobile ? "48px" : "56px",
             boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
           }}
         >
           <Row justify="space-between" align="middle">
             <Col>
-              <Space size="middle">
+              <Space size={isMobile ? 8 : 16}>
                 {isMobile && (
                   <Menu
                     style={{ background: "transparent", minWidth: 0 }}
@@ -196,7 +196,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
               </Space>
             </Col>
             <Col>
-              <Space size="middle">
+              <Space size={isMobile ? 8 : 16}>
                 {!isMobile && (
                   <span
                     style={{
@@ -273,11 +273,16 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
               />
             </Sider>
           )}
-          <Layout style={{ padding: 24, minHeight: "calc(100vh - 56px)" }}>
+          <Layout
+            style={{
+              padding: isMobile ? 8 : 24,
+              minHeight: "calc(100vh - 56px)",
+            }}
+          >
             <Row
               justify="space-between"
               align="middle"
-              style={{ marginBottom: 16 }}
+              style={{ marginBottom: isMobile ? 8 : 16 }}
             >
               <Col>{breadcrumbs}</Col>
               {viewOnSite && (
@@ -305,9 +310,11 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                 </Row>
               }
               style={{
-                marginTop: 0,
-                borderRadius: 8,
-                boxShadow: "0 1px 4px rgba(0, 0, 0, 0.06)",
+                marginTop: isMobile ? 4 : 0,
+                borderRadius: isMobile ? 6 : 8,
+                boxShadow: isMobile
+                  ? "0 1px 3px rgba(0, 0, 0, 0.05)"
+                  : "0 1px 4px rgba(0, 0, 0, 0.06)",
               }}
             >
               <Skeleton loading={isLoading} active={true}>
