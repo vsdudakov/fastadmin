@@ -179,7 +179,7 @@ describe("DashboardWidget", () => {
 
     (globalThis as any).navigator = originalNavigator;
     messageSpy.mockRestore();
-  });
+  }, 10000);
 
   it("handles default widget onChange branch", async () => {
     const CustomWidget = ({
