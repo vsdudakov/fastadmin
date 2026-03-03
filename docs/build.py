@@ -313,24 +313,6 @@ def get_sections():
             "url": "#settings",
         },
         {
-            "name": "Dashboard Widget Admins",
-            "url": "#dashboard-widget-admins",
-            "children": [
-                {
-                    "name": "Registering Widgets",
-                    "url": "#registering-widgets",
-                },
-                {
-                    "name": "Methods and Attributes",
-                    "url": "#widget-methods-and-attributes",
-                },
-                {
-                    "name": "Chart Types",
-                    "url": "#widget-chart-types",
-                },
-            ],
-        },
-        {
             "name": "Model Admins",
             "url": "#model-admins",
             "children": [
@@ -363,6 +345,24 @@ def get_sections():
                 {
                     "name": "Methods and Attributes",
                     "url": "#inline-methods-and-attributes",
+                },
+            ],
+        },
+        {
+            "name": "Dashboard Widget Admins",
+            "url": "#dashboard-widget-admins",
+            "children": [
+                {
+                    "name": "Registering Widgets",
+                    "url": "#registering-widgets",
+                },
+                {
+                    "name": "Methods and Attributes",
+                    "url": "#widget-methods-and-attributes",
+                },
+                {
+                    "name": "Chart Types",
+                    "url": "#widget-chart-types",
                 },
             ],
         },
@@ -501,14 +501,7 @@ export ADMIN_SECRET_KEY=secret_key
                             "content": [
                                 {
                                     "type": "code-python",
-                                    "content": """from fastapi import FastAPI
-
-from fastadmin import fastapi_app as admin_app
-
-app = FastAPI()
-
-app.mount("/admin", admin_app)
-""",
+                                    "content": read_example("examples/fastapi_tortoiseorm/example.py"),
                                 }
                             ],
                         },
@@ -518,15 +511,7 @@ app.mount("/admin", admin_app)
                             "content": [
                                 {
                                     "type": "code-python",
-                                    "content": """from django.urls import path
-
-from fastadmin import get_django_admin_urls as get_admin_urls
-from fastadmin.settings import settings
-
-urlpatterns = [
-    path(f"{settings.ADMIN_PREFIX}/", get_admin_urls()),
-]
-""",
+                                    "content": read_example("examples/django_djangoorm/dev/urls.py"),
                                 }
                             ],
                         },
@@ -536,14 +521,7 @@ urlpatterns = [
                             "content": [
                                 {
                                     "type": "code-python",
-                                    "content": """from flask import Flask
-
-from fastadmin import flask_app as admin_app
-
-app = Flask(__name__)
-
-app.register_blueprint(admin_app, url_prefix="/admin")
-""",
+                                    "content": read_example("examples/flask_sqlalchemy/example.py"),
                                 }
                             ],
                         },
