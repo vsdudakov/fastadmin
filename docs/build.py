@@ -302,10 +302,6 @@ def get_sections():
                     "name": "Installation",
                     "url": "#installation",
                 },
-                {
-                    "name": "Quick Tutorial",
-                    "url": "#quick_tutorial",
-                },
             ],
         },
         {
@@ -483,99 +479,6 @@ export ADMIN_USER_MODEL=User
 export ADMIN_USER_MODEL_USERNAME_FIELD=username
 export ADMIN_SECRET_KEY=secret_key
 """,
-                },
-            ]
-        case "#quick_tutorial":
-            return [
-                {
-                    "type": "text-lead",
-                    "content": f"Set up {NAME} for your framework",
-                },
-                {
-                    "type": "tabs",
-                    "id": "setup_framework",
-                    "content": [
-                        {
-                            "name": "FastAPI",
-                            "id": "fastapi",
-                            "content": [
-                                {
-                                    "type": "code-python",
-                                    "content": read_example("examples/fastapi_tortoiseorm/example.py"),
-                                }
-                            ],
-                        },
-                        {
-                            "name": "Django",
-                            "id": "django",
-                            "content": [
-                                {
-                                    "type": "code-python",
-                                    "content": read_example("examples/django_djangoorm/dev/urls.py"),
-                                }
-                            ],
-                        },
-                        {
-                            "name": "Flask",
-                            "id": "flask",
-                            "content": [
-                                {
-                                    "type": "code-python",
-                                    "content": read_example("examples/flask_sqlalchemy/example.py"),
-                                }
-                            ],
-                        },
-                    ],
-                },
-                {
-                    "type": "text-lead",
-                    "content": "Register ORM models",
-                },
-                {
-                    "type": "tabs",
-                    "id": "register_orm_models",
-                    "content": [
-                        {
-                            "name": "Tortoise ORM",
-                            "id": "tortoise_orm",
-                            "content": [
-                                {
-                                    "type": "code-python",
-                                    "content": read_example("examples/fastapi_tortoiseorm/models.py"),
-                                }
-                            ],
-                        },
-                        {
-                            "name": "Django ORM",
-                            "id": "django_orm",
-                            "content": [
-                                {
-                                    "type": "code-python",
-                                    "content": read_example("examples/django_djangoorm/orm/models.py"),
-                                }
-                            ],
-                        },
-                        {
-                            "name": "SQLAlchemy",
-                            "id": "sql_alchemy",
-                            "content": [
-                                {
-                                    "type": "code-python",
-                                    "content": read_example("examples/fastapi_sqlalchemy/models.py"),
-                                }
-                            ],
-                        },
-                        {
-                            "name": "Pony ORM",
-                            "id": "pony_orm",
-                            "content": [
-                                {
-                                    "type": "code-python",
-                                    "content": read_example("examples/fastapi_ponyorm/models.py"),
-                                }
-                            ],
-                        },
-                    ],
                 },
             ]
         # settings
