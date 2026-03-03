@@ -380,7 +380,7 @@
                     </li>
                     <li>
                       <strong>Updated:</strong>
-                      02 March 2026
+                      03 March 2026
                     </li>
                   </ul>
                 </div>
@@ -906,64 +906,89 @@ app.register_blueprint(admin_app, url_prefix="/admin")
 
 <pre>
   <code class="language-python">
-import typing as tp
-from uuid import UUID
+from enum import Enum
 
-import bcrypt
 from tortoise import fields
 from tortoise.models import Model
 
-from fastadmin import TortoiseModelAdmin, WidgetType, register
+
+class EventTypeEnum(str, Enum):
+    PRIVATE = "PRIVATE"
+    PUBLIC = "PUBLIC"
 
 
-class User(Model):
-    username = fields.CharField(max_length=255, unique=True)
-    hash_password = fields.CharField(max_length=255)
+class BaseModel(Model):
+    id = fields.IntField(pk=True)
+    created_at = fields.DatetimeField(auto_now_add=True)
+    updated_at = fields.DatetimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class User(BaseModel):
+    username = fields.CharField(max_length=255)
+    password = fields.CharField(max_length=255)
     is_superuser = fields.BooleanField(default=False)
-    is_active = fields.BooleanField(default=False)
+
     avatar_url = fields.TextField(null=True)
 
     def __str__(self):
         return self.username
 
+    class Meta:
+        table = "user"
 
-@register(User)
-class UserAdmin(TortoiseModelAdmin):
-    exclude = ("hash_password",)
-    list_display = ("id", "username", "is_superuser", "is_active")
-    list_display_links = ("id", "username")
-    list_filter = ("id", "username", "is_superuser", "is_active")
-    search_fields = ("username",)
-    formfield_overrides: tp.Any = {  # noqa: RUF012
-        "username": (WidgetType.SlugInput, {"required": True}),
-        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
-        "avatar_url": (
-            WidgetType.UploadImage,
-            {
-                "required": False,
-                # "disableCropImage": True,  # optional: disable image cropping
-            },
-        ),
-    }
 
-    async def authenticate(self, username: str, password: str) -> int | None:
-        user = await self.model_cls.filter(username=username, is_superuser=True).first()
-        if not user:
-            return None
-        if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
-            return None
-        return user.id
+class UserAttachment(BaseModel):
+    user = fields.ForeignKeyField("models.User", related_name="attachments", on_delete=fields.CASCADE)
+    attachment_url = fields.TextField()
 
-    async def change_password(self, id: UUID | int | str, password: str) -> None:
-        user = await self.model_cls.filter(id=id).first()
-        if not user:
-            return
-        user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-        await user.save(update_fields=("hash_password",))
 
-    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
-        # save file to media directory or s3/filestorage, then return the file url
-        return f"/media/{file_name}"
+class Tournament(BaseModel):
+    name = fields.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        table = "tournament"
+
+
+class BaseEvent(BaseModel):
+    name = fields.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        table = "base_event"
+
+
+class Event(BaseModel):
+    base = fields.OneToOneField("models.BaseEvent", related_name="event", null=True, on_delete=fields.SET_NULL)
+    name = fields.CharField(max_length=255)
+
+    tournament = fields.ForeignKeyField("models.Tournament", related_name="events", on_delete=fields.CASCADE)
+    participants = fields.ManyToManyField("models.User", related_name="events", through="event_participants")
+
+    rating = fields.IntField(default=0)
+    description = fields.TextField(null=True)
+    event_type = fields.CharEnumField(EventTypeEnum, max_length=255, default=EventTypeEnum.PUBLIC)
+    is_active = fields.BooleanField(default=True)
+    start_time = fields.DatetimeField(null=True)
+    date = fields.DateField(null=True)
+    latitude = fields.FloatField(null=True)
+    longitude = fields.FloatField(null=True)
+    price = fields.DecimalField(max_digits=10, decimal_places=2, null=True)
+
+    json = fields.JSONField(null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        table = "event"
 
   </code>
 </pre>
@@ -988,41 +1013,162 @@ class UserAdmin(TortoiseModelAdmin):
 
 <pre>
   <code class="language-python">
+import uuid
+
 from django.db import models
 
-from fastadmin import DjangoModelAdmin, register
+from fastadmin import DjangoInlineModelAdmin, DjangoModelAdmin, WidgetType, action, display, register
+
+EventTypeEnum = (
+    ("PRIVATE", "PRIVATE"),
+    ("PUBLIC", "PUBLIC"),
+)
 
 
-class User(models.Model):
-    username = models.CharField(max_length=255, unique=True)
-    hash_password = models.CharField(max_length=255)
+class BaseModel(models.Model):
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class User(BaseModel):
+    username = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
     is_superuser = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
+
     avatar_url = models.ImageField(null=True)
+    attachment_url = models.FileField()
 
     def __str__(self):
         return self.username
 
+    class Meta:
+        db_table = "user"
+
+
+class Tournament(BaseModel):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "tournament"
+
+
+class BaseEvent(BaseModel):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "base_event"
+
+
+class Event(BaseModel):
+    base = models.OneToOneField(BaseEvent, related_name="event", null=True, on_delete=models.SET_NULL)
+    name = models.CharField(max_length=255)
+
+    tournament = models.ForeignKey(Tournament, related_name="events", on_delete=models.CASCADE)
+    participants = models.ManyToManyField(User, related_name="events")
+
+    rating = models.IntegerField(default=0)
+    description = models.TextField(null=True)
+    event_type = models.CharField(max_length=255, default="PUBLIC", choices=EventTypeEnum)
+    is_active = models.BooleanField(default=True)
+    start_time = models.TimeField(null=True)
+    date = models.DateField(null=True)
+    latitude = models.FloatField(null=True)
+    longitude = models.FloatField(null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+
+    json = models.JSONField(null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "event"
+
 
 @register(User)
-class UserAdmin(DjangoModelAdmin):
-    exclude = ("hash_password",)
-    list_display = ("id", "username", "is_superuser", "is_active")
+class UserModelAdmin(DjangoModelAdmin):
+    list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
-    list_filter = ("id", "username", "is_superuser", "is_active")
+    list_filter = ("id", "username", "is_superuser")
     search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "username": (WidgetType.SlugInput, {"required": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+    }
 
-    def authenticate(self, username, password):
-        obj = User.objects.filter(username=username, is_superuser=True).first()
+    def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
+        obj = self.model_cls.objects.filter(username=username, is_superuser=True).first()
         if not obj:
             return None
-        if not obj.check_password(password):
-            return None
+        # if not obj.check_password(password):
+        #     return None
         return obj.id
 
-    def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
-        # save file to media directory or s3/filestorage, then return the file url
+    def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        user = self.model_cls.objects.filter(id=id).first()
+        if not user:
+            return
+        # direct saving password is only for tests - use hash
+        user.password = password
+        user.save()
+
+    def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> str:
+        # save file to media directory or to s3/filestorage here
         return f"/media/{file_name}"
+
+
+class EventInlineModelAdmin(DjangoInlineModelAdmin):
+    model = Event
+
+
+@register(Tournament)
+class TournamentModelAdmin(DjangoModelAdmin):
+    list_display = ("id", "name")
+    inlines = (EventInlineModelAdmin,)
+
+
+@register(BaseEvent)
+class BaseEventModelAdmin(DjangoModelAdmin):
+    pass
+
+
+@register(Event)
+class EventModelAdmin(DjangoModelAdmin):
+    actions = ("make_is_active", "make_is_not_active")
+    list_display = ("id", "tournament", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_filter = ("tournament", "event_type", "is_active")
+    search_fields = ("name", "tournament__name")
+
+    @action(description="Make event active")
+    def make_is_active(self, ids):
+        self.model_cls.objects.filter(id__in=ids).update(is_active=True)
+
+    @action
+    def make_is_not_active(self, ids):
+        self.model_cls.objects.filter(id__in=ids).update(is_active=False)
+
+    @display
+    def started(self, obj):
+        return bool(obj.start_time)
+
+    @display()
+    def name_with_price(self, obj):
+        return f"{obj.name} - {obj.price}"
 
   </code>
 </pre>
@@ -1047,74 +1193,113 @@ class UserAdmin(DjangoModelAdmin):
 
 <pre>
   <code class="language-python">
-import uuid
+import datetime
+import typing as tp
+from decimal import Decimal
+from enum import Enum
 
-import bcrypt
-from sqlalchemy import Boolean, Integer, String, Text, select, update
+from sqlalchemy import JSON, Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Table, Text, Time
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-from fastadmin import SqlAlchemyModelAdmin, WidgetType, register
-
-sqlalchemy_engine = create_async_engine(
-    "sqlite+aiosqlite:///:memory:",
-    echo=True,
-)
+sqlalchemy_engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=True)
 sqlalchemy_sessionmaker = async_sessionmaker(sqlalchemy_engine, expire_on_commit=False)
+
+
+class EventTypeEnum(str, Enum):
+    PRIVATE = "PRIVATE"
+    PUBLIC = "PUBLIC"
 
 
 class Base(DeclarativeBase):
     pass
 
 
-class User(Base):
-    __tablename__ = "user"
+class BaseModel(Base):
+    __abstract__ = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
+    )
+
+
+user_m2m_event = Table(
+    "event_participants",
+    Base.metadata,
+    Column("event_id", ForeignKey("event.id"), primary_key=True),
+    Column("user_id", ForeignKey("user.id"), primary_key=True),
+)
+
+
+class User(BaseModel):
+    __tablename__ = "user"
+
     username: Mapped[str] = mapped_column(String(length=255), nullable=False)
-    hash_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    password: Mapped[str] = mapped_column(String(length=255), nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    events: Mapped[list["Event"]] = relationship(secondary=user_m2m_event, back_populates="participants")
     avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    attachment_url: Mapped[str] = mapped_column(Text, nullable=False)
 
     def __str__(self):
         return self.username
 
 
-@register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
-class UserAdmin(SqlAlchemyModelAdmin):
-    exclude = ("hash_password",)
-    list_display = ("id", "username", "is_superuser", "is_active")
-    list_display_links = ("id", "username")
-    list_filter = ("id", "username", "is_superuser", "is_active")
-    search_fields = ("username",)
-    formfield_overrides = {  # noqa: RUF012
-        "avatar_url": (WidgetType.UploadImage, {"required": False}),
-    }
+class Tournament(BaseModel):
+    __tablename__ = "tournament"
 
-    async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
-        sessionmaker = self.get_sessionmaker()
-        async with sessionmaker() as session:
-            query = select(self.model_cls).filter_by(username=username, password=password, is_superuser=True)
-            result = await session.scalars(query)
-            obj = result.first()
-            if not obj:
-                return None
-            if not bcrypt.checkpw(password.encode(), obj.hash_password.encode()):
-                return None
-            return obj.id
+    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
 
-    async def change_password(self, id: uuid.UUID | int | str, password: str) -> None:
-        sessionmaker = self.get_sessionmaker()
-        async with sessionmaker() as session:
-            hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-            query = update(self.model_cls).where(User.id.in_([id])).values(hash_password=hash_password)
-            await session.execute(query)
-            await session.commit()
+    events: Mapped[list["Event"]] = relationship(back_populates="tournament")
 
-    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
-        # save file to media directory or s3/filestorage, then return the file url
-        return f"/media/{file_name}"
+    def __str__(self):
+        return self.name
+
+
+class BaseEvent(BaseModel):
+    __tablename__ = "base_event"
+
+    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    event: Mapped[tp.Optional["Event"]] = relationship(back_populates="base")
+
+    def __str__(self):
+        return self.name
+
+
+class Event(BaseModel):
+    __tablename__ = "event"
+
+    base_id: Mapped[int | None] = mapped_column(ForeignKey("base_event.id"), nullable=True)
+    base: Mapped[tp.Optional["BaseEvent"]] = relationship(back_populates="event")
+
+    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
+
+    tournament_id: Mapped[int | None] = mapped_column(ForeignKey("tournament.id"), nullable=False)
+    tournament: Mapped[tp.Optional["Tournament"]] = relationship(back_populates="events")
+
+    participants: Mapped[list["User"]] = relationship(secondary=user_m2m_event, back_populates="events")
+
+    rating: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=False)
+    event_type: Mapped[EventTypeEnum] = mapped_column(default=EventTypeEnum.PUBLIC)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    start_time: Mapped[datetime.time | None] = mapped_column(Time, nullable=True)
+    date: Mapped[datetime.date | None] = mapped_column(Date, nullable=True)
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    price: Mapped[Decimal | None] = mapped_column(
+        Float(asdecimal=True), nullable=True
+    )  # max_digits=10, decimal_places=2
+
+    json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+    def __str__(self):
+        return self.name
 
   </code>
 </pre>
@@ -1139,62 +1324,91 @@ class UserAdmin(SqlAlchemyModelAdmin):
 
 <pre>
   <code class="language-python">
-import uuid
+from datetime import UTC, date, datetime, time
+from decimal import Decimal
+from enum import Enum
 
-import bcrypt
-from pony.orm import Database, LongStr, Optional, PrimaryKey, Required, commit, db_session
-
-from fastadmin import PonyORMModelAdmin, WidgetType, register
+from pony.orm import Database, Json, LongStr, Optional, PrimaryKey, Required, Set
 
 db = Database()
-db.bind(provider="sqlite", filename=":memory:", create_db=True)
 
 
-class User(db.Entity):  # type: ignore [name-defined]
+class EventTypeEnum(str, Enum):
+    PRIVATE = "PRIVATE"
+    PUBLIC = "PUBLIC"
+
+
+class BaseModel:
+    # id = PrimaryKey(int, auto=True)
+    created_at = Required(datetime, default=datetime.utcnow)
+    updated_at = Required(datetime, default=datetime.utcnow)
+
+    def before_update(self):
+        self.updated_at = datetime.now(tz=UTC)
+
+
+class User(db.Entity, BaseModel):
     _table_ = "user"
-    id = PrimaryKey(int, auto=True)
-    username = Required(str)
-    hash_password = Required(str)
+
+    username = Required(str, max_len=255)
+    password = Required(str, max_len=255)
     is_superuser = Required(bool, default=False)
-    is_active = Required(bool, default=False)
+
     avatar_url = Optional(LongStr, nullable=True)
+    attachment_url = Required(LongStr)
+
+    events = Set("Event", table="event_participants", column="event_id")
 
     def __str__(self):
         return self.username
 
 
-@register(User)
-class UserAdmin(PonyORMModelAdmin):
-    exclude = ("hash_password",)
-    list_display = ("id", "username", "is_superuser", "is_active")
-    list_display_links = ("id", "username")
-    list_filter = ("id", "username", "is_superuser", "is_active")
-    search_fields = ("username",)
-    formfield_overrides = {  # noqa: RUF012
-        "avatar_url": (WidgetType.UploadImage, {"required": False}),
-    }
+class Tournament(db.Entity, BaseModel):
+    _table_ = "tournament"
 
-    @db_session
-    def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
-        obj = next((f for f in User.select(username=username, password=password, is_superuser=True)), None)  # fmt: skip
-        if not obj:
-            return None
-        if not bcrypt.checkpw(password.encode(), obj.hash_password.encode()):
-            return None
-        return obj.id
+    name = Required(str, max_len=255)
 
-    @db_session
-    def change_password(self, id: uuid.UUID | int, password: str) -> None:
-        obj = next((f for f in self.model_cls.select(id=id)), None)
-        if not obj:
-            return
-        hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-        obj.hash_password = hash_password
-        commit()
+    events = Set("Event")
 
-    def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:  # type: ignore[override]
-        # save file to media directory or s3/filestorage, then return the file url
-        return f"/media/{file_name}"
+    def __str__(self):
+        return self.name
+
+
+class BaseEvent(db.Entity, BaseModel):
+    _table_ = "base_event"
+
+    id = PrimaryKey(int, auto=True)
+    name = Required(str, max_len=255)
+
+    event = Optional("Event")
+
+    def __str__(self):
+        return self.name
+
+
+class Event(db.Entity, BaseModel):
+    _table_ = "event"
+
+    base = Optional(BaseEvent, column="base_id")
+    name = Required(str)
+
+    tournament = Required(Tournament, column="tournament_id")
+    participants = Set(User, table="event_participants", column="user_id")
+
+    rating = Required(int, default=0)
+    description = Optional(LongStr)
+    event_type = Required(EventTypeEnum, default=EventTypeEnum.PUBLIC)
+    is_active = Required(bool, default=True)
+    start_time = Optional(time)
+    date = Optional(date)
+    latitude = Optional(float)
+    longitude = Optional(float)
+    price = Optional(Decimal)
+
+    json = Optional(Json)
+
+    def __str__(self):
+        return self.name
 
   </code>
 </pre>
@@ -1353,6 +1567,89 @@ class Settings:
               
                 <section id="registering-widgets">
                 <h3>Registering Widgets</h3>
+
+                
+                  
+
+
+<p class="lead">
+  To show dashboard widgets, define @widget_action methods on your model admin and list their method names in the model admin's widget_actions attribute.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+
+
+
+
+
+
+<p class="alert alert-warning">
+  If you forget to add the method name to widget_actions, the widget will not appear on the dashboard.
+</p>
+
+
+
+
+
+
+
+                
+                  
+
+
+
+
+
+
+
+
+
+
+<pre>
+  <code class="language-python">
+from fastadmin import TortoiseModelAdmin, widget_action
+from fastadmin.models.schemas import (
+    WidgetActionChartProps,
+    WidgetActionInputSchema,
+    WidgetActionResponseSchema,
+    WidgetActionType,
+)
+
+
+class UserAdmin(TortoiseModelAdmin):
+    # Register widgets by method name
+    widget_actions = ("users_chart",)
+
+    @widget_action(
+        widget_action_type=WidgetActionType.ChartLine,
+        widget_action_props=WidgetActionChartProps(x_field="x", y_field="y"),
+        tab="Analytics",
+        title="Users over time",
+    )
+    async def users_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        # Build and return data for the chart
+        return WidgetActionResponseSchema(
+            data=[
+                {"x": "2026-01-01", "y": 10},
+                {"x": "2026-01-02", "y": 15},
+            ],
+        )
+
+  </code>
+</pre>
+
+
 
                 
                 </section>
@@ -1582,6 +1879,24 @@ class WidgetActionResponseSchema:
 
 
                 
+                  
+
+
+
+
+<p class="alert alert-info">
+  After defining a @widget_action method, add its name to the model admin's <code>widget_actions</code> attribute so that it is rendered on the dashboard.
+</p>
+
+
+
+
+
+
+
+
+
+                
                 </section>
 
               
@@ -1722,14 +2037,23 @@ class WidgetActionType(str, Enum):
 
 <pre>
   <code class="language-python">
-from uuid import UUID
+import os
+import uuid
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
-import bcrypt
-from tortoise import fields
-from tortoise.models import Model
+os.environ["ADMIN_USER_MODEL"] = "User"
+os.environ["ADMIN_USER_MODEL_USERNAME_FIELD"] = "username"
+os.environ["ADMIN_SECRET_KEY"] = "secret"
 
-from fastadmin import TortoiseModelAdmin, WidgetType, action, register, widget_action
-from fastadmin.models.schemas import (
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from models import BaseEvent, Event, Tournament, User, UserAttachment
+from tortoise.contrib.fastapi import RegisterTortoise
+
+from fastadmin import (
+    TortoiseInlineModelAdmin,
+    TortoiseModelAdmin,
     WidgetActionArgumentProps,
     WidgetActionChartProps,
     WidgetActionFilter,
@@ -1737,86 +2061,84 @@ from fastadmin.models.schemas import (
     WidgetActionProps,
     WidgetActionResponseSchema,
     WidgetActionType,
+    WidgetType,
+    action,
+    display,
+)
+from fastadmin import fastapi_app as admin_app
+from fastadmin import (
+    register,
+    widget_action,
 )
 
 
-class ModelUser(Model):
-    username = fields.CharField(max_length=255, unique=True)
-    hash_password = fields.CharField(max_length=255)
-    is_superuser = fields.BooleanField(default=False)
-    is_active = fields.BooleanField(default=False)
+class UserAttachmentModelInline(TortoiseInlineModelAdmin):
+    model = UserAttachment
+    formfield_overrides = {  # noqa: RUF012
+        "attachment_url": (
+            WidgetType.UploadFile,
+            {
+                "required": True,
+            },
+        ),
+    }
 
-    avatar_url = fields.TextField(null=True)
+    async def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> None:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
 
-    def __str__(self):
-        return self.username
 
-
-@register(ModelUser)
-class UserAdmin(TortoiseModelAdmin):
-    list_display = ("username", "is_superuser", "is_active")
-    list_display_links = ("username",)
-    list_filter = (
-        "username",
-        "is_superuser",
-        "is_active",
-    )
-    search_fields = (
-        "id",
-        "username",
-    )
-    fieldsets = (
-        (None, {"fields": ("username", "hash_password")}),
-        ("Permissions", {"fields": ("is_active", "is_superuser")}),
-    )
+@register(User)
+class UserModelAdmin(TortoiseModelAdmin):
+    list_display = ("id", "username", "is_superuser")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser")
+    search_fields = ("username",)
     formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
-        "hash_password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
         "avatar_url": (
             WidgetType.UploadImage,
             {
                 "required": False,
-                # "disableCropImage": True,  # optional: disable image cropping
+                # Disable crop image for upload field
+                # "disableCropImage": True,
             },
         ),
     }
-    actions = (
-        *TortoiseModelAdmin.actions,
-        "activate",
-        "deactivate",
-    )
+    inlines = (UserAttachmentModelInline,)
     widget_actions = (
-        "users_chart",
-        "users_action",
+        "sales_chart",
+        "sales_action",
     )
 
-    async def authenticate(self, username: str, password: str) -> int | None:
-        user = await self.model_cls.filter(username=username, is_superuser=True).first()
-        if not user:
+    async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
+        obj = await self.model_cls.filter(username=username, password=password, is_superuser=True).first()
+        if not obj:
             return None
-        if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
-            return None
-        return user.id
+        return obj.id
 
-    async def change_password(self, id: UUID | int | str, password: str) -> None:
+    async def change_password(self, id: uuid.UUID | int, password: str) -> None:
         user = await self.model_cls.filter(id=id).first()
         if not user:
             return
-        user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-        await user.save(update_fields=("hash_password",))
+        # direct saving password is only for tests - use hash
+        user.password = password
+        await user.save()
 
-    @action(description="Set as active")
-    async def activate(self, ids: list[int]) -> None:
-        await self.model_cls.filter(id__in=ids).update(is_active=True)
-
-    @action(description="Deactivate")
-    async def deactivate(self, ids: list[int]) -> None:
-        await self.model_cls.filter(id__in=ids).update(is_active=False)
-
-    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
-        # save file to media directory or s3/filestorage, then return the file url
-        url = f"/media/{file_name}"
-        return url
+    async def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> None:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
 
     @widget_action(
         widget_action_type=WidgetActionType.ChartLine,
@@ -1826,27 +2148,35 @@ class UserAdmin(TortoiseModelAdmin):
                 field_name="x",
                 widget_type=WidgetType.DatePicker,
             ),
+            WidgetActionFilter(
+                field_name="y",
+                widget_type=WidgetType.Select,
+                widget_props={
+                    "options": [
+                        {"label": "Sales", "value": "sales"},
+                    ],
+                },
+            ),
         ],
         tab="Analytics",
-        title="Users over time",
-        description="Line chart of active users over time",
+        title="Sales over time",
+        description="Line chart of sales",
         width=24,
     )
-    async def users_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
-        # In a real project you would aggregate using payload.query filters.
+    async def sales_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
         return WidgetActionResponseSchema(
             data=[
                 {
                     "x": "2026-01-01",
-                    "y": 10,
+                    "y": 100,
                 },
                 {
                     "x": "2026-01-02",
-                    "y": 15,
+                    "y": 200,
                 },
                 {
                     "x": "2026-01-03",
-                    "y": 7,
+                    "y": 300,
                 },
             ],
         )
@@ -1856,7 +2186,7 @@ class UserAdmin(TortoiseModelAdmin):
         widget_action_props=WidgetActionProps(
             arguments=[
                 WidgetActionArgumentProps(
-                    name="since",
+                    name="x",
                     widget_type=WidgetType.DatePicker,
                     widget_props={
                         "required": True,
@@ -1865,23 +2195,146 @@ class UserAdmin(TortoiseModelAdmin):
             ],
         ),
         tab="Data",
-        title="Export users",
-        description="Return a simple table of users created since a date",
+        title="Get sales data",
+        description="Get sales data",
         width=12,
     )
-    async def users_action(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+    async def sales_action(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
         return WidgetActionResponseSchema(
             data=[
                 {
                     "id": 1,
-                    "username": "alice",
+                    "name": "Sales",
                 },
                 {
                     "id": 2,
-                    "username": "bob",
+                    "name": "Sales",
+                },
+                {
+                    "id": 3,
+                    "name": "Sales",
                 },
             ],
         )
+
+
+class EventInlineModelAdmin(TortoiseInlineModelAdmin):
+    model = Event
+
+
+@register(Tournament)
+class TournamentModelAdmin(TortoiseModelAdmin):
+    list_display = ("id", "name")
+    inlines = (EventInlineModelAdmin,)
+    widget_actions = ("tournament_action",)
+
+    @widget_action(
+        widget_action_type=WidgetActionType.Action,
+        tab="Data",
+        title="Get tournament data",
+        description="Get tournament data",
+        width=12,
+    )
+    async def tournament_action(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        return WidgetActionResponseSchema(
+            data=[
+                {
+                    "id": 1,
+                    "name": "Tournament 1",
+                },
+                {
+                    "id": 2,
+                    "name": "Tournament 2",
+                },
+                {
+                    "id": 3,
+                    "name": "Tournament 3",
+                },
+            ],
+        )
+
+
+@register(BaseEvent)
+class BaseEventModelAdmin(TortoiseModelAdmin):
+    pass
+
+
+@register(Event)
+class EventModelAdmin(TortoiseModelAdmin):
+    actions = ("make_is_active", "make_is_not_active")
+    list_display = (
+        "id",
+        "tournament_name",
+        "name_with_price",
+        "rating",
+        "event_type",
+        "is_active",
+        "started",
+        "start_time",
+        "date",
+    )
+    list_filter = ("event_type", "is_active", "start_time", "date", "event_type")
+    search_fields = ("name", "tournament__name")
+    list_select_related = ("tournament",)
+
+    @action(description="Make event active")
+    async def make_is_active(self, ids):
+        await self.model_cls.filter(id__in=ids).update(is_active=True)
+
+    @action
+    async def make_is_not_active(self, ids):
+        await self.model_cls.filter(id__in=ids).update(is_active=False)
+
+    @display
+    async def started(self, obj):
+        return bool(obj.start_time)
+
+    @display
+    async def tournament_name(self, obj):
+        tournament = await obj.tournament
+        return tournament.name
+
+    @display()
+    async def name_with_price(self, obj):
+        return f"{obj.name} - {obj.price}"
+
+
+async def create_superuser():
+    await User.create(
+        username="admin",
+        password="admin",
+        is_superuser=True,
+    )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    # RegisterTortoise sets up TortoiseContext so request handlers can use the DB
+    # (_enable_global_fallback=True by default for ASGI lifespan in a background task)
+    async with RegisterTortoise(
+        app=app,
+        db_url="sqlite://:memory:",
+        modules={"models": ["models"]},
+        generate_schemas=True,
+        use_tz=False,
+        timezone="UTC",
+    ):
+        await create_superuser()
+        yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+
+app.mount("/admin", admin_app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3030", "http://localhost:8090"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
   </code>
 </pre>
@@ -1898,15 +2351,173 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 
-<p class="alert alert-info">
-  See example for Tortoise ORM
-</p>
 
 
 
 
 
 
+<pre>
+  <code class="language-python">
+import uuid
+
+from django.db import models
+
+from fastadmin import DjangoInlineModelAdmin, DjangoModelAdmin, WidgetType, action, display, register
+
+EventTypeEnum = (
+    ("PRIVATE", "PRIVATE"),
+    ("PUBLIC", "PUBLIC"),
+)
+
+
+class BaseModel(models.Model):
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class User(BaseModel):
+    username = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+    is_superuser = models.BooleanField(default=False)
+
+    avatar_url = models.ImageField(null=True)
+    attachment_url = models.FileField()
+
+    def __str__(self):
+        return self.username
+
+    class Meta:
+        db_table = "user"
+
+
+class Tournament(BaseModel):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "tournament"
+
+
+class BaseEvent(BaseModel):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "base_event"
+
+
+class Event(BaseModel):
+    base = models.OneToOneField(BaseEvent, related_name="event", null=True, on_delete=models.SET_NULL)
+    name = models.CharField(max_length=255)
+
+    tournament = models.ForeignKey(Tournament, related_name="events", on_delete=models.CASCADE)
+    participants = models.ManyToManyField(User, related_name="events")
+
+    rating = models.IntegerField(default=0)
+    description = models.TextField(null=True)
+    event_type = models.CharField(max_length=255, default="PUBLIC", choices=EventTypeEnum)
+    is_active = models.BooleanField(default=True)
+    start_time = models.TimeField(null=True)
+    date = models.DateField(null=True)
+    latitude = models.FloatField(null=True)
+    longitude = models.FloatField(null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+
+    json = models.JSONField(null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "event"
+
+
+@register(User)
+class UserModelAdmin(DjangoModelAdmin):
+    list_display = ("id", "username", "is_superuser")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser")
+    search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "username": (WidgetType.SlugInput, {"required": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+    }
+
+    def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
+        obj = self.model_cls.objects.filter(username=username, is_superuser=True).first()
+        if not obj:
+            return None
+        # if not obj.check_password(password):
+        #     return None
+        return obj.id
+
+    def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        user = self.model_cls.objects.filter(id=id).first()
+        if not user:
+            return
+        # direct saving password is only for tests - use hash
+        user.password = password
+        user.save()
+
+    def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> str:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
+
+
+class EventInlineModelAdmin(DjangoInlineModelAdmin):
+    model = Event
+
+
+@register(Tournament)
+class TournamentModelAdmin(DjangoModelAdmin):
+    list_display = ("id", "name")
+    inlines = (EventInlineModelAdmin,)
+
+
+@register(BaseEvent)
+class BaseEventModelAdmin(DjangoModelAdmin):
+    pass
+
+
+@register(Event)
+class EventModelAdmin(DjangoModelAdmin):
+    actions = ("make_is_active", "make_is_not_active")
+    list_display = ("id", "tournament", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_filter = ("tournament", "event_type", "is_active")
+    search_fields = ("name", "tournament__name")
+
+    @action(description="Make event active")
+    def make_is_active(self, ids):
+        self.model_cls.objects.filter(id__in=ids).update(is_active=True)
+
+    @action
+    def make_is_not_active(self, ids):
+        self.model_cls.objects.filter(id__in=ids).update(is_active=False)
+
+    @display
+    def started(self, obj):
+        return bool(obj.start_time)
+
+    @display()
+    def name_with_price(self, obj):
+        return f"{obj.name} - {obj.price}"
+
+  </code>
+</pre>
 
 
 
@@ -1920,15 +2531,172 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 
-<p class="alert alert-info">
-  See the Tortoise ORM example
-</p>
 
 
 
 
 
 
+<pre>
+  <code class="language-python">
+import os
+import uuid
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
+os.environ["ADMIN_USER_MODEL"] = "User"
+os.environ["ADMIN_USER_MODEL_USERNAME_FIELD"] = "username"
+os.environ["ADMIN_SECRET_KEY"] = "secret"
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from models import Base, BaseEvent, Event, Tournament, User, sqlalchemy_engine, sqlalchemy_sessionmaker
+from sqlalchemy import select, update
+
+from fastadmin import SqlAlchemyInlineModelAdmin, SqlAlchemyModelAdmin, WidgetType, action, display
+from fastadmin import fastapi_app as admin_app
+from fastadmin import register
+
+
+@register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class UserModelAdmin(SqlAlchemyModelAdmin):
+    list_display = ("id", "username", "is_superuser")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser")
+    search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "username": (WidgetType.SlugInput, {"required": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "avatar_url": (
+            WidgetType.UploadImage,
+            {
+                "required": False,
+                # Disable crop image for upload field
+                # "disableCropImage": True,
+            },
+        ),
+        "attachment_url": (
+            WidgetType.UploadFile,
+            {
+                "required": True,
+            },
+        ),
+    }
+
+    async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            query = select(self.model_cls).filter_by(username=username, password=password, is_superuser=True)
+            result = await session.scalars(query)
+            obj = result.first()
+            if not obj:
+                return None
+            return obj.id
+
+    async def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            # use hash password for real usage
+            query = update(self.model_cls).where(User.id.in_([id])).values(password=password)
+            await session.execute(query)
+            await session.commit()
+
+    async def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> None:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
+
+
+class EventInlineModelAdmin(SqlAlchemyInlineModelAdmin):
+    model = Event
+
+
+@register(Tournament, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class TournamentModelAdmin(SqlAlchemyModelAdmin):
+    list_display = ("id", "name")
+    inlines = (EventInlineModelAdmin,)
+
+
+@register(BaseEvent, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class BaseEventModelAdmin(SqlAlchemyModelAdmin):
+    pass
+
+
+@register(Event, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class EventModelAdmin(SqlAlchemyModelAdmin):
+    actions = ("make_is_active", "make_is_not_active")
+    list_display = ("id", "tournament", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_filter = ("tournament", "event_type", "is_active")
+    search_fields = ("name", "tournament__name")
+
+    @action(description="Make event active")
+    async def make_is_active(self, ids):
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            query = update(Event).where(Event.id.in_(ids)).values(is_active=True)
+            await session.execute(query)
+            await session.commit()
+
+    @action
+    async def make_is_not_active(self, ids):
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            query = update(Event).where(Event.id.in_(ids)).values(is_active=False)
+            await session.execute(query)
+            await session.commit()
+
+    @display
+    async def started(self, obj):
+        return bool(obj.start_time)
+
+    @display()
+    async def name_with_price(self, obj):
+        return f"{obj.name} - {obj.price}"
+
+
+async def init_db():
+    async with sqlalchemy_engine.begin() as c:
+        await c.run_sync(Base.metadata.drop_all)
+        await c.run_sync(Base.metadata.create_all)
+
+
+async def create_superuser():
+    async with sqlalchemy_sessionmaker() as s:
+        user = User(
+            username="admin",
+            password="admin",
+            is_superuser=True,
+            attachment_url="/media/attachment.txt",
+        )
+        s.add(user)
+        await s.commit()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    await init_db()
+    await create_superuser()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.mount("/admin", admin_app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3030", "http://localhost:8090"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+  </code>
+</pre>
 
 
 
@@ -1942,15 +2710,172 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 
-<p class="alert alert-info">
-  See the Tortoise ORM example
-</p>
 
 
 
 
 
 
+<pre>
+  <code class="language-python">
+import os
+import uuid
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
+os.environ["ADMIN_USER_MODEL"] = "User"
+os.environ["ADMIN_USER_MODEL_USERNAME_FIELD"] = "username"
+os.environ["ADMIN_SECRET_KEY"] = "secret"
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from models import BaseEvent, Event, Tournament, User, db
+from pony.orm import commit, db_session
+
+from fastadmin import PonyORMInlineModelAdmin, PonyORMModelAdmin, WidgetType, action, display
+from fastadmin import fastapi_app as admin_app
+from fastadmin import register
+
+
+@register(User)
+class UserModelAdmin(PonyORMModelAdmin):
+    list_display = ("id", "username", "is_superuser")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser")
+    search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "username": (WidgetType.SlugInput, {"required": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "avatar_url": (
+            WidgetType.UploadImage,
+            {
+                "required": False,
+                # Disable crop image for upload field
+                # "disableCropImage": True,
+            },
+        ),
+        "attachment_url": (
+            WidgetType.UploadFile,
+            {
+                "required": True,
+            },
+        ),
+    }
+
+    @db_session
+    def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
+        obj = next((f for f in User.select(username=username, password=password, is_superuser=True)), None)  # fmt: skip
+        if not obj:
+            return None
+        return obj.id
+
+    @db_session
+    def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        obj = next((f for f in self.model_cls.select(id=id)), None)
+        if not obj:
+            return
+        # direct saving password is only for tests - use hash
+        obj.password = password
+        commit()
+
+    def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> str:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
+
+
+class EventInlineModelAdmin(PonyORMInlineModelAdmin):
+    model = Event
+
+
+@register(Tournament)
+class TournamentModelAdmin(PonyORMModelAdmin):
+    list_display = ("id", "name")
+    inlines = (EventInlineModelAdmin,)
+
+
+@register(BaseEvent)
+class BaseEventModelAdmin(PonyORMModelAdmin):
+    pass
+
+
+@register(Event)
+class EventModelAdmin(PonyORMModelAdmin):
+    actions = ("make_is_active", "make_is_not_active")
+    list_display = ("id", "tournament", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_filter = ("tournament", "event_type", "is_active")
+    search_fields = ("name", "tournament__name")
+
+    @action(description="Make event active")
+    @db_session
+    def make_is_active(self, ids):
+        # update(o.set(is_active=True) for o in self.model_cls if o.id in ids)
+        objs = self.model_cls.select(lambda o: o.id in ids)
+        for obj in objs:
+            obj.is_active = True
+        commit()
+
+    @action
+    @db_session
+    def make_is_not_active(self, ids):
+        # update(o.set(is_active=False) for o in self.model_cls if o.id in ids)
+        objs = self.model_cls.select(lambda o: o.id in ids)
+        for obj in objs:
+            obj.is_active = False
+        commit()
+
+    @display
+    @db_session
+    def started(self, obj):
+        return bool(obj.start_time)
+
+    @display()
+    @db_session
+    def name_with_price(self, obj):
+        return f"{obj.name} - {obj.price}"
+
+
+def init_db():
+    # Use shared in-memory sqlite DB so tables are visible across connections/threads.
+    db.bind(provider="sqlite", filename=":sharedmemory:", create_db=True)
+    db.generate_mapping(create_tables=True)
+
+
+@db_session
+def create_superuser():
+    User(
+        username="admin",
+        password="admin",
+        is_superuser=True,
+        attachment_url="/media/attachment.txt",
+    )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    init_db()
+    create_superuser()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.mount("/admin", admin_app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3030", "http://localhost:8090"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+  </code>
+</pre>
 
 
 
@@ -3021,92 +3946,304 @@ formfield_overrides = {
 
 <pre>
   <code class="language-python">
-from uuid import UUID
+import os
+import uuid
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
-import bcrypt
-from tortoise import fields
-from tortoise.models import Model
+os.environ["ADMIN_USER_MODEL"] = "User"
+os.environ["ADMIN_USER_MODEL_USERNAME_FIELD"] = "username"
+os.environ["ADMIN_SECRET_KEY"] = "secret"
 
-from fastadmin import TortoiseInlineModelAdmin, TortoiseModelAdmin, WidgetType, action, register
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from models import BaseEvent, Event, Tournament, User, UserAttachment
+from tortoise.contrib.fastapi import RegisterTortoise
 
-
-class InlineUser(Model):
-    username = fields.CharField(max_length=255, unique=True)
-    hash_password = fields.CharField(max_length=255)
-    is_superuser = fields.BooleanField(default=False)
-    is_active = fields.BooleanField(default=False)
-
-    def __str__(self):
-        return self.username
-
-
-class InlineUserMessage(Model):
-    user = fields.ForeignKeyField("models.InlineUser", related_name="messages")
-    message = fields.TextField()
-
-    def __str__(self):
-        return self.message
-
-
-class UserMessageAdminInline(TortoiseInlineModelAdmin):
-    model = InlineUserMessage
-    list_display = ("user", "message")
-    list_display_links = ("user", "message")
-    list_filter = ("user", "message")
-    search_fields = ("user", "message")
+from fastadmin import (
+    TortoiseInlineModelAdmin,
+    TortoiseModelAdmin,
+    WidgetActionArgumentProps,
+    WidgetActionChartProps,
+    WidgetActionFilter,
+    WidgetActionInputSchema,
+    WidgetActionProps,
+    WidgetActionResponseSchema,
+    WidgetActionType,
+    WidgetType,
+    action,
+    display,
+)
+from fastadmin import fastapi_app as admin_app
+from fastadmin import (
+    register,
+    widget_action,
+)
 
 
-@register(InlineUser)
-class UserAdmin(TortoiseModelAdmin):
-    list_display = ("username", "is_superuser", "is_active")
-    list_display_links = ("username",)
-    list_filter = (
-        "username",
-        "is_superuser",
-        "is_active",
-    )
-    search_fields = (
-        "id",
-        "username",
-    )
-    fieldsets = (
-        (None, {"fields": ("username", "hash_password")}),
-        ("Permissions", {"fields": ("is_active", "is_superuser")}),
-    )
+class UserAttachmentModelInline(TortoiseInlineModelAdmin):
+    model = UserAttachment
+    formfield_overrides = {  # noqa: RUF012
+        "attachment_url": (
+            WidgetType.UploadFile,
+            {
+                "required": True,
+            },
+        ),
+    }
+
+    async def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> None:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
+
+
+@register(User)
+class UserModelAdmin(TortoiseModelAdmin):
+    list_display = ("id", "username", "is_superuser")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser")
+    search_fields = ("username",)
     formfield_overrides = {  # noqa: RUF012
         "username": (WidgetType.SlugInput, {"required": True}),
         "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "avatar_url": (
+            WidgetType.UploadImage,
+            {
+                "required": False,
+                # Disable crop image for upload field
+                # "disableCropImage": True,
+            },
+        ),
     }
-    actions = (
-        *TortoiseModelAdmin.actions,
-        "activate",
-        "deactivate",
+    inlines = (UserAttachmentModelInline,)
+    widget_actions = (
+        "sales_chart",
+        "sales_action",
     )
 
-    inlines = (UserMessageAdminInline,)
-
-    async def authenticate(self, username: str, password: str) -> int | None:
-        user = await self.model_cls.filter(phone=username, is_superuser=True).first()
-        if not user:
+    async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
+        obj = await self.model_cls.filter(username=username, password=password, is_superuser=True).first()
+        if not obj:
             return None
-        if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
-            return None
-        return user.id
+        return obj.id
 
-    async def change_password(self, id: UUID | int | str, password: str) -> None:
+    async def change_password(self, id: uuid.UUID | int, password: str) -> None:
         user = await self.model_cls.filter(id=id).first()
         if not user:
             return
-        user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-        await user.save(update_fields=("hash_password",))
+        # direct saving password is only for tests - use hash
+        user.password = password
+        await user.save()
 
-    @action(description="Set as active")
-    async def activate(self, ids: list[int]) -> None:
+    async def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> None:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
+
+    @widget_action(
+        widget_action_type=WidgetActionType.ChartLine,
+        widget_action_props=WidgetActionChartProps(x_field="x", y_field="y"),
+        widget_action_filters=[
+            WidgetActionFilter(
+                field_name="x",
+                widget_type=WidgetType.DatePicker,
+            ),
+            WidgetActionFilter(
+                field_name="y",
+                widget_type=WidgetType.Select,
+                widget_props={
+                    "options": [
+                        {"label": "Sales", "value": "sales"},
+                    ],
+                },
+            ),
+        ],
+        tab="Analytics",
+        title="Sales over time",
+        description="Line chart of sales",
+        width=24,
+    )
+    async def sales_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        return WidgetActionResponseSchema(
+            data=[
+                {
+                    "x": "2026-01-01",
+                    "y": 100,
+                },
+                {
+                    "x": "2026-01-02",
+                    "y": 200,
+                },
+                {
+                    "x": "2026-01-03",
+                    "y": 300,
+                },
+            ],
+        )
+
+    @widget_action(
+        widget_action_type=WidgetActionType.Action,
+        widget_action_props=WidgetActionProps(
+            arguments=[
+                WidgetActionArgumentProps(
+                    name="x",
+                    widget_type=WidgetType.DatePicker,
+                    widget_props={
+                        "required": True,
+                    },
+                ),
+            ],
+        ),
+        tab="Data",
+        title="Get sales data",
+        description="Get sales data",
+        width=12,
+    )
+    async def sales_action(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        return WidgetActionResponseSchema(
+            data=[
+                {
+                    "id": 1,
+                    "name": "Sales",
+                },
+                {
+                    "id": 2,
+                    "name": "Sales",
+                },
+                {
+                    "id": 3,
+                    "name": "Sales",
+                },
+            ],
+        )
+
+
+class EventInlineModelAdmin(TortoiseInlineModelAdmin):
+    model = Event
+
+
+@register(Tournament)
+class TournamentModelAdmin(TortoiseModelAdmin):
+    list_display = ("id", "name")
+    inlines = (EventInlineModelAdmin,)
+    widget_actions = ("tournament_action",)
+
+    @widget_action(
+        widget_action_type=WidgetActionType.Action,
+        tab="Data",
+        title="Get tournament data",
+        description="Get tournament data",
+        width=12,
+    )
+    async def tournament_action(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        return WidgetActionResponseSchema(
+            data=[
+                {
+                    "id": 1,
+                    "name": "Tournament 1",
+                },
+                {
+                    "id": 2,
+                    "name": "Tournament 2",
+                },
+                {
+                    "id": 3,
+                    "name": "Tournament 3",
+                },
+            ],
+        )
+
+
+@register(BaseEvent)
+class BaseEventModelAdmin(TortoiseModelAdmin):
+    pass
+
+
+@register(Event)
+class EventModelAdmin(TortoiseModelAdmin):
+    actions = ("make_is_active", "make_is_not_active")
+    list_display = (
+        "id",
+        "tournament_name",
+        "name_with_price",
+        "rating",
+        "event_type",
+        "is_active",
+        "started",
+        "start_time",
+        "date",
+    )
+    list_filter = ("event_type", "is_active", "start_time", "date", "event_type")
+    search_fields = ("name", "tournament__name")
+    list_select_related = ("tournament",)
+
+    @action(description="Make event active")
+    async def make_is_active(self, ids):
         await self.model_cls.filter(id__in=ids).update(is_active=True)
 
-    @action(description="Deactivate")
-    async def deactivate(self, ids: list[int]) -> None:
+    @action
+    async def make_is_not_active(self, ids):
         await self.model_cls.filter(id__in=ids).update(is_active=False)
+
+    @display
+    async def started(self, obj):
+        return bool(obj.start_time)
+
+    @display
+    async def tournament_name(self, obj):
+        tournament = await obj.tournament
+        return tournament.name
+
+    @display()
+    async def name_with_price(self, obj):
+        return f"{obj.name} - {obj.price}"
+
+
+async def create_superuser():
+    await User.create(
+        username="admin",
+        password="admin",
+        is_superuser=True,
+    )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    # RegisterTortoise sets up TortoiseContext so request handlers can use the DB
+    # (_enable_global_fallback=True by default for ASGI lifespan in a background task)
+    async with RegisterTortoise(
+        app=app,
+        db_url="sqlite://:memory:",
+        modules={"models": ["models"]},
+        generate_schemas=True,
+        use_tz=False,
+        timezone="UTC",
+    ):
+        await create_superuser()
+        yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+
+app.mount("/admin", admin_app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3030", "http://localhost:8090"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
   </code>
 </pre>
@@ -3123,15 +4260,173 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 
-<p class="alert alert-info">
-  See example for Tortoise ORM
-</p>
 
 
 
 
 
 
+<pre>
+  <code class="language-python">
+import uuid
+
+from django.db import models
+
+from fastadmin import DjangoInlineModelAdmin, DjangoModelAdmin, WidgetType, action, display, register
+
+EventTypeEnum = (
+    ("PRIVATE", "PRIVATE"),
+    ("PUBLIC", "PUBLIC"),
+)
+
+
+class BaseModel(models.Model):
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class User(BaseModel):
+    username = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+    is_superuser = models.BooleanField(default=False)
+
+    avatar_url = models.ImageField(null=True)
+    attachment_url = models.FileField()
+
+    def __str__(self):
+        return self.username
+
+    class Meta:
+        db_table = "user"
+
+
+class Tournament(BaseModel):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "tournament"
+
+
+class BaseEvent(BaseModel):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "base_event"
+
+
+class Event(BaseModel):
+    base = models.OneToOneField(BaseEvent, related_name="event", null=True, on_delete=models.SET_NULL)
+    name = models.CharField(max_length=255)
+
+    tournament = models.ForeignKey(Tournament, related_name="events", on_delete=models.CASCADE)
+    participants = models.ManyToManyField(User, related_name="events")
+
+    rating = models.IntegerField(default=0)
+    description = models.TextField(null=True)
+    event_type = models.CharField(max_length=255, default="PUBLIC", choices=EventTypeEnum)
+    is_active = models.BooleanField(default=True)
+    start_time = models.TimeField(null=True)
+    date = models.DateField(null=True)
+    latitude = models.FloatField(null=True)
+    longitude = models.FloatField(null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+
+    json = models.JSONField(null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "event"
+
+
+@register(User)
+class UserModelAdmin(DjangoModelAdmin):
+    list_display = ("id", "username", "is_superuser")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser")
+    search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "username": (WidgetType.SlugInput, {"required": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+    }
+
+    def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
+        obj = self.model_cls.objects.filter(username=username, is_superuser=True).first()
+        if not obj:
+            return None
+        # if not obj.check_password(password):
+        #     return None
+        return obj.id
+
+    def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        user = self.model_cls.objects.filter(id=id).first()
+        if not user:
+            return
+        # direct saving password is only for tests - use hash
+        user.password = password
+        user.save()
+
+    def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> str:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
+
+
+class EventInlineModelAdmin(DjangoInlineModelAdmin):
+    model = Event
+
+
+@register(Tournament)
+class TournamentModelAdmin(DjangoModelAdmin):
+    list_display = ("id", "name")
+    inlines = (EventInlineModelAdmin,)
+
+
+@register(BaseEvent)
+class BaseEventModelAdmin(DjangoModelAdmin):
+    pass
+
+
+@register(Event)
+class EventModelAdmin(DjangoModelAdmin):
+    actions = ("make_is_active", "make_is_not_active")
+    list_display = ("id", "tournament", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_filter = ("tournament", "event_type", "is_active")
+    search_fields = ("name", "tournament__name")
+
+    @action(description="Make event active")
+    def make_is_active(self, ids):
+        self.model_cls.objects.filter(id__in=ids).update(is_active=True)
+
+    @action
+    def make_is_not_active(self, ids):
+        self.model_cls.objects.filter(id__in=ids).update(is_active=False)
+
+    @display
+    def started(self, obj):
+        return bool(obj.start_time)
+
+    @display()
+    def name_with_price(self, obj):
+        return f"{obj.name} - {obj.price}"
+
+  </code>
+</pre>
 
 
 
@@ -3145,15 +4440,172 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 
-<p class="alert alert-info">
-  See the Tortoise ORM example
-</p>
 
 
 
 
 
 
+<pre>
+  <code class="language-python">
+import os
+import uuid
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
+os.environ["ADMIN_USER_MODEL"] = "User"
+os.environ["ADMIN_USER_MODEL_USERNAME_FIELD"] = "username"
+os.environ["ADMIN_SECRET_KEY"] = "secret"
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from models import Base, BaseEvent, Event, Tournament, User, sqlalchemy_engine, sqlalchemy_sessionmaker
+from sqlalchemy import select, update
+
+from fastadmin import SqlAlchemyInlineModelAdmin, SqlAlchemyModelAdmin, WidgetType, action, display
+from fastadmin import fastapi_app as admin_app
+from fastadmin import register
+
+
+@register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class UserModelAdmin(SqlAlchemyModelAdmin):
+    list_display = ("id", "username", "is_superuser")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser")
+    search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "username": (WidgetType.SlugInput, {"required": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "avatar_url": (
+            WidgetType.UploadImage,
+            {
+                "required": False,
+                # Disable crop image for upload field
+                # "disableCropImage": True,
+            },
+        ),
+        "attachment_url": (
+            WidgetType.UploadFile,
+            {
+                "required": True,
+            },
+        ),
+    }
+
+    async def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            query = select(self.model_cls).filter_by(username=username, password=password, is_superuser=True)
+            result = await session.scalars(query)
+            obj = result.first()
+            if not obj:
+                return None
+            return obj.id
+
+    async def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            # use hash password for real usage
+            query = update(self.model_cls).where(User.id.in_([id])).values(password=password)
+            await session.execute(query)
+            await session.commit()
+
+    async def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> None:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
+
+
+class EventInlineModelAdmin(SqlAlchemyInlineModelAdmin):
+    model = Event
+
+
+@register(Tournament, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class TournamentModelAdmin(SqlAlchemyModelAdmin):
+    list_display = ("id", "name")
+    inlines = (EventInlineModelAdmin,)
+
+
+@register(BaseEvent, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class BaseEventModelAdmin(SqlAlchemyModelAdmin):
+    pass
+
+
+@register(Event, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
+class EventModelAdmin(SqlAlchemyModelAdmin):
+    actions = ("make_is_active", "make_is_not_active")
+    list_display = ("id", "tournament", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_filter = ("tournament", "event_type", "is_active")
+    search_fields = ("name", "tournament__name")
+
+    @action(description="Make event active")
+    async def make_is_active(self, ids):
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            query = update(Event).where(Event.id.in_(ids)).values(is_active=True)
+            await session.execute(query)
+            await session.commit()
+
+    @action
+    async def make_is_not_active(self, ids):
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            query = update(Event).where(Event.id.in_(ids)).values(is_active=False)
+            await session.execute(query)
+            await session.commit()
+
+    @display
+    async def started(self, obj):
+        return bool(obj.start_time)
+
+    @display()
+    async def name_with_price(self, obj):
+        return f"{obj.name} - {obj.price}"
+
+
+async def init_db():
+    async with sqlalchemy_engine.begin() as c:
+        await c.run_sync(Base.metadata.drop_all)
+        await c.run_sync(Base.metadata.create_all)
+
+
+async def create_superuser():
+    async with sqlalchemy_sessionmaker() as s:
+        user = User(
+            username="admin",
+            password="admin",
+            is_superuser=True,
+            attachment_url="/media/attachment.txt",
+        )
+        s.add(user)
+        await s.commit()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    await init_db()
+    await create_superuser()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.mount("/admin", admin_app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3030", "http://localhost:8090"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+  </code>
+</pre>
 
 
 
@@ -3167,15 +4619,172 @@ class UserAdmin(TortoiseModelAdmin):
 
 
 
-<p class="alert alert-info">
-  See the Tortoise ORM example
-</p>
 
 
 
 
 
 
+<pre>
+  <code class="language-python">
+import os
+import uuid
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
+os.environ["ADMIN_USER_MODEL"] = "User"
+os.environ["ADMIN_USER_MODEL_USERNAME_FIELD"] = "username"
+os.environ["ADMIN_SECRET_KEY"] = "secret"
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from models import BaseEvent, Event, Tournament, User, db
+from pony.orm import commit, db_session
+
+from fastadmin import PonyORMInlineModelAdmin, PonyORMModelAdmin, WidgetType, action, display
+from fastadmin import fastapi_app as admin_app
+from fastadmin import register
+
+
+@register(User)
+class UserModelAdmin(PonyORMModelAdmin):
+    list_display = ("id", "username", "is_superuser")
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser")
+    search_fields = ("username",)
+    formfield_overrides = {  # noqa: RUF012
+        "username": (WidgetType.SlugInput, {"required": True}),
+        "password": (WidgetType.PasswordInput, {"passwordModalForm": True}),
+        "avatar_url": (
+            WidgetType.UploadImage,
+            {
+                "required": False,
+                # Disable crop image for upload field
+                # "disableCropImage": True,
+            },
+        ),
+        "attachment_url": (
+            WidgetType.UploadFile,
+            {
+                "required": True,
+            },
+        ),
+    }
+
+    @db_session
+    def authenticate(self, username: str, password: str) -> uuid.UUID | int | None:
+        obj = next((f for f in User.select(username=username, password=password, is_superuser=True)), None)  # fmt: skip
+        if not obj:
+            return None
+        return obj.id
+
+    @db_session
+    def change_password(self, id: uuid.UUID | int, password: str) -> None:
+        obj = next((f for f in self.model_cls.select(id=id)), None)
+        if not obj:
+            return
+        # direct saving password is only for tests - use hash
+        obj.password = password
+        commit()
+
+    def upload_file(
+        self,
+        field_name: str,
+        file_name: str,
+        file_content: bytes,
+    ) -> str:
+        # save file to media directory or to s3/filestorage here
+        return f"/media/{file_name}"
+
+
+class EventInlineModelAdmin(PonyORMInlineModelAdmin):
+    model = Event
+
+
+@register(Tournament)
+class TournamentModelAdmin(PonyORMModelAdmin):
+    list_display = ("id", "name")
+    inlines = (EventInlineModelAdmin,)
+
+
+@register(BaseEvent)
+class BaseEventModelAdmin(PonyORMModelAdmin):
+    pass
+
+
+@register(Event)
+class EventModelAdmin(PonyORMModelAdmin):
+    actions = ("make_is_active", "make_is_not_active")
+    list_display = ("id", "tournament", "name_with_price", "rating", "event_type", "is_active", "started")
+    list_filter = ("tournament", "event_type", "is_active")
+    search_fields = ("name", "tournament__name")
+
+    @action(description="Make event active")
+    @db_session
+    def make_is_active(self, ids):
+        # update(o.set(is_active=True) for o in self.model_cls if o.id in ids)
+        objs = self.model_cls.select(lambda o: o.id in ids)
+        for obj in objs:
+            obj.is_active = True
+        commit()
+
+    @action
+    @db_session
+    def make_is_not_active(self, ids):
+        # update(o.set(is_active=False) for o in self.model_cls if o.id in ids)
+        objs = self.model_cls.select(lambda o: o.id in ids)
+        for obj in objs:
+            obj.is_active = False
+        commit()
+
+    @display
+    @db_session
+    def started(self, obj):
+        return bool(obj.start_time)
+
+    @display()
+    @db_session
+    def name_with_price(self, obj):
+        return f"{obj.name} - {obj.price}"
+
+
+def init_db():
+    # Use shared in-memory sqlite DB so tables are visible across connections/threads.
+    db.bind(provider="sqlite", filename=":sharedmemory:", create_db=True)
+    db.generate_mapping(create_tables=True)
+
+
+@db_session
+def create_superuser():
+    User(
+        username="admin",
+        password="admin",
+        is_superuser=True,
+        attachment_url="/media/attachment.txt",
+    )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    init_db()
+    create_superuser()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.mount("/admin", admin_app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3030", "http://localhost:8090"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+  </code>
+</pre>
 
 
 

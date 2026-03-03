@@ -9,10 +9,10 @@ from django.apps.registry import Apps
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from fastadmin.settings import ROOT_DIR, Settings
-from tests.settings import ROOT_DIR as TESTS_ROOT_DIR
 
 os.environ.setdefault("ADMIN_ENV_FILE", str(ROOT_DIR / "example.env"))
-sys.path.append(str(TESTS_ROOT_DIR / "environment" / "django" / "dev"))
+# Add project root so example apps (in examples/*) can be imported.
+sys.path.append(str(ROOT_DIR.parent))
 
 Apps.check_apps_ready = lambda x: None
 
@@ -34,6 +34,8 @@ NAME = "FastAdmin"
 AUTHOR_NAME = "Seva D."
 AUTHOR_EMAIL = "vsdudakov@gmail.com"
 ANTD_CHARTS_EXAMPLES = "https://ant-design-charts.antgroup.com/en/examples"
+
+PROJECT_ROOT = ROOT_DIR.parent
 
 
 def read_cls_docstring(cls):
@@ -378,16 +380,12 @@ def get_sections():
     ]
 
 
+def read_example(rel_path: str) -> str:
+    """Read example code from the examples/* folder relative to project root."""
+    return Path(PROJECT_ROOT / rel_path).read_text()
+
+
 def get_page_context(page_url):
-    from docs.code.inlines import tortoise as inlines_tortoise
-    from docs.code.models import tortoise as models_tortoise
-    from docs.code.quick_tutorial import django as quick_tutorial_django
-    from docs.code.quick_tutorial import djangoorm as quick_tutorial_djangoorm
-    from docs.code.quick_tutorial import fastapi as quick_tutorial_fastapi
-    from docs.code.quick_tutorial import flask as quick_tutorial_flask
-    from docs.code.quick_tutorial import ponyorm as quick_tutorial_ponyorm
-    from docs.code.quick_tutorial import sqlalchemy as quick_tutorial_sqlalchemy
-    from docs.code.quick_tutorial import tortoise as quick_tutorial_tortoise
 
     from fastadmin import InlineModelAdmin, ModelAdmin, WidgetType, widget_action
     from fastadmin.models.base import BaseModelAdmin
@@ -500,17 +498,54 @@ export ADMIN_SECRET_KEY=secret_key
                         {
                             "name": "FastAPI",
                             "id": "fastapi",
-                            "content": [{"type": "code-python", "content": inspect.getsource(quick_tutorial_fastapi)}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": """from fastapi import FastAPI
+
+from fastadmin import fastapi_app as admin_app
+
+app = FastAPI()
+
+app.mount("/admin", admin_app)
+""",
+                                }
+                            ],
                         },
                         {
                             "name": "Django",
                             "id": "django",
-                            "content": [{"type": "code-python", "content": inspect.getsource(quick_tutorial_django)}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": """from django.urls import path
+
+from fastadmin import get_django_admin_urls as get_admin_urls
+from fastadmin.settings import settings
+
+urlpatterns = [
+    path(f"{settings.ADMIN_PREFIX}/", get_admin_urls()),
+]
+""",
+                                }
+                            ],
                         },
                         {
                             "name": "Flask",
                             "id": "flask",
-                            "content": [{"type": "code-python", "content": inspect.getsource(quick_tutorial_flask)}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": """from flask import Flask
+
+from fastadmin import flask_app as admin_app
+
+app = Flask(__name__)
+
+app.register_blueprint(admin_app, url_prefix="/admin")
+""",
+                                }
+                            ],
                         },
                     ],
                 },
@@ -525,26 +560,42 @@ export ADMIN_SECRET_KEY=secret_key
                         {
                             "name": "Tortoise ORM",
                             "id": "tortoise_orm",
-                            "content": [{"type": "code-python", "content": inspect.getsource(quick_tutorial_tortoise)}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/fastapi_tortoiseorm/models.py"),
+                                }
+                            ],
                         },
                         {
                             "name": "Django ORM",
                             "id": "django_orm",
                             "content": [
-                                {"type": "code-python", "content": inspect.getsource(quick_tutorial_djangoorm)}
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/django_djangoorm/orm/models.py"),
+                                }
                             ],
                         },
                         {
                             "name": "SQLAlchemy",
                             "id": "sql_alchemy",
                             "content": [
-                                {"type": "code-python", "content": inspect.getsource(quick_tutorial_sqlalchemy)}
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/fastapi_sqlalchemy/models.py"),
+                                }
                             ],
                         },
                         {
                             "name": "Pony ORM",
                             "id": "pony_orm",
-                            "content": [{"type": "code-python", "content": inspect.getsource(quick_tutorial_ponyorm)}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/fastapi_ponyorm/models.py"),
+                                }
+                            ],
                         },
                     ],
                 },
@@ -567,6 +618,54 @@ export ADMIN_SECRET_KEY=secret_key
                 },
             ]
         # widgets
+        case "#registering-widgets":
+            return [
+                {
+                    "type": "text-lead",
+                    "content": (
+                        "To show dashboard widgets, define @widget_action methods on your model admin "
+                        "and list their method names in the model admin's widget_actions attribute."
+                    ),
+                },
+                {
+                    "type": "alert-warning",
+                    "content": (
+                        "If you forget to add the method name to widget_actions, the widget will "
+                        "not appear on the dashboard."
+                    ),
+                },
+                {
+                    "type": "code-python",
+                    "content": """from fastadmin import TortoiseModelAdmin, widget_action
+from fastadmin.models.schemas import (
+    WidgetActionChartProps,
+    WidgetActionInputSchema,
+    WidgetActionResponseSchema,
+    WidgetActionType,
+)
+
+
+class UserAdmin(TortoiseModelAdmin):
+    # Register widgets by method name
+    widget_actions = ("users_chart",)
+
+    @widget_action(
+        widget_action_type=WidgetActionType.ChartLine,
+        widget_action_props=WidgetActionChartProps(x_field="x", y_field="y"),
+        tab="Analytics",
+        title="Users over time",
+    )
+    async def users_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
+        # Build and return data for the chart
+        return WidgetActionResponseSchema(
+            data=[
+                {"x": "2026-01-01", "y": 10},
+                {"x": "2026-01-02", "y": 15},
+            ],
+        )
+""",
+                },
+            ]
         case "#widget-methods-and-attributes":
             return [
                 {
@@ -606,6 +705,13 @@ export ADMIN_SECRET_KEY=secret_key
                         "widget_action_type=WidgetActionType.Action and no props or filters."
                     ),
                 },
+                {
+                    "type": "alert-info",
+                    "content": (
+                        "After defining a @widget_action method, add its name to the model admin's "
+                        "<code>widget_actions</code> attribute so that it is rendered on the dashboard."
+                    ),
+                },
             ]
         case "#widget-chart-types":
             return [
@@ -636,22 +742,42 @@ export ADMIN_SECRET_KEY=secret_key
                         {
                             "name": "Tortoise ORM",
                             "id": "models_tortoise_orm",
-                            "content": [{"type": "code-python", "content": inspect.getsource(models_tortoise)}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/fastapi_tortoiseorm/example.py"),
+                                }
+                            ],
                         },
                         {
                             "name": "Django ORM",
                             "id": "models_django_orm",
-                            "content": [{"type": "alert-info", "content": "See example for Tortoise ORM"}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/django_djangoorm/orm/models.py"),
+                                }
+                            ],
                         },
                         {
                             "name": "SQLAlchemy",
                             "id": "models_sql_alchemy",
-                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example"}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/fastapi_sqlalchemy/example.py"),
+                                }
+                            ],
                         },
                         {
                             "name": "Pony ORM",
                             "id": "models_pony_orm",
-                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example"}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/fastapi_ponyorm/example.py"),
+                                }
+                            ],
                         },
                     ],
                 },
@@ -738,22 +864,42 @@ export ADMIN_SECRET_KEY=secret_key
                         {
                             "name": "Tortoise ORM",
                             "id": "inlines_tortoise_orm",
-                            "content": [{"type": "code-python", "content": inspect.getsource(inlines_tortoise)}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/fastapi_tortoiseorm/example.py"),
+                                }
+                            ],
                         },
                         {
                             "name": "Django ORM",
                             "id": "inlines_django_orm",
-                            "content": [{"type": "alert-info", "content": "See example for Tortoise ORM"}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/django_djangoorm/orm/models.py"),
+                                }
+                            ],
                         },
                         {
                             "name": "SQLAlchemy",
                             "id": "inlines_sql_alchemy",
-                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example"}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/fastapi_sqlalchemy/example.py"),
+                                }
+                            ],
                         },
                         {
                             "name": "Pony ORM",
                             "id": "inlines_pony_orm",
-                            "content": [{"type": "alert-info", "content": "See the Tortoise ORM example"}],
+                            "content": [
+                                {
+                                    "type": "code-python",
+                                    "content": read_example("examples/fastapi_ponyorm/example.py"),
+                                }
+                            ],
                         },
                     ],
                 },
