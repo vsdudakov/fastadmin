@@ -76,14 +76,14 @@ files = [
 
 [[package]]
 name = "fastadmin"
-version = "0.4.0"
+version = "0.4.2"
 description = "FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin."
 optional = false
 python-versions = "<4.0,>=3.12"
 groups = ["main"]
 files = [
-    {file = "fastadmin-0.4.0-py3-none-any.whl", hash = "sha256:dd097f26ef9d119b1337f4f4454fcd8712faf1df18e613bdaaa704007aa700c8"},
-    {file = "fastadmin-0.4.0.tar.gz", hash = "sha256:597e62bb39a7ef7bbf02f7d032d58793817275f1846269962eea914cec0bf26f"},
+    {file = "fastadmin-0.4.2-py3-none-any.whl", hash = "sha256:16ab6c3be809d8791090d0a91eb9314cac5054a2afd8b64b5a17e761e7113ae0"},
+    {file = "fastadmin-0.4.2.tar.gz", hash = "sha256:db458600d0cf92a38873e67eaf5e2409bc1efdcad00c65b8f8e0ed73bbecf2e5"},
 ]
 
 [package.dependencies]
@@ -489,4 +489,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13"
-content-hash = "f460600db5f5d42fe2b43aa172f4ddf3bd551287d2464e0b3bf726ce51f89d57"
+content-hash = "6ff1235b6552241b68a9ee89957519f42f74ad23b4e7833e25fb153afaa8deb9"
