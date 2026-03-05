@@ -67,6 +67,7 @@ class WidgetActionChartProps:
     x_field: str
     y_field: str
     series_field: str | None = None
+    series_color: list[str] | dict[str, str] | None = None
 
 
 @dataclass

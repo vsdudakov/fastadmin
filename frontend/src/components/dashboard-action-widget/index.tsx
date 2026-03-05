@@ -1,4 +1,8 @@
-import { CopyOutlined, PlayCircleOutlined } from "@ant-design/icons";
+import {
+  CopyOutlined,
+  InfoCircleOutlined,
+  PlayCircleOutlined,
+} from "@ant-design/icons";
 import {
   Button,
   Card,
@@ -9,6 +13,9 @@ import {
   message,
   Radio,
   Row,
+  Space,
+  Tooltip,
+  theme,
 } from "antd";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
@@ -31,11 +38,39 @@ interface DashboardActionWidgetProps {
   widgetAction: IModelWidgetAction;
 }
 
+const { useToken } = theme;
+
+export const hasWidgetValue = (value: any) => {
+  if (value === undefined || value === null) {
+    return false;
+  }
+  if (typeof value === "string") {
+    return value.trim().length > 0;
+  }
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+  return true;
+};
+
+export const buildWidgetActionQuery = (
+  actionArguments: IWidgetActionArgumentProps[],
+  values: Record<string, any>,
+) =>
+  actionArguments
+    .filter((arg) => hasWidgetValue(values[arg.name]))
+    .map((arg) => ({
+      field_name: arg.name,
+      widget_type: arg.widget_type,
+      value: transformValueToServer(values[arg.name]),
+    }));
+
 export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
   modelName,
   widgetAction,
 }) => {
   const { t: _t } = useTranslation("DashboardWidget");
+  const { token } = useToken();
 
   const [filtersForm] = Form.useForm();
   const [filtersState, setFiltersState] = useState<Record<string, any>>({});
@@ -54,19 +89,6 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
         : [],
     [widgetAction.widget_action_props, widgetAction.widget_action_type],
   );
-
-  const hasValue = useCallback((value: any) => {
-    if (value === undefined || value === null) {
-      return false;
-    }
-    if (typeof value === "string") {
-      return value.trim().length > 0;
-    }
-    if (Array.isArray(value)) {
-      return value.length > 0;
-    }
-    return true;
-  }, []);
 
   const getFilterWidget = useCallback(
     (
@@ -92,7 +114,6 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
 
       return (
         <Widget
-          size="small"
           placeholder={getTitleFromFieldName(key)}
           {...(widgetProps || {})}
           {...(config.widget_props || {})}
@@ -105,16 +126,9 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
   );
 
   const buildQueryFromValues = useCallback(
-    (values: Record<string, any>) => {
-      return actionArguments
-        .filter((arg) => hasValue(values[arg.name]))
-        .map((arg) => ({
-          field_name: arg.name,
-          widget_type: arg.widget_type,
-          value: transformValueToServer(values[arg.name]),
-        }));
-    },
-    [actionArguments, hasValue],
+    (values: Record<string, any>) =>
+      buildWidgetActionQuery(actionArguments, values),
+    [actionArguments],
   );
 
   const handleRunAction = async () => {
@@ -157,8 +171,26 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
     message.success(_t("Results copied to clipboard"));
   };
 
+  const titleNode = (
+    <Space size={6}>
+      <span>{widgetAction.title}</span>
+      {widgetAction.description && (
+        <Tooltip title={widgetAction.description}>
+          <InfoCircleOutlined style={{ color: token.colorTextSecondary }} />
+        </Tooltip>
+      )}
+    </Space>
+  );
+
   return (
-    <Card title={widgetAction.title} key={`${modelName}-${widgetAction.name}`}>
+    <Card
+      title={
+        <Row justify="space-between" align="middle">
+          <Col>{titleNode}</Col>
+        </Row>
+      }
+      key={`${modelName}-${widgetAction.name}`}
+    >
       <Row>
         <Col xs={24}>
           <Form form={filtersForm} onFinish={handleRunAction} layout="vertical">
@@ -194,7 +226,6 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
               <Col>
                 {filteredData.length > 0 && (
                   <Button
-                    size="small"
                     danger
                     onClick={() => {
                       setFiltersState({});
@@ -208,11 +239,10 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
               </Col>
               <Col>
                 <Button
-                  size="small"
                   type="primary"
                   htmlType="submit"
                   loading={isActionRunning}
-                  disabled={!hasValue(filtersState)}
+                  disabled={!hasWidgetValue(filtersState)}
                   icon={<PlayCircleOutlined />}
                 >
                   {_t("Run Action")}
@@ -230,7 +260,6 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
             <Row justify="space-between">
               <Col xs={12}>
                 <Input.Search
-                  size="small"
                   placeholder={_t("Search results")}
                   onSearch={(value) => setSearchTerm(value)}
                   enterButton
@@ -238,7 +267,6 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
               </Col>
               <Col>
                 <Button
-                  size="small"
                   type="primary"
                   onClick={handleCopyResults}
                   icon={<CopyOutlined />}

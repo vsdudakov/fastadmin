@@ -59,6 +59,7 @@ export interface IWidgetActionChartProps {
   x_field: string;
   y_field: string;
   series_field?: string;
+  series_color?: string[] | Record<string, string>;
 }
 
 export interface IWidgetActionArgumentProps {

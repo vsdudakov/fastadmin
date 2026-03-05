@@ -45,6 +45,10 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.4.3",
+            "changes": ["Add series field to widget action props. Fix examples.", "Add search by actions."],
+        },
+        {
             "version": "0.4.2",
             "changes": [
                 "Replace DashboardWidgetAdmin with widget_action decorator. (no backward compatibility)",

@@ -125,7 +125,7 @@ describe("DashboardWidget", () => {
       ],
     });
 
-    expect(screen.getByTestId("line-chart")).toBeTruthy();
+    expect(screen.getAllByTestId("line-chart").length).toBeGreaterThan(0);
     expect(lineChartSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         xField: "day",
@@ -142,6 +142,67 @@ describe("DashboardWidget", () => {
         ]),
         refetchOnWindowFocus: false,
         queryFn: expect.any(Function),
+      }),
+    );
+  });
+
+  it("passes series field for multi-series charts", () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: {
+        data: [
+          { day: "Mon", count: 2, status: "paid" },
+          { day: "Mon", count: 1, status: "pending" },
+        ],
+      } as IWidgetActionResponse,
+    });
+
+    renderWidget({
+      ...baseWidget,
+      widget_action_props: {
+        x_field: "day",
+        y_field: "count",
+        series_field: "status",
+      },
+    });
+
+    expect(screen.getAllByTestId("line-chart").length).toBeGreaterThan(0);
+    expect(lineChartSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        xField: "day",
+        yField: "count",
+        seriesField: "status",
+        colorField: "status",
+      }),
+    );
+  });
+
+  it("passes custom series colors for multi-series charts", () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: {
+        data: [
+          { day: "Mon", count: 2, status: "paid" },
+          { day: "Mon", count: 1, status: "pending" },
+        ],
+      } as IWidgetActionResponse,
+    });
+
+    renderWidget({
+      ...baseWidget,
+      widget_action_props: {
+        x_field: "day",
+        y_field: "count",
+        series_field: "status",
+        series_color: ["#22c55e", "#f59e0b"],
+      },
+    });
+
+    expect(lineChartSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        seriesField: "status",
+        colorField: "status",
+        color: ["#22c55e", "#f59e0b"],
       }),
     );
   });

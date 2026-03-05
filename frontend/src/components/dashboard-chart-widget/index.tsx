@@ -1,5 +1,5 @@
 import { Area, Bar, Column, Line, Pie } from "@ant-design/charts";
-import { FilterOutlined } from "@ant-design/icons";
+import { FilterOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import {
   Button,
@@ -12,6 +12,7 @@ import {
   Row,
   Space,
   Spin,
+  Tooltip,
   theme,
 } from "antd";
 import type React from "react";
@@ -126,7 +127,6 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
 
       return (
         <Widget
-          size="small"
           placeholder={getTitleFromFieldName(filter.field_name)}
           {...(widgetProps || {})}
           {...(filter.widget_props || {})}
@@ -142,6 +142,37 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
   const chartProps = widgetAction.widget_action_props as
     | IWidgetActionChartProps
     | undefined;
+  const chartSeriesProps = useMemo(() => {
+    if (!chartProps?.series_field) {
+      return { color: token.colorPrimary };
+    }
+
+    const baseSeriesProps = {
+      seriesField: chartProps.series_field,
+      colorField: chartProps.series_field,
+    };
+
+    if (!chartProps.series_color) {
+      return baseSeriesProps;
+    }
+
+    if (Array.isArray(chartProps.series_color)) {
+      return {
+        ...baseSeriesProps,
+        color: chartProps.series_color,
+      };
+    }
+
+    const seriesColorMap = chartProps.series_color;
+    const seriesField = chartProps.series_field;
+    return {
+      ...baseSeriesProps,
+      color: (datum: Record<string, unknown>) => {
+        const seriesValue = String(datum[seriesField] ?? "");
+        return seriesColorMap[seriesValue] || token.colorPrimary;
+      },
+    };
+  }, [chartProps, token.colorPrimary]);
 
   const openFiltersModal = () => {
     setModalFiltersState(filtersState);
@@ -161,16 +192,26 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
     setIsFiltersOpen(false);
   };
 
+  const titleNode = (
+    <Space size={6}>
+      <span>{widgetAction.title}</span>
+      {widgetAction.description && (
+        <Tooltip title={widgetAction.description}>
+          <InfoCircleOutlined style={{ color: token.colorTextSecondary }} />
+        </Tooltip>
+      )}
+    </Space>
+  );
+
   return (
     <>
       <Card
         title={
-          <Row justify="space-between" style={{ lineHeight: 2 }}>
-            <Col>{widgetAction.title}</Col>
+          <Row justify="space-between" align="middle">
+            <Col>{titleNode}</Col>
             {filters.length > 0 && (
               <Col>
                 <Button
-                  size="small"
                   icon={<FilterOutlined />}
                   onClick={openFiltersModal}
                   type={hasActiveFilters ? "primary" : "default"}
@@ -195,7 +236,7 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
               legend={{
                 position: "top-left",
               }}
-              colorField={token.colorPrimary}
+              {...chartSeriesProps}
               {...(widgetAction.widget_action_props || {})}
             />
           )}
@@ -210,7 +251,7 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
               legend={{
                 position: "top-left",
               }}
-              colorField={token.colorPrimary}
+              {...chartSeriesProps}
               {...(widgetAction.widget_action_props || {})}
             />
           )}
@@ -225,7 +266,7 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
               legend={{
                 position: "top-left",
               }}
-              colorField={token.colorPrimary}
+              {...chartSeriesProps}
               {...(widgetAction.widget_action_props || {})}
             />
           )}
@@ -239,7 +280,7 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
               legend={{
                 position: "top-left",
               }}
-              colorField={token.colorPrimary}
+              {...chartSeriesProps}
               {...(widgetAction.widget_action_props || {})}
             />
           )}
@@ -248,7 +289,7 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
           widgetAction.widget_action_type === EDashboardWidgetType.ChartPie && (
             <Pie
               data={chartData}
-              colorField={chartProps.x_field}
+              colorField={chartProps.series_field || chartProps.x_field}
               angleField={chartProps.y_field}
               legend={{
                 position: "top-left",

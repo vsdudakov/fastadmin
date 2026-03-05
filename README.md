@@ -6,11 +6,9 @@
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
 
-## Screenshots
+## Demo
 
-![Sign-in view](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/signin.png)
-![List view](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/list.png)
-![Change view](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/change.png)
+![FastAdmin demo](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/demo.gif)
 
 <p align="center">
   <a href="https://twitter.com/intent/tweet?text=Admin%20Dashboard%20For%20FastAPI&url=https://github.com/vsdudakov/fastadmin&hashtags=FastAPI,AdminDashboard">
@@ -357,6 +355,10 @@ class UserAdmin(TortoiseModelAdmin):
     list_display = ("id", "username", "is_superuser", "is_active")
     inlines = (UserAttachmentInline,)
 
+    formfield_overrides = {
+        "avatar_url": (WidgetType.UploadImage, {"required": False}),
+    }
+
     actions = ("activate", "deactivate")
     widget_actions = ("users_chart", "users_list")
 
@@ -374,15 +376,17 @@ class UserAdmin(TortoiseModelAdmin):
 
     @widget_action(
         widget_action_type=WidgetActionType.ChartLine,
-        widget_action_props=WidgetActionChartProps(x_field="x", y_field="y"),
+        widget_action_props=WidgetActionChartProps(x_field="x", y_field="y", series_field="series"),
         tab="Analytics",
         title="Users over time",
     )
     async def users_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
         return WidgetActionResponseSchema(
             data=[
-                {"x": "2026-01-01", "y": 10},
-                {"x": "2026-01-02", "y": 15},
+                {"x": "2026-01-01", "y": 10, "series": "Active"},
+                {"x": "2026-01-02", "y": 15, "series": "Active"},
+                {"x": "2026-01-01", "y": 3, "series": "Inactive"},
+                {"x": "2026-01-02", "y": 5, "series": "Inactive"},
             ]
         )
 
@@ -455,6 +459,10 @@ class UserAdmin(DjangoModelAdmin):
     list_display = ("id", "username", "is_superuser", "is_active")
     inlines = (UserAttachmentInline,)
 
+    formfield_overrides = {
+        "avatar_url": (WidgetType.UploadImage, {"required": False}),
+    }
+
     actions = ("activate", "deactivate")
     widget_actions = ("users_summary", "users_chart")
 
@@ -492,7 +500,7 @@ class UserAdmin(DjangoModelAdmin):
 
     @widget_action(
         widget_action_type=WidgetActionType.ChartLine,
-        widget_action_props=WidgetActionChartProps(x_field="label", y_field="value"),
+        widget_action_props=WidgetActionChartProps(x_field="label", y_field="value", series_field="series"),
         tab="Analytics",
         title="Active vs inactive users",
     )
@@ -501,8 +509,8 @@ class UserAdmin(DjangoModelAdmin):
         inactive = self.model_cls.objects.filter(is_active=False).count()
         return WidgetActionResponseSchema(
             data=[
-                {"label": "active", "value": active},
-                {"label": "inactive", "value": inactive},
+                {"label": "users", "value": active, "series": "active"},
+                {"label": "users", "value": inactive, "series": "inactive"},
             ]
         )
 ```
@@ -581,6 +589,10 @@ class UserAdmin(SqlAlchemyModelAdmin):
     list_display = ("id", "username", "is_superuser", "is_active")
     inlines = (UserAttachmentInline,)
 
+    formfield_overrides = {
+        "avatar_url": (WidgetType.UploadImage, {"required": False}),
+    }
+
     actions = ("activate", "deactivate")
     widget_actions = ("users_chart", "users_list")
 
@@ -604,12 +616,16 @@ class UserAdmin(SqlAlchemyModelAdmin):
 
     @widget_action(
         widget_action_type=WidgetActionType.ChartBar,
-        widget_action_props=WidgetActionChartProps(x_field="label", y_field="value"),
+        widget_action_props=WidgetActionChartProps(x_field="label", y_field="value", series_field="series"),
         tab="Analytics",
         title="Users count",
     )
     async def users_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
-        return WidgetActionResponseSchema(data=[{"label": "users", "value": 42}])
+        return WidgetActionResponseSchema(
+            data=[
+                {"label": "users", "value": 42, "series": "all"},
+            ]
+        )
 
     @widget_action(
         widget_action_type=WidgetActionType.Action,
@@ -687,6 +703,10 @@ class UserAttachmentInline(PonyORMInlineModelAdmin):
 class UserAdmin(PonyORMModelAdmin):
     list_display = ("id", "username", "is_superuser", "is_active")
     inlines = (UserAttachmentInline,)
+
+    formfield_overrides = {
+        "avatar_url": (WidgetType.UploadImage, {"required": False}),
+    }
 
     actions = ("activate", "deactivate")
     widget_actions = ("users_list", "users_chart")

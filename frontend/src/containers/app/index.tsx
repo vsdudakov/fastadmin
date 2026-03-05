@@ -59,10 +59,10 @@ export const App: React.FC = () => {
       }}
     >
       <Helmet
-        titleTemplate="FastAPI Admin | %s"
-        defaultTitle={_t("FastAPI Admin") as string}
+        titleTemplate={`${configuration.site_name} | %s`}
+        defaultTitle={configuration.site_name}
       >
-        <meta name="description" content={_t("FastAPI Admin") as string} />
+        <meta name="description" content={configuration.site_name} />
         <link
           rel="icon"
           href={`${window.SERVER_DOMAIN ?? ""}${configuration.site_favicon ?? ""}`}

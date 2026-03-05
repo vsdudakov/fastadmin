@@ -47,7 +47,11 @@ vi.mock("react-i18next", async () => {
 });
 
 import type { MessageType } from "antd/es/message/interface";
-import { DashboardActionWidget } from "./index";
+import {
+  buildWidgetActionQuery,
+  DashboardActionWidget,
+  hasWidgetValue,
+} from "./index";
 
 const baseWidget: IModelWidgetAction = {
   name: "sales_chart",
@@ -75,6 +79,15 @@ describe("DashboardWidget", () => {
     expect(screen.queryByRole("button", { name: /Filters/i })).toBeNull();
     expect(screen.getByRole("button", { name: /Run Action/i })).toBeTruthy();
     expect(container.querySelector("pre")).toBeNull();
+  });
+
+  it("renders info tooltip icon when description is provided", () => {
+    renderWidget({
+      ...baseWidget,
+      description: "Helpful context",
+    });
+
+    expect(document.querySelector('[data-icon="info-circle"]')).toBeTruthy();
   });
 
   it("runs action and configures payload with API filter values", async () => {
@@ -230,5 +243,59 @@ describe("DashboardWidget", () => {
         }),
       );
     });
+  });
+
+  it("sends empty query for unset optional argument", async () => {
+    mockGetWidgetCls.mockReturnValue([Input, {}]);
+    mockPostFetcher.mockResolvedValue({ data: [] } as IWidgetActionResponse);
+
+    renderWidget({
+      ...baseWidget,
+      widget_action_props: {
+        arguments: [
+          {
+            name: "created_at",
+            widget_type: EFieldWidgetType.Input,
+            widget_props: { "data-testid": "range-input" },
+          },
+        ],
+      },
+    } as IModelWidgetAction);
+
+    fireEvent.click(screen.getAllByRole("button", { name: /Run Action/i })[0]);
+
+    await waitFor(() => {
+      expect(mockPostFetcher).toHaveBeenCalledWith(
+        "/widget-action/Order/sales_chart",
+        expect.objectContaining({
+          query: [],
+        }),
+      );
+    });
+  });
+
+  it("hasWidgetValue covers null, string and array branches", () => {
+    expect(hasWidgetValue(undefined)).toBe(false);
+    expect(hasWidgetValue(null)).toBe(false);
+    expect(hasWidgetValue("   ")).toBe(false);
+    expect(hasWidgetValue(["x"])).toBe(true);
+  });
+
+  it("buildWidgetActionQuery filters blank string and keeps array value", () => {
+    const query = buildWidgetActionQuery(
+      [
+        { name: "name", widget_type: EFieldWidgetType.Input },
+        { name: "tags", widget_type: EFieldWidgetType.Select },
+      ],
+      { name: "   ", tags: ["a", "b"] },
+    );
+
+    expect(query).toEqual([
+      {
+        field_name: "tags",
+        widget_type: EFieldWidgetType.Select,
+        value: "to-a,b",
+      },
+    ]);
   });
 });
