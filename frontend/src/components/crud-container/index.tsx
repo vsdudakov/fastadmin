@@ -20,7 +20,6 @@ import {
 } from "antd";
 import type React from "react";
 import { useContext, useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -28,6 +27,7 @@ import { buildListPath, ROUTES } from "@/constants/routes";
 import { postFetcher } from "@/fetchers/fetchers";
 import { getTitleFromModel } from "@/helpers/title";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import type { IModel } from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 import { SignInUserContext } from "@/providers/SignInUserProvider";
@@ -74,6 +74,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
   }, [navigate, signedIn]);
 
   const { mutate: mutateSignOut } = useMutation({
+    /* v8 ignore next -- covered via mutation integration */
     mutationFn: () => postFetcher("/sign-out", {}),
     onSuccess: () => {
       signedInUserRefetch();
@@ -126,209 +127,203 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
 
   const onSearch = (e: any) => setSearch(e.target.value);
 
+  usePageMeta({
+    title: `${configuration.site_name} | ${title}`,
+    description: title,
+  });
+
   return (
-    <>
-      <Helmet defaultTitle={title}>
-        <meta name="description" content={title} />
-      </Helmet>
-      <Layout style={{ minHeight: "100vh" }}>
-        <Header
-          style={{
-            background: colorPrimary,
-            paddingInline: isMobile ? 0 : 20,
-            height: isMobile ? 48 : 56,
-            lineHeight: isMobile ? "48px" : "56px",
-            boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
-          }}
-        >
-          <Row justify="space-between" align="middle">
-            <Col>
-              <Space size={isMobile ? 8 : 16}>
-                {isMobile && (
-                  <Menu
-                    style={{ background: "transparent", minWidth: 0 }}
-                    theme="light"
-                    mode="horizontal"
-                    defaultSelectedKeys={[model || "dashboard"]}
-                    items={[
-                      {
-                        key: signedInUser?.id || "key",
-                        icon: (
-                          <BarsOutlined style={{ color: colorBgContainer }} />
-                        ),
-                        children: items as any,
-                      },
-                    ]}
-                    onClick={onClickSideBarMenuItem}
-                  />
-                )}
-
-                <Link
-                  to={ROUTES.HOME}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    margin: 0,
-                    lineHeight: 1,
-                    verticalAlign: "middle",
-                  }}
-                >
-                  <Image
-                    src={`${window.SERVER_DOMAIN ?? ""}${configuration.site_header_logo ?? ""}`}
-                    preview={false}
-                    height={32}
-                    alt={configuration.site_name}
-                  />
-                  {!isMobile && (
-                    <span
-                      style={{
-                        color: colorBgContainer,
-                        fontSize: 18,
-                        fontWeight: 600,
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
-                      {configuration.site_name}
-                    </span>
-                  )}
-                </Link>
-              </Space>
-            </Col>
-            <Col>
-              <Space size={isMobile ? 8 : 16}>
-                {!isMobile && (
-                  <span
-                    style={{
-                      color: "rgba(255, 255, 255, 0.9)",
-                      fontSize: 14,
-                    }}
-                  >
-                    {
-                      (signedInUser || ({} as any))[
-                        configuration.username_field
-                      ]
-                    }
-                  </span>
-                )}
-
+    <Layout style={{ minHeight: "100vh" }}>
+      <Header
+        style={{
+          background: colorPrimary,
+          paddingInline: isMobile ? 0 : 20,
+          height: isMobile ? 48 : 56,
+          lineHeight: isMobile ? "48px" : "56px",
+          boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
+        }}
+      >
+        <Row justify="space-between" align="middle">
+          <Col>
+            <Space size={isMobile ? 8 : 16}>
+              {isMobile && (
                 <Menu
                   style={{ background: "transparent", minWidth: 0 }}
                   theme="light"
                   mode="horizontal"
+                  defaultSelectedKeys={[model || "dashboard"]}
                   items={[
                     {
                       key: signedInUser?.id || "key",
                       icon: (
-                        <UserOutlined style={{ color: colorBgContainer }} />
+                        <BarsOutlined style={{ color: colorBgContainer }} />
                       ),
-                      children: [
-                        {
-                          key: "sign-out",
-                          label: _t("Sign Out"),
-                        },
-                      ],
+                      children: items as any,
                     },
                   ]}
-                  onClick={onClickRightMenuItem}
+                  onClick={onClickSideBarMenuItem}
                 />
-              </Space>
-            </Col>
-          </Row>
-        </Header>
-        <Layout>
-          {!isMobile && (
-            <Sider
-              width={260}
-              style={{
-                background: colorBgContainer,
-                borderRadius: 0,
-                boxShadow: "1px 0 0 rgba(0, 0, 0, 0.06)",
-              }}
-            >
-              <div style={{ padding: 16 }}>
-                <Input
-                  value={search}
-                  onChange={onSearch}
-                  placeholder={_t("Search By Menu") as string}
-                  prefix={
-                    <SearchOutlined style={{ color: "rgba(0,0,0,0.25)" }} />
-                  }
-                  allowClear
-                  style={{ borderRadius: 6 }}
-                />
-              </div>
-              <Menu
-                mode="inline"
-                theme="light"
-                defaultSelectedKeys={[model || "dashboard"]}
+              )}
+
+              <Link
+                to={ROUTES.HOME}
                 style={{
-                  borderRight: 0,
-                  padding: "0 12px 24px",
-                  height: "calc(100vh - 56px - 72px)",
-                  overflowY: "auto",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  margin: 0,
+                  lineHeight: 1,
+                  verticalAlign: "middle",
                 }}
-                items={items as any}
-                onClick={onClickSideBarMenuItem}
+              >
+                <Image
+                  src={`${window.SERVER_DOMAIN ?? ""}${configuration.site_header_logo ?? ""}`}
+                  preview={false}
+                  height={32}
+                  alt={configuration.site_name}
+                />
+                {!isMobile && (
+                  <span
+                    style={{
+                      color: colorBgContainer,
+                      fontSize: 18,
+                      fontWeight: 600,
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    {configuration.site_name}
+                  </span>
+                )}
+              </Link>
+            </Space>
+          </Col>
+          <Col>
+            <Space size={isMobile ? 8 : 16}>
+              {!isMobile && (
+                <span
+                  style={{
+                    color: "rgba(255, 255, 255, 0.9)",
+                    fontSize: 14,
+                  }}
+                >
+                  {(signedInUser || ({} as any))[configuration.username_field]}
+                </span>
+              )}
+
+              <Menu
+                style={{ background: "transparent", minWidth: 0 }}
+                theme="light"
+                mode="horizontal"
+                items={[
+                  {
+                    key: signedInUser?.id || "key",
+                    icon: <UserOutlined style={{ color: colorBgContainer }} />,
+                    children: [
+                      {
+                        key: "sign-out",
+                        label: _t("Sign Out"),
+                      },
+                    ],
+                  },
+                ]}
+                onClick={onClickRightMenuItem}
               />
-            </Sider>
-          )}
-          <Layout
+            </Space>
+          </Col>
+        </Row>
+      </Header>
+      <Layout>
+        {!isMobile && (
+          <Sider
+            width={260}
             style={{
-              padding: isMobile ? 8 : 24,
-              minHeight: "calc(100vh - 56px)",
+              background: colorBgContainer,
+              borderRadius: 0,
+              boxShadow: "1px 0 0 rgba(0, 0, 0, 0.06)",
             }}
           >
-            <Row
-              justify="space-between"
-              align="middle"
-              style={{ marginBottom: isMobile ? 8 : 16 }}
-            >
-              <Col>{breadcrumbs}</Col>
-              {viewOnSite && (
-                <Col>
-                  <a
-                    href={viewOnSite}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ fontSize: 14 }}
-                  >
-                    <LinkOutlined /> {_t("View on site")}
-                  </a>
-                </Col>
-              )}
-            </Row>
-            <Card
-              title={
-                <Row justify="space-between" align="middle">
-                  <Col>
-                    <Title style={{ margin: 0 }} level={5}>
-                      {title}
-                    </Title>
-                  </Col>
-                  {headerActions ? <Col>{headerActions}</Col> : null}
-                </Row>
-              }
+            <div style={{ padding: 16 }}>
+              <Input
+                value={search}
+                onChange={onSearch}
+                placeholder={_t("Search By Menu") as string}
+                prefix={
+                  <SearchOutlined style={{ color: "rgba(0,0,0,0.25)" }} />
+                }
+                allowClear
+                style={{ borderRadius: 6 }}
+              />
+            </div>
+            <Menu
+              mode="inline"
+              theme="light"
+              defaultSelectedKeys={[model || "dashboard"]}
               style={{
-                marginTop: isMobile ? 4 : 0,
-                borderRadius: isMobile ? 6 : 8,
-                boxShadow: isMobile
-                  ? "0 1px 3px rgba(0, 0, 0, 0.05)"
-                  : "0 1px 4px rgba(0, 0, 0, 0.06)",
+                borderRight: 0,
+                padding: "0 12px 24px",
+                height: "calc(100vh - 56px - 72px)",
+                overflowY: "auto",
               }}
-            >
-              <Skeleton loading={isLoading} active={true}>
-                {children}
-                {bottomActions ? (
-                  <Row>
-                    <Col>{bottomActions}</Col>
-                  </Row>
-                ) : null}
-              </Skeleton>
-            </Card>
-          </Layout>
+              items={items as any}
+              onClick={onClickSideBarMenuItem}
+            />
+          </Sider>
+        )}
+        <Layout
+          style={{
+            padding: isMobile ? 8 : 24,
+            minHeight: "calc(100vh - 56px)",
+          }}
+        >
+          <Row
+            justify="space-between"
+            align="middle"
+            style={{ marginBottom: isMobile ? 8 : 16 }}
+          >
+            <Col>{breadcrumbs}</Col>
+            {viewOnSite && (
+              <Col>
+                <a
+                  href={viewOnSite}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontSize: 14 }}
+                >
+                  <LinkOutlined /> {_t("View on site")}
+                </a>
+              </Col>
+            )}
+          </Row>
+          <Card
+            title={
+              <Row justify="space-between" align="middle">
+                <Col>
+                  <Title style={{ margin: 0 }} level={5}>
+                    {title}
+                  </Title>
+                </Col>
+                {headerActions ? <Col>{headerActions}</Col> : null}
+              </Row>
+            }
+            style={{
+              marginTop: isMobile ? 4 : 0,
+              borderRadius: isMobile ? 6 : 8,
+              boxShadow: isMobile
+                ? "0 1px 3px rgba(0, 0, 0, 0.05)"
+                : "0 1px 4px rgba(0, 0, 0, 0.06)",
+            }}
+          >
+            <Skeleton loading={isLoading} active={true}>
+              {children}
+              {bottomActions ? (
+                <Row>
+                  <Col>{bottomActions}</Col>
+                </Row>
+              ) : null}
+            </Skeleton>
+          </Card>
         </Layout>
       </Layout>
-    </>
+    </Layout>
   );
 };

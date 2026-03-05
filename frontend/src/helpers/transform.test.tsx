@@ -243,6 +243,14 @@ describe("transform", () => {
     it("keeps time-only strings unchanged", () => {
       expect(transformColumnValueFromServer("12:00:00")).toBe("12:00:00");
     });
+    it("formats datetime values with dateTimeFormat", () => {
+      const r = transformColumnValueFromServer(
+        "2024-01-15T12:34:56",
+        undefined,
+        "YYYY-MM-DD HH:mm:ss",
+      );
+      expect(r).toBe("2024-01-15 12:34:56");
+    });
     it("returns value as-is for other types", () => {
       expect(transformColumnValueFromServer("hello")).toBe("hello");
       expect(transformColumnValueFromServer(42)).toBe(42);

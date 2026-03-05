@@ -42,10 +42,6 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-vi.mock("react-helmet-async", () => ({
-  Helmet: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
-
 vi.mock("@/hooks/useIsMobile", () => ({
   useIsMobile: () => mockUseIsMobile(),
 }));

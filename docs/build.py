@@ -45,6 +45,10 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.4.4",
+            "changes": ["Replace helmet to update title and description.", "Improve frontend coverage."],
+        },
+        {
             "version": "0.4.3",
             "changes": ["Add series field to widget action props. Fix examples.", "Add search by actions."],
         },

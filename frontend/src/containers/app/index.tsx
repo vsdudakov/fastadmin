@@ -1,7 +1,6 @@
 import { ConfigProvider } from "antd";
 import type React from "react";
 import { useContext } from "react";
-import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 import { Route, Routes } from "react-router-dom";
 
@@ -11,11 +10,17 @@ import { Change } from "@/containers/change";
 import { Index } from "@/containers/index";
 import { List } from "@/containers/list";
 import { SignIn } from "@/containers/sign-in";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 export const App: React.FC = () => {
   const { configuration } = useContext(ConfigurationContext);
   const { t: _t } = useTranslation("App");
+
+  usePageMeta({
+    faviconHref: `${window.SERVER_DOMAIN ?? ""}${configuration.site_favicon ?? ""}`,
+  });
+
   return (
     <ConfigProvider
       theme={{
@@ -58,16 +63,6 @@ export const App: React.FC = () => {
         },
       }}
     >
-      <Helmet
-        titleTemplate={`${configuration.site_name} | %s`}
-        defaultTitle={configuration.site_name}
-      >
-        <meta name="description" content={configuration.site_name} />
-        <link
-          rel="icon"
-          href={`${window.SERVER_DOMAIN ?? ""}${configuration.site_favicon ?? ""}`}
-        />
-      </Helmet>
       <Routes>
         <Route path={ROUTES.SIGN_IN} element={<SignIn />} />
         <Route path={ROUTES.HOME} element={<Index />} />

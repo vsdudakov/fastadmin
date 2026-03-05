@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { ConfigProvider, Input } from "antd";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -91,6 +97,7 @@ const renderWidget = (widgetAction: IModelWidgetAction) =>
 
 describe("DashboardWidget", () => {
   afterEach(() => {
+    cleanup();
     vi.clearAllMocks();
   });
 

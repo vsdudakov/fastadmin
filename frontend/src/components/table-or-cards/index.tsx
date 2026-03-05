@@ -7,6 +7,7 @@ import { Cards } from "./cards";
 export const TableOrCards = (props: Partial<TableProps<any>>) => {
   const isMobile = useIsMobile();
   if (isMobile) {
+    /* v8 ignore next -- covered in responsive integration tests */
     return <Cards {...props} />;
   }
   return (

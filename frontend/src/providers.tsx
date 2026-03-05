@@ -4,7 +4,6 @@ import type { Locale } from "antd/es/locale";
 import type { i18n } from "i18next";
 import i18next from "i18next";
 import type React from "react";
-import { HelmetProvider } from "react-helmet-async";
 import { I18nextProvider } from "react-i18next";
 import { HashRouter } from "react-router-dom";
 
@@ -39,9 +38,7 @@ export const ExternalProviders: React.FC<IExternalProviders> = ({
   <HashRouter>
     <QueryClientProvider client={client}>
       <I18nextProvider i18n={i18n ?? i18next}>
-        <ConfigProvider locale={locale}>
-          <HelmetProvider>{children}</HelmetProvider>
-        </ConfigProvider>
+        <ConfigProvider locale={locale}>{children}</ConfigProvider>
       </I18nextProvider>
     </QueryClientProvider>
   </HashRouter>

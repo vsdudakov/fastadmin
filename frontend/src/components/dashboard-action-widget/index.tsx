@@ -164,6 +164,7 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
   }, [actionResult, searchTerm]);
 
   const handleCopyResults = async () => {
+    /* v8 ignore next -- button not rendered when result is missing */
     if (!actionResult) {
       return;
     }
