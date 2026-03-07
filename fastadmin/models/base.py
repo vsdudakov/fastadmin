@@ -243,6 +243,12 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
+    async def pre_generate_models_schema(self) -> None:
+        """This method is used to pre-generate models schema.
+
+        :return: None.
+        """
+
     async def orm_get_list(
         self,
         offset: int | None = None,

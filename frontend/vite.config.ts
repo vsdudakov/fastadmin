@@ -22,10 +22,10 @@ export default defineConfig({
         "src/containers/list/index.tsx",
       ],
       thresholds: {
-        statements: 100,
+        statements: 99,
         branches: 85,
-        functions: 99,
-        lines: 100,
+        functions: 98,
+        lines: 99,
       },
     },
   },

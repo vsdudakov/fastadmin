@@ -45,6 +45,15 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.4.5",
+            "changes": [
+                "Add parent argument to widget action props.",
+                "Add wraps to decorator to keep the original function name and docstring.",
+                "Add pre_generate_models_schema method to ModelAdmin to pre-generate models schema.",
+                "Fix examples.",
+            ],
+        },
+        {
             "version": "0.4.4",
             "changes": ["Replace helmet to update title and description.", "Improve frontend coverage."],
         },

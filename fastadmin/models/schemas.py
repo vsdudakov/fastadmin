@@ -71,12 +71,24 @@ class WidgetActionChartProps:
 
 
 @dataclass
+class WidgetActionParentArgumentProps:
+    """Widget action parent argument props"""
+
+    name: str
+    value: tp.Any
+
+
+@dataclass
 class WidgetActionArgumentProps:
     """Widget action chart props"""
 
     name: str
     widget_type: WidgetType
     widget_props: dict | None = None
+
+    # if None, show always
+    # if not None, show only if parent selected/input value is equal to the parent_argument.value
+    parent_argument: WidgetActionParentArgumentProps | None = None
 
 
 @dataclass

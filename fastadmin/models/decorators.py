@@ -1,4 +1,6 @@
 import typing as tp
+from functools import wraps
+from inspect import iscoroutinefunction
 
 from fastadmin.models.schemas import (
     WidgetActionChartProps,
@@ -6,6 +8,22 @@ from fastadmin.models.schemas import (
     WidgetActionProps,
     WidgetActionType,
 )
+
+
+def _wrap_callable(func):
+    if iscoroutinefunction(func):
+
+        @wraps(func)
+        async def wrapped(*args, **kwargs):
+            return await func(*args, **kwargs)
+
+    else:
+
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            return func(*args, **kwargs)
+
+    return wrapped
 
 
 def action(
@@ -27,10 +45,12 @@ def action(
     """
 
     def decorator(func):
-        func.is_action = True
+        wrapped = _wrap_callable(func)
+
+        wrapped.is_action = True
         if description is not None:
-            func.short_description = description
-        return func
+            wrapped.short_description = description
+        return wrapped
 
     if function is None:
         return decorator
@@ -103,16 +123,18 @@ def widget_action(
     """
 
     def decorator(func):
-        func.is_widget_action = True
-        func.widget_action_type = widget_action_type
-        func.widget_action_props = widget_action_props
-        func.widget_action_filters = widget_action_filters
-        func.tab = tab
-        func.title = title
-        func.width = width
+        wrapped = _wrap_callable(func)
+
+        wrapped.is_widget_action = True
+        wrapped.widget_action_type = widget_action_type
+        wrapped.widget_action_props = widget_action_props
+        wrapped.widget_action_filters = widget_action_filters
+        wrapped.tab = tab
+        wrapped.title = title
+        wrapped.width = width
         if description is not None:
-            func.short_description = description
-        return func
+            wrapped.short_description = description
+        return wrapped
 
     if function is None:
         return decorator
@@ -137,9 +159,11 @@ def display(function=None, *, sorter: bool | str = False):
     """
 
     def decorator(func):
-        func.is_display = True
-        func.sorter = sorter
-        return func
+        wrapped = _wrap_callable(func)
+
+        wrapped.is_display = True
+        wrapped.sorter = sorter
+        return wrapped
 
     if function is None:
         return decorator

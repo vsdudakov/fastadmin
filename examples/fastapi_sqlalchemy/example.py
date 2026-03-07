@@ -19,6 +19,7 @@ from fastadmin import (
     WidgetActionChartProps,
     WidgetActionFilter,
     WidgetActionInputSchema,
+    WidgetActionParentArgumentProps,
     WidgetActionProps,
     WidgetActionResponseSchema,
     WidgetActionType,
@@ -92,6 +93,17 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
     ) -> None:
         # save file to media directory or to s3/filestorage here
         return f"/media/{file_name}"
+
+    async def pre_generate_models_schema(self) -> None:
+        sessionmaker = self.get_sessionmaker()
+        async with sessionmaker() as session:
+            result = await session.execute(select(self.model_cls.username))
+            options = list(result.scalars().all())
+        widget_action_props: WidgetActionProps = self.__class__.sales_action.widget_action_props
+        for argument in widget_action_props.arguments:
+            if argument.name == "username":
+                argument.widget_props["options"] = [{"label": option, "value": option} for option in options]
+                break
 
     @widget_action(
         widget_action_type=WidgetActionType.ChartLine,
@@ -289,12 +301,60 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
         widget_action_type=WidgetActionType.Action,
         widget_action_props=WidgetActionProps(
             arguments=[
+                # Example of using AsyncSelect widget with parentModel
                 WidgetActionArgumentProps(
-                    name="x",
+                    name="user_id",
+                    widget_type=WidgetType.AsyncSelect,
+                    widget_props={
+                        "required": True,
+                        "parentModel": "User",
+                        "idField": "id",
+                        "labelFields": ["__str__", "id"],
+                    },
+                ),
+                # Example of using Select widget with dynamically loaded options
+                WidgetActionArgumentProps(
+                    name="username",
+                    widget_type=WidgetType.Select,
+                    widget_props={
+                        "required": True,
+                        # dynamically load options from the database in pre_generate_models_schema method
+                        "options": [],
+                    },
+                ),
+                # Example of using parent argument with filtered children arguments
+                WidgetActionArgumentProps(
+                    name="type",
+                    widget_type=WidgetType.Select,
+                    widget_props={
+                        "required": True,
+                        "options": [
+                            {"label": "Sales", "value": "sales"},
+                            {"label": "Revenue", "value": "revenue"},
+                        ],
+                    },
+                ),
+                WidgetActionArgumentProps(
+                    name="sales_date",
                     widget_type=WidgetType.DatePicker,
                     widget_props={
                         "required": True,
                     },
+                    parent_argument=WidgetActionParentArgumentProps(
+                        name="type",
+                        value="sales",
+                    ),
+                ),
+                WidgetActionArgumentProps(
+                    name="revenue_date",
+                    widget_type=WidgetType.DatePicker,
+                    widget_props={
+                        "required": True,
+                    },
+                    parent_argument=WidgetActionParentArgumentProps(
+                        name="type",
+                        value="revenue",
+                    ),
                 ),
             ],
         ),

@@ -1,3 +1,4 @@
+import asyncio
 import os
 import uuid
 from collections.abc import AsyncGenerator
@@ -11,6 +12,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models import BaseEvent, Event, Tournament, User, db
 from pony.orm import commit, db_session
+from pony.orm import select as pony_select
 
 from fastadmin import (
     PonyORMInlineModelAdmin,
@@ -19,6 +21,7 @@ from fastadmin import (
     WidgetActionChartProps,
     WidgetActionFilter,
     WidgetActionInputSchema,
+    WidgetActionParentArgumentProps,
     WidgetActionProps,
     WidgetActionResponseSchema,
     WidgetActionType,
@@ -90,6 +93,18 @@ class UserModelAdmin(PonyORMModelAdmin):
     ) -> str:
         # save file to media directory or to s3/filestorage here
         return f"/media/{file_name}"
+
+    async def pre_generate_models_schema(self) -> None:
+        def get_options() -> list:
+            with db_session:
+                return [u.username for u in pony_select(u for u in User)]
+
+        options = await asyncio.to_thread(get_options)
+        widget_action_props: WidgetActionProps = self.__class__.sales_action.widget_action_props
+        for argument in widget_action_props.arguments:
+            if argument.name == "username":
+                argument.widget_props["options"] = [{"label": option, "value": option} for option in options]
+                break
 
     @widget_action(
         widget_action_type=WidgetActionType.ChartLine,
@@ -287,12 +302,60 @@ class UserModelAdmin(PonyORMModelAdmin):
         widget_action_type=WidgetActionType.Action,
         widget_action_props=WidgetActionProps(
             arguments=[
+                # Example of using AsyncSelect widget with parentModel
                 WidgetActionArgumentProps(
-                    name="x",
+                    name="user_id",
+                    widget_type=WidgetType.AsyncSelect,
+                    widget_props={
+                        "required": True,
+                        "parentModel": "User",
+                        "idField": "id",
+                        "labelFields": ["__str__", "id"],
+                    },
+                ),
+                # Example of using Select widget with dynamically loaded options
+                WidgetActionArgumentProps(
+                    name="username",
+                    widget_type=WidgetType.Select,
+                    widget_props={
+                        "required": True,
+                        # dynamically load options from the database in pre_generate_models_schema method
+                        "options": [],
+                    },
+                ),
+                # Example of using parent argument with filtered children arguments
+                WidgetActionArgumentProps(
+                    name="type",
+                    widget_type=WidgetType.Select,
+                    widget_props={
+                        "required": True,
+                        "options": [
+                            {"label": "Sales", "value": "sales"},
+                            {"label": "Revenue", "value": "revenue"},
+                        ],
+                    },
+                ),
+                WidgetActionArgumentProps(
+                    name="sales_date",
                     widget_type=WidgetType.DatePicker,
                     widget_props={
                         "required": True,
                     },
+                    parent_argument=WidgetActionParentArgumentProps(
+                        name="type",
+                        value="sales",
+                    ),
+                ),
+                WidgetActionArgumentProps(
+                    name="revenue_date",
+                    widget_type=WidgetType.DatePicker,
+                    widget_props={
+                        "required": True,
+                    },
+                    parent_argument=WidgetActionParentArgumentProps(
+                        name="type",
+                        value="revenue",
+                    ),
                 ),
             ],
         ),

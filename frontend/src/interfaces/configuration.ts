@@ -62,10 +62,16 @@ export interface IWidgetActionChartProps {
   series_color?: string[] | Record<string, string>;
 }
 
+export interface IWidgetActionParentArgumentProps {
+  name: string;
+  value: any;
+}
+
 export interface IWidgetActionArgumentProps {
   name: string;
   widget_type: EFieldWidgetType;
   widget_props?: Record<string, any>;
+  parent_argument?: IWidgetActionParentArgumentProps;
 }
 
 export interface IWidgetActionProps {

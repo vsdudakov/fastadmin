@@ -65,6 +65,36 @@ export const buildWidgetActionQuery = (
       value: transformValueToServer(values[arg.name]),
     }));
 
+export const areWidgetValuesEqual = (value: any, expectedValue: any) => {
+  const valueIsObject = typeof value === "object" && value !== null;
+  const expectedValueIsObject =
+    typeof expectedValue === "object" && expectedValue !== null;
+
+  if (valueIsObject || expectedValueIsObject) {
+    try {
+      return JSON.stringify(value) === JSON.stringify(expectedValue);
+    } catch {
+      return false;
+    }
+  }
+
+  return value === expectedValue;
+};
+
+export const isWidgetActionArgumentVisible = (
+  argument: IWidgetActionArgumentProps,
+  values: Record<string, any>,
+) => {
+  if (!argument.parent_argument) {
+    return true;
+  }
+
+  return areWidgetValuesEqual(
+    values[argument.parent_argument.name],
+    argument.parent_argument.value,
+  );
+};
+
 export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
   modelName,
   widgetAction,
@@ -88,6 +118,14 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
           []
         : [],
     [widgetAction.widget_action_props, widgetAction.widget_action_type],
+  );
+
+  const visibleActionArguments = useMemo(
+    () =>
+      actionArguments.filter((argument) =>
+        isWidgetActionArgumentVisible(argument, filtersState),
+      ),
+    [actionArguments, filtersState],
   );
 
   const getFilterWidget = useCallback(
@@ -127,16 +165,36 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
 
   const buildQueryFromValues = useCallback(
     (values: Record<string, any>) =>
-      buildWidgetActionQuery(actionArguments, values),
+      buildWidgetActionQuery(
+        actionArguments.filter((argument) =>
+          isWidgetActionArgumentVisible(argument, values),
+        ),
+        values,
+      ),
     [actionArguments],
   );
 
   const handleRunAction = async () => {
     const values = await filtersForm.validateFields();
-    setFiltersState(values);
+    const currentValues = {
+      ...filtersState,
+      ...values,
+    };
+    const nextFiltersState = actionArguments
+      .filter((argument) =>
+        isWidgetActionArgumentVisible(argument, currentValues),
+      )
+      .reduce(
+        (acc, argument) => {
+          acc[argument.name] = currentValues[argument.name];
+          return acc;
+        },
+        {} as Record<string, any>,
+      );
+    setFiltersState(nextFiltersState);
     setIsActionRunning(true);
     try {
-      const query = buildQueryFromValues(values);
+      const query = buildQueryFromValues(currentValues);
       const result = await postFetcher(
         `/widget-action/${modelName}/${widgetAction.name}`,
         {
@@ -195,10 +253,11 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
       <Row>
         <Col xs={24}>
           <Form form={filtersForm} onFinish={handleRunAction} layout="vertical">
-            {actionArguments.map((arg) => (
+            {visibleActionArguments.map((arg) => (
               <Form.Item
                 key={arg.name}
                 name={arg.name}
+                preserve={false}
                 label={getTitleFromFieldName(arg.name)}
                 rules={
                   arg.widget_props?.required
@@ -215,11 +274,13 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
                   arg.name,
                   arg,
                   filtersState[arg.name],
-                  (nextValue: any) =>
+                  (nextValue: any) => {
                     setFiltersState((prev) => ({
                       ...prev,
                       [arg.name]: nextValue,
-                    })),
+                    }));
+                    filtersForm.setFieldValue(arg.name, nextValue);
+                  },
                 )}
               </Form.Item>
             ))}

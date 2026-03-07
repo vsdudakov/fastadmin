@@ -115,6 +115,9 @@ async def generate_models_schema(
     for orm_model_cls, admin_model_obj in admin_models.items():
         if hasattr(admin_model_obj, "set_context"):
             admin_model_obj.set_context(request=request, user=user)
+        pre_generate_models_schema = getattr(admin_model_obj, "pre_generate_models_schema", None)
+        if callable(pre_generate_models_schema):
+            await pre_generate_models_schema()
         orm_model_fields = admin_model_obj.get_model_fields_with_widget_types()
         orm_model_fields_for_serialize = admin_model_obj.get_fields_for_serialize()
 

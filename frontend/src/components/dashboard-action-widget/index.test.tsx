@@ -48,9 +48,11 @@ vi.mock("react-i18next", async () => {
 
 import type { MessageType } from "antd/es/message/interface";
 import {
+  areWidgetValuesEqual,
   buildWidgetActionQuery,
   DashboardActionWidget,
   hasWidgetValue,
+  isWidgetActionArgumentVisible,
 } from "./index";
 
 const baseWidget: IModelWidgetAction = {
@@ -272,6 +274,90 @@ describe("DashboardWidget", () => {
         }),
       );
     });
+  });
+
+  it("shows child argument only when parent value matches", () => {
+    const typeArgument = {
+      name: "type",
+      widget_type: EFieldWidgetType.Input,
+    };
+    const salesDateArgument = {
+      name: "sales_date",
+      widget_type: EFieldWidgetType.DatePicker,
+      parent_argument: {
+        name: "type",
+        value: "sales",
+      },
+    };
+    const revenueDateArgument = {
+      name: "revenue_date",
+      widget_type: EFieldWidgetType.DatePicker,
+      parent_argument: {
+        name: "type",
+        value: "revenue",
+      },
+    };
+    const allArguments = [typeArgument, salesDateArgument, revenueDateArgument];
+
+    const salesValues = { type: "sales", sales_date: "2026-01-05" };
+    const salesVisibleArguments = allArguments.filter((argument) =>
+      isWidgetActionArgumentVisible(argument, salesValues),
+    );
+
+    expect(salesVisibleArguments).toEqual([typeArgument, salesDateArgument]);
+    expect(buildWidgetActionQuery(salesVisibleArguments, salesValues)).toEqual([
+      {
+        field_name: "type",
+        widget_type: EFieldWidgetType.Input,
+        value: "to-sales",
+      },
+      {
+        field_name: "sales_date",
+        widget_type: EFieldWidgetType.DatePicker,
+        value: "to-2026-01-05",
+      },
+    ]);
+
+    const revenueValues = { type: "revenue", revenue_date: "2026-01-06" };
+    const revenueVisibleArguments = allArguments.filter((argument) =>
+      isWidgetActionArgumentVisible(argument, revenueValues),
+    );
+
+    expect(revenueVisibleArguments).toEqual([
+      typeArgument,
+      revenueDateArgument,
+    ]);
+    expect(
+      buildWidgetActionQuery(revenueVisibleArguments, revenueValues),
+    ).toEqual([
+      {
+        field_name: "type",
+        widget_type: EFieldWidgetType.Input,
+        value: "to-revenue",
+      },
+      {
+        field_name: "revenue_date",
+        widget_type: EFieldWidgetType.DatePicker,
+        value: "to-2026-01-06",
+      },
+    ]);
+  });
+
+  it("matches parent values for object-like data", () => {
+    expect(
+      areWidgetValuesEqual(
+        { from: "2026-01-01", to: "2026-01-31" },
+        { from: "2026-01-01", to: "2026-01-31" },
+      ),
+    ).toBe(true);
+    expect(areWidgetValuesEqual(["a", "b"], ["a", "b"])).toBe(true);
+    expect(areWidgetValuesEqual(["a", "b"], ["a", "c"])).toBe(false);
+  });
+
+  it("areWidgetValuesEqual returns false when JSON.stringify throws", () => {
+    const circular: Record<string, unknown> = {};
+    circular.self = circular;
+    expect(areWidgetValuesEqual(circular, {})).toBe(false);
   });
 
   it("hasWidgetValue covers null, string and array branches", () => {
