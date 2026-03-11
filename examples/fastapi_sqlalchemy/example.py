@@ -36,6 +36,7 @@ from fastadmin import (
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 class UserModelAdmin(SqlAlchemyModelAdmin):
+    menu_section = "Users"
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")

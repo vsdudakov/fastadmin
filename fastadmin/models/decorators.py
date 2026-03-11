@@ -69,6 +69,7 @@ def widget_action(
     width: (
         tp.Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24] | None
     ) = None,  # width in 1-24 grid system
+    max_height: int | None = None,
 ):
     """Conveniently add attributes to a widget action function:
 
@@ -132,6 +133,7 @@ def widget_action(
         wrapped.tab = tab
         wrapped.title = title
         wrapped.width = width
+        wrapped.max_height = max_height
         if description is not None:
             wrapped.short_description = description
         return wrapped

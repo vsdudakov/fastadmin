@@ -90,6 +90,7 @@ export interface IModelWidgetAction {
   description?: string;
   tab: string;
   width?: number;
+  max_height?: number;
   widget_action_type: EDashboardWidgetType;
   widget_action_props?: IWidgetActionChartProps | IWidgetActionProps;
   widget_action_filters?: IWidgetActionFilter[];
@@ -145,6 +146,7 @@ interface IBaseModel {
   show_full_result_count?: boolean;
   verbose_name?: string;
   verbose_name_plural?: string;
+  menu_section?: string;
 
   widget_actions?: IModelWidgetAction[];
 }

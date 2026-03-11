@@ -38,6 +38,7 @@ from fastadmin import (
 
 @register(User)
 class UserModelAdmin(PonyORMModelAdmin):
+    menu_section = "Users"
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")

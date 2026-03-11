@@ -193,6 +193,10 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_4_6">v0.4.6</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_4_5">v0.4.5</a>
                 </li>
                 
@@ -371,7 +375,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.4.5</li>
+                    <li><strong>Version:</strong> 0.4.6</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -388,7 +392,7 @@
                     </li>
                     <li>
                       <strong>Updated:</strong>
-                      07 March 2026
+                      11 March 2026
                     </li>
                   </ul>
                 </div>
@@ -951,6 +955,7 @@ class UserAttachmentModelInline(TortoiseInlineModelAdmin):
 
 @register(User)
 class UserModelAdmin(TortoiseModelAdmin):
+    menu_section = "Users"
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")
@@ -1545,6 +1550,7 @@ class Event(BaseModel):
 
 @register(User)
 class UserModelAdmin(DjangoModelAdmin):
+    menu_section = "Users"
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")
@@ -1965,6 +1971,7 @@ from fastadmin import (
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 class UserModelAdmin(SqlAlchemyModelAdmin):
+    menu_section = "Users"
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")
@@ -2449,6 +2456,7 @@ from fastadmin import (
 
 @register(User)
 class UserModelAdmin(PonyORMModelAdmin):
+    menu_section = "Users"
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")
@@ -3661,6 +3669,10 @@ class EventAdmin(TortoiseModelAdmin):
 class ModelAdmin(BaseModelAdmin):
     """This class is used to create admin model class."""
 
+    # Optional section name for grouping models in the left menu.
+    # Example of usage: menu_section = "Users"
+    menu_section: str | None = None
+
     # Normally, objects have three save options: “Save”, “Save and continue editing”, and “Save and add another”.
     # If save_as is True, “Save and add another” will be replaced
     # by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.
@@ -4008,6 +4020,7 @@ class UserAttachmentModelInline(TortoiseInlineModelAdmin):
 
 @register(User)
 class UserModelAdmin(TortoiseModelAdmin):
+    menu_section = "Users"
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")
@@ -4602,6 +4615,7 @@ class Event(BaseModel):
 
 @register(User)
 class UserModelAdmin(DjangoModelAdmin):
+    menu_section = "Users"
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")
@@ -5022,6 +5036,7 @@ from fastadmin import (
 
 @register(User, sqlalchemy_sessionmaker=sqlalchemy_sessionmaker)
 class UserModelAdmin(SqlAlchemyModelAdmin):
+    menu_section = "Users"
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")
@@ -5506,6 +5521,7 @@ from fastadmin import (
 
 @register(User)
 class UserModelAdmin(PonyORMModelAdmin):
+    menu_section = "Users"
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")
@@ -6190,6 +6206,7 @@ def widget_action(
     width: (
         tp.Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24] | None
     ) = None,  # width in 1-24 grid system
+    max_height: int | None = None,
 ):
     """Conveniently add attributes to a widget action function:
 
@@ -6253,6 +6270,7 @@ def widget_action(
         wrapped.tab = tab
         wrapped.title = title
         wrapped.width = width
+        wrapped.max_height = max_height
         if description is not None:
             wrapped.short_description = description
         return wrapped
@@ -6496,6 +6514,103 @@ class WidgetActionType(str, Enum):
               
 
               
+              
+                <section id="v0_4_6">
+                <h3>v0.4.6</h3>
+
+                
+                  
+<p class="text-4">
+  Add max_height to widget action props.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Add highlight search results to widget action results.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Add copy to clipboard to widget action results.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Add expand results modal to widget action results.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Add menu_section to model admins.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
               
                 <section id="v0_4_5">
                 <h3>v0.4.5</h3>

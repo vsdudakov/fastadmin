@@ -239,4 +239,73 @@ describe("CrudContainer", () => {
     menus[menus.length - 1].onClick({ key: "unknown" });
     expect(mockMutateSignOut).toHaveBeenCalledTimes(0);
   });
+
+  it("groups models by menu_section and expands matching sections on search", () => {
+    const configurationWithSections = {
+      configuration: {
+        ...configurationValue.configuration,
+        models: [
+          {
+            name: "users",
+            permissions: [],
+            actions: [],
+            fields: [],
+            menu_section: "Account",
+          },
+          {
+            name: "posts",
+            permissions: [],
+            actions: [],
+            fields: [],
+            menu_section: "Content",
+          },
+        ],
+      },
+    };
+
+    mockUseIsMobile.mockReturnValue(false);
+
+    render(
+      <ConfigurationContext.Provider value={configurationWithSections}>
+        <SignInUserContext.Provider
+          value={
+            {
+              signedIn: true,
+              signedInUser: { id: "1", username: "bob" },
+              signedInUserRefetch: mockSignedInUserRefetch,
+            } as any
+          }
+        >
+          <CrudContainer title="Users">
+            <div>content</div>
+          </CrudContainer>
+        </SignInUserContext.Provider>
+      </ConfigurationContext.Provider>,
+    );
+
+    // desktop sidebar menu props (mode inline)
+    const inlineMenuProps = menuPropsRef.current.find(
+      (props: any) => props.mode === "inline",
+    );
+
+    expect(inlineMenuProps).toBeDefined();
+    // has grouped sections with children
+    const sectionItems = inlineMenuProps.items.filter(
+      (item: any) => item.key && String(item.key).startsWith("section-"),
+    );
+    expect(sectionItems).toHaveLength(2);
+    expect(sectionItems[0].children.length).toBe(1);
+
+    // trigger search to open all matching sections
+    fireEvent.click(
+      screen.getByRole("button", { name: "trigger-search-menu" }),
+    );
+
+    const updatedInlineMenu = menuPropsRef.current.find(
+      (props: any) => props.mode === "inline",
+    );
+    // Search term "use" narrows models to those whose name includes it,
+    // so only the "Account" section (with "users") remains expanded.
+    expect(updatedInlineMenu.defaultOpenKeys).toEqual(["section-Account"]);
+  });
 });

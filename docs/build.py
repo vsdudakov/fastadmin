@@ -45,6 +45,16 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.4.6",
+            "changes": [
+                "Add max_height to widget action props.",
+                "Add highlight search results to widget action results.",
+                "Add copy to clipboard to widget action results.",
+                "Add expand results modal to widget action results.",
+                "Add menu_section to model admins.",
+            ],
+        },
+        {
             "version": "0.4.5",
             "changes": [
                 "Add parent argument to widget action props.",

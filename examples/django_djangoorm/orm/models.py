@@ -99,6 +99,7 @@ class Event(BaseModel):
 
 @register(User)
 class UserModelAdmin(DjangoModelAdmin):
+    menu_section = "Users"
     list_display = ("id", "username", "is_superuser")
     list_display_links = ("id", "username")
     list_filter = ("id", "username", "is_superuser")

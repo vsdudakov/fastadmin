@@ -245,6 +245,7 @@ async def generate_models_schema(
                     title=widget_action_function.title,
                     tab=widget_action_function.tab,
                     width=widget_action_function.width,
+                    max_height=getattr(widget_action_function, "max_height", None),
                     description=getattr(widget_action_function, "short_description", None),
                     widget_action_type=widget_action_function.widget_action_type,
                     widget_action_props=widget_action_function.widget_action_props,
@@ -275,6 +276,7 @@ async def generate_models_schema(
                     show_full_result_count=admin_model_obj.show_full_result_count,
                     verbose_name=admin_model_obj.verbose_name,
                     verbose_name_plural=admin_model_obj.verbose_name_plural,
+                    menu_section=getattr(admin_model_obj, "menu_section", None),
                     # specific model fields
                     fieldsets=admin_model_obj.fieldsets,
                     save_on_top=admin_model_obj.save_on_top,

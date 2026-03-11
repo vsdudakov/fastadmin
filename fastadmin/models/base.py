@@ -666,6 +666,10 @@ class InlineModelAdmin(BaseModelAdmin):
 class ModelAdmin(BaseModelAdmin):
     """This class is used to create admin model class."""
 
+    # Optional section name for grouping models in the left menu.
+    # Example of usage: menu_section = "Users"
+    menu_section: str | None = None
+
     # Normally, objects have three save options: “Save”, “Save and continue editing”, and “Save and add another”.
     # If save_as is True, “Save and add another” will be replaced
     # by a “Save as new” button that creates a new object (with a new ID) rather than updating the existing object.

@@ -1,5 +1,6 @@
 import {
   CopyOutlined,
+  ExpandOutlined,
   InfoCircleOutlined,
   PlayCircleOutlined,
 } from "@ant-design/icons";
@@ -10,6 +11,7 @@ import {
   Divider,
   Form,
   Input,
+  Modal,
   message,
   Radio,
   Row,
@@ -17,8 +19,7 @@ import {
   Tooltip,
   theme,
 } from "antd";
-import type React from "react";
-import { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { postFetcher } from "@/fetchers/fetchers";
@@ -95,6 +96,9 @@ export const isWidgetActionArgumentVisible = (
   );
 };
 
+const escapeRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
   modelName,
   widgetAction,
@@ -108,6 +112,7 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
   const [actionResult, setActionResult] =
     useState<IWidgetActionResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isResultsModalVisible, setIsResultsModalVisible] = useState(false);
 
   const actionArguments: IWidgetActionArgumentProps[] = useMemo(
     () =>
@@ -221,6 +226,27 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
     );
   }, [actionResult, searchTerm]);
 
+  const highlightedResults = useMemo(() => {
+    const json = JSON.stringify(filteredData, null, 2);
+
+    if (!searchTerm.trim()) {
+      return json;
+    }
+
+    const term = searchTerm.toLowerCase();
+    const regex = new RegExp(`(${escapeRegExp(searchTerm)})`, "gi");
+    const parts = json.split(regex);
+
+    return parts.map((part, index) => {
+      const key = `${part}-${index}`;
+      return part.toLowerCase() === term ? (
+        <mark key={key}>{part}</mark>
+      ) : (
+        <React.Fragment key={key}>{part}</React.Fragment>
+      );
+    });
+  }, [filteredData, searchTerm]);
+
   const handleCopyResults = async () => {
     /* v8 ignore next -- button not rendered when result is missing */
     if (!actionResult) {
@@ -316,42 +342,104 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
       </Row>
 
       {!isActionRunning && actionResult && (
-        <Row>
-          <Divider />
-          <Col xs={24}>
-            <Row justify="space-between">
-              <Col xs={12}>
-                <Input.Search
-                  placeholder={_t("Search results")}
-                  onSearch={(value) => setSearchTerm(value)}
-                  enterButton
-                />
-              </Col>
-              <Col>
-                <Button
-                  type="primary"
-                  onClick={handleCopyResults}
-                  icon={<CopyOutlined />}
-                >
-                  {_t("Copy to clipboard")}
-                </Button>
-              </Col>
-            </Row>
-            <pre
-              style={{
-                marginTop: 12,
-                maxHeight: 240,
-                overflow: "auto",
-                background: "#fafafa",
-                padding: 8,
-                borderRadius: 4,
-                border: "1px solid #f0f0f0",
-              }}
+        <>
+          <Row>
+            <Divider />
+            <Col xs={24}>
+              <Row justify="space-between">
+                <Col xs={12}>
+                  <Input.Search
+                    placeholder={_t("Search results")}
+                    onSearch={(value) => setSearchTerm(value)}
+                    enterButton
+                  />
+                </Col>
+                <Col>
+                  <Space>
+                    <Tooltip title={_t("Expand results")}>
+                      <Button
+                        type="default"
+                        onClick={() => setIsResultsModalVisible(true)}
+                        icon={<ExpandOutlined />}
+                      />
+                    </Tooltip>
+                    <Tooltip title={_t("Copy to clipboard")}>
+                      <Button
+                        type="primary"
+                        onClick={handleCopyResults}
+                        icon={<CopyOutlined />}
+                      />
+                    </Tooltip>
+                  </Space>
+                </Col>
+              </Row>
+              <pre
+                style={{
+                  marginTop: 12,
+                  maxHeight: widgetAction.max_height || 240,
+                  overflow: "auto",
+                  background: "#fafafa",
+                  padding: 8,
+                  borderRadius: 4,
+                  border: "1px solid #f0f0f0",
+                }}
+              >
+                {highlightedResults}
+              </pre>
+            </Col>
+          </Row>
+          <Modal
+            open={isResultsModalVisible}
+            title={_t("Action results")}
+            onCancel={() => setIsResultsModalVisible(false)}
+            footer={null}
+            width="100%"
+            style={{ top: 0, paddingBottom: 0, marginTop: 20 }}
+            styles={{ body: { paddingTop: 0 } }}
+          >
+            <Space
+              orientation="vertical"
+              style={{ width: "100%" }}
+              size="middle"
             >
-              {JSON.stringify(filteredData, null, 2)}
-            </pre>
-          </Col>
-        </Row>
+              <Row justify="start" align="middle">
+                <Col xs={20}>
+                  <Input.Search
+                    style={{ marginTop: 12 }}
+                    placeholder={_t("Search results")}
+                    onSearch={(value) => setSearchTerm(value)}
+                    defaultValue={searchTerm}
+                    enterButton
+                  />
+                </Col>
+              </Row>
+              <pre
+                style={{
+                  flex: 1,
+                  maxHeight: "calc(100vh - 300px)",
+                  overflow: "auto",
+                  background: "#fafafa",
+                  padding: 12,
+                  borderRadius: 4,
+                  border: "1px solid #f0f0f0",
+                }}
+              >
+                {highlightedResults}
+              </pre>
+              <Row justify="end">
+                <Col>
+                  <Tooltip title={_t("Copy to clipboard")}>
+                    <Button
+                      type="primary"
+                      onClick={handleCopyResults}
+                      icon={<CopyOutlined />}
+                    />
+                  </Tooltip>
+                </Col>
+              </Row>
+            </Space>
+          </Modal>
+        </>
       )}
     </Card>
   );

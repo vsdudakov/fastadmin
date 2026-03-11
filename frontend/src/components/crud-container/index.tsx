@@ -19,7 +19,7 @@ import {
   theme,
 } from "antd";
 import type React from "react";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -102,6 +102,55 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
     }
   };
 
+  const hasSections = configuration.models.some(
+    (m: IModel) => m.menu_section && m.menu_section.trim().length > 0,
+  );
+
+  const filteredModels = useMemo(
+    () =>
+      configuration.models.filter(
+        (m: IModel) =>
+          !search ||
+          m.name.toLocaleLowerCase().includes(search?.toLocaleLowerCase()),
+      ),
+    [configuration.models, search],
+  );
+
+  const currentModelConfig = configuration.models.find(
+    (m: IModel) => m.name === model,
+  );
+
+  const currentSectionKey =
+    hasSections && currentModelConfig
+      ? `section-${
+          currentModelConfig.menu_section || _t("Other") || _t("Other")
+        }`
+      : undefined;
+
+  const autoOpenSectionKeys = useMemo(() => {
+    if (!hasSections) {
+      return [];
+    }
+
+    // If no search term, only expand the current section (if any)
+    if (!search || !search.trim()) {
+      return currentSectionKey ? [currentSectionKey] : [];
+    }
+
+    const sections = new Set<string>();
+
+    filteredModels.forEach((m) => {
+      const section = m.menu_section || _t("Other") || _t("Other");
+      sections.add(`section-${section}`);
+    });
+
+    if (currentSectionKey) {
+      sections.add(currentSectionKey);
+    }
+
+    return Array.from(sections);
+  }, [filteredModels, hasSections, currentSectionKey, search, _t]);
+
   const items = [
     {
       key: "dashboard",
@@ -111,18 +160,34 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
       key: "divider",
       type: "divider",
     },
-    ...configuration.models
-      .filter(
-        (m: IModel) =>
-          !search ||
-          m.name.toLocaleLowerCase().includes(search?.toLocaleLowerCase()),
-      )
-      .map((m: IModel) => {
-        return {
-          key: m.name,
-          label: getTitleFromModel(m),
-        };
-      }),
+    ...(hasSections
+      ? Object.entries(
+          filteredModels.reduce<Record<string, IModel[]>>(
+            (acc, modelConfig) => {
+              const section =
+                modelConfig.menu_section || _t("Other") || _t("Other");
+              if (!acc[section]) {
+                acc[section] = [];
+              }
+              acc[section].push(modelConfig);
+              return acc;
+            },
+            {},
+          ),
+        ).map(([section, models]) => ({
+          key: `section-${section}`,
+          label: section,
+          children: (models as IModel[]).map((m: IModel) => ({
+            key: m.name,
+            label: getTitleFromModel(m),
+          })),
+        }))
+      : filteredModels.map((m: IModel) => {
+          return {
+            key: m.name,
+            label: getTitleFromModel(m),
+          };
+        })),
   ];
 
   const onSearch = (e: any) => setSearch(e.target.value);
@@ -255,9 +320,11 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
               />
             </div>
             <Menu
+              key={search ? `menu-search-${search}` : "menu-default"}
               mode="inline"
               theme="light"
               defaultSelectedKeys={[model || "dashboard"]}
+              defaultOpenKeys={autoOpenSectionKeys}
               style={{
                 borderRight: 0,
                 padding: "0 12px 24px",

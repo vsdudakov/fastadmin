@@ -127,9 +127,7 @@ describe("DashboardWidget", () => {
 
       // results rendered with search and copy controls
       expect(screen.getByPlaceholderText("Search results")).toBeDefined();
-      expect(
-        screen.getByRole("button", { name: /Copy to clipboard/i }),
-      ).toBeDefined();
+      expect(screen.getByRole("button", { name: /Copy/i })).toBeDefined();
     });
   });
 
@@ -177,7 +175,7 @@ describe("DashboardWidget", () => {
     fireEvent.change(searchInput, { target: { value: "beta" } });
     fireEvent.click(screen.getByRole("button", { name: /search/i }));
 
-    fireEvent.click(screen.getByRole("button", { name: /Copy to clipboard/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Copy/i }));
 
     await waitFor(() => {
       expect(clipboardWrite).toHaveBeenCalledTimes(1);
@@ -187,14 +185,70 @@ describe("DashboardWidget", () => {
     fireEvent.click(screen.getByRole("button", { name: /Reset/i }));
 
     await waitFor(() => {
-      expect(
-        screen.queryByRole("button", { name: /Copy to clipboard/i }),
-      ).toBeNull();
+      expect(screen.queryByRole("button", { name: /Copy/i })).toBeNull();
     });
 
     (globalThis as any).navigator = originalNavigator;
     messageSpy.mockRestore();
   }, 10000);
+
+  it("copies filtered results again after search", async () => {
+    mockGetWidgetCls.mockReturnValue([Input, {}]);
+    mockPostFetcher.mockResolvedValue({
+      data: [
+        { id: 1, name: "alpha" },
+        { id: 2, name: "beta" },
+      ],
+    } as IWidgetActionResponse);
+
+    const originalNavigator = globalThis.navigator;
+    const clipboardWrite = vi.fn();
+    (globalThis as unknown as { navigator: Navigator }).navigator = {
+      ...originalNavigator,
+      clipboard: { writeText: clipboardWrite },
+    } as unknown as Navigator;
+
+    const messageSpy = vi
+      .spyOn(message, "success")
+      .mockImplementation(() => "success" as unknown as MessageType);
+
+    renderWidget({
+      ...baseWidget,
+      widget_action_props: {
+        arguments: [
+          {
+            name: "created_at",
+            widget_type: EFieldWidgetType.Input,
+            widget_props: { "data-testid": "range-input" },
+          },
+        ],
+      },
+    } as IModelWidgetAction);
+
+    const inputs = screen.getAllByTestId("range-input");
+    fireEvent.change(inputs[0], { target: { value: "2026-01-05" } });
+
+    fireEvent.click(
+      screen.getAllByRole("button", {
+        name: /Run Action/i,
+      })[0],
+    );
+
+    const searchInput = await screen.findByPlaceholderText("Search results");
+    fireEvent.change(searchInput, { target: { value: "beta" } });
+    fireEvent.click(screen.getByRole("button", { name: /search/i }));
+
+    // copy filtered results again
+    fireEvent.click(screen.getByRole("button", { name: /Copy/i }));
+
+    await waitFor(() => {
+      expect(clipboardWrite).toHaveBeenCalledTimes(1);
+      expect(messageSpy).toHaveBeenCalledWith("Results copied to clipboard");
+    });
+
+    (globalThis as any).navigator = originalNavigator;
+    messageSpy.mockRestore();
+  });
 
   it("handles default widget onChange branch", async () => {
     const CustomWidget = ({

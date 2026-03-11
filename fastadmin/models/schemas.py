@@ -124,6 +124,7 @@ class ModelWidgetAction:
     description: str | None
     tab: str
     width: int | None
+    max_height: int | None
     widget_action_type: WidgetActionType
     widget_action_props: WidgetActionChartProps | WidgetActionProps | None = None
     widget_action_filters: list[WidgetActionFilter] | None = None
@@ -211,6 +212,7 @@ class InlineModelSchema(BaseModelSchema):
 class ModelSchema(BaseModelSchema):
     """Model schema"""
 
+    menu_section: str | None
     fieldsets: Sequence[tuple[str | None, dict[str, Sequence[str]]]] | None
     save_on_top: bool | None
     save_as: bool | None
