@@ -192,7 +192,7 @@ describe("DashboardWidget", () => {
 
     (globalThis as any).navigator = originalNavigator;
     messageSpy.mockRestore();
-  }, 10000);
+  });
 
   it("copies filtered results again after search", async () => {
     mockGetWidgetCls.mockReturnValue([Input, {}]);
