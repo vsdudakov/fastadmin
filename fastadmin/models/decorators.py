@@ -61,6 +61,7 @@ def widget_action(
     function=None,
     *,
     tab: str = "Default",
+    sub_tab: str | None = None,
     title: str = "Action",
     description: str | None = None,
     widget_action_type: WidgetActionType = WidgetActionType.Action,
@@ -131,6 +132,7 @@ def widget_action(
         wrapped.widget_action_props = widget_action_props
         wrapped.widget_action_filters = widget_action_filters
         wrapped.tab = tab
+        wrapped.sub_tab = sub_tab
         wrapped.title = title
         wrapped.width = width
         wrapped.max_height = max_height

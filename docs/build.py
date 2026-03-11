@@ -45,6 +45,13 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.4.7",
+            "changes": [
+                "Add sub_tab to widget action props.",
+                "Dark mode support.",
+            ],
+        },
+        {
             "version": "0.4.6",
             "changes": [
                 "Add max_height to widget action props.",

@@ -1,4 +1,4 @@
-import { Col, Row } from "antd";
+import { Col, Row, theme } from "antd";
 import type React from "react";
 import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +22,9 @@ export const SignInContainer: React.FC<ISignInContainer> = ({
   const { configuration } = useContext(ConfigurationContext);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const {
+    token: { colorBgBase },
+  } = theme.useToken();
 
   useEffect(() => {
     if (signedIn) {
@@ -38,8 +41,7 @@ export const SignInContainer: React.FC<ISignInContainer> = ({
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(160deg, #f0f5ff 0%, #f5f5f5 50%, #e8f4f8 100%)",
+        background: colorBgBase,
         padding: isMobile ? 16 : 24,
       }}
     >

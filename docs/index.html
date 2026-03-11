@@ -193,6 +193,10 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_4_7">v0.4.7</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_4_6">v0.4.6</a>
                 </li>
                 
@@ -375,7 +379,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.4.6</li>
+                    <li><strong>Version:</strong> 0.4.7</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -1043,6 +1047,7 @@ class UserModelAdmin(TortoiseModelAdmin):
             ),
         ],
         tab="Analytics",
+        sub_tab="Sales",
         title="Sales over time",
         description="Line chart of sales",
         width=24,
@@ -1632,6 +1637,7 @@ class UserModelAdmin(DjangoModelAdmin):
             ),
         ],
         tab="Analytics",
+        sub_tab="Sales",
         title="Sales over time",
         description="Line chart of sales",
         width=24,
@@ -2069,6 +2075,7 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
             ),
         ],
         tab="Analytics",
+        sub_tab="Sales",
         title="Sales over time",
         description="Line chart of sales",
         width=24,
@@ -2553,6 +2560,7 @@ class UserModelAdmin(PonyORMModelAdmin):
             ),
         ],
         tab="Analytics",
+        sub_tab="Sales",
         title="Sales over time",
         description="Line chart of sales",
         width=24,
@@ -4108,6 +4116,7 @@ class UserModelAdmin(TortoiseModelAdmin):
             ),
         ],
         tab="Analytics",
+        sub_tab="Sales",
         title="Sales over time",
         description="Line chart of sales",
         width=24,
@@ -4697,6 +4706,7 @@ class UserModelAdmin(DjangoModelAdmin):
             ),
         ],
         tab="Analytics",
+        sub_tab="Sales",
         title="Sales over time",
         description="Line chart of sales",
         width=24,
@@ -5134,6 +5144,7 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
             ),
         ],
         tab="Analytics",
+        sub_tab="Sales",
         title="Sales over time",
         description="Line chart of sales",
         width=24,
@@ -5618,6 +5629,7 @@ class UserModelAdmin(PonyORMModelAdmin):
             ),
         ],
         tab="Analytics",
+        sub_tab="Sales",
         title="Sales over time",
         description="Line chart of sales",
         width=24,
@@ -6198,6 +6210,7 @@ def widget_action(
     function=None,
     *,
     tab: str = "Default",
+    sub_tab: str | None = None,
     title: str = "Action",
     description: str | None = None,
     widget_action_type: WidgetActionType = WidgetActionType.Action,
@@ -6268,6 +6281,7 @@ def widget_action(
         wrapped.widget_action_props = widget_action_props
         wrapped.widget_action_filters = widget_action_filters
         wrapped.tab = tab
+        wrapped.sub_tab = sub_tab
         wrapped.title = title
         wrapped.width = width
         wrapped.max_height = max_height
@@ -6514,6 +6528,49 @@ class WidgetActionType(str, Enum):
               
 
               
+              
+                <section id="v0_4_7">
+                <h3>v0.4.7</h3>
+
+                
+                  
+<p class="text-4">
+  Add sub_tab to widget action props.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Dark mode support.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
               
                 <section id="v0_4_6">
                 <h3>v0.4.6</h3>

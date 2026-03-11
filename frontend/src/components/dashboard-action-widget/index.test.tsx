@@ -8,6 +8,7 @@ import {
   type IModelWidgetAction,
   type IWidgetActionResponse,
 } from "@/interfaces/configuration";
+import { ThemeContext } from "@/providers/ThemeProvider";
 
 const { mockPostFetcher, mockGetWidgetCls, mockTransformValueToServer } =
   vi.hoisted(() => ({
@@ -63,10 +64,15 @@ const baseWidget: IModelWidgetAction = {
   widget_action_type: EDashboardWidgetType.Action,
 };
 
-const renderWidget = (widgetAction: IModelWidgetAction) =>
+const renderWidget = (
+  widgetAction: IModelWidgetAction,
+  mode: "light" | "dark" = "light",
+) =>
   render(
     <ConfigProvider>
-      <DashboardActionWidget modelName="Order" widgetAction={widgetAction} />
+      <ThemeContext.Provider value={{ mode, setMode: vi.fn() }}>
+        <DashboardActionWidget modelName="Order" widgetAction={widgetAction} />
+      </ThemeContext.Provider>
     </ConfigProvider>,
   );
 
@@ -124,10 +130,6 @@ describe("DashboardWidget", () => {
           query: expect.any(Array),
         }),
       );
-
-      // results rendered with search and copy controls
-      expect(screen.getByPlaceholderText("Search results")).toBeDefined();
-      expect(screen.getByRole("button", { name: /Copy/i })).toBeDefined();
     });
   });
 

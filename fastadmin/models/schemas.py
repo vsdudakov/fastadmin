@@ -123,6 +123,7 @@ class ModelWidgetAction:
     title: str
     description: str | None
     tab: str
+    sub_tab: str | None
     width: int | None
     max_height: int | None
     widget_action_type: WidgetActionType

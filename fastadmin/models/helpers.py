@@ -244,6 +244,7 @@ async def generate_models_schema(
                     name=widget_action,
                     title=widget_action_function.title,
                     tab=widget_action_function.tab,
+                    sub_tab=widget_action_function.sub_tab,
                     width=widget_action_function.width,
                     max_height=getattr(widget_action_function, "max_height", None),
                     description=getattr(widget_action_function, "short_description", None),

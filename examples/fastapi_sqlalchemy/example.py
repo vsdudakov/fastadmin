@@ -134,6 +134,7 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
             ),
         ],
         tab="Analytics",
+        sub_tab="Sales",
         title="Sales over time",
         description="Line chart of sales",
         width=24,

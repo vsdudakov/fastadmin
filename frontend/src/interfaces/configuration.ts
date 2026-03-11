@@ -89,6 +89,7 @@ export interface IModelWidgetAction {
   title: string;
   description?: string;
   tab: string;
+  sub_tab?: string;
   width?: number;
   max_height?: number;
   widget_action_type: EDashboardWidgetType;

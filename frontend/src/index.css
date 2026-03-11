@@ -38,6 +38,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+body[data-theme="dark"] {
+  color: rgba(255, 255, 255, 0.88);
+  background-color: #000000;
+}
+
 /* Accessible focus – visible outline for keyboard users */
 :focus-visible {
   outline: 2px solid var(--ant-color-primary, #1677ff);
@@ -71,6 +76,12 @@ code {
 
 .table-row-selected:hover {
   background-color: rgba(22, 119, 255, 0.1) !important;
+}
+
+.user-menu-username.ant-menu-item-disabled {
+  opacity: 1 !important;
+  color: #ffffff !important;
+  cursor: default;
 }
 
 /* Content area cards – consistent elevation */

@@ -33,17 +33,19 @@ import { EModelPermission } from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 export interface IAsyncSelect {
-  idField: string;
-  labelFields: string[];
+  idField?: string;
+  labelFields?: string[];
 
+  disableActionButton?: boolean;
   value?: any;
   parentModel: string;
   onChange?: (value: any) => void;
 }
 
 export const AsyncSelect: React.FC<IAsyncSelect> = ({
-  idField,
-  labelFields,
+  idField = "id",
+  labelFields = ["__str__"],
+  disableActionButton = false,
   value,
   parentModel,
   onChange,
@@ -179,18 +181,20 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
   return (
     <>
       <Space.Compact style={{ width: "100%" }}>
-        <Tooltip
-          title={_t(
-            `Add ${
-              modelConfiguration && getTitleFromModel(modelConfiguration)
-            }`,
-          )}
-        >
-          <Button onClick={onOpenAdd}>
-            <PlusCircleOutlined />
-          </Button>
-        </Tooltip>
-        {value && !isMultipleMode && (
+        {!disableActionButton && (
+          <Tooltip
+            title={_t(
+              `Add ${
+                modelConfiguration && getTitleFromModel(modelConfiguration)
+              }`,
+            )}
+          >
+            <Button onClick={onOpenAdd}>
+              <PlusCircleOutlined />
+            </Button>
+          </Tooltip>
+        )}
+        {!disableActionButton && value && !isMultipleMode && (
           <Tooltip
             title={_t(
               `Edit ${

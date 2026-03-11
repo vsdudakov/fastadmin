@@ -1,5 +1,5 @@
 import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, theme } from "antd";
 import type { Locale } from "antd/es/locale";
 import type { i18n } from "i18next";
 import i18next from "i18next";
@@ -9,6 +9,8 @@ import { HashRouter } from "react-router-dom";
 
 import { ConfigurationProvider } from "@/providers/ConfigurationProvider/provider";
 import { SignInUserProvider } from "@/providers/SignInUserProvider/provider";
+import { ThemeContext } from "@/providers/ThemeProvider";
+import { ThemeProvider } from "@/providers/ThemeProvider/provider";
 
 interface IInternalProviders {
   children?: React.ReactNode;
@@ -16,11 +18,29 @@ interface IInternalProviders {
 
 export const InternalProviders: React.FC<IInternalProviders> = ({
   children,
-}) => (
-  <SignInUserProvider>
-    <ConfigurationProvider>{children}</ConfigurationProvider>
-  </SignInUserProvider>
-);
+}) => {
+  const { defaultAlgorithm, darkAlgorithm } = theme;
+
+  return (
+    <ThemeProvider>
+      <ThemeContext.Consumer>
+        {({ mode }) => (
+          <SignInUserProvider>
+            <ConfigurationProvider>
+              <ConfigProvider
+                theme={{
+                  algorithm: mode === "dark" ? darkAlgorithm : defaultAlgorithm,
+                }}
+              >
+                {children}
+              </ConfigProvider>
+            </ConfigurationProvider>
+          </SignInUserProvider>
+        )}
+      </ThemeContext.Consumer>
+    </ThemeProvider>
+  );
+};
 
 interface IExternalProviders {
   children?: React.ReactNode;

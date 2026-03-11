@@ -16,7 +16,7 @@ import {
   theme,
 } from "antd";
 import type React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { postFetcher } from "@/fetchers/fetchers";
@@ -30,6 +30,7 @@ import {
   type IWidgetActionFilter,
   type IWidgetActionResponse,
 } from "@/interfaces/configuration";
+import { ThemeContext } from "@/providers/ThemeProvider";
 
 interface DashboardChartWidgetProps {
   modelName: string;
@@ -44,6 +45,7 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
 }) => {
   const { t: _t } = useTranslation("DashboardWidget");
   const { token } = useToken();
+  const { mode } = useContext(ThemeContext);
 
   const [filtersForm] = Form.useForm();
   const [filtersState, setFiltersState] = useState<Record<string, any>>({});
@@ -241,6 +243,17 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
               yField={chartProps.y_field}
               legend={{
                 position: "top-left",
+                color: {
+                  itemLabelFill: mode === "dark" ? "white" : "black",
+                },
+              }}
+              axis={{
+                x: {
+                  labelFill: mode === "dark" ? "white" : "black",
+                },
+                y: {
+                  labelFill: mode === "dark" ? "white" : "black",
+                },
               }}
               {...chartSeriesProps}
               {...(widgetAction.widget_action_props || {})}
@@ -256,6 +269,17 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
               yField={chartProps.y_field}
               legend={{
                 position: "top-left",
+                color: {
+                  itemLabelFill: mode === "dark" ? "white" : "black",
+                },
+              }}
+              axis={{
+                x: {
+                  labelFill: mode === "dark" ? "white" : "black",
+                },
+                y: {
+                  labelFill: mode === "dark" ? "white" : "black",
+                },
               }}
               {...chartSeriesProps}
               {...(widgetAction.widget_action_props || {})}
@@ -271,6 +295,17 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
               yField={chartProps.y_field}
               legend={{
                 position: "top-left",
+                color: {
+                  itemLabelFill: mode === "dark" ? "white" : "black",
+                },
+              }}
+              axis={{
+                x: {
+                  labelFill: mode === "dark" ? "white" : "black",
+                },
+                y: {
+                  labelFill: mode === "dark" ? "white" : "black",
+                },
               }}
               {...chartSeriesProps}
               {...(widgetAction.widget_action_props || {})}
@@ -285,6 +320,17 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
               yField={chartProps.y_field}
               legend={{
                 position: "top-left",
+                color: {
+                  itemLabelFill: mode === "dark" ? "white" : "black",
+                },
+              }}
+              axis={{
+                x: {
+                  labelFill: mode === "dark" ? "white" : "black",
+                },
+                y: {
+                  labelFill: mode === "dark" ? "white" : "black",
+                },
               }}
               {...chartSeriesProps}
               {...(widgetAction.widget_action_props || {})}
@@ -299,6 +345,17 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
               angleField={chartProps.y_field}
               legend={{
                 position: "top-left",
+                color: {
+                  itemLabelFill: mode === "dark" ? "white" : "black",
+                },
+              }}
+              axis={{
+                x: {
+                  labelFill: mode === "dark" ? "white" : "black",
+                },
+                y: {
+                  labelFill: mode === "dark" ? "white" : "black",
+                },
               }}
               {...(widgetAction.widget_action_props || {})}
             />
@@ -326,7 +383,7 @@ export const DashboardChartWidget: React.FC<DashboardChartWidgetProps> = ({
               </Button>
             </Space>
           }
-          destroyOnClose={true}
+          destroyOnHidden={true}
         >
           <Form form={filtersForm} layout="vertical">
             {filters.map((filter) => (

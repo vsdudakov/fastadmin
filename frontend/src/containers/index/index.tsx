@@ -53,24 +53,43 @@ export const Index: React.FC = () => {
 
   const filteredTabItems = useMemo(() => {
     const normalizedQuery = tabsSearch.trim().toLowerCase();
+
     return tabItems
       .map((tabItem) => {
-        const widgets = normalizedQuery
+        const tabWidgets = normalizedQuery
           ? tabItem.widgets.filter(({ widgetAction }) =>
               widgetAction.title.toLowerCase().includes(normalizedQuery),
             )
           : tabItem.widgets;
 
-        return {
-          key: tabItem.key,
-          label: tabItem.label,
-          widgets,
-          children: (
-            <Row gutter={[24, 24]}>
-              {widgets.map(({ modelName, widgetAction }) => (
+        // Group widgets by sub_tab within this tab
+        const subTabMap = tabWidgets.reduce(
+          (
+            acc,
+            widget: { modelName: string; widgetAction: IModelWidgetAction },
+          ) => {
+            const key = widget.widgetAction.sub_tab || "";
+            const existing = acc.get(key) || [];
+            existing.push(widget);
+            acc.set(key, existing);
+            return acc;
+          },
+          new Map<
+            string,
+            { modelName: string; widgetAction: IModelWidgetAction }[]
+          >(),
+        );
+
+        const subTabs = Array.from(subTabMap.entries());
+
+        const children =
+          subTabs.length <= 1 && !subTabs[0]?.[0] ? (
+            // No sub-tabs defined: render a single grid as before
+            <Row key={`widgets-grid-${tabItem.key}`} gutter={[24, 24]}>
+              {tabWidgets.map(({ modelName, widgetAction }) => (
                 <Col
                   xs={24}
-                  md={widgetAction.width || 12}
+                  md={widgetAction.width || 24}
                   key={`${modelName}-${widgetAction.name}`}
                 >
                   {widgetAction.widget_action_type ===
@@ -88,11 +107,50 @@ export const Index: React.FC = () => {
                 </Col>
               ))}
             </Row>
-          ),
+          ) : (
+            // At least one sub_tab present: render nested Tabs per sub_tab
+            <Tabs
+              key={`widgets-sub-tabs-${tabItem.key}`}
+              items={subTabs.map(([subTabKey, widgetsInSubTab]) => ({
+                key: subTabKey || "_default",
+                label: subTabKey || _t("Other"),
+                children: (
+                  <Row gutter={[24, 24]}>
+                    {widgetsInSubTab.map(({ modelName, widgetAction }) => (
+                      <Col
+                        xs={24}
+                        md={widgetAction.width || 24}
+                        key={`${modelName}-${widgetAction.name}`}
+                      >
+                        {widgetAction.widget_action_type ===
+                        EDashboardWidgetType.Action ? (
+                          <DashboardActionWidget
+                            modelName={modelName}
+                            widgetAction={widgetAction}
+                          />
+                        ) : (
+                          <DashboardChartWidget
+                            modelName={modelName}
+                            widgetAction={widgetAction}
+                          />
+                        )}
+                      </Col>
+                    ))}
+                  </Row>
+                ),
+              }))}
+            />
+          );
+
+        return {
+          key: tabItem.key,
+          label: tabItem.label,
+          widgets: tabWidgets,
+          children,
         };
       })
       .filter((tabItem) => tabItem.widgets.length > 0);
-  }, [tabItems, tabsSearch]);
+  }, [_t, tabItems, tabsSearch]);
 
   return (
     <CrudContainer title={_t("Dashboard")}>

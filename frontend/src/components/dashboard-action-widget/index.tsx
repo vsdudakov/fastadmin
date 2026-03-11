@@ -19,7 +19,7 @@ import {
   Tooltip,
   theme,
 } from "antd";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { postFetcher } from "@/fetchers/fetchers";
@@ -32,7 +32,11 @@ import type {
   IWidgetActionProps,
   IWidgetActionResponse,
 } from "@/interfaces/configuration";
-import { EDashboardWidgetType } from "@/interfaces/configuration";
+import {
+  EDashboardWidgetType,
+  EFieldWidgetType,
+} from "@/interfaces/configuration";
+import { ThemeContext } from "@/providers/ThemeProvider";
 
 interface DashboardActionWidgetProps {
   modelName: string;
@@ -105,6 +109,7 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
 }) => {
   const { t: _t } = useTranslation("DashboardWidget");
   const { token } = useToken();
+  const { mode } = useContext(ThemeContext);
 
   const [filtersForm] = Form.useForm();
   const [filtersState, setFiltersState] = useState<Record<string, any>>({});
@@ -160,6 +165,9 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
           placeholder={getTitleFromFieldName(key)}
           {...(widgetProps || {})}
           {...(config.widget_props || {})}
+          disableActionButton={
+            config.widget_type === EFieldWidgetType.AsyncSelect
+          }
           value={value}
           onChange={onChangeWidget}
         />
@@ -378,10 +386,15 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
                   marginTop: 12,
                   maxHeight: widgetAction.max_height || 240,
                   overflow: "auto",
-                  background: "#fafafa",
+                  background:
+                    mode === "dark" ? token.colorBgContainer : "#fafafa",
+                  color: mode === "dark" ? token.colorText : "inherit",
                   padding: 8,
                   borderRadius: 4,
-                  border: "1px solid #f0f0f0",
+                  border:
+                    mode === "dark"
+                      ? `1px solid ${token.colorBorderSecondary}`
+                      : "1px solid #f0f0f0",
                 }}
               >
                 {highlightedResults}
@@ -418,10 +431,15 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
                   flex: 1,
                   maxHeight: "calc(100vh - 300px)",
                   overflow: "auto",
-                  background: "#fafafa",
+                  background:
+                    mode === "dark" ? token.colorBgContainer : "#fafafa",
+                  color: mode === "dark" ? token.colorText : "inherit",
                   padding: 12,
                   borderRadius: 4,
-                  border: "1px solid #f0f0f0",
+                  border:
+                    mode === "dark"
+                      ? `1px solid ${token.colorBorderSecondary}`
+                      : "1px solid #f0f0f0",
                 }}
               >
                 {highlightedResults}

@@ -14,6 +14,7 @@ import {
   type IModelWidgetAction,
   type IWidgetActionResponse,
 } from "@/interfaces/configuration";
+import { ThemeContext } from "@/providers/ThemeProvider";
 
 const {
   mockUseQuery,
@@ -88,10 +89,15 @@ const baseWidget: IModelWidgetAction = {
   },
 };
 
-const renderWidget = (widgetAction: IModelWidgetAction) =>
+const renderWidget = (
+  widgetAction: IModelWidgetAction,
+  mode: "light" | "dark" = "light",
+) =>
   render(
     <ConfigProvider>
-      <DashboardChartWidget modelName="Order" widgetAction={widgetAction} />
+      <ThemeContext.Provider value={{ mode, setMode: vi.fn() }}>
+        <DashboardChartWidget modelName="Order" widgetAction={widgetAction} />
+      </ThemeContext.Provider>
     </ConfigProvider>,
   );
 
@@ -257,6 +263,35 @@ describe("DashboardWidget", () => {
     await waitFor(() => {
       expect(filtersButton.className).not.toContain("ant-btn-primary");
     });
+  });
+
+  it("applies dark mode legend and axis styles", () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: {
+        data: [{ day: "Mon", count: 2 }],
+      } as IWidgetActionResponse,
+    });
+
+    renderWidget(baseWidget, "dark");
+
+    expect(lineChartSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        legend: expect.objectContaining({
+          color: expect.objectContaining({
+            itemLabelFill: "white",
+          }),
+        }),
+        axis: expect.objectContaining({
+          x: expect.objectContaining({
+            labelFill: "white",
+          }),
+          y: expect.objectContaining({
+            labelFill: "white",
+          }),
+        }),
+      }),
+    );
   });
 
   it("handles default widget onChange branch", async () => {

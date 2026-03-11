@@ -1,7 +1,11 @@
 import {
   BarsOutlined,
   LinkOutlined,
+  LogoutOutlined,
+  MoonOutlined,
   SearchOutlined,
+  SettingOutlined,
+  SunOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
@@ -31,6 +35,7 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import type { IModel } from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 import { SignInUserContext } from "@/providers/SignInUserProvider";
+import { ThemeContext } from "@/providers/ThemeProvider";
 
 const { Header, Sider } = Layout;
 const { Title } = Typography;
@@ -61,6 +66,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
   const { configuration } = useContext(ConfigurationContext);
   const { signedInUser, signedInUserRefetch, signedIn } =
     useContext(SignInUserContext);
+  const { mode, setMode } = useContext(ThemeContext);
   const { t: _t } = useTranslation("CrudContainer");
 
   const {
@@ -92,10 +98,20 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
     }
   };
 
+  const toggleThemeMode = () => {
+    setMode(mode === "dark" ? "light" : "dark");
+  };
+
   const onClickRightMenuItem = (item: any) => {
     switch (item.key) {
+      case "theme":
+        toggleThemeMode();
+        break;
       case "sign-out":
         mutateSignOut();
+        break;
+      case "user":
+        navigate(ROUTES.HOME);
         break;
       default:
         break;
@@ -208,7 +224,20 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
           boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
         }}
       >
-        <Row justify="space-between" align="middle">
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{
+            paddingLeft: 0,
+            paddingRight: 0,
+          }}
+          // wrap={false}
+          // style={{
+          //   gap: isMobile ? 8 : 0,
+          //   flexDirection: isMobile ? "column" : "row",
+          //   alignItems: isMobile ? "stretch" : "center",
+          // }}
+        >
           <Col>
             <Space size={isMobile ? 8 : 16}>
               {isMobile && (
@@ -216,12 +245,17 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                   style={{ background: "transparent", minWidth: 0 }}
                   theme="light"
                   mode="horizontal"
+                  triggerSubMenuAction="click"
                   defaultSelectedKeys={[model || "dashboard"]}
                   items={[
                     {
                       key: signedInUser?.id || "key",
                       icon: (
-                        <BarsOutlined style={{ color: colorBgContainer }} />
+                        <BarsOutlined
+                          style={{
+                            color: mode === "dark" ? "white" : colorBgContainer,
+                          }}
+                        />
                       ),
                       children: items as any,
                     },
@@ -239,6 +273,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                   margin: 0,
                   lineHeight: 1,
                   verticalAlign: "middle",
+                  marginLeft: isMobile ? -24 : 0,
                 }}
               >
                 <Image
@@ -247,53 +282,72 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                   height={32}
                   alt={configuration.site_name}
                 />
-                {!isMobile && (
-                  <span
-                    style={{
-                      color: colorBgContainer,
-                      fontSize: 18,
-                      fontWeight: 600,
-                      letterSpacing: "-0.01em",
-                    }}
-                  >
-                    {configuration.site_name}
-                  </span>
-                )}
+                <span
+                  style={{
+                    color: mode === "dark" ? "white" : colorBgContainer,
+                    fontSize: 18,
+                    fontWeight: 600,
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  {configuration.site_name}
+                </span>
               </Link>
             </Space>
           </Col>
           <Col>
-            <Space size={isMobile ? 8 : 16}>
-              {!isMobile && (
-                <span
-                  style={{
-                    color: "rgba(255, 255, 255, 0.9)",
-                    fontSize: 14,
-                  }}
-                >
-                  {(signedInUser || ({} as any))[configuration.username_field]}
-                </span>
-              )}
-
-              <Menu
-                style={{ background: "transparent", minWidth: 0 }}
-                theme="light"
-                mode="horizontal"
-                items={[
-                  {
-                    key: signedInUser?.id || "key",
-                    icon: <UserOutlined style={{ color: colorBgContainer }} />,
-                    children: [
-                      {
-                        key: "sign-out",
-                        label: _t("Sign Out"),
-                      },
-                    ],
-                  },
-                ]}
-                onClick={onClickRightMenuItem}
-              />
-            </Space>
+            <Menu
+              style={{
+                background: "transparent",
+                minWidth: 0,
+                marginRight: isMobile ? -18 : -24,
+                marginTop: isMobile ? -18 : 0,
+                justifyContent: isMobile ? "flex-start" : "flex-end",
+              }}
+              theme="light"
+              mode="horizontal"
+              triggerSubMenuAction="click"
+              items={[
+                {
+                  key: "user-menu",
+                  icon: (
+                    <SettingOutlined
+                      style={{
+                        color: mode === "dark" ? "white" : colorBgContainer,
+                      }}
+                    />
+                  ),
+                  children: [
+                    {
+                      key: "user",
+                      icon: <UserOutlined />,
+                      label: (signedInUser || ({} as any))[
+                        configuration.username_field
+                      ],
+                    },
+                    {
+                      type: "divider",
+                    },
+                    {
+                      key: "theme",
+                      icon:
+                        mode === "dark" ? <SunOutlined /> : <MoonOutlined />,
+                      label:
+                        mode === "dark" ? _t("Light mode") : _t("Dark mode"),
+                    },
+                    {
+                      type: "divider",
+                    },
+                    {
+                      key: "sign-out",
+                      icon: <LogoutOutlined />,
+                      label: _t("Sign Out"),
+                    },
+                  ],
+                },
+              ]}
+              onClick={onClickRightMenuItem}
+            />
           </Col>
         </Row>
       </Header>
