@@ -14,8 +14,11 @@ from fastadmin.api.schemas import (
     SignInInputSchema,
 )
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
-from fastadmin.models.decorators import widget_action
+from fastadmin.models.decorators import action, widget_action
 from fastadmin.models.schemas import (
+    ActionInputSchema,
+    ActionResponseSchema,
+    ActionResponseType,
     WidgetActionChartProps,
     WidgetActionInputSchema,
     WidgetActionResponseSchema,
@@ -152,6 +155,50 @@ async def test_widget_action_not_registered(monkeypatch):
         )
     assert exc_info.value.status_code == 422
     assert exc_info.value.detail == "sales_chart action is not registered."
+
+
+async def test_action_accepts_arbitrary_string_ids(monkeypatch):
+    """action forwards plain string IDs (non-int/non-uuid) to handlers."""
+
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+
+    current_user = {"id": 1, "username": "admin"}
+    admin_user_model = SimpleNamespace(get_obj=AsyncMock(return_value=current_user))
+
+    captured = {}
+
+    class Admin:
+        actions = ("custom_action",)
+
+        def set_context(self, request=None, user=None):
+            return None
+
+        @action(description="custom")
+        async def custom_action(self, ids):
+            captured["ids"] = ids
+            return ActionResponseSchema(type=ActionResponseType.MESSAGE, data="ok")
+
+    admin_model = Admin()
+
+    def fake_get_admin_model(model_name):
+        if model_name == settings.ADMIN_USER_MODEL:
+            return admin_user_model
+        return None
+
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", fake_get_admin_model)
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    response = await ApiService().action(
+        "sid",
+        "Event",
+        "custom_action",
+        ActionInputSchema(ids=["custom-string-id"]),
+    )
+
+    assert response is not None
+    assert response.type == ActionResponseType.MESSAGE
+    assert response.data == "ok"
+    assert captured["ids"] == ["custom-string-id"]
 
 
 async def test_widget_action_model_not_registered(monkeypatch):

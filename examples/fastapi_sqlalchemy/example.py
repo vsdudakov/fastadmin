@@ -91,9 +91,17 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
-    ) -> None:
+    ) -> str:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
+        # return a full url to the file
+        return f"https://fastadmin.io/media/{file_name}"
 
     async def pre_generate_models_schema(self) -> None:
         sessionmaker = self.get_sessionmaker()

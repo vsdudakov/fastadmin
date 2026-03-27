@@ -338,7 +338,7 @@ class TortoiseMixin:
         remote_model = m2m_rel.remote_model
         return await m2m_rel.all().values_list(self.get_model_pk_name(remote_model), flat=True)
 
-    async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | UUID]) -> None:
+    async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | str | UUID]) -> None:
         """This method is used to get m2m ids.
 
         :params obj: an object.

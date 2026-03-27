@@ -313,7 +313,7 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | UUID]) -> None:
+    async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | str | UUID]) -> None:
         """This method is used to get m2m ids.
 
         :params obj: an object.

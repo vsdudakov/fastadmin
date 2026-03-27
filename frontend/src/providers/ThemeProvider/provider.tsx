@@ -15,9 +15,14 @@ const getInitialMode = (): ThemeMode => {
     return "light";
   }
 
-  const stored = window.localStorage.getItem(
-    THEME_STORAGE_KEY,
-  ) as ThemeMode | null;
+  const storage = window.localStorage;
+  const canReadStorage =
+    storage &&
+    typeof storage === "object" &&
+    typeof storage.getItem === "function";
+  const stored = canReadStorage
+    ? (storage.getItem(THEME_STORAGE_KEY) as ThemeMode | null)
+    : null;
   if (stored === "light" || stored === "dark") {
     return stored;
   }
@@ -33,11 +38,14 @@ export const ThemeProvider: React.FC<IThemeProviderProps> = ({ children }) => {
   const [mode, setMode] = useState<ThemeMode>(getInitialMode);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
+    const storage = window.localStorage;
+    if (
+      storage &&
+      typeof storage === "object" &&
+      typeof storage.setItem === "function"
+    ) {
+      storage.setItem(THEME_STORAGE_KEY, mode);
     }
-
-    window.localStorage.setItem(THEME_STORAGE_KEY, mode);
     document.body.setAttribute("data-theme", mode);
   }, [mode]);
 

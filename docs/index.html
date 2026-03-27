@@ -193,6 +193,10 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_4_8">v0.4.8</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_4_7">v0.4.7</a>
                 </li>
                 
@@ -379,7 +383,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.4.7</li>
+                    <li><strong>Version:</strong> 0.4.8</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -396,7 +400,7 @@
                     </li>
                     <li>
                       <strong>Updated:</strong>
-                      11 March 2026
+                      27 March 2026
                     </li>
                   </ul>
                 </div>
@@ -952,9 +956,17 @@ class UserAttachmentModelInline(TortoiseInlineModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
-    ) -> None:
+    ) -> str:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
+        # return a full url to the file
+        return f"https://fastadmin.io/media/{file_name}"
 
 
 @register(User)
@@ -1589,14 +1601,22 @@ class UserModelAdmin(DjangoModelAdmin):
         user.password = password
         user.save()
 
-    def upload_file(
+    async def upload_file(
         self,
         field_name: str,
         file_name: str,
         file_content: bytes,
     ) -> str:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
+        # return a full url to the file
+        return f"https://fastadmin.io/media/{file_name}"
 
     async def pre_generate_models_schema(self) -> None:
         def get_options() -> list:
@@ -2032,9 +2052,17 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
-    ) -> None:
+    ) -> str:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
+        # return a full url to the file
+        return f"https://fastadmin.io/media/{file_name}"
 
     async def pre_generate_models_schema(self) -> None:
         sessionmaker = self.get_sessionmaker()
@@ -2511,14 +2539,22 @@ class UserModelAdmin(PonyORMModelAdmin):
         obj.password = password
         commit()
 
-    def upload_file(
+    async def upload_file(
         self,
         field_name: str,
         file_name: str,
         file_content: bytes,
     ) -> str:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
+        # return a full url to the file
+        return f"https://fastadmin.io/media/{file_name}"
 
     async def pre_generate_models_schema(self) -> None:
         def get_options() -> list:
@@ -3259,7 +3295,7 @@ class BaseModelAdmin:
         """
         raise NotImplementedError
 
-    async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | UUID]) -> None:
+    async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | str | UUID]) -> None:
         """This method is used to get m2m ids.
 
         :params obj: an object.
@@ -4021,9 +4057,17 @@ class UserAttachmentModelInline(TortoiseInlineModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
-    ) -> None:
+    ) -> str:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
+        # return a full url to the file
+        return f"https://fastadmin.io/media/{file_name}"
 
 
 @register(User)
@@ -4658,14 +4702,22 @@ class UserModelAdmin(DjangoModelAdmin):
         user.password = password
         user.save()
 
-    def upload_file(
+    async def upload_file(
         self,
         field_name: str,
         file_name: str,
         file_content: bytes,
     ) -> str:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
+        # return a full url to the file
+        return f"https://fastadmin.io/media/{file_name}"
 
     async def pre_generate_models_schema(self) -> None:
         def get_options() -> list:
@@ -5101,9 +5153,17 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
-    ) -> None:
+    ) -> str:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
+        # return a full url to the file
+        return f"https://fastadmin.io/media/{file_name}"
 
     async def pre_generate_models_schema(self) -> None:
         sessionmaker = self.get_sessionmaker()
@@ -5580,14 +5640,22 @@ class UserModelAdmin(PonyORMModelAdmin):
         obj.password = password
         commit()
 
-    def upload_file(
+    async def upload_file(
         self,
         field_name: str,
         file_name: str,
         file_content: bytes,
     ) -> str:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
+        # return a full url to the file
+        return f"https://fastadmin.io/media/{file_name}"
 
     async def pre_generate_models_schema(self) -> None:
         def get_options() -> list:
@@ -6528,6 +6596,103 @@ class WidgetActionType(str, Enum):
               
 
               
+              
+                <section id="v0_4_8">
+                <h3>v0.4.8</h3>
+
+                
+                  
+<p class="text-4">
+  Add toolbar actions to widget action results.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Add table view to widget action results.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Add JSON view to widget action results.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Enhance a documentation for upload_file method.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                  
+<p class="text-4">
+  Add str type for pk.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
               
                 <section id="v0_4_7">
                 <h3>v0.4.7</h3>

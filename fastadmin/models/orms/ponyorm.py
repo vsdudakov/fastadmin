@@ -408,7 +408,7 @@ class PonyORMMixin:
 
     @sync_to_async
     @db_session
-    def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | UUID]) -> None:
+    def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | str | UUID]) -> None:
         """This method is used to get m2m ids.
 
         :params obj: an object.
@@ -425,7 +425,17 @@ class PonyORMMixin:
         if ids:
             rel_model_cls = getattr(self.model_cls, field).py_type
             rel_key_id = self.get_model_pk_name(rel_model_cls)
-            rel_objs = list(rel_model_cls.select(lambda o: getattr(o, rel_key_id) in ids))
+            rel_id_type = getattr(getattr(rel_model_cls, "_pk_", None), "py_type", None)
+            normalized_ids = []
+            for rel_id in ids:
+                normalized_id = rel_id
+                if rel_id_type:
+                    try:
+                        normalized_id = rel_id_type(rel_id)
+                    except (ValueError, TypeError) as e:
+                        raise ValueError(f"Invalid id {rel_id!r} for relation {field}.") from e
+                normalized_ids.append(normalized_id)
+            rel_objs = list(rel_model_cls.select(lambda o: getattr(o, rel_key_id) in normalized_ids))
             getattr(obj, field).add(rel_objs)
         flush()
         commit()

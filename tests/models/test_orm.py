@@ -669,6 +669,19 @@ async def test_sqlalchemy_m2m_edge_cases(event, session_with_type):
     await admin_model.orm_save_m2m_ids(SimpleNamespace(id=0), "participants", [1])
 
 
+async def test_orm_save_m2m_ids_accepts_str_ids_smoke(event, user, session_with_type):
+    """Smoke test: all ORMs accept string IDs for m2m save."""
+    _, session_type = session_with_type
+    if session_type not in {"sqlalchemy", "djangoorm", "tortoiseorm", "ponyorm"}:
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    await admin_model.orm_save_m2m_ids(event, "participants", [str(user.id)])
+    participant_ids = await admin_model.orm_get_m2m_ids(event, "participants")
+
+    assert str(user.id) in {str(participant_id) for participant_id in participant_ids}
+
+
 def test_ponyorm_field_mapping_special_cases():
     from types import SimpleNamespace
 
@@ -834,6 +847,24 @@ async def test_ponyorm_edge_cases(event, session_with_type):
         )
     ]
     assert await admin_model.serialize_obj_attributes(SimpleNamespace(id=-1), attrs) == {}
+
+
+async def test_ponyorm_orm_save_m2m_ids_normalizes_and_rejects_bad_str_ids(event, user, session_with_type):
+    import pytest
+
+    _, session_type = session_with_type
+    if session_type != "ponyorm":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    # Valid string IDs are still accepted.
+    await admin_model.orm_save_m2m_ids(event, "participants", [str(user.id)])
+    participant_ids = await admin_model.orm_get_m2m_ids(event, "participants")
+    assert str(user.id) in {str(participant_id) for participant_id in participant_ids}
+
+    # Invalid string IDs should fail fast with a clear error.
+    with pytest.raises(ValueError, match="Invalid id"):
+        await admin_model.orm_save_m2m_ids(event, "participants", ["not-a-valid-id"])
 
 
 async def test_ponyorm_serialize_obj_by_id_relation_values_are_primitives(event, session_with_type):

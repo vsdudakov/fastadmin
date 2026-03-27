@@ -45,6 +45,16 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.4.8",
+            "changes": [
+                "Add toolbar actions to widget action results.",
+                "Add table view to widget action results.",
+                "Add JSON view to widget action results.",
+                "Enhance a documentation for upload_file method.",
+                "Add str type for pk.",
+            ],
+        },
+        {
             "version": "0.4.7",
             "changes": [
                 "Add sub_tab to widget action props.",

@@ -173,6 +173,8 @@ describe("DashboardWidget", () => {
     })[0];
     fireEvent.click(runButton);
 
+    fireEvent.click(await screen.findByRole("button", { name: "JSON" }));
+
     const searchInput = await screen.findByPlaceholderText("Search results");
     fireEvent.change(searchInput, { target: { value: "beta" } });
     fireEvent.click(screen.getByRole("button", { name: /search/i }));
@@ -235,6 +237,8 @@ describe("DashboardWidget", () => {
         name: /Run Action/i,
       })[0],
     );
+
+    fireEvent.click(await screen.findByRole("button", { name: "JSON" }));
 
     const searchInput = await screen.findByPlaceholderText("Search results");
     fireEvent.change(searchInput, { target: { value: "beta" } });

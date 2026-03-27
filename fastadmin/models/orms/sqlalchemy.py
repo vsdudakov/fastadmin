@@ -467,7 +467,7 @@ class SqlAlchemyMixin:
             rel_pk_name = self.get_model_pk_name(related_class)
             return [getattr(related_obj, rel_pk_name) for related_obj in getattr(loaded, field, [])]
 
-    async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | UUID]) -> None:
+    async def orm_save_m2m_ids(self, obj: Any, field: str, ids: list[int | str | UUID]) -> None:
         """This method is used to get m2m ids.
 
         :params obj: an object.

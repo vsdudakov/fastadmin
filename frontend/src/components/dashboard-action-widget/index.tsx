@@ -1,25 +1,18 @@
-import {
-  CopyOutlined,
-  ExpandOutlined,
-  InfoCircleOutlined,
-  PlayCircleOutlined,
-} from "@ant-design/icons";
+import { InfoCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
 import {
   Button,
   Card,
   Col,
-  Divider,
   Form,
   Input,
-  Modal,
-  message,
   Radio,
   Row,
   Space,
   Tooltip,
   theme,
 } from "antd";
-import React, { useCallback, useContext, useMemo, useState } from "react";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { postFetcher } from "@/fetchers/fetchers";
@@ -36,7 +29,9 @@ import {
   EDashboardWidgetType,
   EFieldWidgetType,
 } from "@/interfaces/configuration";
-import { ThemeContext } from "@/providers/ThemeProvider";
+
+import { ActionJsonResults } from "./action-json-results";
+import { ActionTableResults } from "./action-table-results";
 
 interface DashboardActionWidgetProps {
   modelName: string;
@@ -100,24 +95,19 @@ export const isWidgetActionArgumentVisible = (
   );
 };
 
-const escapeRegExp = (value: string) =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
   modelName,
   widgetAction,
 }) => {
   const { t: _t } = useTranslation("DashboardWidget");
   const { token } = useToken();
-  const { mode } = useContext(ThemeContext);
 
   const [filtersForm] = Form.useForm();
   const [filtersState, setFiltersState] = useState<Record<string, any>>({});
   const [isActionRunning, setIsActionRunning] = useState(false);
   const [actionResult, setActionResult] =
     useState<IWidgetActionResponse | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isResultsModalVisible, setIsResultsModalVisible] = useState(false);
+  const [resultsView, setResultsView] = useState<"table" | "json">("json");
 
   const actionArguments: IWidgetActionArgumentProps[] = useMemo(
     () =>
@@ -215,53 +205,10 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
         },
       );
       setActionResult(result as IWidgetActionResponse);
-      setSearchTerm("");
+      setResultsView("json");
     } finally {
       setIsActionRunning(false);
     }
-  };
-
-  const filteredData = useMemo(() => {
-    if (!actionResult) {
-      return [];
-    }
-    if (!searchTerm.trim()) {
-      return actionResult.data;
-    }
-    const term = searchTerm.toLowerCase();
-    return actionResult.data.filter((row) =>
-      JSON.stringify(row).toLowerCase().includes(term),
-    );
-  }, [actionResult, searchTerm]);
-
-  const highlightedResults = useMemo(() => {
-    const json = JSON.stringify(filteredData, null, 2);
-
-    if (!searchTerm.trim()) {
-      return json;
-    }
-
-    const term = searchTerm.toLowerCase();
-    const regex = new RegExp(`(${escapeRegExp(searchTerm)})`, "gi");
-    const parts = json.split(regex);
-
-    return parts.map((part, index) => {
-      const key = `${part}-${index}`;
-      return part.toLowerCase() === term ? (
-        <mark key={key}>{part}</mark>
-      ) : (
-        <React.Fragment key={key}>{part}</React.Fragment>
-      );
-    });
-  }, [filteredData, searchTerm]);
-
-  const handleCopyResults = async () => {
-    /* v8 ignore next -- button not rendered when result is missing */
-    if (!actionResult) {
-      return;
-    }
-    await navigator.clipboard.writeText(JSON.stringify(filteredData, null, 2));
-    message.success(_t("Results copied to clipboard"));
   };
 
   const titleNode = (
@@ -273,6 +220,23 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
         </Tooltip>
       )}
     </Space>
+  );
+
+  const resultsViewSwitcher = (
+    <Space.Compact>
+      <Button
+        type={resultsView === "table" ? "primary" : "default"}
+        onClick={() => setResultsView("table")}
+      >
+        {_t("Table")}
+      </Button>
+      <Button
+        type={resultsView === "json" ? "primary" : "default"}
+        onClick={() => setResultsView("json")}
+      >
+        {_t("JSON")}
+      </Button>
+    </Space.Compact>
   );
 
   return (
@@ -320,18 +284,17 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
             ))}
             <Row justify="space-between">
               <Col>
-                {filteredData.length > 0 && (
+                {actionResult?.data?.length ? (
                   <Button
                     danger
                     onClick={() => {
                       setFiltersState({});
-                      setSearchTerm("");
                       setActionResult(null);
                     }}
                   >
                     {_t("Reset")}
                   </Button>
-                )}
+                ) : null}
               </Col>
               <Col>
                 <Button
@@ -349,116 +312,20 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
         </Col>
       </Row>
 
-      {!isActionRunning && actionResult && (
-        <>
-          <Row>
-            <Divider />
-            <Col xs={24}>
-              <Row justify="space-between">
-                <Col xs={12}>
-                  <Input.Search
-                    placeholder={_t("Search results")}
-                    onSearch={(value) => setSearchTerm(value)}
-                    enterButton
-                  />
-                </Col>
-                <Col>
-                  <Space>
-                    <Tooltip title={_t("Expand results")}>
-                      <Button
-                        type="default"
-                        onClick={() => setIsResultsModalVisible(true)}
-                        icon={<ExpandOutlined />}
-                      />
-                    </Tooltip>
-                    <Tooltip title={_t("Copy to clipboard")}>
-                      <Button
-                        type="primary"
-                        onClick={handleCopyResults}
-                        icon={<CopyOutlined />}
-                      />
-                    </Tooltip>
-                  </Space>
-                </Col>
-              </Row>
-              <pre
-                style={{
-                  marginTop: 12,
-                  maxHeight: widgetAction.max_height || 240,
-                  overflow: "auto",
-                  background:
-                    mode === "dark" ? token.colorBgContainer : "#fafafa",
-                  color: mode === "dark" ? token.colorText : "inherit",
-                  padding: 8,
-                  borderRadius: 4,
-                  border:
-                    mode === "dark"
-                      ? `1px solid ${token.colorBorderSecondary}`
-                      : "1px solid #f0f0f0",
-                }}
-              >
-                {highlightedResults}
-              </pre>
-            </Col>
-          </Row>
-          <Modal
-            open={isResultsModalVisible}
-            title={_t("Action results")}
-            onCancel={() => setIsResultsModalVisible(false)}
-            footer={null}
-            width="100%"
-            style={{ top: 0, paddingBottom: 0, marginTop: 20 }}
-            styles={{ body: { paddingTop: 0 } }}
-          >
-            <Space
-              orientation="vertical"
-              style={{ width: "100%" }}
-              size="middle"
-            >
-              <Row justify="start" align="middle">
-                <Col xs={20}>
-                  <Input.Search
-                    style={{ marginTop: 12 }}
-                    placeholder={_t("Search results")}
-                    onSearch={(value) => setSearchTerm(value)}
-                    defaultValue={searchTerm}
-                    enterButton
-                  />
-                </Col>
-              </Row>
-              <pre
-                style={{
-                  flex: 1,
-                  maxHeight: "calc(100vh - 300px)",
-                  overflow: "auto",
-                  background:
-                    mode === "dark" ? token.colorBgContainer : "#fafafa",
-                  color: mode === "dark" ? token.colorText : "inherit",
-                  padding: 12,
-                  borderRadius: 4,
-                  border:
-                    mode === "dark"
-                      ? `1px solid ${token.colorBorderSecondary}`
-                      : "1px solid #f0f0f0",
-                }}
-              >
-                {highlightedResults}
-              </pre>
-              <Row justify="end">
-                <Col>
-                  <Tooltip title={_t("Copy to clipboard")}>
-                    <Button
-                      type="primary"
-                      onClick={handleCopyResults}
-                      icon={<CopyOutlined />}
-                    />
-                  </Tooltip>
-                </Col>
-              </Row>
-            </Space>
-          </Modal>
-        </>
-      )}
+      {!isActionRunning &&
+        actionResult &&
+        (resultsView === "table" ? (
+          <ActionTableResults
+            actionResult={actionResult}
+            toolbarActions={resultsViewSwitcher}
+          />
+        ) : (
+          <ActionJsonResults
+            actionResult={actionResult}
+            maxHeight={widgetAction.max_height}
+            toolbarActions={resultsViewSwitcher}
+          />
+        ))}
     </Card>
   );
 };

@@ -256,7 +256,7 @@ class ModelFieldWidgetSchema:
 class ActionInputSchema:
     """Action input schema"""
 
-    ids: list[int | UUID]
+    ids: list[int | str | UUID]
 
 
 @dataclass
