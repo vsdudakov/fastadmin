@@ -133,7 +133,7 @@ class UserModelAdmin(DjangoModelAdmin):
         user.password = password
         user.save()
 
-    async def upload_file(
+    def upload_file(
         self,
         field_name: str,
         file_name: str,

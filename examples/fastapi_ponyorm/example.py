@@ -86,7 +86,7 @@ class UserModelAdmin(PonyORMModelAdmin):
         obj.password = password
         commit()
 
-    async def upload_file(
+    def upload_file(
         self,
         field_name: str,
         file_name: str,
