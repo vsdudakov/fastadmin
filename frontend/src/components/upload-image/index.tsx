@@ -80,7 +80,9 @@ export const UploadImage: React.FC<IUploadImage> = ({
 
   const action =
     model && fieldName
-      ? `${serverUrl}/upload-file/${model}/${fieldName}${id ? `?id=${id}` : ""}`
+      ? `${serverUrl}/upload-file/${model}/${fieldName}${
+          id ? `?${new URLSearchParams({ id }).toString()}` : ""
+        }`
       : undefined;
 
   return (
