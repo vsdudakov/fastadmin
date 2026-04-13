@@ -274,6 +274,29 @@ describe("UploadImage", () => {
     fireEvent.click(screen.getByText("trigger-empty-upload"));
   });
 
+  it("uses valueRepr for the display url in defaultFileList when provided", () => {
+    renderWithConfig(
+      <UploadImage
+        model="test"
+        fieldName="image"
+        value="s3://bucket/photo.jpg"
+        valueRepr="https://presigned.s3.amazonaws.com/photo.jpg?sig=abc"
+      />,
+    );
+    expect(screen.getByTestId("default-file-list").textContent).toContain(
+      "https://presigned.s3.amazonaws.com/photo.jpg?sig=abc",
+    );
+  });
+
+  it("falls back to value for the display url when valueRepr is not provided", () => {
+    renderWithConfig(
+      <UploadImage model="test" fieldName="image" value="/media/photo.jpg" />,
+    );
+    expect(screen.getByTestId("default-file-list").textContent).toContain(
+      "/media/photo.jpg",
+    );
+  });
+
   it("appends ?id= query param to action url when id is provided", () => {
     renderWithConfig(<UploadImage model="test" fieldName="image" id="42" />);
     expect(screen.getByTestId("upload-action").textContent).toContain("?id=42");

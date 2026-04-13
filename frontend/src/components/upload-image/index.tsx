@@ -23,6 +23,7 @@ export interface IUploadImage {
   fieldName: string;
   id?: string;
   value?: string;
+  valueRepr?: string;
   onChange?: (value: string | undefined) => void;
   disableCropImage?: boolean;
 }
@@ -34,6 +35,7 @@ export const UploadImage: React.FC<IUploadImage> = ({
   model,
   fieldName,
   id,
+  valueRepr,
   ...rest
 }) => {
   const { t: _t } = useTranslation("UploadInput");
@@ -42,7 +44,10 @@ export const UploadImage: React.FC<IUploadImage> = ({
 
   const defaultFileList = useMemo((): UploadFile[] | undefined => {
     if (!value) return undefined;
-    const url = value.startsWith("http") ? value : `${serverDomain}${value}`;
+    const displayUrl = valueRepr ?? value;
+    const url = displayUrl.startsWith("http")
+      ? displayUrl
+      : `${serverDomain}${displayUrl}`;
     return [
       {
         uid: "0",
@@ -51,7 +56,7 @@ export const UploadImage: React.FC<IUploadImage> = ({
         url,
       },
     ];
-  }, [value]);
+  }, [value, valueRepr]);
 
   const handleChange = (info: { fileList: UploadFile[] }) => {
     const file = info.fileList[0];

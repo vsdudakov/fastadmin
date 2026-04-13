@@ -1,14 +1,20 @@
 name: FastAdmin CI
 
-on: [create, push]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
   id-token: write
+  pull-requests: write
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   ci:
@@ -20,14 +26,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13'
+          python-version: "3.13"
           cache: "poetry"
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: v24.3.0
-          cache: 'yarn'
-          cache-dependency-path: 'frontend/yarn.lock'
+          cache: "yarn"
+          cache-dependency-path: "frontend/yarn.lock"
       - name: Install Dependencies
         run: make install
       - name: Run Lint

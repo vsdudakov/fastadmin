@@ -15,6 +15,7 @@ export interface IUploadFileProps {
   fieldName: string;
   id?: string;
   value?: UploadFileValue;
+  valueRepr?: string;
   onChange?: (value: UploadFileValue) => void;
   accept?: string;
 }
@@ -23,6 +24,7 @@ const norm = (v: UploadFileValue): string[] => (!v ? [] : [v]);
 
 export const UploadFile: React.FC<IUploadFileProps> = ({
   value,
+  valueRepr,
   onChange,
   accept,
   model,
@@ -35,13 +37,18 @@ export const UploadFile: React.FC<IUploadFileProps> = ({
   const defaultFileList = useMemo((): AntUploadFile[] | undefined => {
     const paths = norm(value);
     if (paths.length === 0) return undefined;
-    return paths.map((path, index) => ({
-      uid: `existing-${index}-${path}`,
-      name: path.split("/").pop() ?? path,
-      status: "done" as const,
-      url: path.startsWith("http") ? path : `${serverDomain}${path}`,
-    }));
-  }, [value]);
+    return paths.map((path, index) => {
+      const displayUrl = valueRepr ?? path;
+      return {
+        uid: `existing-${index}-${path}`,
+        name: path.split("/").pop() ?? path,
+        status: "done" as const,
+        url: displayUrl.startsWith("http")
+          ? displayUrl
+          : `${serverDomain}${displayUrl}`,
+      };
+    });
+  }, [value, valueRepr]);
 
   const handleChange = (info: { fileList: AntUploadFile[] }) => {
     if (!onChange) return;

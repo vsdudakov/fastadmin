@@ -31,13 +31,15 @@ vi.mock("antd", () => ({
     onChange: (info: {
       fileList: Array<{ status?: string; response?: unknown; url?: string }>;
     }) => void;
-    defaultFileList?: Array<{ url: string; name?: string }>;
+    defaultFileList?: Array<{ url?: string; name?: string }>;
     action?: string;
   }) => (
     <div>
       <div data-testid="upload-action">{action ?? "none"}</div>
       <div data-testid="default-file-list">
-        {defaultFileList ? defaultFileList.map((f) => f.url).join(",") : "none"}
+        {defaultFileList
+          ? defaultFileList.map((f) => f.url ?? "").join(",")
+          : "none"}
       </div>
       <button
         type="button"
@@ -181,6 +183,32 @@ describe("UploadFile", () => {
     render(<UploadFile model="test" fieldName="file" />);
     expect(screen.getByTestId("upload-action").textContent).not.toContain(
       "?id=",
+    );
+  });
+
+  it("uses valueRepr for the display url in defaultFileList when provided", () => {
+    render(
+      <UploadFile
+        model="test"
+        fieldName="file"
+        value="s3://bucket/key.pdf"
+        valueRepr="https://presigned.s3.amazonaws.com/key.pdf?sig=abc"
+      />,
+    );
+    expect(screen.getByTestId("default-file-list").textContent).toContain(
+      "https://presigned.s3.amazonaws.com/key.pdf?sig=abc",
+    );
+    expect(screen.getByTestId("default-file-list").textContent).not.toContain(
+      "s3://bucket/key.pdf",
+    );
+  });
+
+  it("falls back to value for the display url when valueRepr is not provided", () => {
+    render(
+      <UploadFile model="test" fieldName="file" value="/media/file.pdf" />,
+    );
+    expect(screen.getByTestId("default-file-list").textContent).toContain(
+      "/media/file.pdf",
     );
   });
 });
