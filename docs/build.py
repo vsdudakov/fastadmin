@@ -45,6 +45,10 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.4.9",
+            "changes": ["Add obj parameter to upload_file method."],
+        },
+        {
             "version": "0.4.8",
             "changes": [
                 "Add toolbar actions to widget action results.",
@@ -426,7 +430,6 @@ def read_example(rel_path: str) -> str:
 
 
 def get_page_context(page_url):
-
     from fastadmin import InlineModelAdmin, ModelAdmin, WidgetType, widget_action
     from fastadmin.models.base import BaseModelAdmin
     from fastadmin.models.schemas import (
@@ -759,7 +762,7 @@ class UserAdmin(TortoiseModelAdmin):
                 },
                 {
                     "type": "text",
-                    "content": "For file and image fields use <code>UploadFile</code> and <code>UploadImage</code> widgets in <code>formfield_overrides</code>. Implement <code>upload_file(obj, field_name, file_name, file_content)</code> on the model admin to handle uploads; it must return the file URL (e.g. after saving to disk or S3).",
+                    "content": "For file and image fields use <code>UploadFile</code> and <code>UploadImage</code> widgets in <code>formfield_overrides</code>. Implement <code>upload_file(field_name, file_name, file_content, obj=None)</code> on the model admin to handle uploads; it must return the file URL (e.g. after saving to disk or S3).",
                 },
                 {
                     "type": "text",

@@ -26,13 +26,16 @@ vi.mock("antd", () => ({
   Upload: ({
     onChange,
     defaultFileList,
+    action,
   }: {
     onChange: (info: {
       fileList: Array<{ status?: string; response?: unknown; url?: string }>;
     }) => void;
     defaultFileList?: Array<{ url: string; name?: string }>;
+    action?: string;
   }) => (
     <div>
+      <div data-testid="upload-action">{action ?? "none"}</div>
       <div data-testid="default-file-list">
         {defaultFileList ? defaultFileList.map((f) => f.url).join(",") : "none"}
       </div>
@@ -165,5 +168,19 @@ describe("UploadFile", () => {
     render(<UploadFile model="test" fieldName="file" />);
     fireEvent.click(screen.getByText("trigger-upload"));
     fireEvent.click(screen.getByText("trigger-empty-upload"));
+  });
+
+  it("appends ?id= query param to action url when id is provided", () => {
+    render(<UploadFile model="test" fieldName="file" id="42" />);
+    expect(screen.getByTestId("upload-action").textContent).toContain(
+      "/upload-file/test/file?id=42",
+    );
+  });
+
+  it("does not append id query param when id is not provided", () => {
+    render(<UploadFile model="test" fieldName="file" />);
+    expect(screen.getByTestId("upload-action").textContent).not.toContain(
+      "?id=",
+    );
   });
 });

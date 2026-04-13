@@ -301,12 +301,14 @@ async def upload_file(
             return JsonResponse({"error": "File not found"}, status=400)
         file_name = file.name
         file_content = file.read()
+        obj_id = request.GET.get("id") or None
         file_url = await api_service.upload_file(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             field_name,
             file_name,
             file_content,
+            id=obj_id,
             request=request,
         )
         return JsonResponse(file_url, safe=False)

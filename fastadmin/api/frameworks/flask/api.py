@@ -267,12 +267,14 @@ async def upload_file(
             http_exception.code = 422
             raise http_exception from None
         file_content = file.read()
+        obj_id = request.args.get("id") or None
         return await api_service.upload_file(
             request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             field_name,
             file_name,
             file_content,
+            id=obj_id,
             request=request,
         )
     except AdminApiException as e:

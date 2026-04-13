@@ -14,6 +14,8 @@ from asgiref.sync import sync_to_async
 from fastadmin.api.schemas import ExportFormat
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 
+Model = Any
+
 
 class BaseModelAdmin:
     """Base class for model admin"""
@@ -388,6 +390,7 @@ class BaseModelAdmin:
                 # Avoid scientific notation for Decimal values in API responses,
                 # e.g. 3.75E+3 -> "3750"
                 value = format(value, "f")
+
             serialized_dict[field.name] = value
         if inspect.iscoroutinefunction(obj.__str__):
             str_fn = obj.__str__
@@ -464,6 +467,7 @@ class BaseModelAdmin:
                 return datetime.datetime.fromisoformat(value).date()
             case WidgetType.DateTimePicker:
                 return datetime.datetime.fromisoformat(value)
+
             case _:
                 return value
 
@@ -546,12 +550,14 @@ class BaseModelAdmin:
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: Model | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: an orm/db model object. None on the add (create) page; the existing model instance on the change (edit) page.
         :return: A file url.
         """
         raise NotImplementedError

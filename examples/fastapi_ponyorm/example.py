@@ -91,12 +91,14 @@ class UserModelAdmin(PonyORMModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: db.Entity | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: an orm/db model object. None on the add page, the existing instance on the change page.
         :return: A file url.
         """
         # save file to media directory or to s3/filestorage here

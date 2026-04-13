@@ -45,7 +45,7 @@ async def test_not_implemented_methods():
         await base.change_password(1, "secret")
 
     with pytest.raises(NotImplementedError):
-        await base.upload_file("file", "name.txt", b"content")
+        await base.upload_file("file", "name.txt", b"content", None)
 
 
 def test_base_model_admin_request_and_user_context():

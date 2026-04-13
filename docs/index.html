@@ -193,6 +193,10 @@
               <ul class="nav flex-column">
                 
                 <li class="nav-item">
+                  <a class="nav-link" href="#v0_4_9">v0.4.9</a>
+                </li>
+                
+                <li class="nav-item">
                   <a class="nav-link" href="#v0_4_8">v0.4.8</a>
                 </li>
                 
@@ -383,7 +387,7 @@
               <div class="row">
                 <div class="col-sm-6 col-lg-4">
                   <ul class="list-unstyled">
-                    <li><strong>Version:</strong> 0.4.8</li>
+                    <li><strong>Version:</strong> 0.4.9</li>
                     <li>
                       <strong>Author:</strong>
                       <a href="mailto:vsdudakov@gmail.com" target="_blank">
@@ -400,7 +404,7 @@
                     </li>
                     <li>
                       <strong>Updated:</strong>
-                      27 March 2026
+                      13 April 2026
                     </li>
                   </ul>
                 </div>
@@ -917,6 +921,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models import BaseEvent, Event, Tournament, User, UserAttachment
 from tortoise.contrib.fastapi import RegisterTortoise
+from tortoise.models import Model
 
 from fastadmin import (
     TortoiseInlineModelAdmin,
@@ -956,12 +961,14 @@ class UserAttachmentModelInline(TortoiseInlineModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: Model | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: the existing ORM model instance when uploading on the change page, or None on the add page.
         :return: A file url.
         """
         # save file to media directory or to s3/filestorage here
@@ -1017,7 +1024,16 @@ class UserModelAdmin(TortoiseModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: Model | None = None,
     ) -> None:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :params obj: the existing ORM model instance when uploading on the change page, or None on the add page.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
         return f"/media/{file_name}"
 
@@ -1601,17 +1617,20 @@ class UserModelAdmin(DjangoModelAdmin):
         user.password = password
         user.save()
 
-    async def upload_file(
+    def upload_file(
         self,
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: models.Model | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: the existing ORM model instance when uploading on the change page,
+            or None when uploading on the add (create) page.
         :return: A file url.
         """
         # save file to media directory or to s3/filestorage here
@@ -2052,12 +2071,14 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: Base | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: the existing ORM model instance when uploading on the change page, or None when on the add page.
         :return: A file url.
         """
         # save file to media directory or to s3/filestorage here
@@ -2539,17 +2560,19 @@ class UserModelAdmin(PonyORMModelAdmin):
         obj.password = password
         commit()
 
-    async def upload_file(
+    def upload_file(
         self,
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: db.Entity | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: an orm/db model object. None on the add page, the existing instance on the change page.
         :return: A file url.
         """
         # save file to media directory or to s3/filestorage here
@@ -3370,6 +3393,7 @@ class BaseModelAdmin:
                 # Avoid scientific notation for Decimal values in API responses,
                 # e.g. 3.75E+3 -> "3750"
                 value = format(value, "f")
+
             serialized_dict[field.name] = value
         if inspect.iscoroutinefunction(obj.__str__):
             str_fn = obj.__str__
@@ -3446,6 +3470,7 @@ class BaseModelAdmin:
                 return datetime.datetime.fromisoformat(value).date()
             case WidgetType.DateTimePicker:
                 return datetime.datetime.fromisoformat(value)
+
             case _:
                 return value
 
@@ -3528,12 +3553,14 @@ class BaseModelAdmin:
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: Model | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: an orm/db model object. None on the add (create) page; the existing model instance on the change (edit) page.
         :return: A file url.
         """
         raise NotImplementedError
@@ -3874,7 +3901,7 @@ class WidgetType(str, Enum):
                 
                   
 <p class="text-4">
-  For file and image fields use <code>UploadFile</code> and <code>UploadImage</code> widgets in <code>formfield_overrides</code>. Implement <code>upload_file(obj, field_name, file_name, file_content)</code> on the model admin to handle uploads; it must return the file URL (e.g. after saving to disk or S3).
+  For file and image fields use <code>UploadFile</code> and <code>UploadImage</code> widgets in <code>formfield_overrides</code>. Implement <code>upload_file(field_name, file_name, file_content, obj=None)</code> on the model admin to handle uploads; it must return the file URL (e.g. after saving to disk or S3).
 </p>
 
 
@@ -4018,6 +4045,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models import BaseEvent, Event, Tournament, User, UserAttachment
 from tortoise.contrib.fastapi import RegisterTortoise
+from tortoise.models import Model
 
 from fastadmin import (
     TortoiseInlineModelAdmin,
@@ -4057,12 +4085,14 @@ class UserAttachmentModelInline(TortoiseInlineModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: Model | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: the existing ORM model instance when uploading on the change page, or None on the add page.
         :return: A file url.
         """
         # save file to media directory or to s3/filestorage here
@@ -4118,7 +4148,16 @@ class UserModelAdmin(TortoiseModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: Model | None = None,
     ) -> None:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :params obj: the existing ORM model instance when uploading on the change page, or None on the add page.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
         return f"/media/{file_name}"
 
@@ -4702,17 +4741,20 @@ class UserModelAdmin(DjangoModelAdmin):
         user.password = password
         user.save()
 
-    async def upload_file(
+    def upload_file(
         self,
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: models.Model | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: the existing ORM model instance when uploading on the change page,
+            or None when uploading on the add (create) page.
         :return: A file url.
         """
         # save file to media directory or to s3/filestorage here
@@ -5153,12 +5195,14 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: Base | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: the existing ORM model instance when uploading on the change page, or None when on the add page.
         :return: A file url.
         """
         # save file to media directory or to s3/filestorage here
@@ -5640,17 +5684,19 @@ class UserModelAdmin(PonyORMModelAdmin):
         obj.password = password
         commit()
 
-    async def upload_file(
+    def upload_file(
         self,
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: db.Entity | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: an orm/db model object. None on the add page, the existing instance on the change page.
         :return: A file url.
         """
         # save file to media directory or to s3/filestorage here
@@ -6596,6 +6642,31 @@ class WidgetActionType(str, Enum):
               
 
               
+              
+                <section id="v0_4_9">
+                <h3>v0.4.9</h3>
+
+                
+                  
+<p class="text-4">
+  Add obj parameter to upload_file method.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                </section>
+
               
                 <section id="v0_4_8">
                 <h3>v0.4.8</h3>

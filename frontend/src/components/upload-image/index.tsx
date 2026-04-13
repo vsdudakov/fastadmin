@@ -21,6 +21,7 @@ const serverUrl = window.SERVER_URL ?? "";
 export interface IUploadImage {
   model: string;
   fieldName: string;
+  id?: string;
   value?: string;
   onChange?: (value: string | undefined) => void;
   disableCropImage?: boolean;
@@ -32,6 +33,7 @@ export const UploadImage: React.FC<IUploadImage> = ({
   disableCropImage,
   model,
   fieldName,
+  id,
   ...rest
 }) => {
   const { t: _t } = useTranslation("UploadInput");
@@ -78,7 +80,7 @@ export const UploadImage: React.FC<IUploadImage> = ({
 
   const action =
     model && fieldName
-      ? `${serverUrl}/upload-file/${model}/${fieldName}`
+      ? `${serverUrl}/upload-file/${model}/${fieldName}${id ? `?id=${id}` : ""}`
       : undefined;
 
   return (

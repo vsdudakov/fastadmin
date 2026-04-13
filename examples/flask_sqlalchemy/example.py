@@ -88,7 +88,17 @@ class UserModelAdmin(SqlAlchemyModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: Base | None = None,
     ) -> str:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :params obj: an orm/db model object. None on the add page (object not yet created),
+            or the existing orm/db model instance on the change page.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
         return f"/media/{file_name}"
 

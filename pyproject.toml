@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastadmin"
-version = "0.4.8"
+version = "0.4.9"
 description = "FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin."
 authors = ["Seva D <vsdudakov@gmail.com>"]
 license = "MIT"
@@ -145,3 +145,6 @@ python_version = "3.10"
 pretty = true
 ignore_missing_imports = true
 disable_error_code = ["attr-defined", "assignment", "var-annotated", "call-overload"]
+
+[tool.basedpyright]
+typeCheckingMode = "off"

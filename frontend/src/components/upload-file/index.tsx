@@ -13,6 +13,7 @@ export type UploadFileValue = string | undefined;
 export interface IUploadFileProps {
   model: string;
   fieldName: string;
+  id?: string;
   value?: UploadFileValue;
   onChange?: (value: UploadFileValue) => void;
   accept?: string;
@@ -26,6 +27,7 @@ export const UploadFile: React.FC<IUploadFileProps> = ({
   accept,
   model,
   fieldName,
+  id,
   ...rest
 }) => {
   const { t: _t } = useTranslation("UploadInput");
@@ -69,7 +71,7 @@ export const UploadFile: React.FC<IUploadFileProps> = ({
 
   const action =
     model && fieldName
-      ? `${serverUrl}/upload-file/${model}/${fieldName}`
+      ? `${serverUrl}/upload-file/${model}/${fieldName}${id ? `?id=${id}` : ""}`
       : undefined;
 
   return (
