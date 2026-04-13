@@ -78,7 +78,9 @@ export const UploadFile: React.FC<IUploadFileProps> = ({
 
   const action =
     model && fieldName
-      ? `${serverUrl}/upload-file/${model}/${fieldName}${id ? `?id=${id}` : ""}`
+      ? `${serverUrl}/upload-file/${model}/${fieldName}${
+          id ? `?${new URLSearchParams({ id }).toString()}` : ""
+        }`
       : undefined;
 
   return (
