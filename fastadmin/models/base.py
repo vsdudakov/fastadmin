@@ -375,7 +375,7 @@ class BaseModelAdmin:
         return sort_by
 
     async def serialize_obj_attributes(
-        self, obj: Any, attributes_to_serizalize: list[ModelFieldWidgetSchema]
+        self, obj: Any, attributes_to_serizalize: list[ModelFieldWidgetSchema], list_view: bool = False
     ) -> dict[str, Any]:
         """Serialize orm model obj attribute to dict.
 
@@ -392,7 +392,7 @@ class BaseModelAdmin:
                 value = format(value, "f")
 
             serialized_dict[field.name] = value
-            if field.form_widget_type in (WidgetType.UploadFile, WidgetType.UploadImage) and value:
+            if not list_view and field.form_widget_type in (WidgetType.UploadFile, WidgetType.UploadImage) and value:
                 serialized_dict[f"{field.name}__url"] = await self.get_file_url(field.name, value, obj)
         if inspect.iscoroutinefunction(obj.__str__):
             str_fn = obj.__str__
@@ -440,7 +440,7 @@ class BaseModelAdmin:
             else:
                 attributes_to_serizalize.append(field)
 
-        obj_dict.update(await self.serialize_obj_attributes(obj, attributes_to_serizalize))
+        obj_dict.update(await self.serialize_obj_attributes(obj, attributes_to_serizalize, list_view=list_view))
 
         for field_name in fields_for_serialize:
             display_field_function = getattr(self, field_name, None)

@@ -341,6 +341,8 @@ class ApiService:
 
         try:
             obj = await admin_model.orm_get_obj(id) if id is not None else None
+            if id is not None and obj is None:
+                raise AdminApiException(404, detail=f"{model} with id {id} not found.")
 
             if inspect.iscoroutinefunction(admin_model.upload_file):
                 upload_file_fn = admin_model.upload_file
