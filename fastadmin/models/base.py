@@ -547,7 +547,7 @@ class BaseModelAdmin:
         """
         await self.orm_delete_obj(id)
 
-    async def get_file_url(self, field_name: str, value: str, obj: Model | None = None) -> str:
+    async def get_file_url(self, field_name: str, value: str, obj: Any | None = None) -> str:
         """Return the display URL for an uploaded file field.
 
         Called during serialization for every ``UploadFile`` and ``UploadImage``
@@ -584,7 +584,7 @@ class BaseModelAdmin:
         field_name: str,
         file_name: str,
         file_content: bytes,
-        obj: Model | None = None,
+        obj: Any | None = None,
     ) -> str:
         """This method is used to upload files.
 

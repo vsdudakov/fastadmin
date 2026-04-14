@@ -559,6 +559,22 @@ async def test_upload_file_success_with_sync_upload_handler(monkeypatch):
     upload_mock.assert_called_once_with("file", "x.txt", b"content", obj=None)
 
 
+async def test_upload_file_404_when_id_provided_but_obj_not_found(monkeypatch):
+    """id supplied but orm_get_obj returns None — should raise 404, not 500."""
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    admin_model = SimpleNamespace(
+        set_context=Mock(),
+        orm_get_obj=AsyncMock(return_value=None),
+        upload_file=AsyncMock(return_value="/media/x.txt"),
+    )
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().upload_file("sid", "Event", "file", "x.txt", b"content", id=999)
+    assert exc_info.value.status_code == 404
+    assert "not found" in exc_info.value.detail
+    admin_model.upload_file.assert_not_awaited()
+
+
 async def test_upload_file_500_upload_raises(monkeypatch):
     monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
     admin_model = SimpleNamespace(

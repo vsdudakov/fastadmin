@@ -115,7 +115,7 @@ class UserModelAdmin(TortoiseModelAdmin):
         file_name: str,
         file_content: bytes,
         obj: Model | None = None,
-    ) -> None:
+    ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.

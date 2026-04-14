@@ -355,6 +355,8 @@ class ApiService:
                 file_content,
                 obj=obj,
             )
+        except AdminApiException:
+            raise
         except Exception as e:
             raise AdminApiException(500, detail=f"Error uploading file for {model}: {e}") from e
 
