@@ -45,6 +45,13 @@ def read_cls_docstring(cls):
 def get_versions():
     return [
         {
+            "version": "0.4.9",
+            "changes": [
+                "Add obj parameter to upload_file method.",
+                "Add get_file_url method to model admin.",
+            ],
+        },
+        {
             "version": "0.4.8",
             "changes": [
                 "Add toolbar actions to widget action results.",
@@ -426,7 +433,6 @@ def read_example(rel_path: str) -> str:
 
 
 def get_page_context(page_url):
-
     from fastadmin import InlineModelAdmin, ModelAdmin, WidgetType, widget_action
     from fastadmin.models.base import BaseModelAdmin
     from fastadmin.models.schemas import (
@@ -759,7 +765,27 @@ class UserAdmin(TortoiseModelAdmin):
                 },
                 {
                     "type": "text",
-                    "content": "For file and image fields use <code>UploadFile</code> and <code>UploadImage</code> widgets in <code>formfield_overrides</code>. Implement <code>upload_file(obj, field_name, file_name, file_content)</code> on the model admin to handle uploads; it must return the file URL (e.g. after saving to disk or S3).",
+                    "content": "For file and image fields use <code>UploadFile</code> and <code>UploadImage</code> widgets in <code>formfield_overrides</code>. Implement <code>upload_file(field_name, file_name, file_content, obj=None)</code> on the model admin to handle uploads; it must return the file URL (e.g. after saving to disk or S3).",
+                },
+                {
+                    "type": "text",
+                    "content": "To customise the URL shown in the upload widget (e.g. generate an S3 presigned URL instead of displaying the raw <code>s3://</code> key), override <code>get_file_url</code> on the model admin. The display URL is emitted as <code>{field_name}__url</code> in the serialised object and passed to the widget as <code>valueRepr</code>; the raw stored value is never changed, so form saves are unaffected.",
+                },
+                {
+                    "type": "code-python",
+                    "content": """async def get_file_url(self, field_name: str, value: str, obj=None) -> str:
+    # value is the raw stored key, e.g. "s3://bucket/key"
+    # Return a presigned URL so the file can be viewed in the admin.
+    # Example using aiobotocore:
+    #
+    # bucket, key = value.replace("s3://", "").split("/", 1)
+    # async with aiobotocore.session.get_session().create_client("s3") as s3:
+    #     return await s3.generate_presigned_url(
+    #         "get_object",
+    #         Params={"Bucket": bucket, "Key": key},
+    #         ExpiresIn=3600,
+    #     )
+    return value""",
                 },
                 {
                     "type": "text",

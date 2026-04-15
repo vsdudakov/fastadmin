@@ -515,7 +515,8 @@ async def test_upload_file_404_model_not_registered(monkeypatch):
     assert "not registered" in exc_info.value.detail
 
 
-async def test_upload_file_success(monkeypatch):
+async def test_upload_file_success_no_id(monkeypatch):
+    """No id supplied (add page): obj=None is passed to the upload handler."""
     monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
     admin_model = SimpleNamespace(
         set_context=Mock(),
@@ -524,7 +525,23 @@ async def test_upload_file_success(monkeypatch):
     monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
     url = await ApiService().upload_file("sid", "Event", "file", "x.txt", b"content")
     assert url == "/media/x.txt"
-    admin_model.upload_file.assert_awaited_once_with("file", "x.txt", b"content")
+    admin_model.upload_file.assert_awaited_once_with("file", "x.txt", b"content", obj=None)
+
+
+async def test_upload_file_success_with_id(monkeypatch):
+    """id supplied (change page): orm_get_obj is called and the instance is passed to the upload handler."""
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    fake_obj = object()
+    admin_model = SimpleNamespace(
+        set_context=Mock(),
+        orm_get_obj=AsyncMock(return_value=fake_obj),
+        upload_file=AsyncMock(return_value="/media/x.txt"),
+    )
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+    url = await ApiService().upload_file("sid", "Event", "file", "x.txt", b"content", id=42)
+    assert url == "/media/x.txt"
+    admin_model.orm_get_obj.assert_awaited_once_with(42)
+    admin_model.upload_file.assert_awaited_once_with("file", "x.txt", b"content", obj=fake_obj)
 
 
 async def test_upload_file_success_with_sync_upload_handler(monkeypatch):
@@ -539,7 +556,23 @@ async def test_upload_file_success_with_sync_upload_handler(monkeypatch):
     url = await ApiService().upload_file("sid", "Event", "file", "x.txt", b"content")
 
     assert url == "/media/x.txt"
-    upload_mock.assert_called_once_with("file", "x.txt", b"content")
+    upload_mock.assert_called_once_with("file", "x.txt", b"content", obj=None)
+
+
+async def test_upload_file_404_when_id_provided_but_obj_not_found(monkeypatch):
+    """id supplied but orm_get_obj returns None — should raise 404, not 500."""
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    admin_model = SimpleNamespace(
+        set_context=Mock(),
+        orm_get_obj=AsyncMock(return_value=None),
+        upload_file=AsyncMock(return_value="/media/x.txt"),
+    )
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().upload_file("sid", "Event", "file", "x.txt", b"content", id=999)
+    assert exc_info.value.status_code == 404
+    assert "not found" in exc_info.value.detail
+    admin_model.upload_file.assert_not_awaited()
 
 
 async def test_upload_file_500_upload_raises(monkeypatch):

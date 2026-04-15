@@ -86,7 +86,12 @@ export const FormContainer: React.FC<IFormContainer> = ({
         configurationField.form_widget_type === EFieldWidgetType.UploadImage ||
         configurationField.form_widget_type === EFieldWidgetType.UploadFile;
       const uploadProps = isUpload
-        ? { model: modelConfiguration?.name, fieldName: field.name }
+        ? {
+            model: modelConfiguration?.name,
+            fieldName: field.name,
+            id,
+            valueRepr: initialValues?.[`${field.name}__url`],
+          }
         : {};
       return (
         <Widget
@@ -96,7 +101,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
         />
       );
     },
-    [_t, id, modelConfiguration?.name],
+    [_t, id, initialValues, modelConfiguration?.name],
   );
 
   const getConf = useCallback(

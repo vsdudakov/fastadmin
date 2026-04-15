@@ -155,6 +155,7 @@ async def test_django_upload_file_success():
     request = MagicMock()
     request.method = "POST"
     request.COOKIES = {settings.ADMIN_SESSION_ID_KEY: "sid"}
+    request.GET = {}
 
     file = MagicMock()
     file.name = "x.txt"
@@ -176,5 +177,6 @@ async def test_django_upload_file_success():
         "file",
         "x.txt",
         b"content",
+        id=None,
         request=request,
     )

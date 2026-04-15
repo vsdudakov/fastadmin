@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models import BaseEvent, Event, Tournament, User, UserAttachment
 from tortoise.contrib.fastapi import RegisterTortoise
+from tortoise.models import Model
 
 from fastadmin import (
     TortoiseInlineModelAdmin,
@@ -50,12 +51,14 @@ class UserAttachmentModelInline(TortoiseInlineModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: Model | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: the existing ORM model instance when uploading on the change page, or None on the add page.
         :return: A file url.
         """
         # save file to media directory or to s3/filestorage here
@@ -111,7 +114,16 @@ class UserModelAdmin(TortoiseModelAdmin):
         field_name: str,
         file_name: str,
         file_content: bytes,
-    ) -> None:
+        obj: Model | None = None,
+    ) -> str:
+        """This method is used to upload files.
+
+        :params field_name: a name of field.
+        :params file_name: a name of file.
+        :params file_content: a content of file.
+        :params obj: the existing ORM model instance when uploading on the change page, or None on the add page.
+        :return: A file url.
+        """
         # save file to media directory or to s3/filestorage here
         return f"/media/{file_name}"
 

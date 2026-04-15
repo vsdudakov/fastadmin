@@ -45,7 +45,7 @@ async def test_not_implemented_methods():
         await base.change_password(1, "secret")
 
     with pytest.raises(NotImplementedError):
-        await base.upload_file("file", "name.txt", b"content")
+        await base.upload_file("file", "name.txt", b"content", None)
 
 
 def test_base_model_admin_request_and_user_context():
@@ -258,6 +258,159 @@ async def test_serialize_obj_attributes_decimal_formatted():
     result = await base.serialize_obj_attributes(Obj(), fields)
     assert result["value"] == "3750"
     assert "E" not in result["value"]
+
+
+async def test_get_file_url_default_returns_value_unchanged():
+    """Default get_file_url is a no-op — returns the stored value as-is."""
+
+    class Model:
+        pass
+
+    base = ModelAdmin(Model)
+    assert await base.get_file_url("avatar_url", "s3://bucket/key.pdf") == "s3://bucket/key.pdf"
+    assert await base.get_file_url("avatar_url", "/media/file.pdf", obj=None) == "/media/file.pdf"
+
+
+async def test_serialize_obj_attributes_emits_url_key_for_upload_fields():
+    """serialize_obj_attributes adds {field}__url for UploadFile and UploadImage fields."""
+
+    class Obj:
+        avatar_url = "s3://bucket/photo.jpg"
+        attachment = "s3://bucket/doc.pdf"
+        username = "alice"
+
+        def __str__(self):
+            return "obj"
+
+    class Model:
+        pass
+
+    base = ModelAdmin(Model)
+    fields = [
+        ModelFieldWidgetSchema(
+            name="avatar_url",
+            column_name="avatar_url",
+            is_m2m=False,
+            is_pk=False,
+            is_immutable=False,
+            form_widget_type=WidgetType.UploadImage,
+            form_widget_props={},
+            filter_widget_type=WidgetType.Input,
+            filter_widget_props={},
+        ),
+        ModelFieldWidgetSchema(
+            name="attachment",
+            column_name="attachment",
+            is_m2m=False,
+            is_pk=False,
+            is_immutable=False,
+            form_widget_type=WidgetType.UploadFile,
+            form_widget_props={},
+            filter_widget_type=WidgetType.Input,
+            filter_widget_props={},
+        ),
+        ModelFieldWidgetSchema(
+            name="username",
+            column_name="username",
+            is_m2m=False,
+            is_pk=False,
+            is_immutable=False,
+            form_widget_type=WidgetType.Input,
+            form_widget_props={},
+            filter_widget_type=WidgetType.Input,
+            filter_widget_props={},
+        ),
+    ]
+
+    result = await base.serialize_obj_attributes(Obj(), fields)
+
+    # stored values unchanged
+    assert result["avatar_url"] == "s3://bucket/photo.jpg"
+    assert result["attachment"] == "s3://bucket/doc.pdf"
+    # __url keys emitted (default get_file_url is a no-op)
+    assert result["avatar_url__url"] == "s3://bucket/photo.jpg"
+    assert result["attachment__url"] == "s3://bucket/doc.pdf"
+    # non-upload field has no __url key
+    assert "username__url" not in result
+
+
+async def test_serialize_obj_attributes_url_key_uses_get_file_url_override():
+    """serialize_obj_attributes uses a custom async get_file_url for {field}__url."""
+
+    class Obj:
+        avatar_url = "s3://bucket/photo.jpg"
+
+        def __str__(self):
+            return "obj"
+
+    class Model:
+        pass
+
+    base = ModelAdmin(Model)
+
+    async def presigned(field_name: str, value: str, obj=None) -> str:
+        return f"https://cdn.example.com/{field_name}?signed=1"
+
+    base.get_file_url = presigned  # type: ignore[method-assign]
+
+    fields = [
+        ModelFieldWidgetSchema(
+            name="avatar_url",
+            column_name="avatar_url",
+            is_m2m=False,
+            is_pk=False,
+            is_immutable=False,
+            form_widget_type=WidgetType.UploadImage,
+            form_widget_props={},
+            filter_widget_type=WidgetType.Input,
+            filter_widget_props={},
+        ),
+    ]
+
+    result = await base.serialize_obj_attributes(Obj(), fields)
+
+    assert result["avatar_url"] == "s3://bucket/photo.jpg"
+    assert result["avatar_url__url"] == "https://cdn.example.com/avatar_url?signed=1"
+
+
+async def test_serialize_obj_attributes_skips_url_key_for_empty_upload_value():
+    """serialize_obj_attributes does NOT emit {field}__url when the stored value is empty."""
+
+    class Obj:
+        avatar_url = ""
+
+        def __str__(self):
+            return "obj"
+
+    class Model:
+        pass
+
+    base = ModelAdmin(Model)
+    called = []
+
+    async def bad_get_file_url(*a, **kw):
+        called.append(a)
+        return "bad"
+
+    base.get_file_url = bad_get_file_url  # type: ignore[method-assign]
+
+    fields = [
+        ModelFieldWidgetSchema(
+            name="avatar_url",
+            column_name="avatar_url",
+            is_m2m=False,
+            is_pk=False,
+            is_immutable=False,
+            form_widget_type=WidgetType.UploadImage,
+            form_widget_props={},
+            filter_widget_type=WidgetType.Input,
+            filter_widget_props={},
+        ),
+    ]
+
+    result = await base.serialize_obj_attributes(Obj(), fields)
+    assert "avatar_url__url" not in result
+    assert not called
 
 
 async def test_serialize_obj_after_save_detached_paths():

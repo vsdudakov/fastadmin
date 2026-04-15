@@ -329,6 +329,7 @@ class ApiService:
         field_name: str,
         file_name: str,
         file_content: bytes,
+        id: UUID | int | str | None = None,
         request: Any | None = None,
     ) -> str:
         _current_user_id, current_user = await self._get_authenticated_user(session_id)
@@ -339,6 +340,10 @@ class ApiService:
         self._bind_admin_context(admin_model, request=request, user=current_user)
 
         try:
+            obj = await admin_model.orm_get_obj(id) if id is not None else None
+            if id is not None and obj is None:
+                raise AdminApiException(404, detail=f"{model} with id {id} not found.")
+
             if inspect.iscoroutinefunction(admin_model.upload_file):
                 upload_file_fn = admin_model.upload_file
             else:
@@ -348,7 +353,10 @@ class ApiService:
                 field_name,
                 file_name,
                 file_content,
+                obj=obj,
             )
+        except AdminApiException:
+            raise
         except Exception as e:
             raise AdminApiException(500, detail=f"Error uploading file for {model}: {e}") from e
 

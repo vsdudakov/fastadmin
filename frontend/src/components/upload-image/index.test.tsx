@@ -64,6 +64,7 @@ vi.mock("antd", () => ({
     onChange,
     onPreview,
     defaultFileList,
+    action,
   }: {
     onChange: (info: {
       fileList: Array<{ status?: string; response?: unknown; url?: string }>;
@@ -73,8 +74,10 @@ vi.mock("antd", () => ({
       originFileObj?: { name: string };
     }) => void;
     defaultFileList?: Array<{ url: string }>;
+    action?: string;
   }) => (
     <div>
+      <div data-testid="upload-action">{action ?? "none"}</div>
       <div data-testid="default-file-list">
         {defaultFileList ? defaultFileList.map((f) => f.url).join(",") : "none"}
       </div>
@@ -269,5 +272,40 @@ describe("UploadImage", () => {
     renderWithConfig(<UploadImage model="test" fieldName="image" />);
     fireEvent.click(screen.getByText("trigger-upload"));
     fireEvent.click(screen.getByText("trigger-empty-upload"));
+  });
+
+  it("uses valueRepr for the display url in defaultFileList when provided", () => {
+    renderWithConfig(
+      <UploadImage
+        model="test"
+        fieldName="image"
+        value="s3://bucket/photo.jpg"
+        valueRepr="https://presigned.s3.amazonaws.com/photo.jpg?sig=abc"
+      />,
+    );
+    expect(screen.getByTestId("default-file-list").textContent).toContain(
+      "https://presigned.s3.amazonaws.com/photo.jpg?sig=abc",
+    );
+  });
+
+  it("falls back to value for the display url when valueRepr is not provided", () => {
+    renderWithConfig(
+      <UploadImage model="test" fieldName="image" value="/media/photo.jpg" />,
+    );
+    expect(screen.getByTestId("default-file-list").textContent).toContain(
+      "/media/photo.jpg",
+    );
+  });
+
+  it("appends ?id= query param to action url when id is provided", () => {
+    renderWithConfig(<UploadImage model="test" fieldName="image" id="42" />);
+    expect(screen.getByTestId("upload-action").textContent).toContain("?id=42");
+  });
+
+  it("does not append id query param when id is not provided", () => {
+    renderWithConfig(<UploadImage model="test" fieldName="image" />);
+    expect(screen.getByTestId("upload-action").textContent).not.toContain(
+      "?id=",
+    );
   });
 });

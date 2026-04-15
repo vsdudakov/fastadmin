@@ -14,6 +14,8 @@ from asgiref.sync import sync_to_async
 from fastadmin.api.schemas import ExportFormat
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 
+Model = Any
+
 
 class BaseModelAdmin:
     """Base class for model admin"""
@@ -373,7 +375,7 @@ class BaseModelAdmin:
         return sort_by
 
     async def serialize_obj_attributes(
-        self, obj: Any, attributes_to_serizalize: list[ModelFieldWidgetSchema]
+        self, obj: Any, attributes_to_serizalize: list[ModelFieldWidgetSchema], list_view: bool = False
     ) -> dict[str, Any]:
         """Serialize orm model obj attribute to dict.
 
@@ -388,7 +390,10 @@ class BaseModelAdmin:
                 # Avoid scientific notation for Decimal values in API responses,
                 # e.g. 3.75E+3 -> "3750"
                 value = format(value, "f")
+
             serialized_dict[field.name] = value
+            if not list_view and field.form_widget_type in (WidgetType.UploadFile, WidgetType.UploadImage) and value:
+                serialized_dict[f"{field.name}__url"] = await self.get_file_url(field.name, value, obj)
         if inspect.iscoroutinefunction(obj.__str__):
             str_fn = obj.__str__
         else:
@@ -435,7 +440,7 @@ class BaseModelAdmin:
             else:
                 attributes_to_serizalize.append(field)
 
-        obj_dict.update(await self.serialize_obj_attributes(obj, attributes_to_serizalize))
+        obj_dict.update(await self.serialize_obj_attributes(obj, attributes_to_serizalize, list_view=list_view))
 
         for field_name in fields_for_serialize:
             display_field_function = getattr(self, field_name, None)
@@ -464,6 +469,7 @@ class BaseModelAdmin:
                 return datetime.datetime.fromisoformat(value).date()
             case WidgetType.DateTimePicker:
                 return datetime.datetime.fromisoformat(value)
+
             case _:
                 return value
 
@@ -541,17 +547,51 @@ class BaseModelAdmin:
         """
         await self.orm_delete_obj(id)
 
+    async def get_file_url(self, field_name: str, value: str, obj: Any | None = None) -> str:
+        """Return the display URL for an uploaded file field.
+
+        Called during serialization for every ``UploadFile`` and ``UploadImage``
+        field that has a non-empty stored value.  The result is emitted alongside
+        the stored value as ``{field_name}__url`` and forwarded to the upload
+        widget as ``valueRepr`` so the clickable link can differ from the raw
+        stored key (e.g. an S3 presigned URL instead of an ``s3://`` URI).
+
+        The stored ``value`` is never modified — it is still what the form
+        submits on save — so there is no risk of data corruption.
+
+        Override to return a dynamic URL.  Example using aiobotocore:
+
+        .. code-block:: python
+
+            async def get_file_url(self, field_name: str, value: str, obj=None) -> str:
+                bucket, key = value.replace("s3://", "").split("/", 1)
+                async with aiobotocore.session.get_session().create_client("s3") as s3:
+                    return await s3.generate_presigned_url(
+                        "get_object",
+                        Params={"Bucket": bucket, "Key": key},
+                        ExpiresIn=3600,
+                    )
+
+        :params field_name: name of the upload field being serialized.
+        :params value: raw stored value (e.g. ``"s3://bucket/key"`` or ``"/media/file.pdf"``).
+        :params obj: the orm/db model instance being serialized, or None.
+        :return: URL string to expose to the frontend for display/download.
+        """
+        return value
+
     async def upload_file(
         self,
         field_name: str,
         file_name: str,
         file_content: bytes,
+        obj: Any | None = None,
     ) -> str:
         """This method is used to upload files.
 
         :params field_name: a name of field.
         :params file_name: a name of file.
         :params file_content: a content of file.
+        :params obj: an orm/db model object. None on the add (create) page; the existing model instance on the change (edit) page.
         :return: A file url.
         """
         raise NotImplementedError

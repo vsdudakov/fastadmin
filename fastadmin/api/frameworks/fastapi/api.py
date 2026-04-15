@@ -244,6 +244,7 @@ async def upload_file(
     model: str,
     field_name: str,
     file: UploadFile,
+    id: str | None = None,
 ) -> str:
     """This method is used to upload files.
 
@@ -251,6 +252,7 @@ async def upload_file(
     :params model: a name of model.
     :params field_name: a name of field.
     :params file: a file object.
+    :params id: an optional id of an existing object (change page). None on the add page.
     :return: A file url.
     """
     try:
@@ -264,6 +266,7 @@ async def upload_file(
             field_name,
             file_name,
             file_content,
+            id=id,
             request=request,
         )
     except AdminApiException as e:

@@ -443,7 +443,7 @@ class PonyORMMixin:
     @sync_to_async
     @db_session
     def serialize_obj_attributes(
-        self, obj: Any, attributes_to_serizalize: list[ModelFieldWidgetSchema]
+        self, obj: Any, attributes_to_serizalize: list[ModelFieldWidgetSchema], list_view: bool = False
     ) -> dict[str, Any]:
         """Serialize orm model obj attribute to dict.
 
