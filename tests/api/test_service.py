@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from io import StringIO
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
@@ -32,7 +32,7 @@ async def test_get_user_id_from_session_id_without_user_id(monkeypatch):
     monkeypatch.setattr("fastadmin.api.service.get_admin_model", lambda _model: admin_model)
 
     token = jwt.encode(
-        {"session_expired_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()},
+        {"session_expired_at": (datetime.now(UTC) + timedelta(minutes=5)).isoformat()},
         settings.ADMIN_SECRET_KEY,
         algorithm="HS256",
     )

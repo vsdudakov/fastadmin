@@ -1,159 +1,57 @@
-# Admin Dashboard for FastAPI / Flask / Django
+<h1 align="center">FastAdmin — Admin Dashboard for FastAPI, Flask and Django</h1>
 
-[![codecov](https://codecov.io/gh/vsdudakov/fastadmin/branch/main/graph/badge.svg?token=RNGX5HOW3T)](https://app.codecov.io/gh/vsdudakov/fastadmin)
-[![License](https://img.shields.io/github/license/vsdudakov/fastadmin)](https://github.com/vsdudakov/fastadmin/blob/master/LICENSE)
-[![PyPi](https://badgen.net/pypi/v/fastadmin)](https://pypi.org/project/fastadmin/)
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
-[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
+<p align="center">
+  <a href="https://github.com/vsdudakov/fastadmin/actions/workflows/ci.yml"><img src="https://github.com/vsdudakov/fastadmin/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://app.codecov.io/gh/vsdudakov/fastadmin"><img src="https://codecov.io/gh/vsdudakov/fastadmin/branch/main/graph/badge.svg?token=RNGX5HOW3T" alt="codecov"></a>
+  <a href="https://pypi.org/project/fastadmin/"><img src="https://badgen.net/pypi/v/fastadmin" alt="PyPI"></a>
+  <a href="https://pypi.org/project/fastadmin/"><img src="https://img.shields.io/badge/python-3.12%2B-blue.svg" alt="Python 3.12+"></a>
+  <a href="https://github.com/vsdudakov/fastadmin/blob/main/LICENSE.md"><img src="https://img.shields.io/github/license/vsdudakov/fastadmin" alt="License: MIT"></a>
+</p>
+
+**FastAdmin** is an easy-to-use **admin dashboard (admin panel) for FastAPI, Flask and
+Django**, inspired by Django Admin. It gives your Python web application a
+production-ready **CRUD admin interface** in minutes — on top of **Tortoise ORM,
+Django ORM, SQLAlchemy or Pony ORM** — with authentication, filters, search,
+inline editing, file uploads, CSV/JSON export and dashboard charts out of the box.
+
+FastAdmin is built with relationships in mind and admiration for Django Admin.
+It aims to be minimal, functional and familiar: if you know Django Admin, you
+already know FastAdmin.
+
+📚 **Documentation: [https://vsdudakov.github.io/fastadmin/](https://vsdudakov.github.io/fastadmin/)**
 
 ## Demo
 
-![FastAdmin demo](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/demo.gif)
-
-<p align="center">
-  <a href="https://twitter.com/intent/tweet?text=Admin%20Dashboard%20For%20FastAPI&url=https://github.com/vsdudakov/fastadmin&hashtags=FastAPI,AdminDashboard">
-    <img alt="tweet" src="https://img.shields.io/twitter/url/https/twitter?label=Share%20on%20twitter&style=social" target="_blank" />
-  </a>
-</p>
-
-
-
-## Introduction
-
-  
-<a href='https://github.com/vsdudakov/fastadmin' target='_blank'>FastAdmin</a> is an easy-to-use admin dashboard for FastAPI, Django, and Flask, inspired by Django Admin.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-FastAdmin is built with relationships in mind and admiration for Django Admin. Its design focuses on making it as easy as possible to configure your admin dashboard for FastAPI, Django, or Flask.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-FastAdmin aims to be minimal, functional, and familiar.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Getting Started
-
-  
-
-
-
-
-If you have questions beyond this documentation, feel free to <a href='mailto:vsdudakov@gmail.com' target='_blank'>email us</a>.
-
-
-
-
-
-
-
-
-
-
-
-  
-  
-  
-### Installation
-
-  
-
-
-Follow the steps below to set up FastAdmin:
-
-
-
-
-
-
-
-
-
-
-
-
-  
-Install the package with pip:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-On zsh and macOS, use quotes: <code>pip install 'fastadmin[fastapi,django]'</code>
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
+![FastAdmin demo — admin panel for FastAPI, Flask and Django](https://raw.githubusercontent.com/vsdudakov/fastadmin/main/docs/assets/images/demo.gif)
+
+## Features
+
+- **Familiar Django-Admin-style API** — `list_display`, `list_filter`,
+  `search_fields`, `fieldsets`, `readonly_fields`, inlines, actions and more.
+- **Any web framework** — mount as a FastAPI sub-app, a Flask blueprint or
+  Django urlpatterns.
+- **Any ORM** — first-class admin classes for Tortoise ORM, Django ORM,
+  SQLAlchemy (async) and Pony ORM.
+- **Authentication & permissions** — pluggable sign-in against your own user
+  model, per-action permission hooks, request/user context in every admin method.
+- **Rich form widgets** — 20+ antd-based widgets (rich text, JSON, async
+  select, phone, slug, date/time pickers, switches, radio groups, …) via
+  `formfield_overrides`.
+- **File & image uploads** — storage-agnostic `upload_file` hook and
+  presigned-URL support via `get_file_url` (local disk, S3, …).
+- **Dashboard widgets** — declarative line/area/column/bar/pie charts and
+  action widgets with filters, powered by antd charts.
+- **Bulk actions & export** — custom bulk actions, CSV/JSON export.
+- **Quality** — fully typed and linted (ruff + ty), 100% backend test coverage,
+  modern React (Vite + antd) frontend bundled with the package — no Node.js
+  needed at install time.
+
+## Installation
+
+Install with the extras matching your web framework and ORM (each combination
+works standalone):
 
 ```bash
-
 pip install fastadmin[fastapi,django]        # FastAPI with Django ORM
 pip install fastadmin[fastapi,tortoise-orm]  # FastAPI with Tortoise ORM
 pip install fastadmin[fastapi,pony]          # FastAPI with Pony ORM
@@ -161,674 +59,111 @@ pip install fastadmin[fastapi,sqlalchemy]    # FastAPI with SQLAlchemy (includes
 pip install fastadmin[django]                # Django with Django ORM
 pip install fastadmin[django,pony]           # Django with Pony ORM
 pip install fastadmin[flask,sqlalchemy]      # Flask with SQLAlchemy (includes greenlet)
-
 ```
 
+> **Note:** on zsh (the default macOS shell) quote the extras: `pip install 'fastadmin[fastapi,django]'`.
 
-
-
-
-
-  
-Or install with Poetry:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
+Configure the required settings:
 
 ```bash
-
-poetry add 'fastadmin[fastapi,django]'
-poetry add 'fastadmin[fastapi,tortoise-orm]'
-poetry add 'fastadmin[fastapi,pony]'
-poetry add 'fastadmin[fastapi,sqlalchemy]'
-poetry add 'fastadmin[django]'
-poetry add 'fastadmin[django,pony]'
-poetry add 'fastadmin[flask,sqlalchemy]'
-
-```
-
-
-
-
-
-
-  
-
-
-
-
-When using SQLAlchemy, the <code>greenlet</code> package is required (included in the <code>fastadmin[sqlalchemy]</code> extra).
-
-
-
-
-
-
-
-
-
-
-  
-Configure the required settings with environment variables:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-You can add these variables to a <code>.env</code> file and load them with python-dotenv. See <a href='https://vsdudakov.github.io/fastadmin#settings'>all settings</a> in the full documentation.
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
-
-```bash
-
 export ADMIN_USER_MODEL=User
 export ADMIN_USER_MODEL_USERNAME_FIELD=username
 export ADMIN_SECRET_KEY=secret_key
-
 ```
 
-
-
-
-
-
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Quick Examples
-
-### ORM setup (User, UserAttachment, actions, widgets)
-
-#### Tortoise ORM
+## Quick start
 
 ```python
-from tortoise import fields
-from tortoise.models import Model
+import bcrypt
+from fastapi import FastAPI
 
+from fastadmin import TortoiseModelAdmin, register
+from fastadmin import fastapi_app as admin_app
 
-class User(Model):
-    username = fields.CharField(max_length=255, unique=True)
-    hash_password = fields.CharField(max_length=255)
-    is_superuser = fields.BooleanField(default=False)
-    is_active = fields.BooleanField(default=True)
-    avatar_url = fields.TextField(null=True)
-
-
-class UserAttachment(Model):
-    user = fields.ForeignKeyField("models.User", related_name="attachments")
-    attachment_url = fields.TextField()
-```
-
-```python
-from fastadmin import (
-    TortoiseInlineModelAdmin,
-    TortoiseModelAdmin,
-    WidgetType,
-    action,
-    register,
-    widget_action,
-)
-from fastadmin.models.schemas import (
-    WidgetActionChartProps,
-    WidgetActionInputSchema,
-    WidgetActionResponseSchema,
-    WidgetActionType,
-)
-from .models import User, UserAttachment
-
-
-class UserAttachmentInline(TortoiseInlineModelAdmin):
-    model = UserAttachment
-    formfield_overrides = {
-        "attachment_url": (WidgetType.UploadFile, {"required": True}),
-    }
-
-    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
-        # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
+from models import User
 
 
 @register(User)
 class UserAdmin(TortoiseModelAdmin):
+    exclude = ("hash_password",)
     list_display = ("id", "username", "is_superuser", "is_active")
-    inlines = (UserAttachmentInline,)
+    list_display_links = ("id", "username")
+    list_filter = ("id", "username", "is_superuser", "is_active")
+    search_fields = ("username",)
+
+    async def authenticate(self, username: str, password: str) -> int | None:
+        user = await User.filter(username=username, is_superuser=True).first()
+        if not user:
+            return None
+        if not bcrypt.checkpw(password.encode(), user.hash_password.encode()):
+            return None
+        return user.id
+
+    async def change_password(self, id: int, password: str) -> None:
+        user = await User.filter(id=id).first()
+        if not user:
+            return
+        user.hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+        await user.save(update_fields=("hash_password",))
 
-    formfield_overrides = {
-        "avatar_url": (WidgetType.UploadImage, {"required": False}),
-    }
-
-    actions = ("activate", "deactivate")
-    widget_actions = ("users_chart", "users_list")
-
-    @action(description="Activate selected users")
-    async def activate(self, ids: list[int]) -> None:
-        await self.model_cls.filter(id__in=ids).update(is_active=True)
-
-    @action(description="Deactivate selected users")
-    async def deactivate(self, ids: list[int]) -> None:
-        await self.model_cls.filter(id__in=ids).update(is_active=False)
-
-    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
-        # handle avatar_url uploads for User (and other file fields if needed)
-        return f"/media/{file_name}"
-
-    @widget_action(
-        widget_action_type=WidgetActionType.ChartLine,
-        widget_action_props=WidgetActionChartProps(x_field="x", y_field="y", series_field="series"),
-        tab="Analytics",
-        title="Users over time",
-    )
-    async def users_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
-        return WidgetActionResponseSchema(
-            data=[
-                {"x": "2026-01-01", "y": 10, "series": "Active"},
-                {"x": "2026-01-02", "y": 15, "series": "Active"},
-                {"x": "2026-01-01", "y": 3, "series": "Inactive"},
-                {"x": "2026-01-02", "y": 5, "series": "Inactive"},
-            ]
-        )
-
-    @widget_action(
-        widget_action_type=WidgetActionType.Action,
-        tab="Data",
-        title="Users list",
-        description="Simple action widget that returns a table of users.",
-    )
-    async def users_list(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
-        return WidgetActionResponseSchema(
-            data=[
-                {"id": 1, "username": "alice"},
-                {"id": 2, "username": "bob"},
-            ]
-        )
-```
-
-#### Django ORM
-
-```python
-from django.db import models
-
-
-class User(models.Model):
-    username = models.CharField(max_length=255, unique=True)
-    password = models.CharField(max_length=255)
-    is_superuser = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    avatar_url = models.ImageField(null=True)
-
-
-class UserAttachment(models.Model):
-    user = models.ForeignKey(User, related_name="attachments", on_delete=models.CASCADE)
-    attachment_url = models.FileField()
-```
-
-```python
-from fastadmin import (
-    DjangoInlineModelAdmin,
-    DjangoModelAdmin,
-    WidgetType,
-    action,
-    register,
-    widget_action,
-)
-from fastadmin.models.schemas import (
-    WidgetActionArgumentProps,
-    WidgetActionInputSchema,
-    WidgetActionProps,
-    WidgetActionResponseSchema,
-    WidgetActionType,
-)
-from .models import User, UserAttachment
-
-
-class UserAttachmentInline(DjangoInlineModelAdmin):
-    model = UserAttachment
-    formfield_overrides = {
-        "attachment_url": (WidgetType.UploadFile, {"required": True}),
-    }
-
-    def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
-        # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
-
-
-@register(User)
-class UserAdmin(DjangoModelAdmin):
-    list_display = ("id", "username", "is_superuser", "is_active")
-    inlines = (UserAttachmentInline,)
-
-    formfield_overrides = {
-        "avatar_url": (WidgetType.UploadImage, {"required": False}),
-    }
-
-    actions = ("activate", "deactivate")
-    widget_actions = ("users_summary", "users_chart")
-
-    @action(description="Activate selected users")
-    def activate(self, ids):
-        self.model_cls.objects.filter(id__in=ids).update(is_active=True)
-
-    @action(description="Deactivate selected users")
-    def deactivate(self, ids):
-        self.model_cls.objects.filter(id__in=ids).update(is_active=False)
-
-    def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
-        # handle avatar_url uploads for User (and other file fields if needed)
-        return f"/media/{file_name}"
-
-    @widget_action(
-        widget_action_type=WidgetActionType.Action,
-        widget_action_props=WidgetActionProps(
-            arguments=[
-                WidgetActionArgumentProps(
-                    name="only_active",
-                    widget_type=WidgetType.Switch,
-                    widget_props={"required": False},
-                )
-            ]
-        ),
-        tab="Data",
-        title="Users summary",
-    )
-    def users_summary(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
-        qs = self.model_cls.objects.filter(is_active=True) if payload.arguments.get("only_active") else self.model_cls.objects.all()
-        return WidgetActionResponseSchema(
-            data=[{"id": u.id, "username": u.username} for u in qs[:5]]
-        )
-
-    @widget_action(
-        widget_action_type=WidgetActionType.ChartLine,
-        widget_action_props=WidgetActionChartProps(x_field="label", y_field="value", series_field="series"),
-        tab="Analytics",
-        title="Active vs inactive users",
-    )
-    def users_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
-        active = self.model_cls.objects.filter(is_active=True).count()
-        inactive = self.model_cls.objects.filter(is_active=False).count()
-        return WidgetActionResponseSchema(
-            data=[
-                {"label": "users", "value": active, "series": "active"},
-                {"label": "users", "value": inactive, "series": "inactive"},
-            ]
-        )
-```
-
-#### SQLAlchemy
-
-```python
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-
-engine = create_async_engine("sqlite+aiosqlite:///:memory:")
-sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
-
-
-class Base(DeclarativeBase):
-    pass
-
-
-class User(Base):
-    __tablename__ = "user"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    username: Mapped[str] = mapped_column(String(255), unique=True)
-    password: Mapped[str] = mapped_column(String(255))
-    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
-
-    attachments: Mapped[list["UserAttachment"]] = relationship(back_populates="user")
-
-
-class UserAttachment(Base):
-    __tablename__ = "user_attachment"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    attachment_url: Mapped[str] = mapped_column(Text)
-
-    user: Mapped[User] = relationship(back_populates="attachments")
-```
-
-```python
-from sqlalchemy import update
-
-from fastadmin import (
-    SqlAlchemyInlineModelAdmin,
-    SqlAlchemyModelAdmin,
-    WidgetType,
-    action,
-    register,
-    widget_action,
-)
-from fastadmin.models.schemas import (
-    WidgetActionChartProps,
-    WidgetActionInputSchema,
-    WidgetActionResponseSchema,
-    WidgetActionType,
-)
-from .models import User, UserAttachment, sessionmaker
-
-
-class UserAttachmentInline(SqlAlchemyInlineModelAdmin):
-    model = UserAttachment
-    formfield_overrides = {
-        "attachment_url": (WidgetType.UploadFile, {"required": True}),
-    }
-
-    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
-        # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
-
-
-@register(User, sqlalchemy_sessionmaker=sessionmaker)
-class UserAdmin(SqlAlchemyModelAdmin):
-    list_display = ("id", "username", "is_superuser", "is_active")
-    inlines = (UserAttachmentInline,)
-
-    formfield_overrides = {
-        "avatar_url": (WidgetType.UploadImage, {"required": False}),
-    }
-
-    actions = ("activate", "deactivate")
-    widget_actions = ("users_chart", "users_list")
-
-    @action(description="Activate selected users")
-    async def activate(self, ids):
-        sm = self.get_sessionmaker()
-        async with sm() as s:
-            await s.execute(update(User).where(User.id.in_(ids)).values(is_active=True))
-            await s.commit()
-
-    @action(description="Deactivate selected users")
-    async def deactivate(self, ids):
-        sm = self.get_sessionmaker()
-        async with sm() as s:
-            await s.execute(update(User).where(User.id.in_(ids)).values(is_active=False))
-            await s.commit()
-
-    async def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
-        # handle avatar_url uploads for User (and other file fields if needed)
-        return f"/media/{file_name}"
-
-    @widget_action(
-        widget_action_type=WidgetActionType.ChartBar,
-        widget_action_props=WidgetActionChartProps(x_field="label", y_field="value", series_field="series"),
-        tab="Analytics",
-        title="Users count",
-    )
-    async def users_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
-        return WidgetActionResponseSchema(
-            data=[
-                {"label": "users", "value": 42, "series": "all"},
-            ]
-        )
-
-    @widget_action(
-        widget_action_type=WidgetActionType.Action,
-        tab="Data",
-        title="Users list",
-    )
-    async def users_list(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
-        # In a real app, fetch from the DB; here it's just a static example
-        return WidgetActionResponseSchema(
-            data=[
-                {"id": 1, "username": "alice"},
-                {"id": 2, "username": "bob"},
-            ]
-        )
-```
-
-#### Pony ORM
-
-```python
-from pony.orm import Database, LongStr, PrimaryKey, Required, Set
-
-db = Database()
-
-
-class User(db.Entity):  # type: ignore[misc]
-    _table_ = "user"
-    id = PrimaryKey(int, auto=True)
-    username = Required(str)
-    password = Required(str)
-    is_superuser = Required(bool, default=False)
-    is_active = Required(bool, default=True)
-    avatar_url = Required(LongStr, nullable=True)
-
-    attachments = Set("UserAttachment")
-
-
-class UserAttachment(db.Entity):  # type: ignore[misc]
-    _table_ = "user_attachment"
-    id = PrimaryKey(int, auto=True)
-    user = Required(User)
-    attachment_url = Required(LongStr)
-```
-
-```python
-from pony.orm import commit, db_session
-
-from fastadmin import (
-    PonyORMInlineModelAdmin,
-    PonyORMModelAdmin,
-    WidgetType,
-    action,
-    register,
-    widget_action,
-)
-from fastadmin.models.schemas import (
-    WidgetActionInputSchema,
-    WidgetActionResponseSchema,
-    WidgetActionType,
-)
-from .models import User, UserAttachment
-
-
-class UserAttachmentInline(PonyORMInlineModelAdmin):
-    model = UserAttachment
-    formfield_overrides = {
-        "attachment_url": (WidgetType.UploadFile, {"required": True}),
-    }
-
-    def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
-        # save file to media directory or to s3/filestorage here
-        return f"/media/{file_name}"
-
-
-@register(User)
-class UserAdmin(PonyORMModelAdmin):
-    list_display = ("id", "username", "is_superuser", "is_active")
-    inlines = (UserAttachmentInline,)
-
-    formfield_overrides = {
-        "avatar_url": (WidgetType.UploadImage, {"required": False}),
-    }
-
-    actions = ("activate", "deactivate")
-    widget_actions = ("users_list", "users_chart")
-
-    @action(description="Activate selected users")
-    @db_session
-    def activate(self, ids):
-        for u in User.select(lambda o: o.id in ids):
-            u.is_active = True
-        commit()
-
-    @action(description="Deactivate selected users")
-    @db_session
-    def deactivate(self, ids):
-        for u in User.select(lambda o: o.id in ids):
-            u.is_active = False
-        commit()
-
-    def upload_file(self, field_name: str, file_name: str, file_content: bytes) -> str:
-        # handle avatar_url uploads for User (and other file fields if needed)
-        return f"/media/{file_name}"
-
-    @widget_action(widget_action_type=WidgetActionType.Action, tab="Data", title="Users list")
-    @db_session
-    def users_list(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
-        return WidgetActionResponseSchema(
-            data=[{"id": u.id, "username": u.username} for u in User.select()[:5]]
-        )
-
-    @widget_action(widget_action_type=WidgetActionType.ChartPie, tab="Analytics", title="Users by activity")
-    @db_session
-    def users_chart(self, payload: WidgetActionInputSchema) -> WidgetActionResponseSchema:
-        active = User.select(lambda u: u.is_active).count()
-        inactive = User.select(lambda u: not u.is_active).count()
-        return WidgetActionResponseSchema(
-            data=[
-                {"type": "active", "value": active},
-                {"type": "inactive", "value": inactive},
-            ]
-        )
-```
-
-### Request and user context in admin methods
-
-You can access the current **request** and **authenticated user** in your admin methods via `self.request` and `self.user`. This works the same way for both `ModelAdmin` and `InlineModelAdmin`.
-
-```python
-from fastadmin import TortoiseModelAdmin, register
-from .models import Event
-
-
-@register(Event)
-class EventAdmin(TortoiseModelAdmin):
-    async def has_change_permission(self, user_id: int | None = None) -> bool:
-        # you can either use user_id to load the user from the DB,
-        # or rely on self.user – the current authenticated admin user
-        if self.user and self.user.get("is_superuser"):
-            return True
-        return False
-
-    async def save_model(self, id: int | None, payload: dict) -> dict:
-        # self.request is the current HTTP request
-        if self.request and getattr(self.request, "client", None):
-            payload["changed_from_ip"] = getattr(
-              self.request.client,
-              "host",
-              None,
-            )
-        return await super().save_model(id, payload)
-```
-
-Inline admins get the same properties (`self.user`, `self.request`), so you can reuse this pattern in inline-specific hooks like `save_model` or custom `action` / `widget_action` methods.
-
-### Framework integration (register User admin)
-
-#### FastAPI
-
-```python
-from fastapi import FastAPI
-
-from fastadmin import fastapi_app as admin_app
-
-import myapp.admin  # import to register User admin
 
 app = FastAPI()
-
 app.mount("/admin", admin_app)
 ```
 
-#### Django
+Run `uvicorn example:app` and open `http://localhost:8000/admin`.
+
+Mounting for the other frameworks:
 
 ```python
-from django.urls import path
-
-from fastadmin import get_django_admin_urls as get_admin_urls
-from fastadmin.settings import settings
-
-import myapp.admin  # imports @register(User)
-
-urlpatterns = [
-    path(f"{settings.ADMIN_PREFIX}/", get_admin_urls()),
-]
-```
-
-#### Flask
-
-```python
-from flask import Flask
-
+# Flask
 from fastadmin import flask_app as admin_app
-from fastadmin.settings import settings
+app.register_blueprint(admin_app, url_prefix="/admin")
 
-import myapp.admin  # imports @register(User)
-
-app = Flask(__name__)
-
-app.register_blueprint(admin_app, url_prefix=f"/{settings.ADMIN_PREFIX}")
+# Django (urls.py)
+from fastadmin import get_django_admin_urls as get_admin_urls
+urlpatterns = [path("admin/", get_admin_urls())]
 ```
+
 ## Documentation
 
-Full documentation is available at [vsdudakov.github.io/fastadmin](https://vsdudakov.github.io/fastadmin).
+Full documentation lives at
+**[vsdudakov.github.io/fastadmin](https://vsdudakov.github.io/fastadmin/)**:
+
+- [Installation](https://vsdudakov.github.io/fastadmin/getting-started/installation/)
+  and [Quick start](https://vsdudakov.github.io/fastadmin/getting-started/quickstart/)
+- [Settings](https://vsdudakov.github.io/fastadmin/guides/settings/) — all environment variables
+- [Registering models](https://vsdudakov.github.io/fastadmin/guides/registering-models/) — complete runnable examples for all four ORMs
+- [Authentication](https://vsdudakov.github.io/fastadmin/guides/authentication/) and permissions
+- [Model admins](https://vsdudakov.github.io/fastadmin/guides/model-admins/) — attributes, actions, display fields, exports
+- [Form widgets & file uploads](https://vsdudakov.github.io/fastadmin/guides/form-widgets/)
+- [Inline admins](https://vsdudakov.github.io/fastadmin/guides/inline-admins/)
+- [Dashboard widgets](https://vsdudakov.github.io/fastadmin/guides/dashboard-widgets/) — charts and actions
+- [API reference](https://vsdudakov.github.io/fastadmin/api-reference/)
+
+Runnable example apps for every framework/ORM combination are in
+[`examples/`](https://github.com/vsdudakov/fastadmin/tree/main/examples).
+
+## Why FastAdmin?
+
+If you are looking for a **Django-Admin-like admin panel for FastAPI**, an
+**admin interface for SQLAlchemy or Tortoise ORM**, or a lightweight
+**alternative to building a custom back office**, FastAdmin gives you a
+batteries-included, themeable admin UI without code generation, without tying
+your app to a specific framework, and without writing a single React component.
+
+## Contributing
+
+Contributions are welcome — see the
+[contributing guide](https://vsdudakov.github.io/fastadmin/contributing/).
+Development uses `uv` and `make`: `make dev`, `make lint`, `make test`.
+See [CHANGELOG.md](https://github.com/vsdudakov/fastadmin/blob/main/CHANGELOG.md)
+for release history.
+
+If you have questions beyond the documentation, feel free to
+[email us](mailto:vsdudakov@gmail.com).
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE) file for details.
+FastAdmin is released under the
+[MIT License](https://github.com/vsdudakov/fastadmin/blob/main/LICENSE.md).

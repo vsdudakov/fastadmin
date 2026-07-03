@@ -31,6 +31,8 @@ export const FilterColumn = ({
   const [FilterWidget, defaultProps]: any = getWidgetCls(widgetType, _t);
 
   useEffect(() => {
+    // Sync the external filter value into local widget state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilterValue(value);
   }, [value]);
 

@@ -1,0 +1,32 @@
+name: Release
+
+# Build the wheel + sdist on a version tag and publish to PyPI.
+# Trigger by pushing a tag like `v0.5.0`.
+# The frontend build output (fastadmin/static) is committed to the repo,
+# so no Node.js toolchain is needed here.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Build and publish to PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - name: Build sdist and wheel
+        run: uv build
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          password: ${{ secrets.PYPI_TOKEN }}
+          # Don't fail a re-run/re-tag when a version is already on PyPI.
+          skip-existing: true

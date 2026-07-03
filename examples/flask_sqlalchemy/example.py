@@ -25,12 +25,10 @@ from fastadmin import (
     WidgetType,
     action,
     display,
-)
-from fastadmin import flask_app as admin_app
-from fastadmin import (
     register,
     widget_action,
 )
+from fastadmin import flask_app as admin_app
 from fastadmin.api.frameworks.flask.app import JSONProvider
 from fastadmin.settings import settings
 

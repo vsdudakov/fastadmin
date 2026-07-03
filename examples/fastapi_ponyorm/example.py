@@ -28,12 +28,10 @@ from fastadmin import (
     WidgetType,
     action,
     display,
-)
-from fastadmin import fastapi_app as admin_app
-from fastadmin import (
     register,
     widget_action,
 )
+from fastadmin import fastapi_app as admin_app
 
 
 @register(User)

@@ -1,56 +1,117 @@
-name: FastAdmin CI
+name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
   id-token: write
-  pull-requests: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  ci:
+  lint:
+    name: Lint (ruff + ty)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.13"
-          cache: "poetry"
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: ruff check
+        run: uv run ruff check fastadmin tests examples
+      - name: ruff format --check
+        run: uv run ruff format --check fastadmin tests examples
+      - name: ty
+        run: uv run ty check fastadmin
+
+  test:
+    name: Tests (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    env:
+      ADMIN_USER_MODEL: User
+      ADMIN_USER_MODEL_USERNAME_FIELD: username
+      ADMIN_SECRET_KEY: secret_key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
         with:
-          node-version: v24.3.0
-          cache: "yarn"
-          cache-dependency-path: "frontend/yarn.lock"
-      - name: Install Dependencies
-        run: make install
-      - name: Run Lint
-        run: make lint
-      - name: Run Tests
-        env:
-          ADMIN_USER_MODEL: User
-          ADMIN_USER_MODEL_USERNAME_FIELD: username
-          ADMIN_SECRET_KEY: secret_key
-        run: make test
-      - name: Run Build
-        run: make -C frontend build
-      - name: Upload coverage reports to Codecov
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Run tests with 100% coverage gate
+        run: uv run pytest -n 1 --cov=fastadmin --cov-report=term-missing --cov-report=xml -s tests
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.13'
         uses: codecov/codecov-action@v5
         with:
           use_oidc: true
-          files: ./coverage.xml,./frontend/coverage/lcov.info
-          flags: backend,frontend
+          files: ./coverage.xml
+          flags: backend
           fail_ci_if_error: true
-          verbose: true
+
+  install-matrix:
+    # Every documented `pip install fastadmin[...]` combination must install
+    # and import on its own (no dev deps, no other extras).
+    name: Install (${{ matrix.extras }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        extras:
+          - "fastapi,django"
+          - "fastapi,tortoise-orm"
+          - "fastapi,pony"
+          - "fastapi,sqlalchemy"
+          - "django"
+          - "django,pony"
+          - "flask,sqlalchemy"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - name: Build the wheel
+        run: uv build
+      - name: Install from the wheel and import
+        run: |
+          uv venv /tmp/venv-extras
+          uv pip install --python /tmp/venv-extras "$(ls dist/*.whl)[${{ matrix.extras }}]"
+          /tmp/venv-extras/bin/python -c "import fastadmin; print('ok: ${{ matrix.extras }}')"
+
+  frontend:
+    name: Frontend (lint + tests + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "yarn"
+          cache-dependency-path: "frontend/yarn.lock"
+      - name: Install dependencies
+        run: make -C frontend install
+      - name: Lint
+        run: make -C frontend lint
+      - name: Tests
+        run: make -C frontend test
+      - name: Build
+        run: make -C frontend build
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          files: ./frontend/coverage/lcov.info
+          flags: frontend
+          fail_ci_if_error: true

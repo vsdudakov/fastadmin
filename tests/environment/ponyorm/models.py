@@ -51,7 +51,7 @@ class User(BaseModel, db.Entity):  # type: ignore [name-defined]
         return self.username
 
 
-class Tournament(BaseModel, db.Entity):   # type: ignore [name-defined]
+class Tournament(BaseModel, db.Entity):  # type: ignore [name-defined]
     _table_ = "tournament"
 
     id = PrimaryKey(int, auto=True)

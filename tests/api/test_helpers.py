@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import jwt
 
@@ -125,7 +125,7 @@ async def test_get_user_id_from_session_id(session_id):
     user_id = await get_user_id_from_session_id(session_id)
     assert user_id is not None
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     session_expired_at = now + timedelta(seconds=settings.ADMIN_SESSION_EXPIRED_AT)
     without_expired_session_id = jwt.encode(
         {

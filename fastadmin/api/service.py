@@ -1,7 +1,7 @@
 import inspect
 import logging
 from collections.abc import Sequence
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from io import BytesIO, StringIO
 from typing import Any, cast
 from uuid import UUID
@@ -68,7 +68,7 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
     if not session_expired_at:
         return None
 
-    if datetime.fromisoformat(session_expired_at).replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+    if datetime.fromisoformat(session_expired_at).replace(tzinfo=UTC) < datetime.now(UTC):
         return None
 
     user_id = token_payload.get("user_id")
@@ -125,7 +125,7 @@ class ApiService:
         if not user_id or not isinstance(user_id, int | UUID):
             raise AdminApiException(401, detail="Invalid credentials.")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         session_expired_at = now + timedelta(seconds=settings.ADMIN_SESSION_EXPIRED_AT)
         if isinstance(user_id, UUID):
             user_id = str(user_id)
@@ -254,7 +254,7 @@ class ApiService:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
         self._bind_admin_context(admin_model, request=request, user=current_user)
         try:
-            return await admin_model.save_model(None, payload)  # type: ignore [return-value]
+            return await admin_model.save_model(None, payload)  # ty: ignore[invalid-return-type]
         except Exception as e:
             logger.error("Error adding %s: %s", model, e)
             raise AdminApiException(500, detail=f"Error adding {model}: {e}") from e
@@ -349,7 +349,7 @@ class ApiService:
             else:
                 upload_file_fn = sync_to_async(admin_model.upload_file)  # type: ignore [arg-type]
 
-            return await upload_file_fn(
+            return await upload_file_fn(  # ty: ignore[invalid-return-type]
                 field_name,
                 file_name,
                 file_content,

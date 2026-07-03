@@ -1,66 +1,52 @@
-.PHONY: clean
-clean:
-	@exec find . -type d -name "__pycache__" -exec rm -rf {} + > /dev/null 2>&1
-	@exec find . -type f -name "*.pyc" -exec rm -rf {} + > /dev/null 2>&1
-	@exec rm -rf htmlcov
-	@exec rm -rf .coverage
+.PHONY: dev build lint format test cov docs docs-serve example clean kill
 
-.PHONY: fix
-fix:
-	@echo "Run ruff"
-	@exec poetry run ruff check --fix fastadmin tests docs examples
-	@echo "Run isort"
-	@exec poetry run isort fastadmin tests docs examples
-	@echo "Run black"
-	@exec poetry run black fastadmin tests docs examples
-	@echo "Run mypy"
-	@exec poetry run mypy -p fastadmin -p docs
-	@echo "Run frontend linters"
-	@exec make -C frontend fix
+LINT_PATHS := fastadmin tests examples
 
-.PHONY: lint
+# Create the local environment: Python deps via uv (all ORM/framework extras
+# plus the dev group) and the frontend via yarn.
+dev:
+	uv sync --all-extras
+	make -C frontend install
+
+# Build the frontend into fastadmin/static and package the wheel + sdist.
+build:
+	make -C frontend build
+	uv build
+
+# Blocking gate: ruff check + format + ty, then the frontend linters.
 lint:
-	@echo "Run ruff"
-	@exec poetry run ruff check fastadmin tests docs examples
-	@echo "Run isort"
-	@exec poetry run isort --check-only fastadmin tests docs examples
-	@echo "Run black"
-	@exec poetry run black --check --diff fastadmin tests docs examples
-	@echo "Run mypy"
-	@exec poetry run mypy -p fastadmin -p docs
-	@echo "Run frontend linters"
-	@exec make -C frontend lint
+	uv run ruff check $(LINT_PATHS)
+	uv run ruff format --check $(LINT_PATHS)
+	uv run ty check fastadmin
+	make -C frontend lint
+
+format:
+	uv run ruff check --fix $(LINT_PATHS)
+	uv run ruff format $(LINT_PATHS)
+	make -C frontend fix
 
 # Use -n 1: -n auto causes flaky failures with Django+SQLite (database is locked, 500s). conftest
 # uses a per-worker DB and SQLite timeout when xdist is used, but parallel runs remain unreliable.
-.PHONY: test
 test:
-	@exec poetry run pytest -n 1 --cov=fastadmin --cov-report=term-missing --cov-report=xml --cov-fail-under=100 -s tests
-	@exec make -C frontend test
+	uv run pytest -n 1 --cov=fastadmin --cov-report=term-missing --cov-report=xml -s tests
+	make -C frontend test
 
-.PHONY: kill
-kill:
-	@exec kill -9 $$(lsof -t -i:8090)
-	@exec kill -9 $$(lsof -t -i:3030)
+cov: test
 
-.PHONY: install
-install:
-	@exec pip install poetry
-	@exec poetry install --all-extras
-	@exec make -C frontend install
-
-.PHONY: docs
+# --- Documentation (MkDocs Material) -----------------------------------------
+# Build the static site into ./site (social cards enabled, like CI).
 docs:
-	@exec make -C docs build
+	CI=true uv run --group docs mkdocs build --strict
 
-.PHONY: build
-build:
-	@exec make docs
-	@exec make -C frontend build
+# Live-preview at http://127.0.0.1:8000 (social cards off for speed).
+docs-serve:
+	uv run --group docs mkdocs serve
 
-.PHONY: push
-pre-push:
-	@exec make fix
-	@exec make lint
-	@exec make docs
-	@exec make build
+kill:
+	kill -9 $$(lsof -t -i:8090)
+	kill -9 $$(lsof -t -i:3030)
+
+clean:
+	find . -type d -name "__pycache__" -exec rm -rf {} + > /dev/null 2>&1 || true
+	find . -type f -name "*.pyc" -delete > /dev/null 2>&1 || true
+	rm -rf htmlcov .coverage coverage.xml dist site .cache

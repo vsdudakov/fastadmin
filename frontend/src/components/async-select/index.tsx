@@ -284,8 +284,7 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
       >
         <Divider />
         {initialChangeValues &&
-        modelConfiguration &&
-        modelConfiguration.permissions.includes(EModelPermission.Change) ? (
+        modelConfiguration?.permissions.includes(EModelPermission.Change) ? (
           <FormContainer
             modelConfiguration={modelConfiguration}
             form={formChange}

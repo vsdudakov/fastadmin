@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
@@ -8,8 +8,8 @@ from fastadmin.api.frameworks.django.app import api as django_api
 async def test_json_provider():
     from fastadmin.api.frameworks.django.app.api import JsonEncoder
 
-    today = datetime.now(timezone.utc).date()
-    now = datetime.now(timezone.utc)
+    today = datetime.now(UTC).date()
+    now = datetime.now(UTC)
     uuid = uuid4()
     assert JsonEncoder().default(today) == today.isoformat()
     assert JsonEncoder().default(now) == now.isoformat()

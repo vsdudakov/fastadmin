@@ -530,8 +530,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
       >
         <Divider />
         {initialChangeValues &&
-        modelConfiguration &&
-        modelConfiguration.permissions.includes(EModelPermission.Change) ? (
+        modelConfiguration?.permissions.includes(EModelPermission.Change) ? (
           <FormContainer
             modelConfiguration={modelConfiguration}
             form={formChange}

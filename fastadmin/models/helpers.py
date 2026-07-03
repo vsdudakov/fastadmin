@@ -284,7 +284,7 @@ async def generate_models_schema(
                     save_as=admin_model_obj.save_as,
                     save_as_continue=admin_model_obj.save_as_continue,
                     view_on_site=admin_model_obj.view_on_site,
-                    inlines=await generate_models_schema(
+                    inlines=await generate_models_schema(  # ty: ignore[invalid-argument-type]
                         {inline.model: inline(inline.model) for inline in admin_model_obj.inlines},
                         user=user,
                         request=request,

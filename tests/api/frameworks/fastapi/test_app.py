@@ -71,11 +71,14 @@ async def test_fastapi_widget_action_admin_exception():
     request.cookies = {settings.ADMIN_SESSION_ID_KEY: "sid"}
     payload = WidgetActionInputSchema(query=[])
 
-    with pytest.raises(HTTPException) as exc_info, patch.object(
-        fastapi_api.api_service,
-        "widget_action",
-        AsyncMock(side_effect=AdminApiException(418, detail="boom")),
-    ) as mock_widget:
+    with (
+        pytest.raises(HTTPException) as exc_info,
+        patch.object(
+            fastapi_api.api_service,
+            "widget_action",
+            AsyncMock(side_effect=AdminApiException(418, detail="boom")),
+        ) as mock_widget,
+    ):
         await fastapi_api.widget_action(request, "Event", "sales_chart", payload)
 
     assert exc_info.value.status_code == 418

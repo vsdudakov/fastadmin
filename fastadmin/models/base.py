@@ -637,11 +637,11 @@ class BaseModelAdmin:
             case ExportFormat.JSON:
 
                 class JSONEncoder(json.JSONEncoder):
-                    def default(self, obj):
+                    def default(self, o):
                         try:
-                            return super().default(obj)
+                            return super().default(o)
                         except TypeError:
-                            return str(obj)
+                            return str(o)
 
                 output = StringIO()
                 json.dump([await self.serialize_obj(obj, list_view=True) for obj in objs], output, cls=JSONEncoder)

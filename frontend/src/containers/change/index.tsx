@@ -177,8 +177,7 @@ export const Change: React.FC = () => {
       isLoading={isLoadingInitialValues}
     >
       {initialChangeValues &&
-      modelConfiguration &&
-      modelConfiguration.permissions.includes(EModelPermission.Change) ? (
+      modelConfiguration?.permissions.includes(EModelPermission.Change) ? (
         <FormContainer
           modelConfiguration={modelConfiguration}
           id={id}

@@ -188,7 +188,7 @@ async def add(model: str) -> dict:
         raise http_exception from e
 
 
-@api_router.route("/change-password/<string:id>", methods=["PATCH"])  # type: ignore [type-var]
+@api_router.route("/change-password/<string:id>", methods=["PATCH"])  # ty: ignore[invalid-argument-type]
 async def change_password(id: UUID | int | str) -> UUID | int | str:
     """This method is used to change password.
 
@@ -322,7 +322,7 @@ async def export(model: str) -> Response:
         raise http_exception from e
 
 
-@api_router.route("/delete/<string:model>/<string:id>", methods=["DELETE"])  # type: ignore [type-var]
+@api_router.route("/delete/<string:model>/<string:id>", methods=["DELETE"])  # ty: ignore[invalid-argument-type]
 async def delete(
     model: str,
     id: UUID | int | str,

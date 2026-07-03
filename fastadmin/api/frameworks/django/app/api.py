@@ -317,7 +317,7 @@ async def upload_file(
 
 
 @csrf_exempt
-async def export(request: HttpRequest, model: str) -> JsonResponse:
+async def export(request: HttpRequest, model: str) -> JsonResponse | StreamingHttpResponse:
     """This method is used to export a list of objects.
 
     :params request: a request object.

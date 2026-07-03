@@ -200,7 +200,7 @@ def register(*orm_model_classes, **kwargs):
         if not issubclass(model_admin_cls, ModelAdmin):
             raise ValueError("Wrapped class must subclass ModelAdmin.")
 
-        register_admin_model_class(model_admin_cls, orm_model_classes, **kwargs)
+        register_admin_model_class(model_admin_cls, list(orm_model_classes), **kwargs)
 
         return model_admin_cls
 

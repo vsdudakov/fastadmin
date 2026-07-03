@@ -47,10 +47,10 @@ async def test_register_error():
     class MyModelAdmin(ModelAdmin):
         pass
 
-    with pytest.raises(ValueError, match="At least one model must be passed to register."):
+    with pytest.raises(ValueError, match=r"At least one model must be passed to register\."):
         register()(MyModelAdmin)
 
-    with pytest.raises(ValueError, match="Wrapped class must subclass ModelAdmin."):
+    with pytest.raises(ValueError, match=r"Wrapped class must subclass ModelAdmin\."):
         register(Model)(InvalidModelAdmin)
 
 

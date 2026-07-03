@@ -1,0 +1,116 @@
+# MkDocs Material configuration for the FastAdmin documentation site.
+# Built and deployed to GitHub Pages by .github/workflows/docs.yml.
+site_name: FastAdmin
+site_description: >-
+  FastAdmin is an easy-to-use admin dashboard for FastAPI, Flask and Django,
+  inspired by Django Admin. Works with Tortoise ORM, Django ORM, SQLAlchemy
+  and Pony ORM.
+site_author: Seva D
+# Canonical site URL — drives sitemap.xml, canonical <link> tags and social cards.
+site_url: https://vsdudakov.github.io/fastadmin/
+repo_name: vsdudakov/fastadmin
+repo_url: https://github.com/vsdudakov/fastadmin
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2026 Seva D — MIT License
+
+theme:
+  name: material
+  language: en
+  favicon: assets/images/favicon.png
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/view-dashboard
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+
+plugins:
+  - search
+  # Generates Open Graph / Twitter social cards per page (needs the
+  # `[imaging]` extra + system Cairo). Enabled only in CI (the docs workflow
+  # installs Cairo); skipped locally so `mkdocs serve` works without it.
+  - social:
+      enabled: !ENV [CI, false]
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  # Snippets embed files from the repo root (e.g. the runnable examples/ apps
+  # and CHANGELOG.md) so docs never drift from the code.
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/vsdudakov/fastadmin
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/fastadmin/
+    - icon: fontawesome/solid/heart
+      link: https://github.com/sponsors/vsdudakov
+      name: Sponsor FastAdmin
+  generator: false
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Installation: getting-started/installation.md
+      - Quick start: getting-started/quickstart.md
+  - Guides:
+      - Settings: guides/settings.md
+      - Registering models: guides/registering-models.md
+      - Authentication: guides/authentication.md
+      - Model admins: guides/model-admins.md
+      - Form widgets & file uploads: guides/form-widgets.md
+      - Inline admins: guides/inline-admins.md
+      - Dashboard widgets: guides/dashboard-widgets.md
+  - API reference: api-reference.md
+  - Changelog: changelog.md
+  - Contributing: contributing.md

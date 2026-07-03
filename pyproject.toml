@@ -1,98 +1,100 @@
-[tool.poetry]
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+[project]
 name = "fastadmin"
-version = "0.4.9"
+version = "0.5.0"
 description = "FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin."
-authors = ["Seva D <vsdudakov@gmail.com>"]
-license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/vsdudakov/fastadmin"
-repository = "https://github.com/vsdudakov/fastadmin"
-keywords = ["fastapi", "admin"]
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE.md"]
+authors = [{ name = "Seva D", email = "vsdudakov@gmail.com" }]
+keywords = [
+    "admin",
+    "dashboard",
+    "fastapi",
+    "flask",
+    "django",
+    "tortoise-orm",
+    "sqlalchemy",
+    "pony",
+    "admin-dashboard",
+    "django-admin",
+]
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Framework :: FastAPI",
     "Framework :: Django",
     "Framework :: Flask",
+    "Intended Audience :: Developers",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Documentation",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Widget Sets",
+    "Typing :: Typed",
 ]
-include = [
-    "LICENSE",
+dependencies = ["pyjwt>=2.6", "asgiref>=3.11"]
+urls = { Homepage = "https://vsdudakov.github.io/fastadmin/", Repository = "https://github.com/vsdudakov/fastadmin", Documentation = "https://vsdudakov.github.io/fastadmin/", Issues = "https://github.com/vsdudakov/fastadmin/issues" }
+
+[project.optional-dependencies]
+fastapi = ["fastapi>=0.100,<1", "python-multipart>=0.0.5,<1"]
+flask = ["flask>=3,<4"]
+django = ["django>=6,<7"]
+tortoise-orm = ["tortoise-orm>=1,<2"]
+sqlalchemy = ["sqlalchemy[asyncio]>=2,<3", "greenlet>=3"]
+pony = ["pony>=0.7,<1"]
+
+[dependency-groups]
+dev = [
+    "uvicorn>=0.34",
+    "pytest>=8.3",
+    "pytest-cov>=6.1",
+    "pytest-mock>=3.12",
+    "pytest-asyncio>=0.26",
+    "pytest-xdist>=3.6",
+    "httpx>=0.28",
+    "aioshutil>=1.2",
+    "bcrypt>=4.0",
+    "ruff>=0.11",
+    "ty>=0.0.1a1",
+    "typing-extensions>=4.15",
 ]
-packages = [
-    { include = "fastadmin" },
+docs = ["mkdocs-material[imaging]>=9.5"]
+
+[tool.uv.build-backend]
+# Flat layout: the import package lives at ./fastadmin (not src/fastadmin).
+module-root = ""
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::pytest.PytestCollectionWarning",
+    "ignore::DeprecationWarning",
+    "ignore::RuntimeWarning",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-pyjwt = "^2.6.0"
-asgiref = "^3.11.1"
-fastapi = { version = "0.*", optional = true }
-python-multipart = { version = "0.*", optional = true }
-flask = { version = "3.*", optional = true }
-django = { version = "6.*", optional = true }
-tortoise-orm = { version = "1.*", optional = true }
-sqlalchemy = { version = "2.*", extras = ["asyncio"], optional = true }
-greenlet = { version = "^3.0", optional = true }
-pony = { version = "0.*", optional = true }
+[tool.coverage.run]
+source = ["fastadmin"]
 
-[tool.poetry.extras]
-fastapi = ["fastapi", "python-multipart"]
-flask = ["flask"]
-django = ["django"]
-tortoise-orm = ["tortoise-orm"]
-sqlalchemy = ["sqlalchemy", "greenlet"]
-pony = ["pony"]
-
-[tool.poetry.group.dev.dependencies]
-uvicorn = "^0.34.1"
-pytest = "^8.3.5"
-pytest-cov = "^6.1.1"
-pytest-mock = "^3.12.0"
-pytest-asyncio = "^0.26.0"
-black = "^25.1.0"
-mypy = "^1.7.1"
-httpx = "^0.28.1"
-aioshutil = "^1.2"
-bcrypt = "^4.0.1"
-ruff = "^0.11.5"
-isort = "^6.0.1"
-python-dotenv = "^1.0.0"
-jinja2 = "^3.1.2"
-pytest-xdist = "^3.6.1"
-typing-extensions = "^4.15.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.isort]
-line_length = 120
-profile = "black"
-sections = [
-    "FUTURE",
-    "STDLIB",
-    "THIRDPARTY",
-    "FIRSTPARTY",
-    "LOCALPROJECT",
-    "LOCALFOLDER",
-]
-default_section = "THIRDPARTY"
-known_localproject = ["fastadmin", "tests"]
-
-[tool.black]
-line-length = 120
-exclude = ".git|.pytest_cache|.venv|.env|venv|env|static"
+[tool.coverage.report]
+show_missing = true
+fail_under = 100
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py312"
 line-length = 120
+src = ["."]
 lint.select = [
     "F",       # pyflakes
     "E",       # pycodestyle
     "W",       # pycodestyle
+    "I",       # isort
     "UP",      # pyupgrade
     "YTT",     # flake8-2020
     "S",       # flake8-bandit
@@ -119,9 +121,10 @@ lint.select = [
 ]
 lint.fixable = [
     "F401",    # unused imports
+    "I001",    # unsorted imports
 ]
 lint.ignore = [
-    "E501",    # 'black' handles line length
+    "E501",    # the formatter handles line length
     "F405",    # defined from star import
     "S101",    # impossible logic branches are denoted with 'assert'
     "S104",    # bind to all interfaces is OK in Docker
@@ -129,22 +132,22 @@ lint.ignore = [
     "S106",
     "B008",    # function call (e.g. `Depends`) in argument defaults
     "SIM108",  # use ternary operator ... instead of if-else-block
+    "PLC0415", # imports inside functions are intentional (optional ORM/framework deps)
+    "UP042",   # keep `str, Enum` bases: StrEnum changes str() behavior in API responses
 ]
 
 [tool.ruff.lint.isort]
-section-order = [
-    "future",
-    "standard-library",
-    "third-party",
-    "first-party",
-    "local-folder",
-]
+known-first-party = ["fastadmin", "tests"]
 
-[tool.mypy]
-python_version = "3.10"
-pretty = true
-ignore_missing_imports = true
-disable_error_code = ["attr-defined", "assignment", "var-annotated", "call-overload"]
+[tool.ty.environment]
+python-version = "3.12"
+
+[tool.ty.rules]
+# The admin base classes are ORM-agnostic and work with `Any`-typed model
+# objects, so dynamic attribute access is pervasive by design. These two rules
+# mirror the error codes the previous mypy setup disabled.
+unresolved-attribute = "ignore"
+invalid-assignment = "ignore"
 
 [tool.basedpyright]
 typeCheckingMode = "off"

@@ -149,7 +149,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
     }
 
     // If no search term, only expand the current section (if any)
-    if (!search || !search.trim()) {
+    if (!search?.trim()) {
       return currentSectionKey ? [currentSectionKey] : [];
     }
 

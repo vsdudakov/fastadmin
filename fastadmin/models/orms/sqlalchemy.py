@@ -337,7 +337,7 @@ class SqlAlchemyMixin:
                         case "in":
                             if isinstance(model_field.expression.type, BIGINT | Integer):
                                 with contextlib.suppress(ValueError, TypeError):
-                                    value = [int(x) for x in value]
+                                    value = [int(x) for x in value]  # ty: ignore[not-iterable]
                             q.append(model_field.in_(value))
                         case "contains":
                             q.append(model_field.like(f"%{value}%"))

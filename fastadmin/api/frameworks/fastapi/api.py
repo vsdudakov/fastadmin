@@ -307,7 +307,7 @@ async def export(
         )
         headers = {"Content-Disposition": f'attachment; filename="{file_name}"'}
         return StreamingResponse(
-            stream,  # type: ignore [arg-type]
+            stream,  # ty: ignore[invalid-argument-type]
             headers=headers,
             media_type=content_type,
         )

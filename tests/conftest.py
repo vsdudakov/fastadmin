@@ -1,6 +1,6 @@
 import asyncio
 from copy import copy
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from asgiref.sync import sync_to_async
@@ -137,8 +137,8 @@ async def ponyorm_superuser():
         obj = ponyorm_models.User(
             username="Test SuperUser",
             password="password",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
             is_superuser=True,
         )
         commit()
@@ -156,8 +156,8 @@ async def ponyorm_user():
         obj = ponyorm_models.User(
             username="Test User",
             password="password",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         commit()
         yield obj
@@ -173,8 +173,8 @@ async def ponyorm_tournament():
 
         obj = ponyorm_models.Tournament(
             name="Test Tournament",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         commit()
         yield obj
@@ -189,8 +189,8 @@ async def ponyorm_base_event():
         from tests.environment.ponyorm import models as ponyorm_models
 
         obj = ponyorm_models.BaseEvent(
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         commit()
         yield obj
@@ -205,26 +205,26 @@ async def ponyorm_event():
         from tests.environment.ponyorm import models as ponyorm_models
 
         ponyorm_base_event = ponyorm_models.BaseEvent(
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         ponyorm_tournament = ponyorm_models.Tournament(
             name="Test Tournament",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         ponyorm_user = ponyorm_models.User(
             username="Test User",
             password="password",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         obj = ponyorm_models.Event(
             base=ponyorm_base_event,
             name="Test Event",
             tournament=ponyorm_tournament,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         commit()
         obj.participants.add(ponyorm_user)
@@ -275,8 +275,8 @@ async def sqlalchemy_superuser():
         obj = sqlalchemy_models.User(
             username="Test SuperUser",
             password="password",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
             is_superuser=True,
         )
         sqlalchemy_session.add(obj)
@@ -299,8 +299,8 @@ async def sqlalchemy_user():
         obj = sqlalchemy_models.User(
             username="Test User",
             password="password",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         sqlalchemy_session.add(obj)
         await sqlalchemy_session.commit()
@@ -319,8 +319,8 @@ async def sqlalchemy_tournament():
 
         obj = sqlalchemy_models.Tournament(
             name="Test Tournament",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         sqlalchemy_session.add(obj)
         await sqlalchemy_session.commit()
@@ -338,8 +338,8 @@ async def sqlalchemy_base_event():
         from tests.environment.sqlalchemy_env import models as sqlalchemy_models
 
         obj = sqlalchemy_models.BaseEvent(
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         sqlalchemy_session.add(obj)
         await sqlalchemy_session.commit()
@@ -357,26 +357,26 @@ async def sqlalchemy_event():
         from tests.environment.sqlalchemy_env import models as sqlalchemy_models
 
         sqlalchemy_base_event = sqlalchemy_models.BaseEvent(
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         sqlalchemy_tournament = sqlalchemy_models.Tournament(
             name="Test Tournament",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         sqlalchemy_user = sqlalchemy_models.User(
             username="Test User",
             password="password",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         obj = sqlalchemy_models.Event(
             base=sqlalchemy_base_event,
             name="Test Event",
             tournament=sqlalchemy_tournament,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         obj.participants.append(sqlalchemy_user)
         sqlalchemy_session.add(obj)

@@ -335,12 +335,12 @@ def test_nullable_foreign_key_form_required(event):
     by_name = {f.name: f for f in fields}
     assert "base" in by_name, "Event should have base (nullable FK) field"
     assert "tournament" in by_name, "Event should have tournament (required FK) field"
-    assert (
-        by_name["base"].form_widget_props["required"] is False
-    ), "nullable FK base_id should be optional in admin form"
-    assert (
-        by_name["tournament"].form_widget_props["required"] is True
-    ), "non-nullable FK tournament_id should be required in admin form"
+    assert by_name["base"].form_widget_props["required"] is False, (
+        "nullable FK base_id should be optional in admin form"
+    )
+    assert by_name["tournament"].form_widget_props["required"] is True, (
+        "non-nullable FK tournament_id should be required in admin form"
+    )
 
 
 def test_sqlalchemy_field_mapping_special_cases(monkeypatch):
@@ -662,7 +662,7 @@ async def test_sqlalchemy_m2m_edge_cases(event, session_with_type):
     admin_model = get_admin_model(event.__class__)
     assert await admin_model.orm_get_m2m_ids(SimpleNamespace(id=-1), "participants") == []
 
-    with pytest.raises(ValueError, match="Field unknown_field is not a relationship field."):
+    with pytest.raises(ValueError, match=r"Field unknown_field is not a relationship field\."):
         await admin_model.orm_save_m2m_ids(event, "unknown_field", [1])
 
     # id=0 hits early-return branch before writing m2m rows.
