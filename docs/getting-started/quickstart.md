@@ -93,6 +93,11 @@ class UserAdmin(TortoiseModelAdmin):
     (and `change_password` if you want password editing). See
     [Authentication](../guides/authentication.md).
 
+!!! note
+
+    Adapt the field names (`hash_password`, `is_active`, …) to your own user
+    model — the snippet above shows the recommended bcrypt-hashed setup.
+
 ## 3. Run it
 
 Start your app as usual (e.g. `uvicorn example:app` for FastAPI) and open

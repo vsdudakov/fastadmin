@@ -34,9 +34,10 @@ test:
 cov: test
 
 # --- Documentation (MkDocs Material) -----------------------------------------
-# Build the static site into ./site (social cards enabled, like CI).
+# Build the static site into ./site. Social cards are generated only in CI
+# (the docs workflow installs the Cairo system libraries they need).
 docs:
-	CI=true uv run --group docs mkdocs build --strict
+	uv run --group docs mkdocs build --strict
 
 # Live-preview at http://127.0.0.1:8000 (social cards off for speed).
 docs-serve:

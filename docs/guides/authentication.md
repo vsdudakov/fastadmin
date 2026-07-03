@@ -43,7 +43,7 @@ class UserAdmin(TortoiseModelAdmin):
 
 - `authenticate(username, password)` receives the value of the
   `ADMIN_USER_MODEL_USERNAME_FIELD` field and the password, and returns a user
-  id (`int`, `str` or `UUID`) or `None`.
+  id (`int` or `UUID`) or `None`.
 - `change_password(id, password)` stores a new password. FastAdmin also calls
   it automatically after creating an object whose form contains a
   `PasswordInput` widget, so passwords are stored hashed.

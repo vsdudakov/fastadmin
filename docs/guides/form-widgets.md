@@ -18,7 +18,7 @@ components. Every widget type is available via the `WidgetType` enum:
 | `EmailInput` | Email input |
 | `PhoneInput` | Phone input with country codes |
 | `UrlInput` | URL input |
-| `PasswordInput` | Password input (values are stored via `change_password`) |
+| `PasswordInput` | Password input (on create, the value is stored via `change_password`) |
 | `TextArea` | Multi-line text |
 | `RichTextArea` | Rich-text (WYSIWYG) editor |
 | `JsonTextArea` | JSON editor |

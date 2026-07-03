@@ -61,7 +61,7 @@ app.mount("/admin", admin_app)
   (line, area, column, bar, pie) with filters, powered by antd charts.
 - :outbox_tray: **Uploads & exports** — file/image upload widgets with
   custom storage hooks, CSV/JSON export out of the box.
-- :test_tube: **Quality** — fully linted (ruff), typed (mypy) and tested with
+- :test_tube: **Quality** — fully linted (ruff), typed (ty) and tested with
   100% backend coverage.
 
 ## Explore the docs

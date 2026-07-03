@@ -43,7 +43,7 @@ attributes are optional and mirror Django Admin where possible.
 | `radio_fields` | `()` | Use radio buttons instead of a select for FK/choice fields. |
 | `raw_id_fields` | `()` | Use a plain input instead of a select for FK/M2M fields. |
 | `save_as` | `False` | Replace "Save and add another" with "Save as new". |
-| `save_as_continue` | `False` | Redirect to the change view after "Save as new". |
+| `save_as_continue` | `False` | Where "Save as new" redirects: the changelist by default, or the new object's change view when `True`. |
 | `save_on_top` | `False` | Show save buttons at the top of the form too. |
 | `view_on_site` | `None` | URL for a "View on site" link. |
 | `inlines` | `()` | Inline admin classes — see [Inline admins](inline-admins.md). |

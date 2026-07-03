@@ -103,6 +103,7 @@ with a list of data rows:
 
 ```python
 from fastadmin import (
+    WidgetActionChartProps,
     WidgetActionFilter,
     WidgetActionInputSchema,
     WidgetActionResponseSchema,

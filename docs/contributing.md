@@ -33,7 +33,7 @@ make dev        # uv sync --all-extras + frontend yarn install
 
 | Command | What it does |
 | --- | --- |
-| `make lint` | ruff check + ruff format --check + mypy, then the frontend linters. |
+| `make lint` | ruff check + ruff format --check + ty, then the frontend linters. |
 | `make format` | Auto-fix lint issues and reformat (Python + frontend). |
 | `make test` | Backend tests with a **100% coverage gate**, then frontend tests. |
 | `make build` | Build the frontend into `fastadmin/static` and the wheel/sdist via `uv build`. |
