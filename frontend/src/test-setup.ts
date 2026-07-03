@@ -22,3 +22,12 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => false,
   }),
 });
+
+// Unmount rendered trees after every test so React's scheduler has no
+// deferred work left when vitest tears down the jsdom environment.
+import { cleanup } from "@testing-library/react";
+import { afterEach } from "vitest";
+
+afterEach(() => {
+  cleanup();
+});
