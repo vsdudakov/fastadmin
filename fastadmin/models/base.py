@@ -16,6 +16,21 @@ from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 
 Model = Any
 
+# Leading characters a spreadsheet interprets as the start of a formula.
+_CSV_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _neutralize_csv_value(value: Any) -> Any:
+    """Prevent CSV formula injection in exported data.
+
+    A cell like ``=HYPERLINK(...)`` or ``=cmd|...`` is executed by Excel/Sheets
+    when the export is opened. Prefix any string starting with a formula trigger
+    with a single quote so it is treated as text; non-strings pass through.
+    """
+    if isinstance(value, str) and value and value[0] in _CSV_FORMULA_PREFIXES:
+        return "'" + value
+    return value
+
 
 class BaseModelAdmin:
     """Base class for model admin"""
@@ -358,6 +373,24 @@ class BaseModelAdmin:
             fields_for_serialize |= set(self.list_display)
         return fields_for_serialize
 
+    def get_writable_field_names(self) -> set[str]:
+        """Model field names the admin form is allowed to write.
+
+        Enforced server-side in :meth:`save_model` so a crafted payload cannot
+        set fields hidden by ``fields``/``exclude`` or marked ``readonly_fields``
+        (e.g. ``is_superuser``). ``list_display``-only computed columns are not
+        included since they are not real model fields.
+
+        :return: A set of writable model field names.
+        """
+        writable = {field.name for field in self.get_model_fields_with_widget_types()}
+        if self.fields:
+            writable &= set(self.fields)
+        if self.exclude:
+            writable -= set(self.exclude)
+        writable -= set(self.readonly_fields)
+        return writable
+
     def resolve_sort_by(self, sort_by: str) -> str:
         """Resolve sort_by to the actual ORM ordering expression.
 
@@ -523,18 +556,19 @@ class BaseModelAdmin:
         """
         fields = self.get_model_fields_with_widget_types(with_m2m=False)
         m2m_fields = self.get_model_fields_with_widget_types(with_m2m=True)
+        writable = self.get_writable_field_names()
 
         fields_payload = {
             field.column_name: self.deserialize_value(field, payload[field.name])
             for field in fields
-            if field.name in payload
+            if field.name in payload and field.name in writable
         }
         obj = await self.orm_save_obj(id, fields_payload)
         if not obj:
             return None
 
         for m2m_field in m2m_fields:
-            if m2m_field.name in payload:
+            if m2m_field.name in payload and m2m_field.name in writable:
                 await self.orm_save_m2m_ids(obj, m2m_field.column_name, payload[m2m_field.name])
 
         return await self._serialize_obj_after_save(obj)
@@ -630,7 +664,7 @@ class BaseModelAdmin:
                 writer.writeheader()
                 for obj in objs:
                     obj_dict = await self.serialize_obj(obj, list_view=True)
-                    obj_dict = {k: v for k, v in obj_dict.items() if k in export_fields}
+                    obj_dict = {k: _neutralize_csv_value(v) for k, v in obj_dict.items() if k in export_fields}
                     writer.writerow(obj_dict)
                 output.seek(0)
                 return output
@@ -643,8 +677,13 @@ class BaseModelAdmin:
                         except TypeError:
                             return str(o)
 
+                # Emit the same column set as CSV so the two formats are consistent.
+                rows = []
+                for obj in objs:
+                    obj_dict = await self.serialize_obj(obj, list_view=True)
+                    rows.append({k: v for k, v in obj_dict.items() if k in export_fields})
                 output = StringIO()
-                json.dump([await self.serialize_obj(obj, list_view=True) for obj in objs], output, cls=JSONEncoder)
+                json.dump(rows, output, cls=JSONEncoder)
                 output.seek(0)
                 return output
             case _:
@@ -761,8 +800,10 @@ class ModelAdmin(BaseModelAdmin):
         obj = await super().save_model(id, payload)
         fields = self.get_model_fields_with_widget_types(with_m2m=False)
         password_fields = [field.name for field in fields if field.form_widget_type == WidgetType.PasswordInput]
-        if obj and id is None and password_fields:
-            # save hashed password for create
+        if obj and password_fields:
+            # Hash the submitted password via change_password on both create and
+            # edit. On edit the raw value was written by the base save_model, so
+            # hashing here overwrites it — the column never keeps a plaintext value.
             pk_name = self.get_model_pk_name(self.model_cls)
             pk = obj[pk_name]
             password_values = [payload[field] for field in password_fields if field in payload]

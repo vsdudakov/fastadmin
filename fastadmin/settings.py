@@ -29,7 +29,19 @@ class Settings:
     ADMIN_SESSION_ID_KEY: str = os.getenv("ADMIN_SESSION_ID_KEY", "admin_session_id")
 
     # This value is the expired_at period (in sec) for session id.
-    ADMIN_SESSION_EXPIRED_AT: int = os.getenv("ADMIN_SESSION_EXPIRED_AT", 144000)  # in sec
+    ADMIN_SESSION_EXPIRED_AT: int = int(os.getenv("ADMIN_SESSION_EXPIRED_AT", 144000))  # in sec
+
+    # Set the Secure flag on the session cookie so it is only sent over HTTPS.
+    # Enabled by default; set ADMIN_SESSION_COOKIE_SECURE=false for local HTTP dev.
+    ADMIN_SESSION_COOKIE_SECURE: bool = os.getenv("ADMIN_SESSION_COOKIE_SECURE", "true").lower() != "false"
+
+    # SameSite policy for the session cookie ("lax", "strict" or "none").
+    # "lax" blocks the cross-site POST/PATCH/DELETE requests behind CSRF.
+    ADMIN_SESSION_COOKIE_SAMESITE: str = os.getenv("ADMIN_SESSION_COOKIE_SAMESITE", "lax")
+
+    # Hard upper bound on the number of rows a single list/export request may
+    # return. Caps memory/CPU use from a crafted limit=100000000 request.
+    ADMIN_QUERY_MAX_LIMIT: int = int(os.getenv("ADMIN_QUERY_MAX_LIMIT", 1000))
 
     # This value is the date format for JS widgets.
     ADMIN_DATE_FORMAT: str = os.getenv("ADMIN_DATE_FORMAT", "YYYY-MM-DD")

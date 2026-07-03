@@ -2,13 +2,25 @@ import contextlib
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import BIGINT, Integer, and_, func, inspect, or_, select, text
+from sqlalchemy import BIGINT, Integer, and_, func, inspect, or_, select
 from sqlalchemy.orm import selectinload
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
 from fastadmin.models.helpers import getattrs
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 from fastadmin.settings import settings
+
+
+def _escape_like(value: Any) -> Any:
+    """Escape LIKE/ILIKE wildcards so user input matches literally.
+
+    Without this, ``%`` and ``_`` in a filter/search value act as wildcards
+    (matching anything / any single char), letting a caller widen a match or
+    force an expensive scan. Used with ``escape="\\"`` on the like/ilike call.
+    """
+    if not isinstance(value, str):
+        return value
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 class SqlAlchemyMixin:
@@ -25,7 +37,7 @@ class SqlAlchemyMixin:
                 return None
 
             if len(parts) == 1:
-                return attr.ilike(f"%{search}%")
+                return attr.ilike(f"%{_escape_like(search)}%", escape="\\")
 
             rel_property = getattr(attr, "property", None)
             if rel_property is None:
@@ -303,11 +315,15 @@ class SqlAlchemyMixin:
         :return: A tuple of list of objects and total count.
         """
 
-        def convert_sort_by(sort_by: str) -> str:
-            sort_by = self._resolve_ordering_field(sort_by)
-            if sort_by.startswith("-"):
-                return sort_by[1:] + " desc"
-            return sort_by
+        def order_column(ordering_field: str):
+            # Build an ordering expression from a real Column instead of raw
+            # text() SQL, so a sort key can never reach the SQL string.
+            resolved = self._resolve_ordering_field(ordering_field)
+            descending = resolved.startswith("-")
+            column = getattr(self.model_cls, resolved.lstrip("-"), None)
+            if column is None:
+                return None
+            return column.desc() if descending else column.asc()
 
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
@@ -340,9 +356,9 @@ class SqlAlchemyMixin:
                                     value = [int(x) for x in value]  # ty: ignore[not-iterable]
                             q.append(model_field.in_(value))
                         case "contains":
-                            q.append(model_field.like(f"%{value}%"))
+                            q.append(model_field.like(f"%{_escape_like(value)}%", escape="\\"))
                         case "icontains":
-                            q.append(model_field.ilike(f"%{value}%"))
+                            q.append(model_field.ilike(f"%{_escape_like(value)}%", escape="\\"))
                 qs = qs.where(and_(*q))
 
             search_fields = list(self.search_fields)
@@ -356,11 +372,15 @@ class SqlAlchemyMixin:
                     return [], 0
                 qs = qs.where(or_(*q))
 
+            order_columns = []
             if sort_by:
-                qs = qs.order_by(text(convert_sort_by(sort_by)))
+                column = order_column(sort_by)
+                if column is not None:
+                    order_columns.append(column)
             elif self.ordering:
-                sort_by_text = ", ".join([convert_sort_by(f) for f in self.ordering])
-                qs = qs.order_by(text(sort_by_text))
+                order_columns = [c for c in (order_column(f) for f in self.ordering) if c is not None]
+            if order_columns:
+                qs = qs.order_by(*order_columns)
 
             count_stmt = select(func.count()).select_from(qs.subquery())
             total = (await session.execute(count_stmt)).scalar_one()

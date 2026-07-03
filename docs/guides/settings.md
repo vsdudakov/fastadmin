@@ -37,6 +37,9 @@ export ADMIN_SECRET_KEY=secret_key
 | `ADMIN_PRIMARY_COLOR` | `#009485` | Primary UI color. |
 | `ADMIN_SESSION_ID_KEY` | `admin_session_id` | Cookie key for the session id (HTTP-only). |
 | `ADMIN_SESSION_EXPIRED_AT` | `144000` | Session lifetime in seconds. |
+| `ADMIN_SESSION_COOKIE_SECURE` | `true` | Set the `Secure` flag so the session cookie is only sent over HTTPS. Set to `false` for local HTTP development. |
+| `ADMIN_SESSION_COOKIE_SAMESITE` | `lax` | `SameSite` policy for the session cookie (`lax`, `strict` or `none`). `lax`/`strict` mitigate CSRF. |
+| `ADMIN_QUERY_MAX_LIMIT` | `1000` | Hard upper bound on rows returned by a single list/export request (caps a `limit=100000000` DoS). |
 | `ADMIN_DATE_FORMAT` | `YYYY-MM-DD` | Date format for JS widgets. |
 | `ADMIN_DATETIME_FORMAT` | `YYYY-MM-DD HH:mm` | Datetime format for JS widgets. |
 | `ADMIN_TIME_FORMAT` | `HH:mm:ss` | Time format for JS widgets. |

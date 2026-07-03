@@ -75,13 +75,47 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
     if not user_id:
         return None
 
-    if not user_id or not await admin_model.get_obj(user_id):
+    if not await admin_model.get_obj(user_id):
         return None
 
     return user_id
 
 
+# Filter lookups a request may use. Anything else (e.g. regex, startswith, or a
+# relation-spanning "groups__name__icontains") is rejected so it cannot become a
+# side-channel oracle over columns the admin never displays.
+ALLOWED_FILTER_CONDITIONS = frozenset({"exact", "in", "lt", "lte", "gt", "gte", "contains", "icontains"})
+
+
 class ApiService:
+    @staticmethod
+    def _clamp_query_limits(query_params: ListQuerySchema) -> None:
+        """Bound offset/limit so a crafted request cannot dump/DoS a table."""
+        if query_params.offset is None or query_params.offset < 0:
+            query_params.offset = 0
+        max_limit = settings.ADMIN_QUERY_MAX_LIMIT
+        if query_params.limit is None or query_params.limit < 0 or query_params.limit > max_limit:
+            query_params.limit = max_limit
+
+    @staticmethod
+    def _validate_filters(admin_model: Any, filters: dict, exclude_filter_fields: tuple, fields: set) -> None:
+        """Validate filter keys against an allowlist and permitted lookups.
+
+        The filterable field set is ``list_filter`` when the admin defines it,
+        otherwise the serialized field set; the lookup suffix must be one of
+        ALLOWED_FILTER_CONDITIONS.
+        """
+        list_filter = getattr(admin_model, "list_filter", ())
+        allowlist = set(list_filter) if list_filter else fields
+        for k in filters:
+            if k in exclude_filter_fields:
+                continue
+            field, _, condition = k.partition("__")
+            if condition and condition not in ALLOWED_FILTER_CONDITIONS:
+                raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
+            if field not in allowlist:
+                raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
+
     @staticmethod
     def _bind_admin_context(
         admin_model: ModelAdmin | InlineModelAdmin | Any, request: Any | None, user: Any | None
@@ -101,6 +135,19 @@ class ApiService:
             else None
         )
         return current_user_id, current_user
+
+    @staticmethod
+    async def _require_permission(admin_model: Any, permission: str, user_id: UUID | int | None) -> None:
+        """Enforce a model-admin permission hook server-side.
+
+        The has_*_permission hooks gate the UI, but every mutating endpoint must
+        also enforce them so a crafted request cannot bypass a disabled action.
+        """
+        check = getattr(admin_model, permission, None)
+        if check is None:
+            return
+        if not await check(user_id=user_id):
+            raise AdminApiException(403, detail="You do not have permission to perform this action.")
 
     async def sign_in(
         self,
@@ -167,6 +214,7 @@ class ApiService:
             offset=offset,
             limit=limit,
         )
+        self._clamp_query_limits(query_params)
 
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
@@ -184,12 +232,7 @@ class ApiService:
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
         query_filters: dict[tuple[str, str], bool | str | None | list] | None = None
         if query_params.filters:
-            for k in query_params.filters:
-                if k in exclude_filter_fields:
-                    continue
-                field = k.split("__", 1)[0]
-                if field not in fields:
-                    raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
+            self._validate_filters(admin_model, query_params.filters, exclude_filter_fields, fields)
             query_filters = {
                 sanitize_filter_key(k, admin_model.get_model_fields_with_widget_types()): sanitize_filter_value(v)
                 for k, v in query_params.filters.items()
@@ -235,7 +278,7 @@ class ApiService:
             obj = await admin_model.get_obj(id)
         except Exception as e:
             logger.error("Error getting %s %s: %s", model, id, e)
-            raise AdminApiException(500, detail=f"Error getting {model} {id}: {e}") from e
+            raise AdminApiException(500, detail=f"Error getting {model}.") from e
         if not obj:
             raise AdminApiException(404, detail=f"{model} not found.")
         return obj
@@ -247,17 +290,20 @@ class ApiService:
         payload: dict,
         request: Any | None = None,
     ) -> dict:
-        _current_user_id, current_user = await self._get_authenticated_user(session_id)
+        current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
         self._bind_admin_context(admin_model, request=request, user=current_user)
+        await self._require_permission(admin_model, "has_add_permission", current_user_id)
         try:
             return await admin_model.save_model(None, payload)  # ty: ignore[invalid-return-type]
+        except AdminApiException:
+            raise
         except Exception as e:
             logger.error("Error adding %s: %s", model, e)
-            raise AdminApiException(500, detail=f"Error adding {model}: {e}") from e
+            raise AdminApiException(500, detail=f"Error adding {model}.") from e
 
     async def change_password(
         self,
@@ -266,12 +312,18 @@ class ApiService:
         payload: dict,
         request: Any | None = None,
     ) -> None:
-        _current_user_id, current_user = await self._get_authenticated_user(session_id)
+        current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         admin_model = get_admin_model(settings.ADMIN_USER_MODEL)
         if not admin_model:
             raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} model is not registered.")
         self._bind_admin_context(admin_model, request=request, user=current_user)
+
+        # Users may change their own password; changing anyone else's requires the
+        # user-model change permission. Without this a signed-in user could reset a
+        # superuser's password (account takeover).
+        if str(id) != str(current_user_id):
+            await self._require_permission(admin_model, "has_change_permission", current_user_id)
 
         payload = ChangePasswordInputSchema(**payload)
         if payload.password != payload.confirm_password:
@@ -285,7 +337,8 @@ class ApiService:
         try:
             user = await admin_model.get_obj(id)
         except Exception as e:
-            raise AdminApiException(500, detail=f"Error getting {settings.ADMIN_USER_MODEL} {id}: {e}") from e
+            logger.error("Error getting %s %s: %s", settings.ADMIN_USER_MODEL, id, e)
+            raise AdminApiException(500, detail=f"Error getting {settings.ADMIN_USER_MODEL}.") from e
         if not user:
             raise AdminApiException(404, detail=f"{settings.ADMIN_USER_MODEL} not found.")
 
@@ -306,18 +359,21 @@ class ApiService:
         payload: dict,
         request: Any | None = None,
     ) -> dict:
-        _current_user_id, current_user = await self._get_authenticated_user(session_id)
+        current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
         self._bind_admin_context(admin_model, request=request, user=current_user)
+        await self._require_permission(admin_model, "has_change_permission", current_user_id)
 
         try:
             obj = await admin_model.save_model(id, payload)
+        except AdminApiException:
+            raise
         except Exception as e:
             logger.error("Error changing %s %s: %s", model, id, e)
-            raise AdminApiException(500, detail=f"Error changing {model} {id}: {e}") from e
+            raise AdminApiException(500, detail=f"Error changing {model}.") from e
         if not obj:
             raise AdminApiException(404, detail=f"{model} not found.")
         return obj
@@ -358,7 +414,8 @@ class ApiService:
         except AdminApiException:
             raise
         except Exception as e:
-            raise AdminApiException(500, detail=f"Error uploading file for {model}: {e}") from e
+            logger.error("Error uploading file for %s: %s", model, e)
+            raise AdminApiException(500, detail=f"Error uploading file for {model}.") from e
 
     async def export(
         self,
@@ -370,7 +427,7 @@ class ApiService:
         filters: dict | None = None,
         request: Any | None = None,
     ) -> tuple[str, str, StringIO | BytesIO | None]:
-        _current_user_id, current_user = await self._get_authenticated_user(session_id)
+        current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         query_params = ListQuerySchema(
             search=search,
@@ -379,11 +436,13 @@ class ApiService:
             offset=payload.offset,
             limit=payload.limit,
         )
+        self._clamp_query_limits(query_params)
 
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
         self._bind_admin_context(admin_model, request=request, user=current_user)
+        await self._require_permission(admin_model, "has_export_permission", current_user_id)
 
         # validations
         fields = set(admin_model.get_fields_for_serialize())
@@ -396,12 +455,7 @@ class ApiService:
         exclude_filter_fields = ("search", "sort_by", "offset", "limit")
         query_filters: dict[tuple[str, str], bool | str | None | list] | None = None
         if query_params.filters:
-            for k in query_params.filters:
-                if k in exclude_filter_fields:
-                    continue
-                field = k.split("__", 1)[0]
-                if field not in fields:
-                    raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
+            self._validate_filters(admin_model, query_params.filters, exclude_filter_fields, fields)
             query_filters = {
                 sanitize_filter_key(k, admin_model.get_model_fields_with_widget_types()): sanitize_filter_value(v)
                 for k, v in query_params.filters.items()
@@ -450,6 +504,7 @@ class ApiService:
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
         self._bind_admin_context(admin_model, request=request, user=current_user)
+        await self._require_permission(admin_model, "has_delete_permission", current_user_id)
 
         if str(current_user_id) == str(id) and model == settings.ADMIN_USER_MODEL:
             raise AdminApiException(403, detail="You cannot delete yourself.")
@@ -457,7 +512,7 @@ class ApiService:
             await admin_model.delete_model(id)
         except Exception as e:
             logger.error("Error deleting %s %s: %s", model, id, e)
-            raise AdminApiException(500, detail=f"Error deleting {model} {id}: {e}") from e
+            raise AdminApiException(500, detail=f"Error deleting {model}.") from e
         return id
 
     async def action(

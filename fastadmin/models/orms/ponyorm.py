@@ -12,6 +12,32 @@ from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 from fastadmin.settings import settings
 
 
+def _pony_filter_expr(condition: str, field: str) -> str:
+    """Build a Pony filter string that references the value via the local `fval`.
+
+    The caller binds ``fval`` (and ``fval.lower()`` for icontains) as a local so
+    Pony resolves it as a query parameter. ``field`` is a validated/allowlisted
+    path, so interpolating it is safe; the user value is never interpolated.
+    """
+    match condition:
+        case "in":
+            return f"m.{field} in fval"
+        case "lte":
+            return f"m.{field} <= fval"
+        case "gte":
+            return f"m.{field} >= fval"
+        case "lt":
+            return f"m.{field} < fval"
+        case "gt":
+            return f"m.{field} > fval"
+        case "contains":
+            return f"fval in m.{field}"
+        case "icontains":
+            return f"fval.lower() in m.{field}.lower()"
+        case _:  # exact
+            return f"m.{field} == fval"
+
+
 class PonyORMMixin:
     @staticmethod
     def get_model_pk_name(orm_model_cls: Any) -> str:
@@ -235,42 +261,25 @@ class PonyORMMixin:
                 model_pk_name = self.get_model_pk_name(self.model_cls)
                 if field.endswith(f"_{model_pk_name}"):
                     field = field.replace(f"_{model_pk_name}", f".{model_pk_name}")
-                if condition == "in":
-                    value_set = set(value)
-                    qs = qs.filter(
-                        lambda m, f=field, vs=value_set: getattr(m, f) in vs,
-                    )
-                    continue
-                pony_condition = "=="
-                match condition:
-                    case "lte":
-                        pony_condition = ">="
-                    case "gte":
-                        pony_condition = "<="
-                    case "lt":
-                        pony_condition = ">"
-                    case "gt":
-                        pony_condition = "<"
-                    case "exact":
-                        pony_condition = "=="
-                    case "contains":
-                        pony_condition = "in"
-                    case "icontains":
-                        # Pony string filter: value.lower() in m.field.lower() for case-insensitive
-                        filter_expr = f'"{value.lower()}" in m.{field}.lower()'
-                        qs = qs.filter(filter_expr)
-                        continue
-                filter_expr = f""""{value}" {pony_condition}  m.{field}"""
-                qs = qs.filter(filter_expr)
+                # Bind the user-supplied value as a local (`fval`) so Pony
+                # resolves it as a query parameter. Only the field path — built
+                # from the admin's validated/allowlisted field names — is
+                # interpolated; the value is never placed into the filter string
+                # (Pony evaluates filter strings as Python expressions).
+                fval = set(value) if condition == "in" else value  # noqa: F841 (referenced by Pony filter string)
+                expr = _pony_filter_expr(condition, field)
+                qs = qs.filter(expr)
 
         search_fields = list(self.search_fields)
         if search and search_fields:
             ids = []
+            # Bind the user-supplied search term as a local so Pony resolves it
+            # as a parameter. Only the field path (from the admin's trusted
+            # search_fields config) is interpolated — never the search value.
+            search_term = search.lower()  # noqa: F841 (referenced by Pony filter string)
             for search_field in search_fields:
                 pony_search_field = search_field.replace("__", ".")
-                # Pony string filter for case-insensitive search
-                filter_expr = f'"{search.lower()}" in m.{pony_search_field}.lower()'
-                qs_ids = qs.filter(filter_expr)
+                qs_ids = qs.filter(f"search_term in m.{pony_search_field}.lower()")
                 objs = list(qs_ids)
                 ids += [o.id for o in objs]
             qs = qs.filter(lambda m: m.id in set(ids))

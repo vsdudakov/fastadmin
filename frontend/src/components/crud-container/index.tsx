@@ -30,6 +30,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { buildListPath, ROUTES } from "@/constants/routes";
 import { postFetcher } from "@/fetchers/fetchers";
 import { getTitleFromModel } from "@/helpers/title";
+import { isSafeUrl } from "@/helpers/url";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import type { IModel } from "@/interfaces/configuration";
@@ -402,7 +403,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
             style={{ marginBottom: isMobile ? 8 : 16 }}
           >
             <Col>{breadcrumbs}</Col>
-            {viewOnSite && (
+            {isSafeUrl(viewOnSite) && (
               <Col>
                 <a
                   href={viewOnSite}

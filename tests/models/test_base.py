@@ -639,3 +639,43 @@ async def test_get_export_json_uses_custom_encoder():
     assert stream is not None
     content = stream.getvalue()
     assert '"id":' in content
+
+
+def test_neutralize_csv_value_prefixes_formula_triggers():
+    from fastadmin.models.base import _neutralize_csv_value
+
+    assert _neutralize_csv_value("=HYPERLINK(1)") == "'=HYPERLINK(1)"
+    assert _neutralize_csv_value("+1") == "'+1"
+    assert _neutralize_csv_value("-1") == "'-1"
+    assert _neutralize_csv_value("@x") == "'@x"
+    # Safe values and non-strings pass through unchanged.
+    assert _neutralize_csv_value("hello") == "hello"
+    assert _neutralize_csv_value("") == ""
+    assert _neutralize_csv_value(42) == 42
+
+
+def test_get_writable_field_names_respects_fields_exclude_readonly(mocker):
+    class Model:
+        pass
+
+    admin = ModelAdmin(Model)
+    fields = [
+        ModelFieldWidgetSchema(
+            name=name,
+            column_name=name,
+            is_m2m=False,
+            is_pk=False,
+            is_immutable=False,
+            form_widget_type=WidgetType.Input,
+            form_widget_props={},
+            filter_widget_type=WidgetType.Input,
+            filter_widget_props={},
+        )
+        for name in ("id", "name", "is_superuser", "created_at")
+    ]
+    mocker.patch.object(admin, "get_model_fields_with_widget_types", return_value=fields)
+    admin.fields = ("id", "name", "is_superuser")
+    admin.exclude = ("is_superuser",)
+    admin.readonly_fields = ("id",)
+
+    assert admin.get_writable_field_names() == {"name"}

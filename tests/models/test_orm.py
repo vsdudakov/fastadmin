@@ -431,6 +431,23 @@ async def test_sqlalchemy_orm_get_list_filter_operators(event, session_with_type
     assert isinstance(objs, list)
 
 
+async def test_sqlalchemy_orm_get_list_ordering_non_column_is_skipped(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    # An ordering entry that does not resolve to a real column is dropped
+    # rather than reaching raw SQL.
+    admin_model.ordering = ("nonexistent_field",)
+    try:
+        objs, total = await admin_model.orm_get_list()
+    finally:
+        admin_model.ordering = ()
+    assert isinstance(total, int)
+    assert isinstance(objs, list)
+
+
 async def test_sqlalchemy_orm_get_list_search_nested_relation(event, session_with_type):
     _, session_type = session_with_type
     if session_type != "sqlalchemy":
@@ -542,7 +559,7 @@ def test_sqlalchemy_build_search_condition_edge_cases(session_with_type):
 
     class LeafAttr:
         @staticmethod
-        def ilike(_value):
+        def ilike(_value, escape=None):
             return "leaf-ilike"
 
     class RelatedLeafModel:
@@ -787,6 +804,50 @@ async def test_ponyorm_orm_get_list_filter_operators():
     assert total == 0
     assert objs == []
     assert fake_query.filters
+
+
+async def test_ponyorm_filter_value_is_never_interpolated():
+    """A malicious filter value must not reach the Pony filter expression string."""
+    from types import SimpleNamespace
+
+    from fastadmin.models.orms.ponyorm import PonyORMModelAdmin
+
+    captured = []
+
+    class FakeQuery:
+        def filter(self, expression):
+            captured.append(expression)
+            return self
+
+        def order_by(self, *args):
+            return self
+
+        def count(self):
+            return 0
+
+        def __iter__(self):
+            return iter([])
+
+    class FakeModel:
+        _pk_ = SimpleNamespace(name="id")
+        id = "id"
+        name = "name"
+
+        @staticmethod
+        def select(*args, **kwargs):
+            return FakeQuery()
+
+    admin_model = PonyORMModelAdmin(FakeModel)
+    payload = '" or m.password or "'
+    await admin_model.orm_get_list(
+        filters={("name", "exact"): payload, ("name", "icontains"): payload},
+    )
+    # Expressions reference the bound local `fval`, never the attacker's string.
+    assert captured
+    for expression in captured:
+        assert isinstance(expression, str)
+        assert "password" not in expression
+        assert "fval" in expression
 
 
 async def test_ponyorm_orm_get_list_search_nested_relation(event, session_with_type):
@@ -1121,3 +1182,15 @@ def test_django_field_mapping_special_cases():
     assert by_name["website"].form_widget_type == WidgetType.UrlInput
     assert by_name["email"].form_widget_type == WidgetType.EmailInput
     assert by_name["slug"].form_widget_type == WidgetType.SlugInput
+
+
+def test_sqlalchemy_escape_like_and_order_column_helpers(session_with_type):
+    from fastadmin.models.orms.sqlalchemy import _escape_like
+
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    # Wildcards are escaped; non-strings pass through unchanged.
+    assert _escape_like("a%b_c\\d") == "a\\%b\\_c\\\\d"
+    assert _escape_like(123) == 123

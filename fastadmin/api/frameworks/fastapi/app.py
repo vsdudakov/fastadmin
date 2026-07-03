@@ -25,7 +25,9 @@ app.include_router(views_router)
 
 @app.exception_handler(Exception)
 async def exception_handler(_: Request, exc: Exception):
+    # Log the real error server-side but never leak internals to the client.
+    logger.error("Unhandled admin error: %s", exc)
     return JSONResponse(
         status_code=500,
-        content={"exception": str(exc)},
+        content={"exception": "Internal server error."},
     )

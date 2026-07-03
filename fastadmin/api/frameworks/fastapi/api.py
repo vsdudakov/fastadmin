@@ -49,7 +49,13 @@ async def sign_in(
             request=request,
         )
 
-        response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
+        response.set_cookie(
+            settings.ADMIN_SESSION_ID_KEY,
+            value=session_id,
+            httponly=True,
+            secure=settings.ADMIN_SESSION_COOKIE_SECURE,
+            samesite=settings.ADMIN_SESSION_COOKIE_SAMESITE,  # ty: ignore[invalid-argument-type]
+        )
     except AdminApiException as e:
         raise HTTPException(e.status_code, detail=e.detail) from None
 

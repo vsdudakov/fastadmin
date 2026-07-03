@@ -42,7 +42,13 @@ async def sign_in() -> Response:
             request=request,
         )
         response = make_response({})
-        response.set_cookie(settings.ADMIN_SESSION_ID_KEY, value=session_id, httponly=True)
+        response.set_cookie(
+            settings.ADMIN_SESSION_ID_KEY,
+            value=session_id,
+            httponly=True,
+            secure=settings.ADMIN_SESSION_COOKIE_SECURE,
+            samesite=settings.ADMIN_SESSION_COOKIE_SAMESITE.capitalize(),
+        )
         return response
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
