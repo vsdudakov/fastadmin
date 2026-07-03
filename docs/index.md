@@ -1,6 +1,6 @@
 ---
 title: FastAdmin — Admin dashboard for FastAPI, Flask and Django
-description: FastAdmin is an easy-to-use admin dashboard for FastAPI, Flask and Django, inspired by Django Admin. Works with Tortoise ORM, Django ORM, SQLAlchemy and Pony ORM.
+description: FastAdmin is an easy-to-use admin dashboard for FastAPI, Flask and Django, inspired by Django Admin. Works with Tortoise ORM, Django ORM, SQLAlchemy, Pony ORM and Yara ORM.
 ---
 
 # FastAdmin
@@ -16,7 +16,8 @@ description: FastAdmin is an easy-to-use admin dashboard for FastAPI, Flask and 
 FastAdmin is built with relationships in mind and admiration for Django Admin.
 Its design focuses on making it as easy as possible to configure an admin
 dashboard for **FastAPI**, **Flask** or **Django** on top of **Tortoise ORM**,
-**Django ORM**, **SQLAlchemy** or **Pony ORM**. It aims to be minimal,
+**Django ORM**, **SQLAlchemy**, **Pony ORM** or
+**[Yara ORM](https://github.com/vsdudakov/yara-orm)**. It aims to be minimal,
 functional and familiar.
 
 ![FastAdmin demo](assets/images/demo.gif)
@@ -56,7 +57,8 @@ app.mount("/admin", admin_app)
 - :jigsaw: **Framework-agnostic** — mount it into FastAPI, register it as a
   Flask blueprint or include it in Django urlpatterns.
 - :file_cabinet: **ORM-agnostic** — first-class admins for Tortoise ORM,
-  Django ORM, SQLAlchemy (async) and Pony ORM.
+  Django ORM, SQLAlchemy (async), Pony ORM and
+  [Yara ORM](https://github.com/vsdudakov/yara-orm) (a fast, Rust-engine async ORM).
 - :bar_chart: **Dashboard widgets** — declarative chart and action widgets
   (line, area, column, bar, pie) with filters, powered by antd charts.
 - :outbox_tray: **Uploads & exports** — file/image upload widgets with

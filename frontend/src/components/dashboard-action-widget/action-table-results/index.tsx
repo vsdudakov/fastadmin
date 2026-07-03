@@ -1,4 +1,4 @@
-import { SearchOutlined } from "@ant-design/icons";
+import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import {
   Button,
   Col,
@@ -9,16 +9,20 @@ import {
   Space,
   Table,
   theme,
+  Tooltip,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type React from "react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { IWidgetActionResponse } from "@/interfaces/configuration";
 
 interface ActionTableResultsProps {
   actionResult: IWidgetActionResponse;
   toolbarActions?: React.ReactNode;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 type TableRow = Record<string, unknown> & { key: string };
@@ -43,7 +47,10 @@ const stringifyCellValue = (value: unknown) => {
 export const ActionTableResults: React.FC<ActionTableResultsProps> = ({
   actionResult,
   toolbarActions,
+  onRefresh,
+  isRefreshing,
 }) => {
+  const { t: _t } = useTranslation("DashboardWidget");
   const [columnSearch, setColumnSearch] = useState<Record<string, string>>({});
   const { token } = theme.useToken();
 
@@ -157,7 +164,21 @@ export const ActionTableResults: React.FC<ActionTableResultsProps> = ({
         <Divider />
         <Col xs={24}>
           <Row justify="end">
-            <Col>{toolbarActions}</Col>
+            <Col>
+              <Space>
+                {onRefresh ? (
+                  <Tooltip title={_t("Refresh results")}>
+                    <Button
+                      type="default"
+                      onClick={onRefresh}
+                      loading={isRefreshing}
+                      icon={<ReloadOutlined />}
+                    />
+                  </Tooltip>
+                ) : null}
+                {toolbarActions}
+              </Space>
+            </Col>
           </Row>
         </Col>
       </Row>

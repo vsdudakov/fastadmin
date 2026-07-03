@@ -2,6 +2,15 @@
 
 All notable changes to FastAdmin are documented in this file.
 
+## 0.7.0
+
+- Add support for [Yara ORM](https://github.com/vsdudakov/yara-orm) — a fast,
+  async Python ORM with a Rust engine. New `YaraOrmModelAdmin` /
+  `YaraOrmInlineModelAdmin` admin classes and a `fastadmin[yara-orm]` extra, with
+  a runnable FastAPI example (`examples/fastapi_yaraorm`).
+- Add a refresh button to the widget action results (toolbar and expand modal)
+  so results can be re-run in place without losing scroll position (#132).
+
 ## 0.6.0
 
 Security hardening release. No changes to the documented public API, but

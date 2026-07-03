@@ -1,6 +1,6 @@
 ---
 title: Registering models
-description: Register ORM models with FastAdmin — complete runnable examples for Tortoise ORM, Django ORM, SQLAlchemy and Pony ORM.
+description: Register ORM models with FastAdmin — complete runnable examples for Tortoise ORM, Django ORM, SQLAlchemy, Pony ORM and Yara ORM.
 ---
 
 # Registering models
@@ -14,6 +14,7 @@ The admin base class must match your ORM:
 | Django ORM | `DjangoModelAdmin` | `DjangoInlineModelAdmin` |
 | SQLAlchemy | `SqlAlchemyModelAdmin` | `SqlAlchemyInlineModelAdmin` |
 | Pony ORM | `PonyORMModelAdmin` | `PonyORMInlineModelAdmin` |
+| [Yara ORM](https://github.com/vsdudakov/yara-orm) | `YaraOrmModelAdmin` | `YaraOrmInlineModelAdmin` |
 
 ```python
 from fastadmin import TortoiseModelAdmin, register
@@ -69,4 +70,10 @@ fields, uploads and dashboard widgets), authentication and app mounting.
 
     ```python
     --8<-- "examples/fastapi_ponyorm/example.py"
+    ```
+
+=== "Yara ORM"
+
+    ```python
+    --8<-- "examples/fastapi_yaraorm/example.py"
     ```

@@ -51,7 +51,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras
       - name: Run tests with 100% coverage gate
-        run: uv run pytest -n 1 --cov=fastadmin --cov-report=term-missing --cov-report=xml -s tests
+        run: uv run pytest -n auto --cov=fastadmin --cov-report=term-missing --cov-report=xml tests
       - name: Upload coverage to Codecov
         if: matrix.python-version == '3.13'
         uses: codecov/codecov-action@v5
@@ -74,6 +74,7 @@ jobs:
           - "fastapi,tortoise-orm"
           - "fastapi,pony"
           - "fastapi,sqlalchemy"
+          - "fastapi,yara-orm"
           - "django"
           - "django,pony"
           - "flask,sqlalchemy"

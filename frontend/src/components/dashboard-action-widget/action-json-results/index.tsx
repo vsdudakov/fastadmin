@@ -1,4 +1,8 @@
-import { CopyOutlined, ExpandOutlined } from "@ant-design/icons";
+import {
+  CopyOutlined,
+  ExpandOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
 import {
   Button,
   Col,
@@ -21,6 +25,8 @@ interface ActionJsonResultsProps {
   actionResult: IWidgetActionResponse;
   maxHeight?: number;
   toolbarActions?: React.ReactNode;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 const { useToken } = theme;
@@ -32,6 +38,8 @@ export const ActionJsonResults: React.FC<ActionJsonResultsProps> = ({
   actionResult,
   maxHeight,
   toolbarActions,
+  onRefresh,
+  isRefreshing,
 }) => {
   const { t: _t } = useTranslation("DashboardWidget");
   const { token } = useToken();
@@ -76,6 +84,17 @@ export const ActionJsonResults: React.FC<ActionJsonResultsProps> = ({
     message.success(_t("Results copied to clipboard"));
   };
 
+  const refreshButton = onRefresh ? (
+    <Tooltip title={_t("Refresh results")}>
+      <Button
+        type="default"
+        onClick={onRefresh}
+        loading={isRefreshing}
+        icon={<ReloadOutlined />}
+      />
+    </Tooltip>
+  ) : null;
+
   return (
     <>
       <Row>
@@ -91,6 +110,7 @@ export const ActionJsonResults: React.FC<ActionJsonResultsProps> = ({
             </Col>
             <Col>
               <Space>
+                {refreshButton}
                 <Tooltip title={_t("Expand results")}>
                   <Button
                     type="default"
@@ -168,13 +188,16 @@ export const ActionJsonResults: React.FC<ActionJsonResultsProps> = ({
           </pre>
           <Row justify="end">
             <Col>
-              <Tooltip title={_t("Copy to clipboard")}>
-                <Button
-                  type="primary"
-                  onClick={handleCopyResults}
-                  icon={<CopyOutlined />}
-                />
-              </Tooltip>
+              <Space>
+                {refreshButton}
+                <Tooltip title={_t("Copy to clipboard")}>
+                  <Button
+                    type="primary"
+                    onClick={handleCopyResults}
+                    icon={<CopyOutlined />}
+                  />
+                </Tooltip>
+              </Space>
             </Col>
           </Row>
         </Space>
