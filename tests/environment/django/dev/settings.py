@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
+import tempfile
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -74,10 +76,19 @@ WSGI_APPLICATION = "dev.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# Give each pytest-xdist worker its own SQLite file so parallel runs
+# (`pytest -n auto`) don't contend on one shared DB ("database is locked").
+# A shared file (not `:memory:`) is required because Django opens several
+# connections per process and they must see the same data. `timeout` lets a
+# connection wait for a competing writer instead of failing immediately.
+_xdist_worker = os.environ.get("PYTEST_XDIST_WORKER", "main")
+_sqlite_name = str(Path(tempfile.gettempdir()) / f"fastadmin_django_{_xdist_worker}.sqlite3")
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":sharedmemory:",
+        "NAME": _sqlite_name,
+        "OPTIONS": {"timeout": 30},
     }
 }
 

@@ -26,6 +26,7 @@ package.
 | `DjangoModelAdmin` / `DjangoInlineModelAdmin` | Django ORM admins. |
 | `SqlAlchemyModelAdmin` / `SqlAlchemyInlineModelAdmin` | SQLAlchemy (async) admins. |
 | `PonyORMModelAdmin` / `PonyORMInlineModelAdmin` | Pony ORM admins. |
+| `YaraOrmModelAdmin` / `YaraOrmInlineModelAdmin` | [Yara ORM](https://github.com/vsdudakov/yara-orm) admins. |
 
 Attributes are documented in [Model admins](guides/model-admins.md) and
 [Inline admins](guides/inline-admins.md).

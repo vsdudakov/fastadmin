@@ -3,8 +3,8 @@
 site_name: FastAdmin
 site_description: >-
   FastAdmin is an easy-to-use admin dashboard for FastAPI, Flask and Django,
-  inspired by Django Admin. Works with Tortoise ORM, Django ORM, SQLAlchemy
-  and Pony ORM.
+  inspired by Django Admin. Works with Tortoise ORM, Django ORM, SQLAlchemy,
+  Pony ORM and Yara ORM.
 site_author: Seva D
 # Canonical site URL — drives sitemap.xml, canonical <link> tags and social cards.
 site_url: https://vsdudakov.github.io/fastadmin/

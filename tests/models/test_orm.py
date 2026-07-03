@@ -320,6 +320,12 @@ def test_get_form_widget_event(event):
                 assert field.filter_widget_props
                 assert field.form_widget_type in (WidgetType.Input, WidgetType.JsonTextArea)
                 assert field.form_widget_props
+            case "ref":
+                # UUID field (present on the Yara ORM Event model)
+                assert not field.is_m2m
+                assert not field.is_pk
+                assert field.form_widget_type == WidgetType.Input
+                assert field.filter_widget_type == WidgetType.Input
             case _:
                 raise ValueError(f"Unexpected field: {field.name}")
 
@@ -804,6 +810,27 @@ async def test_ponyorm_orm_get_list_filter_operators():
     assert total == 0
     assert objs == []
     assert fake_query.filters
+
+
+async def test_yaraorm_resolve_ordering_field(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "yaraorm":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+    # empty -> unchanged
+    assert admin_model._resolve_ordering_field("") == ""
+    # nested path -> unchanged
+    assert admin_model._resolve_ordering_field("tournament__name") == "tournament__name"
+    # relation name -> backing id column, preserving the descending prefix
+    assert admin_model._resolve_ordering_field("tournament") == "tournament_id"
+    assert admin_model._resolve_ordering_field("-tournament") == "-tournament_id"
+    # plain column -> unchanged
+    assert admin_model._resolve_ordering_field("name") == "name"
+    # ordering by a relation is applied end-to-end
+    objs, total = await admin_model.orm_get_list(sort_by="tournament")
+    assert isinstance(total, int)
+    assert isinstance(objs, list)
 
 
 async def test_ponyorm_filter_value_is_never_interpolated():

@@ -16,6 +16,7 @@ Install the package with the extras matching your web framework and ORM:
     pip install fastadmin[fastapi,tortoise-orm]  # FastAPI with Tortoise ORM
     pip install fastadmin[fastapi,pony]          # FastAPI with Pony ORM
     pip install fastadmin[fastapi,sqlalchemy]    # FastAPI with SQLAlchemy (includes greenlet)
+    pip install fastadmin[fastapi,yara-orm]      # FastAPI with Yara ORM
     pip install fastadmin[django]                # Django with Django ORM
     pip install fastadmin[django,pony]           # Django with Pony ORM
     pip install fastadmin[flask,sqlalchemy]      # Flask with SQLAlchemy (includes greenlet)
@@ -28,6 +29,7 @@ Install the package with the extras matching your web framework and ORM:
     uv add 'fastadmin[fastapi,tortoise-orm]'
     uv add 'fastadmin[fastapi,pony]'
     uv add 'fastadmin[fastapi,sqlalchemy]'
+    uv add 'fastadmin[fastapi,yara-orm]'
     uv add 'fastadmin[django]'
     uv add 'fastadmin[django,pony]'
     uv add 'fastadmin[flask,sqlalchemy]'
@@ -40,6 +42,7 @@ Install the package with the extras matching your web framework and ORM:
     poetry add 'fastadmin[fastapi,tortoise-orm]'
     poetry add 'fastadmin[fastapi,pony]'
     poetry add 'fastadmin[fastapi,sqlalchemy]'
+    poetry add 'fastadmin[fastapi,yara-orm]'
     poetry add 'fastadmin[django]'
     poetry add 'fastadmin[django,pony]'
     poetry add 'fastadmin[flask,sqlalchemy]'

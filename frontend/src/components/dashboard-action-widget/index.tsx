@@ -12,7 +12,7 @@ import {
   theme,
 } from "antd";
 import type React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { postFetcher } from "@/fetchers/fetchers";
@@ -105,9 +105,13 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
   const [filtersForm] = Form.useForm();
   const [filtersState, setFiltersState] = useState<Record<string, any>>({});
   const [isActionRunning, setIsActionRunning] = useState(false);
+  const [isActionRefreshing, setIsActionRefreshing] = useState(false);
   const [actionResult, setActionResult] =
     useState<IWidgetActionResponse | null>(null);
   const [resultsView, setResultsView] = useState<"table" | "json">("json");
+  // The query used for the latest run, replayed by the refresh button so the
+  // results (and any open modal) update in place without losing scroll.
+  const lastQueryRef = useRef<ReturnType<typeof buildWidgetActionQuery>>([]);
 
   const actionArguments: IWidgetActionArgumentProps[] = useMemo(
     () =>
@@ -198,6 +202,7 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
     setIsActionRunning(true);
     try {
       const query = buildQueryFromValues(currentValues);
+      lastQueryRef.current = query;
       const result = await postFetcher(
         `/widget-action/${modelName}/${widgetAction.name}`,
         {
@@ -210,6 +215,24 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
       setIsActionRunning(false);
     }
   };
+
+  // Re-run the action with the last query, replacing the results in place. Used
+  // by the refresh button in the results toolbar/modal so an open modal keeps
+  // its scroll position (unlike close+reopen).
+  const handleRefreshAction = useCallback(async () => {
+    setIsActionRefreshing(true);
+    try {
+      const result = await postFetcher(
+        `/widget-action/${modelName}/${widgetAction.name}`,
+        {
+          query: lastQueryRef.current,
+        },
+      );
+      setActionResult(result as IWidgetActionResponse);
+    } finally {
+      setIsActionRefreshing(false);
+    }
+  }, [modelName, widgetAction.name]);
 
   const titleNode = (
     <Space size={6}>
@@ -318,12 +341,16 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
           <ActionTableResults
             actionResult={actionResult}
             toolbarActions={resultsViewSwitcher}
+            onRefresh={handleRefreshAction}
+            isRefreshing={isActionRefreshing}
           />
         ) : (
           <ActionJsonResults
             actionResult={actionResult}
             maxHeight={widgetAction.max_height}
             toolbarActions={resultsViewSwitcher}
+            onRefresh={handleRefreshAction}
+            isRefreshing={isActionRefreshing}
           />
         ))}
     </Card>

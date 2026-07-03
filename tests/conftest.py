@@ -1,6 +1,9 @@
 import asyncio
+import os
+import tempfile
 from copy import copy
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 from asgiref.sync import sync_to_async
@@ -14,7 +17,13 @@ from pony.orm.core import BindingError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from tortoise import Tortoise
 
-from fastadmin import DjangoModelAdmin, PonyORMModelAdmin, SqlAlchemyModelAdmin, TortoiseModelAdmin
+from fastadmin import (
+    DjangoModelAdmin,
+    PonyORMModelAdmin,
+    SqlAlchemyModelAdmin,
+    TortoiseModelAdmin,
+    YaraOrmModelAdmin,
+)
 from fastadmin.models.base import admin_models as admin_models_objs
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.settings import settings
@@ -23,6 +32,16 @@ from tests.settings import FRAMEWORKS, ORMS
 # The test HTTP clients talk plain HTTP, so a Secure session cookie would never
 # be sent back. Disable the Secure flag for tests (production defaults to True).
 settings.ADMIN_SESSION_COOKIE_SECURE = False
+
+
+@pytest.fixture(autouse=True)
+def _restore_admin_user_model():
+    # Several tests point ADMIN_USER_MODEL at their ORM's user model. Restore it
+    # after every test so a torn-down ORM's model name can't leak into the next
+    # test (e.g. Yara ORM raises once its engine is closed).
+    prev = settings.ADMIN_USER_MODEL
+    yield
+    settings.ADMIN_USER_MODEL = prev
 
 
 @pytest.fixture(scope="session")
@@ -115,8 +134,11 @@ async def ponyorm_session():
 
         from tests.environment.ponyorm import models as ponyorm_models
 
+        # Per-xdist-worker SQLite file so parallel runs don't share one DB.
+        worker = os.environ.get("PYTEST_XDIST_WORKER", "main")
+        pony_db_file = str(Path(tempfile.gettempdir()) / f"fastadmin_pony_{worker}.sqlite3")
         try:  # noqa: SIM105
-            ponyorm_models.db.bind(provider="sqlite", filename=":sharedmemory:", create_db=True)
+            ponyorm_models.db.bind(provider="sqlite", filename=pony_db_file, create_db=True, timeout=30)
         except BindingError:
             # Database is already bound
             pass
@@ -482,8 +504,94 @@ async def tortoiseorm_event():
     return _tortoiseorm_event
 
 
+@pytest.fixture(scope="session")
+async def yaraorm_session():
+    async def _yaraorm_session():
+        from yara_orm import YaraOrm
+
+        import tests.environment.yaraorm.models  # noqa: F401  (registers models)
+
+        await YaraOrm.init("sqlite://:memory:")
+        await YaraOrm.generate_schemas()
+        yield None, "yaraorm"
+        await YaraOrm.close()
+
+    return _yaraorm_session
+
+
+@pytest.fixture
+async def yaraorm_superuser():
+    async def _yaraorm_superuser():
+        from tests.environment.yaraorm import models as yaraorm_models
+
+        obj = await yaraorm_models.User.create(username="Test SuperUser", password="password", is_superuser=True)
+        yield obj
+        await obj.delete()
+
+    return _yaraorm_superuser
+
+
+@pytest.fixture
+async def yaraorm_user():
+    async def _yaraorm_user():
+        from tests.environment.yaraorm import models as yaraorm_models
+
+        obj = await yaraorm_models.User.create(username="Test User", password="password")
+        yield obj
+        await obj.delete()
+
+    return _yaraorm_user
+
+
+@pytest.fixture
+async def yaraorm_tournament():
+    async def _yaraorm_tournament():
+        from tests.environment.yaraorm import models as yaraorm_models
+
+        obj = await yaraorm_models.Tournament.create(name="Test Tournament")
+        yield obj
+        await obj.delete()
+
+    return _yaraorm_tournament
+
+
+@pytest.fixture
+async def yaraorm_base_event():
+    async def _yaraorm_base_event():
+        from tests.environment.yaraorm import models as yaraorm_models
+
+        obj = await yaraorm_models.BaseEvent.create()
+        yield obj
+        await obj.delete()
+
+    return _yaraorm_base_event
+
+
+@pytest.fixture
+async def yaraorm_event():
+    async def _yaraorm_event():
+        from tests.environment.yaraorm import models as yaraorm_models
+
+        yaraorm_base_event = await yaraorm_models.BaseEvent.create()
+        yaraorm_tournament = await yaraorm_models.Tournament.create(name="Test Tournament")
+        yaraorm_user = await yaraorm_models.User.create(username="Test User", password="password")
+        obj = await yaraorm_models.Event.create(
+            base_id=yaraorm_base_event.id, name="Test Event", tournament_id=yaraorm_tournament.id
+        )
+        await obj.participants.add(yaraorm_user)
+        yield obj
+        await obj.delete()
+        await yaraorm_user.delete()
+        await yaraorm_base_event.delete()
+        await yaraorm_tournament.delete()
+
+    return _yaraorm_event
+
+
 @pytest.fixture(params=ORMS, autouse=True)
-async def session_with_type(request, tortoiseorm_session, django_session, sqlalchemy_session, ponyorm_session):
+async def session_with_type(
+    request, tortoiseorm_session, django_session, sqlalchemy_session, ponyorm_session, yaraorm_session
+):
     match request.param:
         case "tortoiseorm":
             async for session in tortoiseorm_session():
@@ -497,11 +605,19 @@ async def session_with_type(request, tortoiseorm_session, django_session, sqlalc
         case "ponyorm":
             async for session in ponyorm_session():
                 yield session
+        case "yaraorm":
+            async for session in yaraorm_session():
+                yield session
 
 
 @pytest.fixture
 async def superuser(
-    session_with_type, tortoiseorm_superuser, django_superuser, sqlalchemy_superuser, ponyorm_superuser
+    session_with_type,
+    tortoiseorm_superuser,
+    django_superuser,
+    sqlalchemy_superuser,
+    ponyorm_superuser,
+    yaraorm_superuser,
 ):
     session, session_type = session_with_type
     match session_type:
@@ -517,10 +633,13 @@ async def superuser(
         case "ponyorm":
             async for obj in ponyorm_superuser():
                 yield obj
+        case "yaraorm":
+            async for obj in yaraorm_superuser():
+                yield obj
 
 
 @pytest.fixture
-async def user(session_with_type, tortoiseorm_user, django_user, sqlalchemy_user, ponyorm_user):
+async def user(session_with_type, tortoiseorm_user, django_user, sqlalchemy_user, ponyorm_user, yaraorm_user):
     session, session_type = session_with_type
     match session_type:
         case "tortoiseorm":
@@ -535,11 +654,19 @@ async def user(session_with_type, tortoiseorm_user, django_user, sqlalchemy_user
         case "ponyorm":
             async for obj in ponyorm_user():
                 yield obj
+        case "yaraorm":
+            async for obj in yaraorm_user():
+                yield obj
 
 
 @pytest.fixture
 async def tournament(
-    session_with_type, tortoiseorm_tournament, django_tournament, sqlalchemy_tournament, ponyorm_tournament
+    session_with_type,
+    tortoiseorm_tournament,
+    django_tournament,
+    sqlalchemy_tournament,
+    ponyorm_tournament,
+    yaraorm_tournament,
 ):
     session, session_type = session_with_type
     match session_type:
@@ -555,11 +682,19 @@ async def tournament(
         case "ponyorm":
             async for obj in ponyorm_tournament():
                 yield obj
+        case "yaraorm":
+            async for obj in yaraorm_tournament():
+                yield obj
 
 
 @pytest.fixture
 async def base_event(
-    session_with_type, tortoiseorm_base_event, django_base_event, sqlalchemy_base_event, ponyorm_base_event
+    session_with_type,
+    tortoiseorm_base_event,
+    django_base_event,
+    sqlalchemy_base_event,
+    ponyorm_base_event,
+    yaraorm_base_event,
 ):
     session, session_type = session_with_type
     match session_type:
@@ -575,10 +710,13 @@ async def base_event(
         case "ponyorm":
             async for obj in ponyorm_base_event():
                 yield obj
+        case "yaraorm":
+            async for obj in yaraorm_base_event():
+                yield obj
 
 
 @pytest.fixture
-async def event(session_with_type, tortoiseorm_event, django_event, sqlalchemy_event, ponyorm_event):
+async def event(session_with_type, tortoiseorm_event, django_event, sqlalchemy_event, ponyorm_event, yaraorm_event):
     session, session_type = session_with_type
     match session_type:
         case "tortoiseorm":
@@ -592,6 +730,9 @@ async def event(session_with_type, tortoiseorm_event, django_event, sqlalchemy_e
                 yield obj
         case "ponyorm":
             async for obj in ponyorm_event():
+                yield obj
+        case "yaraorm":
+            async for obj in yaraorm_event():
                 yield obj
 
 
@@ -607,6 +748,8 @@ async def base_model_admin(session_with_type):
             yield SqlAlchemyModelAdmin
         case "ponyorm":
             yield PonyORMModelAdmin
+        case "yaraorm":
+            yield YaraOrmModelAdmin
 
 
 @pytest.fixture
@@ -645,6 +788,9 @@ async def client(app):
 
 @pytest.fixture
 async def session_id(superuser, client):
+    # Restore ADMIN_USER_MODEL afterwards so this test's ORM choice does not leak
+    # into later tests (e.g. pointing at an ORM whose connection is torn down).
+    prev_admin_user_model = settings.ADMIN_USER_MODEL
     settings.ADMIN_USER_MODEL = superuser.get_model_name()
     r = await client.post(
         "/api/sign-in",
@@ -661,6 +807,7 @@ async def session_id(superuser, client):
     r = await client.post("/api/sign-out")
     assert r.status_code == 200, r.text
     assert not r.json(), r.json()
+    settings.ADMIN_USER_MODEL = prev_admin_user_model
 
 
 @pytest.fixture(scope="session")

@@ -11,7 +11,8 @@
 **FastAdmin** is an easy-to-use **admin dashboard (admin panel) for FastAPI, Flask and
 Django**, inspired by Django Admin. It gives your Python web application a
 production-ready **CRUD admin interface** in minutes — on top of **Tortoise ORM,
-Django ORM, SQLAlchemy or Pony ORM** — with authentication, filters, search,
+Django ORM, SQLAlchemy, Pony ORM or [Yara ORM](https://github.com/vsdudakov/yara-orm)** —
+with authentication, filters, search,
 inline editing, file uploads, CSV/JSON export and dashboard charts out of the box.
 
 FastAdmin is built with relationships in mind and admiration for Django Admin.
@@ -31,7 +32,8 @@ already know FastAdmin.
 - **Any web framework** — mount as a FastAPI sub-app, a Flask blueprint or
   Django urlpatterns.
 - **Any ORM** — first-class admin classes for Tortoise ORM, Django ORM,
-  SQLAlchemy (async) and Pony ORM.
+  SQLAlchemy (async), Pony ORM and [Yara ORM](https://github.com/vsdudakov/yara-orm)
+  (a fast, Rust-engine async ORM).
 - **Authentication & permissions** — pluggable sign-in against your own user
   model, per-action permission hooks, request/user context in every admin method.
 - **Rich form widgets** — 20+ antd-based widgets (rich text, JSON, async
@@ -56,6 +58,7 @@ pip install fastadmin[fastapi,django]        # FastAPI with Django ORM
 pip install fastadmin[fastapi,tortoise-orm]  # FastAPI with Tortoise ORM
 pip install fastadmin[fastapi,pony]          # FastAPI with Pony ORM
 pip install fastadmin[fastapi,sqlalchemy]    # FastAPI with SQLAlchemy (includes greenlet)
+pip install fastadmin[fastapi,yara-orm]      # FastAPI with Yara ORM
 pip install fastadmin[django]                # Django with Django ORM
 pip install fastadmin[django,pony]           # Django with Pony ORM
 pip install fastadmin[flask,sqlalchemy]      # Flask with SQLAlchemy (includes greenlet)
@@ -147,10 +150,14 @@ Runnable example apps for every framework/ORM combination are in
 ## Why FastAdmin?
 
 If you are looking for a **Django-Admin-like admin panel for FastAPI**, an
-**admin interface for SQLAlchemy or Tortoise ORM**, or a lightweight
+**admin interface for SQLAlchemy, Tortoise ORM or
+[Yara ORM](https://github.com/vsdudakov/yara-orm)**, or a lightweight
 **alternative to building a custom back office**, FastAdmin gives you a
 batteries-included, themeable admin UI without code generation, without tying
 your app to a specific framework, and without writing a single React component.
+
+Pair it with [Yara ORM](https://github.com/vsdudakov/yara-orm) — our fast, async
+Python ORM with a Rust engine — for a high-performance FastAPI + admin stack.
 
 ## Contributing
 

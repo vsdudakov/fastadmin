@@ -465,7 +465,7 @@ wheels = [
 
 [[package]]
 name = "fastadmin"
-version = "0.6.0"
+version = "0.7.0"
 source = { editable = "." }
 dependencies = [
     { name = "asgiref" },
@@ -493,6 +493,9 @@ sqlalchemy = [
 tortoise-orm = [
     { name = "tortoise-orm" },
 ]
+yara-orm = [
+    { name = "yara-orm" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -508,6 +511,7 @@ dev = [
     { name = "ty" },
     { name = "typing-extensions" },
     { name = "uvicorn" },
+    { name = "yara-orm" },
 ]
 docs = [
     { name = "mkdocs-material", extra = ["imaging"] },
@@ -525,8 +529,9 @@ requires-dist = [
     { name = "python-multipart", marker = "extra == 'fastapi'", specifier = ">=0.0.5,<1" },
     { name = "sqlalchemy", extras = ["asyncio"], marker = "extra == 'sqlalchemy'", specifier = ">=2,<3" },
     { name = "tortoise-orm", marker = "extra == 'tortoise-orm'", specifier = ">=1,<2" },
+    { name = "yara-orm", marker = "extra == 'yara-orm'", specifier = ">=1,<2" },
 ]
-provides-extras = ["fastapi", "flask", "django", "tortoise-orm", "sqlalchemy", "pony"]
+provides-extras = ["fastapi", "flask", "django", "tortoise-orm", "sqlalchemy", "pony", "yara-orm"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -542,6 +547,7 @@ dev = [
     { name = "ty", specifier = ">=0.0.1a1" },
     { name = "typing-extensions", specifier = ">=4.15" },
     { name = "uvicorn", specifier = ">=0.34" },
+    { name = "yara-orm", specifier = ">=1,<2" },
 ]
 docs = [{ name = "mkdocs-material", extras = ["imaging"], specifier = ">=9.5" }]
 
@@ -1573,4 +1579,24 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/dd/b2/381be8cfdee792dd117872481b6e378f85c957dd7c5bca38897b08f765fd/werkzeug-3.1.8.tar.gz", hash = "sha256:9bad61a4268dac112f1c5cd4630a56ede601b6ed420300677a869083d70a4c44", size = 875852, upload-time = "2026-04-02T18:49:14.268Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/93/8c/2e650f2afeb7ee576912636c23ddb621c91ac6a98e66dc8d29c3c69446e1/werkzeug-3.1.8-py3-none-any.whl", hash = "sha256:63a77fb8892bf28ebc3178683445222aa500e48ebad5ec77b0ad80f8726b1f50", size = 226459, upload-time = "2026-04-02T18:49:12.72Z" },
+]
+
+[[package]]
+name = "yara-orm"
+version = "1.13.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ad/f5/118ea93eb1a100352f7aa27d003c9476ec02bb1cbe4a1e7eeab62f7a8f3c/yara_orm-1.13.0.tar.gz", hash = "sha256:78247fbeefc248c6e07b8dd90f2341894e2b5da24fb47efe1dbe5f8e05743172", size = 682521, upload-time = "2026-07-03T11:04:41.273Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/47/5b/64111b68eb7777b3d746498444bcd17aa074603658a8adb0c3ff6e0b7ea4/yara_orm-1.13.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:2545db2ab262254b5e4b836b09e19013ebc06ac63c5aefe3c69ea40a4e92a129", size = 4069641, upload-time = "2026-07-03T11:04:17.716Z" },
+    { url = "https://files.pythonhosted.org/packages/5f/e4/3e7b025c8dafe84dbae95904fc950e93f57542c240cd530d7ad46e68c573/yara_orm-1.13.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c847b2befe143a513d470980964c1c24e3e8c9329935cffa53cfee9503c9a9b3", size = 4249986, upload-time = "2026-07-03T11:04:19.141Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/b9/dc429dbee70f342d137bce37a0a93e7fdd8e1ad6b8c64b43f7132692ba4f/yara_orm-1.13.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f3997fa4ebed51144433393f469da012c6e6bc2e3dc83db02b92304a97a81e50", size = 4455244, upload-time = "2026-07-03T11:04:20.475Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/4c/adbe7da0003d30b0014b262561d9fbc78fb801830293ebb0cd9b047425ea/yara_orm-1.13.0-cp312-cp312-win_amd64.whl", hash = "sha256:f6a9f13b85dfb4c35cccc238a6e3849887b75786b286d3a76a9d23bba4ae9190", size = 4259166, upload-time = "2026-07-03T11:04:21.863Z" },
+    { url = "https://files.pythonhosted.org/packages/be/9f/02b401e1468db20de0435a8c7460eeacffb40dfe166b4570b4dcc304d33b/yara_orm-1.13.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:c9123e716cc5eb35ab21a7f24aba6ee2a90c907aecfef5241d5039677a80ad2f", size = 4070606, upload-time = "2026-07-03T11:04:23.218Z" },
+    { url = "https://files.pythonhosted.org/packages/64/4b/e5c027544c811cb913cef0ef6b3217636285ff8d0bb647e23a41d4a1b810/yara_orm-1.13.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f99d4ef6997e99858f9cf840e01eb831088235346457c170723a1bf07c16ae75", size = 4250500, upload-time = "2026-07-03T11:04:24.717Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/42/d0e6b33ef52558cffd1bb12ca31111dc71ade4bd2cfa6aa7dbe41ca63b05/yara_orm-1.13.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8d20108f2a924fb18669edf8ef081a6f951cc8e494d4f9cd26ad6aed39c885c9", size = 4455955, upload-time = "2026-07-03T11:04:26.221Z" },
+    { url = "https://files.pythonhosted.org/packages/87/0f/408a0f0bfc1bbe8a334bb77f8404b0685080fa5aad5fad24092d0bade561/yara_orm-1.13.0-cp313-cp313-win_amd64.whl", hash = "sha256:8d9872bce3cd372675d840233896468bbbb8489e16ab5d26001bad9f320f8f11", size = 4259918, upload-time = "2026-07-03T11:04:28.429Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/50/42e4f486a7f1e0a2f2defdae3c470d5542a2b8bf965e3fd813d7f2057386/yara_orm-1.13.0-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:914e41b36527d2b9e919cbc1a43b4945cce7e1e78cf04cf78f43feb8a7d83ce6", size = 4070433, upload-time = "2026-07-03T11:04:29.986Z" },
+    { url = "https://files.pythonhosted.org/packages/46/55/2a79ce8ca8f95533c9206115aa1a43c7b9434dfd91faa6ee49f0023a4238/yara_orm-1.13.0-cp314-cp314-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e77ce22a9293f9e058932ba56878b5c827e75d52c58a9772ea522862d2f4a729", size = 4250220, upload-time = "2026-07-03T11:04:31.296Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/89/f87b53459ee15ed62dcf9985dcdaec24d54cdea89add61a9b7b2a51f2dbc/yara_orm-1.13.0-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f44e8b43f55053b37b7286ef952e316de679b50cd90ba11b0eddc7d708e9646c", size = 4455031, upload-time = "2026-07-03T11:04:32.739Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/77/68de86745a48dd868716689b5e88dc6180123fb3719f1bd2b7f88d56bb6c/yara_orm-1.13.0-cp314-cp314-win_amd64.whl", hash = "sha256:283c27e234076fe30a5e4a43333a4b077b8a1681a3f1063f9a77b66c4930076f", size = 4258482, upload-time = "2026-07-03T11:04:34.272Z" },
 ]

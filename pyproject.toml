@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "fastadmin"
-version = "0.6.0"
+version = "0.7.0"
 description = "FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -20,6 +20,7 @@ keywords = [
     "tortoise-orm",
     "sqlalchemy",
     "pony",
+    "yara-orm",
     "admin-dashboard",
     "django-admin",
 ]
@@ -49,6 +50,7 @@ django = ["django>=6,<7"]
 tortoise-orm = ["tortoise-orm>=1,<2"]
 sqlalchemy = ["sqlalchemy[asyncio]>=2,<3", "greenlet>=3"]
 pony = ["pony>=0.7,<1"]
+yara-orm = ["yara-orm>=1,<2"]
 
 [dependency-groups]
 dev = [
@@ -64,6 +66,7 @@ dev = [
     "ruff>=0.11",
     "ty>=0.0.1a1",
     "typing-extensions>=4.15",
+    "yara-orm>=1,<2",
 ]
 docs = ["mkdocs-material[imaging]>=9.5"]
 

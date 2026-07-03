@@ -32,6 +32,11 @@ try:
 except ModuleNotFoundError:  # pragma: no cover
     logging.info("TortoiseORM is not installed")  # pragma: no cover
 
+try:
+    from fastadmin.models.orms.yaraorm import YaraOrmInlineModelAdmin, YaraOrmModelAdmin  # noqa: F401
+except ModuleNotFoundError:  # pragma: no cover
+    logging.info("Yara ORM is not installed")  # pragma: no cover
+
 # api
 from fastadmin.api.exceptions import AdminApiException  # noqa: F401
 

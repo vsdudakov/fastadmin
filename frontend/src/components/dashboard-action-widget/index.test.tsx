@@ -133,6 +133,48 @@ describe("DashboardWidget", () => {
     });
   });
 
+  it("refresh button replays the last query and updates results in place", async () => {
+    mockGetWidgetCls.mockReturnValue([Input, {}]);
+    mockPostFetcher
+      .mockResolvedValueOnce({
+        data: [{ id: 1, name: "before" }],
+      } as IWidgetActionResponse)
+      .mockResolvedValueOnce({
+        data: [{ id: 1, name: "after" }],
+      } as IWidgetActionResponse);
+
+    renderWidget({
+      ...baseWidget,
+      widget_action_props: {
+        arguments: [
+          {
+            name: "created_at",
+            widget_type: EFieldWidgetType.Input,
+            widget_props: { "data-testid": "range-input" },
+          },
+        ],
+      },
+    } as IModelWidgetAction);
+
+    const inputs = screen.getAllByTestId("range-input");
+    fireEvent.change(inputs[0], { target: { value: "2026-01-05" } });
+    fireEvent.click(screen.getAllByRole("button", { name: /Run Action/i })[0]);
+
+    // First result rendered.
+    await screen.findByText(/before/);
+
+    // Click refresh (antd exposes the reload icon as the accessible name):
+    // re-runs the same query and swaps in the new result.
+    fireEvent.click(screen.getAllByRole("button", { name: /reload/i })[0]);
+
+    await waitFor(() => {
+      expect(mockPostFetcher).toHaveBeenCalledTimes(2);
+    });
+    await screen.findByText(/after/);
+    // The refresh reused the exact query captured on the run.
+    expect(mockPostFetcher.mock.calls[1]).toEqual(mockPostFetcher.mock.calls[0]);
+  });
+
   it("filters results, supports reset and copy to clipboard", async () => {
     mockGetWidgetCls.mockReturnValue([Input, {}]);
     mockPostFetcher.mockResolvedValue({

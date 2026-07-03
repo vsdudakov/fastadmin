@@ -16,4 +16,5 @@ ORMS = [
     "djangoorm",
     "sqlalchemy",
     "ponyorm",
+    "yaraorm",
 ]

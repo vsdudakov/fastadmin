@@ -25,10 +25,11 @@ format:
 	uv run ruff format $(LINT_PATHS)
 	make -C frontend fix
 
-# Use -n 1: -n auto causes flaky failures with Django+SQLite (database is locked, 500s). conftest
-# uses a per-worker DB and SQLite timeout when xdist is used, but parallel runs remain unreliable.
+# -n auto runs the suite in parallel via pytest-xdist. Each worker gets its own
+# SQLite file (Django/Pony) with a busy timeout, so there are no "database is
+# locked" failures.
 test:
-	uv run pytest -n 1 --cov=fastadmin --cov-report=term-missing --cov-report=xml -s tests
+	uv run pytest -n auto --cov=fastadmin --cov-report=term-missing --cov-report=xml tests
 	make -C frontend test
 
 cov: test
