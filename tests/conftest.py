@@ -20,6 +20,10 @@ from fastadmin.models.helpers import get_admin_model
 from fastadmin.settings import settings
 from tests.settings import FRAMEWORKS, ORMS
 
+# The test HTTP clients talk plain HTTP, so a Secure session cookie would never
+# be sent back. Disable the Secure flag for tests (production defaults to True).
+settings.ADMIN_SESSION_COOKIE_SECURE = False
+
 
 @pytest.fixture(scope="session")
 async def django_session():

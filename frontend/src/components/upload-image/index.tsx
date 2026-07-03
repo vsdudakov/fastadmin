@@ -7,6 +7,7 @@ import type React from "react";
 import { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { toSafeFileUrl } from "@/helpers/url";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 const UploadWrapper: React.FC<{
@@ -45,9 +46,8 @@ export const UploadImage: React.FC<IUploadImage> = ({
   const defaultFileList = useMemo((): UploadFile[] | undefined => {
     if (!value) return undefined;
     const displayUrl = valueRepr ?? value;
-    const url = displayUrl.startsWith("http")
-      ? displayUrl
-      : `${serverDomain}${displayUrl}`;
+    // Only render safe http(s)/relative URLs; drop javascript:/data: etc.
+    const url = toSafeFileUrl(displayUrl, serverDomain);
     return [
       {
         uid: "0",

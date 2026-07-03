@@ -2,6 +2,39 @@
 
 All notable changes to FastAdmin are documented in this file.
 
+## 0.6.0
+
+Security hardening release. No changes to the documented public API, but
+several defaults are now stricter — review the notes below before upgrading.
+
+- **Server-side permission enforcement**: `add`/`change`/`delete`/`export` now
+  enforce the matching `has_*_permission` hook (previously UI-only), and
+  `change_password` requires `has_change_permission` to change another user's
+  password (fixes an account-takeover path).
+- **Mass-assignment protection**: form saves only write fields allowed by
+  `fields`/`exclude`/`readonly_fields`, so a crafted payload can no longer set
+  hidden or read-only columns (e.g. `is_superuser`). Passwords are hashed via
+  `change_password` on edit as well as create.
+- **Injection fixes**: Pony ORM filters/search are parameterized (were built
+  from f-strings); SQLAlchemy ordering uses column expressions instead of raw
+  `text()`, and LIKE/ILIKE wildcards in filter/search values are escaped.
+- **Filter allowlist & lookups**: filters are validated against `list_filter`
+  (when set) and restricted to a fixed set of lookups, blocking relation-
+  spanning/regex oracles over hidden columns.
+- **CSV export injection**: exported cells starting with `=`, `+`, `-` or `@`
+  are neutralized; CSV and JSON exports now emit the same columns.
+- **Cookies & DoS**: the session cookie is now `Secure` + `SameSite=Lax` by
+  default (configurable), list/export `limit` is capped by
+  `ADMIN_QUERY_MAX_LIMIT`, and internal error details are no longer returned to
+  clients.
+- **New settings**: `ADMIN_SESSION_COOKIE_SECURE`, `ADMIN_SESSION_COOKIE_SAMESITE`,
+  `ADMIN_QUERY_MAX_LIMIT`. `ADMIN_SESSION_EXPIRED_AT` is now coerced to `int`.
+- **Frontend**: file/image upload links and `view_on_site` reject
+  `javascript:`/`data:` URIs.
+
+Upgrade note: for local HTTP development set `ADMIN_SESSION_COOKIE_SECURE=false`,
+and set `list_filter`/`fields` where you relied on filtering arbitrary columns.
+
 ## 0.5.0
 
 - Restructure the project tooling: PEP 621 `pyproject.toml` with the `uv_build` backend and a committed `uv.lock` (poetry removed).

@@ -5,6 +5,8 @@ import type React from "react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { toSafeFileUrl } from "@/helpers/url";
+
 const serverDomain = window.SERVER_DOMAIN ?? "";
 const serverUrl = window.SERVER_URL ?? "";
 
@@ -43,9 +45,8 @@ export const UploadFile: React.FC<IUploadFileProps> = ({
         uid: `existing-${index}-${path}`,
         name: path.split("/").pop() ?? path,
         status: "done" as const,
-        url: displayUrl.startsWith("http")
-          ? displayUrl
-          : `${serverDomain}${displayUrl}`,
+        // Only render safe http(s)/relative URLs as links; drop javascript:/data: etc.
+        url: toSafeFileUrl(displayUrl, serverDomain),
       };
     });
   }, [value, valueRepr]);

@@ -84,15 +84,8 @@ def is_valid_id(id: UUID | int | str) -> bool:
     :return: True if id is a valid id, False otherwise.
     """
     if isinstance(id, str):
-        if not id:
-            return False
-        if is_valid_uuid(id):
-            return True
-        try:
-            int(id)
-            return True
-        except ValueError:
-            return True  # string PK (e.g. non-numeric)
+        # Any non-empty string is a valid PK (UUID, numeric, or opaque string PK).
+        return bool(id)
     if is_valid_uuid(str(id)):
         return True
     try:

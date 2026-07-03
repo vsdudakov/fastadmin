@@ -78,3 +78,29 @@ class EventAdmin(TortoiseModelAdmin):
             payload["changed_from_ip"] = getattr(self.request, "client", None)
         return await super().save_model(id, payload)
 ```
+
+Permission hooks are enforced **server-side**: `add`, `change`, `delete` and
+`export` requests each call the matching hook and return `403` if it returns
+`False`, so disabling an action is not merely cosmetic. Similarly,
+`change_password` only allows changing another user's password when
+`has_change_permission` grants it (users can always change their own).
+
+## Security considerations
+
+FastAdmin ships secure defaults, but a few things are the deployer's
+responsibility:
+
+- **Strong secret key** — set `ADMIN_SECRET_KEY` to a long, random value
+  (≥ 32 bytes). It signs the session JWT.
+- **HTTPS** — keep `ADMIN_SESSION_COOKIE_SECURE=true` (the default) in
+  production so the session cookie is never sent over plain HTTP.
+- **Sign-out is not token revocation** — the session is a stateless JWT, so
+  sign-out clears the cookie but a copy of the token stays valid until it
+  expires (`ADMIN_SESSION_EXPIRED_AT`). Keep the lifetime modest; to force-
+  invalidate all sessions, rotate `ADMIN_SECRET_KEY`.
+- **Rate limiting** — FastAdmin does not throttle sign-in. Put a rate limiter
+  in front of `/{ADMIN_PREFIX}/api/sign-in` to slow credential stuffing, and
+  use a constant-time password comparison in `authenticate`.
+- **Limit what can be filtered** — set `list_filter` (or `fields`/`exclude`) so
+  requests can only filter on columns you intend to expose; otherwise every
+  serialized column is filterable.

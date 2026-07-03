@@ -335,7 +335,8 @@ async def test_get_raises_500_when_get_obj_raises(monkeypatch):
         await ApiService().get("sid", "Event", 1)
     assert exc_info.value.status_code == 500
     assert "Error getting" in exc_info.value.detail
-    assert "db error" in exc_info.value.detail
+    # Internal error text must not leak to the client.
+    assert "db error" not in exc_info.value.detail
 
 
 async def test_add_raises_500_when_save_model_raises(monkeypatch):
@@ -347,7 +348,7 @@ async def test_add_raises_500_when_save_model_raises(monkeypatch):
         await ApiService().add("sid", "Event", {"name": "x"})
     assert exc_info.value.status_code == 500
     assert "Error adding" in exc_info.value.detail
-    assert "validation failed" in exc_info.value.detail
+    assert "validation failed" not in exc_info.value.detail
 
 
 async def test_change_password_raises_500_when_get_obj_raises(monkeypatch):
@@ -379,7 +380,7 @@ async def test_change_raises_500_when_save_model_raises(monkeypatch):
         await ApiService().change("sid", "Event", 1, {"name": "y"})
     assert exc_info.value.status_code == 500
     assert "Error changing" in exc_info.value.detail
-    assert "update failed" in exc_info.value.detail
+    assert "update failed" not in exc_info.value.detail
 
 
 async def test_export_invalid_search_field(monkeypatch):
@@ -586,3 +587,101 @@ async def test_upload_file_500_upload_raises(monkeypatch):
         await ApiService().upload_file("sid", "Event", "file", "x.txt", b"content")
     assert exc_info.value.status_code == 500
     assert "Error uploading file" in exc_info.value.detail
+
+
+# --- Security hardening tests -------------------------------------------------
+
+
+def _list_admin_model(**overrides):
+    base = {
+        "search_fields": [],
+        "ordering": [],
+        "list_select_related": [],
+        "list_filter": (),
+        "get_fields_for_serialize": lambda: ["name"],
+        "get_model_fields_with_widget_types": lambda **_: [],
+        "get_list": AsyncMock(return_value=([{"name": "x"}], 1)),
+    }
+    base.update(overrides)
+    return SimpleNamespace(**base)
+
+
+async def test_list_clamps_negative_offset_and_oversized_limit(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    admin_model = _list_admin_model()
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    await ApiService().list("sid", "Event", offset=-5, limit=10_000_000)
+    _, kwargs = admin_model.get_list.await_args
+    assert kwargs["offset"] == 0
+    assert kwargs["limit"] == settings.ADMIN_QUERY_MAX_LIMIT
+
+
+async def test_list_rejects_disallowed_filter_lookup(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    admin_model = _list_admin_model()
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().list("sid", "Event", filters={"name__regex": ".*"})
+    assert exc_info.value.status_code == 422
+
+
+async def test_list_enforces_list_filter_allowlist(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    # "name" is serializable but not in list_filter -> must be rejected.
+    admin_model = _list_admin_model(list_filter=("other",), get_fields_for_serialize=lambda: ["name", "other"])
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().list("sid", "Event", filters={"name__exact": "x"})
+    assert exc_info.value.status_code == 422
+
+
+async def test_add_denied_without_permission(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    admin_model = SimpleNamespace(
+        has_add_permission=AsyncMock(return_value=False),
+        save_model=AsyncMock(),
+    )
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().add("sid", "Event", {"name": "x"})
+    assert exc_info.value.status_code == 403
+    admin_model.save_model.assert_not_awaited()
+
+
+async def test_add_reraises_admin_api_exception(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    admin_model = SimpleNamespace(save_model=AsyncMock(side_effect=AdminApiException(409, detail="conflict")))
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().add("sid", "Event", {"name": "x"})
+    assert exc_info.value.status_code == 409
+
+
+async def test_change_reraises_admin_api_exception(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    admin_model = SimpleNamespace(save_model=AsyncMock(side_effect=AdminApiException(409, detail="conflict")))
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().change("sid", "Event", 1, {"name": "y"})
+    assert exc_info.value.status_code == 409
+
+
+async def test_change_password_for_other_user_requires_permission(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    admin_model = SimpleNamespace(
+        get_obj=AsyncMock(return_value={"id": 1}),
+        change_password=AsyncMock(),
+        has_change_permission=AsyncMock(return_value=False),
+    )
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", lambda _model: admin_model)
+
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().change_password("sid", 999, {"password": "x", "confirm_password": "x"})
+    assert exc_info.value.status_code == 403
+    admin_model.change_password.assert_not_awaited()

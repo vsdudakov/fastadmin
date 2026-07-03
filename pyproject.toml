@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "fastadmin"
-version = "0.5.0"
+version = "0.6.0"
 description = "FastAdmin is an easy-to-use Admin Dashboard App for FastAPI/Flask/Django inspired by Django Admin."
 readme = "README.md"
 requires-python = ">=3.12"
