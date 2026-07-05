@@ -2,7 +2,7 @@
 
 All notable changes to FastAdmin are documented in this file.
 
-## Unreleased
+## 0.8.0
 
 - Add a `register_encoder(type_, encoder)` hook to control how a type is
   serialized in every admin API response (e.g. a custom datetime format, an
