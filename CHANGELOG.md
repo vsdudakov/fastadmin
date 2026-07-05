@@ -2,6 +2,13 @@
 
 All notable changes to FastAdmin are documented in this file.
 
+## Unreleased
+
+- Add a `register_encoder(type_, encoder)` hook to control how a type is
+  serialized in every admin API response (e.g. a custom datetime format, an
+  `Enum`'s label, or a domain value object). Custom encoders take precedence over
+  the built-in `datetime`/`UUID`/`Decimal` handling (#136).
+
 ## 0.7.0
 
 - Add support for [Yara ORM](https://github.com/vsdudakov/yara-orm) — a fast,

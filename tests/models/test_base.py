@@ -260,6 +260,77 @@ async def test_serialize_obj_attributes_decimal_formatted():
     assert "E" not in result["value"]
 
 
+async def test_serialize_obj_attributes_applies_custom_encoder():
+    import datetime
+
+    from fastadmin.api.encoders import clear_encoders, register_encoder
+
+    class Obj:
+        value = datetime.datetime(2024, 1, 31, 14, 5, 9, tzinfo=datetime.UTC)
+
+        def __str__(self):  # type: ignore[override]
+            return "obj"
+
+    class Model:
+        pass
+
+    base = ModelAdmin(Model)
+    fields = [
+        ModelFieldWidgetSchema(
+            name="value",
+            column_name="value",
+            is_m2m=False,
+            is_pk=False,
+            is_immutable=False,
+            form_widget_type=WidgetType.DateTimePicker,
+            form_widget_props={},
+            filter_widget_type=WidgetType.DateTimePicker,
+            filter_widget_props={},
+        )
+    ]
+    register_encoder(datetime.datetime, lambda dt: dt.strftime("%Y-%m-%d %H:%M"))
+    try:
+        result = await base.serialize_obj_attributes(Obj(), fields)
+    finally:
+        clear_encoders()
+    assert result["value"] == "2024-01-31 14:05"
+
+
+async def test_serialize_obj_attributes_custom_encoder_overrides_decimal():
+    from fastadmin.api.encoders import clear_encoders, register_encoder
+
+    class Obj:
+        value = Decimal("3.75E+3")
+
+        def __str__(self):  # type: ignore[override]
+            return "obj"
+
+    class Model:
+        pass
+
+    base = ModelAdmin(Model)
+    fields = [
+        ModelFieldWidgetSchema(
+            name="value",
+            column_name="value",
+            is_m2m=False,
+            is_pk=False,
+            is_immutable=False,
+            form_widget_type=WidgetType.InputNumber,
+            form_widget_props={},
+            filter_widget_type=WidgetType.InputNumber,
+            filter_widget_props={},
+        )
+    ]
+    register_encoder(Decimal, lambda d: float(d))
+    try:
+        result = await base.serialize_obj_attributes(Obj(), fields)
+    finally:
+        clear_encoders()
+    # Custom encoder wins over the built-in Decimal-to-string formatting.
+    assert result["value"] == 3750.0
+
+
 async def test_get_file_url_default_returns_value_unchanged():
     """Default get_file_url is a no-op — returns the stored value as-is."""
 

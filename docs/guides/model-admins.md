@@ -128,6 +128,29 @@ Other useful hooks:
 - `get_export(...)` — CSV/JSON export used by the export button (gate it with
   `has_export_permission`).
 
+## Custom value encoders
+
+By default, model field values are serialized to JSON with sensible built-ins:
+`datetime`/`date`/`time` become ISO 8601 strings, `UUID`s become strings, and
+`Decimal`s are rendered without scientific notation.
+
+Register a custom encoder to control how a given type is represented in **every**
+admin API response — for example a custom datetime format, an `Enum`'s label, or a
+domain value object:
+
+```python
+import datetime
+
+from fastadmin import register_encoder
+
+# Render every datetime as "2024-01-31 14:05" instead of ISO 8601.
+register_encoder(datetime.datetime, lambda dt: dt.strftime("%Y-%m-%d %H:%M"))
+```
+
+Encoders are matched via `isinstance` in registration order (register more
+specific types before their base types) and take precedence over the built-in
+handling. Use `unregister_encoder(type_)` to remove one.
+
 ## Permissions and request context
 
 See [Authentication](authentication.md#permissions) for
