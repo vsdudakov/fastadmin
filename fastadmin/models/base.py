@@ -11,6 +11,7 @@ from uuid import UUID
 
 from asgiref.sync import sync_to_async
 
+from fastadmin.api.encoders import apply_custom_encoders
 from fastadmin.api.schemas import ExportFormat
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 
@@ -419,7 +420,12 @@ class BaseModelAdmin:
         serialized_dict: dict[str, Any] = {}
         for field in attributes_to_serizalize:
             value = getattr(obj, field.column_name)
-            if isinstance(value, Decimal):
+            # Let user-registered encoders (e.g. a custom datetime format) take
+            # precedence over the built-in handling below.
+            encoded = apply_custom_encoders(value)
+            if encoded is not value:
+                value = encoded
+            elif isinstance(value, Decimal):
                 # Avoid scientific notation for Decimal values in API responses,
                 # e.g. 3.75E+3 -> "3750"
                 value = format(value, "f")

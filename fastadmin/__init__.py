@@ -38,6 +38,7 @@ except ModuleNotFoundError:  # pragma: no cover
     logging.info("Yara ORM is not installed")  # pragma: no cover
 
 # api
+from fastadmin.api.encoders import register_encoder, unregister_encoder  # noqa: F401
 from fastadmin.api.exceptions import AdminApiException  # noqa: F401
 
 # models
