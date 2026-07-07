@@ -2,6 +2,30 @@
 
 All notable changes to FastAdmin are documented in this file.
 
+## 0.8.1
+
+Bug-fix release from a full-source audit of `main`. No public API changes.
+
+- **Pony ORM**: fix list-view search crashing (HTTP 500) for models whose
+  primary key is not named `id`, and fix multi-field ordering with mixed
+  ascending/descending fields silently sorting by the wrong priority.
+- **SQLAlchemy**: filtering a list by a many-to-many (or other relationship)
+  field no longer raises an unhandled 500; it now matches on the related row's
+  primary key.
+- **Flask**: unhandled server errors now return a proper HTTP 500 with a generic
+  message (previously sent as HTTP 200 and leaked the exception text), and API
+  errors are returned as JSON `{"detail": ...}` matching the Django/FastAPI
+  integrations instead of HTML error pages.
+- **Filtering**: the literal strings `"true"`, `"false"`, and `"null"` are no
+  longer coerced to `bool`/`None` on text fields, so a text column can be
+  filtered for those exact values.
+- **Frontend**: fix a form-save crash when a JSON field value is an object with a
+  `date` key; stop corrupting text fields whose content looks like a date/time;
+  render stored `CheckboxGroup` selections correctly; surface errors from
+  dashboard action run/refresh; and use the react-query v5 `invalidateQueries`
+  signature to avoid over-invalidating unrelated queries.
+- Correct the `sortable_by` docstring to match actual behavior.
+
 ## 0.8.0
 
 - Add a `register_encoder(type_, encoder)` hook to control how a type is
