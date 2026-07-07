@@ -10,7 +10,7 @@ import jwt
 from asgiref.sync import sync_to_async
 
 from fastadmin.api.exceptions import AdminApiException
-from fastadmin.api.helpers import sanitize_filter_key, sanitize_filter_value
+from fastadmin.api.helpers import build_query_filters
 from fastadmin.api.schemas import (
     ChangePasswordInputSchema,
     ExportFormat,
@@ -233,11 +233,11 @@ class ApiService:
         query_filters: dict[tuple[str, str], bool | str | None | list] | None = None
         if query_params.filters:
             self._validate_filters(admin_model, query_params.filters, exclude_filter_fields, fields)
-            query_filters = {
-                sanitize_filter_key(k, admin_model.get_model_fields_with_widget_types()): sanitize_filter_value(v)
-                for k, v in query_params.filters.items()
-                if k not in exclude_filter_fields
-            }
+            query_filters = build_query_filters(
+                query_params.filters,
+                admin_model.get_model_fields_with_widget_types(),
+                exclude_filter_fields,
+            )
 
         if query_params.sort_by:
             if query_params.sort_by.strip("-") not in fields:
@@ -456,11 +456,11 @@ class ApiService:
         query_filters: dict[tuple[str, str], bool | str | None | list] | None = None
         if query_params.filters:
             self._validate_filters(admin_model, query_params.filters, exclude_filter_fields, fields)
-            query_filters = {
-                sanitize_filter_key(k, admin_model.get_model_fields_with_widget_types()): sanitize_filter_value(v)
-                for k, v in query_params.filters.items()
-                if k not in exclude_filter_fields
-            }
+            query_filters = build_query_filters(
+                query_params.filters,
+                admin_model.get_model_fields_with_widget_types(),
+                exclude_filter_fields,
+            )
 
         if query_params.sort_by:
             if query_params.sort_by.strip("-") not in fields:

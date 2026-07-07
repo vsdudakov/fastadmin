@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 import jwt
 
 from fastadmin.api.helpers import (
+    build_query_filters,
     get_template,
     is_valid_id,
     is_valid_uuid,
@@ -98,6 +99,45 @@ async def test_sanitize_filter_key():
     fn, cond = sanitize_filter_key("name__icontains", fields)
     assert fn == "name"
     assert cond == "icontains"
+
+
+async def test_sanitize_filter_value_type_aware():
+    # Text fields keep the literal "true"/"false"/"null" strings.
+    text_field = _make_field("title")  # WidgetType.Input
+    assert sanitize_filter_value("null", text_field) == "null"
+    assert sanitize_filter_value("true", text_field) == "true"
+    assert sanitize_filter_value("false", text_field) == "false"
+    assert sanitize_filter_value(["null", "true"], text_field) == ["null", "true"]
+
+    # Non-text fields still coerce.
+    bool_field = ModelFieldWidgetSchema(
+        name="active",
+        column_name="active",
+        is_m2m=False,
+        is_pk=False,
+        is_immutable=False,
+        form_widget_type=WidgetType.Checkbox,
+        form_widget_props={},
+        filter_widget_type=WidgetType.Checkbox,
+        filter_widget_props={},
+    )
+    assert sanitize_filter_value("true", bool_field) is True
+    assert sanitize_filter_value("null", bool_field) is None
+
+
+async def test_build_query_filters():
+    fields = [
+        _make_field("title"),
+        _make_field("tournament", filter_widget_props={"parentModel": "Tournament"}),
+    ]
+    filters = {"title__exact": "null", "tournament": "5", "search": "x"}
+    result = build_query_filters(filters, fields, exclude=("search",))
+    # Text field: the literal "null" is preserved, not coerced to None.
+    assert result[("title", "exact")] == "null"
+    # parentModel field gets the _id suffix.
+    assert result[("tournament_id", "exact")] == "5"
+    # Excluded keys are dropped.
+    assert all(field_name != "search" for field_name, _ in result)
 
 
 async def test_is_valid_uuid():

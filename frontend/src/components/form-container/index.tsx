@@ -185,11 +185,12 @@ export const FormContainer: React.FC<IFormContainer> = ({
             ] as any
           }
           valuePropName={
-            [
-              EFieldWidgetType.Checkbox,
-              EFieldWidgetType.Switch,
-              EFieldWidgetType.CheckboxGroup,
-            ].includes(getConf(field).form_widget_type as EFieldWidgetType)
+            // Only single boolean widgets use `checked`. Checkbox.Group is
+            // controlled via `value` (an array); binding it to `checked` would
+            // stop stored selections from rendering.
+            [EFieldWidgetType.Checkbox, EFieldWidgetType.Switch].includes(
+              getConf(field).form_widget_type as EFieldWidgetType,
+            )
               ? "checked"
               : undefined
           }

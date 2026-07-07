@@ -28,6 +28,7 @@ import { getConfigurationModel } from "@/helpers/configuration";
 import { handleError } from "@/helpers/forms";
 import { getTitleFromModel } from "@/helpers/title";
 import {
+  getChangeWidgetTypes,
   transformDataFromServer,
   transformDataToServer,
 } from "@/helpers/transform";
@@ -61,9 +62,12 @@ export const Change: React.FC = () => {
   const initialValues = useMemo(
     () =>
       initialChangeValues != null
-        ? transformDataFromServer(initialChangeValues)
+        ? transformDataFromServer(
+            initialChangeValues,
+            getChangeWidgetTypes(modelConfiguration),
+          )
         : undefined,
-    [initialChangeValues],
+    [initialChangeValues, modelConfiguration],
   );
 
   const {
@@ -75,7 +79,7 @@ export const Change: React.FC = () => {
     onSuccess: () => {
       message.success(_t("Succesfully added"));
 
-      queryClient.invalidateQueries([`/list/${model}`] as any);
+      queryClient.invalidateQueries({ queryKey: [`/list/${model}`] });
       const next = form.getFieldValue("next");
       /* v8 ignore next -- navigation branch is integration-covered */
       if (next) {
@@ -97,9 +101,9 @@ export const Change: React.FC = () => {
     onSuccess: () => {
       message.success(_t("Succesfully changed"));
 
-      queryClient.invalidateQueries([`/retrieve/${model}/${id}`] as any);
+      queryClient.invalidateQueries({ queryKey: [`/retrieve/${model}/${id}`] });
 
-      queryClient.invalidateQueries([`/list/${model}`] as any);
+      queryClient.invalidateQueries({ queryKey: [`/list/${model}`] });
       const next = form.getFieldValue("next");
       /* v8 ignore next -- navigation branch is integration-covered */
       if (next) {
@@ -116,7 +120,7 @@ export const Change: React.FC = () => {
     onSuccess: () => {
       message.success(_t("Successfully deleted"));
 
-      queryClient.invalidateQueries([`/list/${model}`] as any);
+      queryClient.invalidateQueries({ queryKey: [`/list/${model}`] });
       navigate(`/list/${model}`);
     },
     onError: () => {

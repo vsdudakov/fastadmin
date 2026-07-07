@@ -202,10 +202,9 @@ class BaseModelAdmin:
     # Example of usage: show_full_result_count = True
     show_full_result_count: bool = False
 
-    # By default, the list page allows sorting by all model fields
+    # By default (an empty collection), the list page allows sorting by all model fields.
     # If you want to disable sorting for some columns, set sortable_by to a collection (e.g. list, tuple, or set)
-    # of the subset of list_display that you want to be sortable.
-    # An empty collection disables sorting for all columns.
+    # of the subset of list_display that you want to be sortable; columns not listed become non-sortable.
     # Example of usage: sortable_by = ("mobile_number", "email")
     sortable_by: Sequence[str] = ()
 

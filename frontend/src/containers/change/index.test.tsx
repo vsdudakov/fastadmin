@@ -160,6 +160,7 @@ vi.mock("@/helpers/title", () => ({
 }));
 
 vi.mock("@/helpers/transform", () => ({
+  getChangeWidgetTypes: () => ({}),
   transformDataFromServer: (data: unknown) => data,
   transformDataToServer: (...args: unknown[]) =>
     mockTransformDataToServer(...args),
@@ -416,15 +417,21 @@ describe("Change container", () => {
     expect(mockPostFetcher).toHaveBeenCalledWith("/add/user", { x: 1 });
     addOptions.onSuccess();
     expect(mockMessageSuccess).toHaveBeenCalledWith("Succesfully added");
-    expect(mockInvalidateQueries).toHaveBeenCalledWith(["/list/user"]);
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["/list/user"],
+    });
     addOptions.onError(new Error("add error"));
 
     await changeOptions.mutationFn({ y: 1 });
     expect(mockPatchFetcher).toHaveBeenCalledWith("/change/user/1", { y: 1 });
     changeOptions.onSuccess();
     expect(mockMessageSuccess).toHaveBeenCalledWith("Succesfully changed");
-    expect(mockInvalidateQueries).toHaveBeenCalledWith(["/retrieve/user/1"]);
-    expect(mockInvalidateQueries).toHaveBeenCalledWith(["/list/user"]);
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["/retrieve/user/1"],
+    });
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["/list/user"],
+    });
     changeOptions.onError(new Error("change error"));
     expect(mockHandleError).toHaveBeenCalledWith(expect.any(Error), mockForm);
 

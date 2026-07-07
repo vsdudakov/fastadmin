@@ -47,7 +47,7 @@ export const Add: React.FC = () => {
     onSuccess: () => {
       message.success(_t("Succesfully added"));
 
-      queryClient.invalidateQueries([`/list/${model}`] as any);
+      queryClient.invalidateQueries({ queryKey: [`/list/${model}`] });
       navigate(`/list/${model}`);
     },
     onError: (error: Error) => {
