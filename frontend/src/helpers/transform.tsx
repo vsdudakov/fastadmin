@@ -1,6 +1,20 @@
 import { Checkbox, Tag } from "antd";
 import dayjs from "dayjs";
 import slugify from "slugify";
+import {
+  EFieldWidgetType,
+  type IModelField,
+} from "@/interfaces/configuration";
+
+// Widgets that expect a dayjs value. A server string is only parsed into a
+// dayjs when its field uses one of these; otherwise a plain text field whose
+// content merely looks like a date (e.g. "2024-01-01") would be corrupted.
+const DATE_WIDGET_TYPES: EFieldWidgetType[] = [
+  EFieldWidgetType.DatePicker,
+  EFieldWidgetType.DateTimePicker,
+  EFieldWidgetType.TimePicker,
+  EFieldWidgetType.RangePicker,
+];
 
 export const isTime = (v: string): boolean => {
   // Accept common backend time shapes, including:
@@ -78,7 +92,10 @@ export const transformValueToServer = (value: any): any => {
   if (isArray(value)) {
     return value.map(transformValueToServer);
   }
-  if (value.date) {
+  // Only real dayjs values are serialized via format(). Checking `value.date`
+  // would misfire on any plain object that happens to have a `date` key and
+  // throw (`value.format is not a function`), aborting the save.
+  if (dayjs.isDayjs(value)) {
     return value.format();
   }
   return value;
@@ -119,31 +136,59 @@ export const transformFiltersToServer = (data: any) => {
   return filtersData;
 };
 
-export const transformValueFromServer = (value: any): any => {
+export const transformValueFromServer = (
+  value: any,
+  widgetType?: EFieldWidgetType,
+): any => {
   if (value === null || value === undefined) {
     return value;
   }
   if (isArray(value)) {
-    return value.map(transformValueFromServer);
+    return value.map((v: any) => transformValueFromServer(v, widgetType));
   }
   if (isBoolean(value)) {
     return value !== "false" && !!value;
   }
-  if (isDate(value)) {
-    return dayjs(value);
-  }
-  if (isTime(value)) {
-    return dayjs(`1970-01-01T${value}`);
-  }
-  if (isDateTime(value)) {
-    return dayjs(value);
+  // Parse date/time strings into dayjs only for date widgets. When the widget
+  // type is unknown, fall back to shape detection for backward compatibility.
+  const parseDates =
+    widgetType === undefined || DATE_WIDGET_TYPES.includes(widgetType);
+  if (parseDates) {
+    if (isDate(value)) {
+      return dayjs(value);
+    }
+    if (isTime(value)) {
+      return dayjs(`1970-01-01T${value}`);
+    }
+    if (isDateTime(value)) {
+      return dayjs(value);
+    }
   }
   return value;
 };
 
-export const transformDataFromServer = (data: Record<string, unknown>) => {
+// Map each field name to the widget type used on the change form, so
+// transformDataFromServer can decide, per field, whether a date-looking string
+// should become a dayjs (real date widget) or stay a string (e.g. a Char field).
+export const getChangeWidgetTypes = (
+  modelConfiguration?: { fields?: IModelField[] },
+): Record<string, EFieldWidgetType | undefined> => {
+  const widgetTypes: Record<string, EFieldWidgetType | undefined> = {};
+  for (const field of modelConfiguration?.fields || []) {
+    widgetTypes[field.name] = field.change_configuration?.form_widget_type;
+  }
+  return widgetTypes;
+};
+
+export const transformDataFromServer = (
+  data: Record<string, unknown>,
+  widgetTypes?: Record<string, EFieldWidgetType | undefined>,
+) => {
   return Object.fromEntries(
-    Object.entries(data).map(([k, v]) => [k, transformValueFromServer(v)]),
+    Object.entries(data).map(([k, v]) => [
+      k,
+      transformValueFromServer(v, widgetTypes?.[k]),
+    ]),
   );
 };
 

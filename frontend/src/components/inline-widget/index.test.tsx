@@ -203,6 +203,7 @@ vi.mock("@/helpers/forms", () => ({
 }));
 
 vi.mock("@/helpers/transform", () => ({
+  getChangeWidgetTypes: () => ({}),
   transformDataFromServer: (v: unknown) => v,
   transformFiltersToServer: () => ({}),
   transformDataToServer: (v: unknown) => v,

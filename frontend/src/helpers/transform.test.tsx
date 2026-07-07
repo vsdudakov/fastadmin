@@ -1,5 +1,8 @@
+import dayjs from "dayjs";
 import { describe, expect, it } from "vitest";
+import { EFieldWidgetType } from "@/interfaces/configuration";
 import {
+  getChangeWidgetTypes,
   isArray,
   isBoolean,
   isDateTime,
@@ -120,22 +123,26 @@ describe("transform", () => {
     it("maps over arrays", () => {
       expect(transformValueToServer([1, 2])).toEqual([1, 2]);
     });
-    it("formats dayjs-like value", () => {
-      const d = { date: true, format: () => "2024-01-15" };
-      expect(transformValueToServer(d)).toBe("2024-01-15");
+    it("formats a real dayjs value", () => {
+      const d = dayjs("2024-01-15");
+      expect(transformValueToServer(d)).toBe(d.format());
     });
     it("returns non-dayjs value as-is", () => {
       expect(transformValueToServer({ a: 1 })).toEqual({ a: 1 });
       expect(transformValueToServer("hello")).toBe("hello");
     });
+    it("does not treat a plain object with a `date` key as dayjs", () => {
+      const value = { date: "2024-05-01", amount: 100 };
+      expect(transformValueToServer(value)).toEqual(value);
+    });
   });
 
   describe("transformDataToServer", () => {
     it("transforms all values", () => {
-      const d = {
-        date: { date: true, format: () => "2024-01-15" },
-      };
-      expect(transformDataToServer(d)).toEqual({ date: "2024-01-15" });
+      const d = dayjs("2024-01-15");
+      expect(transformDataToServer({ created: d })).toEqual({
+        created: d.format(),
+      });
     });
   });
 
@@ -210,12 +217,55 @@ describe("transform", () => {
       expect(r && typeof (r as any).isValid === "function").toBe(true);
       expect(r && (r as any).isValid()).toBe(true);
     });
+    it("parses a date string into dayjs for a date widget", () => {
+      const r = transformValueFromServer(
+        "2024-01-15",
+        EFieldWidgetType.DatePicker,
+      );
+      expect(dayjs.isDayjs(r)).toBe(true);
+    });
+    it("keeps a date-looking string as-is for a non-date widget", () => {
+      expect(
+        transformValueFromServer("2024-01-15", EFieldWidgetType.Input),
+      ).toBe("2024-01-15");
+      expect(transformValueFromServer("12:00:00", EFieldWidgetType.Input)).toBe(
+        "12:00:00",
+      );
+    });
   });
 
   describe("transformDataFromServer", () => {
     it("transforms all values", () => {
       const r = transformDataFromServer({ d: "2024-01-15" });
       expect(r).toHaveProperty("d");
+    });
+    it("respects per-field widget types", () => {
+      const r = transformDataFromServer(
+        { at: "2024-01-15", code: "2024-01-15" },
+        { at: EFieldWidgetType.DatePicker, code: EFieldWidgetType.Input },
+      );
+      expect(dayjs.isDayjs(r.at)).toBe(true);
+      expect(r.code).toBe("2024-01-15");
+    });
+  });
+
+  describe("getChangeWidgetTypes", () => {
+    it("maps field names to their change widget type", () => {
+      const map = getChangeWidgetTypes({
+        fields: [
+          {
+            name: "at",
+            change_configuration: {
+              form_widget_type: EFieldWidgetType.DatePicker,
+            },
+          },
+          { name: "code", change_configuration: {} },
+        ],
+      } as any);
+      expect(map).toEqual({ at: EFieldWidgetType.DatePicker, code: undefined });
+    });
+    it("returns an empty map when configuration is missing", () => {
+      expect(getChangeWidgetTypes()).toEqual({});
     });
   });
 

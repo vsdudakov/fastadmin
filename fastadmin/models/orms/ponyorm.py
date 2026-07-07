@@ -272,6 +272,7 @@ class PonyORMMixin:
 
         search_fields = list(self.search_fields)
         if search and search_fields:
+            model_pk_name = self.get_model_pk_name(self.model_cls)
             ids = []
             # Bind the user-supplied search term as a local so Pony resolves it
             # as a parameter. Only the field path (from the admin's trusted
@@ -281,17 +282,24 @@ class PonyORMMixin:
                 pony_search_field = search_field.replace("__", ".")
                 qs_ids = qs.filter(f"search_term in m.{pony_search_field}.lower()")
                 objs = list(qs_ids)
-                ids += [o.id for o in objs]
-            qs = qs.filter(lambda m: m.id in set(ids))
+                ids += [getattr(o, model_pk_name) for o in objs]
+            # Bind the collected pks as a local so Pony resolves it as a
+            # parameter; only the trusted pk field path is interpolated.
+            pk_ids = set(ids)  # noqa: F841 (referenced by Pony filter string)
+            qs = qs.filter(f"m.{model_pk_name} in pk_ids")
 
         ordering = [sort_by] if sort_by else self.ordering
         if ordering:
-            desc_fields = [o[1:] for o in ordering if o.startswith("-")]
-            asc_fields = [o for o in ordering if not o.startswith("-")]
-            if asc_fields:
-                qs = qs.order_by(*(getattr(self.model_cls, o) for o in asc_fields))
-            if desc_fields:
-                qs = qs.order_by(*(desc(getattr(self.model_cls, o)) for o in desc_fields))
+            # Build a single order_by() call that preserves the declared field
+            # order. Pony prepends the fields of each separate order_by() call,
+            # so applying asc and desc fields in two calls would invert their
+            # relative priority (a later desc field wrongly outranks an earlier
+            # asc one).
+            order_exprs = [
+                desc(getattr(self.model_cls, o[1:])) if o.startswith("-") else getattr(self.model_cls, o)
+                for o in ordering
+            ]
+            qs = qs.order_by(*order_exprs)
 
         total = qs.count()
 

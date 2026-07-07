@@ -191,7 +191,9 @@ describe("Add container", () => {
 
     mutationOptions.onSuccess();
     expect(mockMessageSuccess).toHaveBeenCalledWith("Succesfully added");
-    expect(mockInvalidateQueries).toHaveBeenCalledWith(["/list/user"]);
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["/list/user"],
+    });
     expect(mockNavigate).toHaveBeenCalledWith("/list/user");
 
     mutationOptions.onError(new Error("save failed"));

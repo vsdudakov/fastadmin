@@ -16,6 +16,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { postFetcher } from "@/fetchers/fetchers";
+import { handleError } from "@/helpers/forms";
 import { getTitleFromFieldName } from "@/helpers/title";
 import { transformValueToServer } from "@/helpers/transform";
 import { getWidgetCls } from "@/helpers/widgets";
@@ -211,6 +212,8 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
       );
       setActionResult(result as IWidgetActionResponse);
       setResultsView("json");
+    } catch (error) {
+      handleError(error);
     } finally {
       setIsActionRunning(false);
     }
@@ -229,6 +232,8 @@ export const DashboardActionWidget: React.FC<DashboardActionWidgetProps> = ({
         },
       );
       setActionResult(result as IWidgetActionResponse);
+    } catch (error) {
+      handleError(error);
     } finally {
       setIsActionRefreshing(false);
     }
