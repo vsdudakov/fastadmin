@@ -437,6 +437,31 @@ async def test_sqlalchemy_orm_get_list_filter_operators(event, session_with_type
     assert isinstance(objs, list)
 
 
+async def test_sqlalchemy_orm_get_list_relation_filters(event, session_with_type):
+    _, session_type = session_with_type
+    if session_type != "sqlalchemy":
+        return
+
+    admin_model = get_admin_model(event.__class__)
+
+    # Many-to-many relationship (uselist) is matched via any() on the related
+    # pk, for both the "exact" and "in" conditions.
+    objs, total = await admin_model.orm_get_list(
+        filters={
+            ("participants", "exact"): "1",
+            ("participants", "in"): ["1", "2"],
+        }
+    )
+    assert isinstance(total, int)
+    assert isinstance(objs, list)
+
+    # To-one relationship is matched via has() on the related pk.
+    objs, total = await admin_model.orm_get_list(filters={("tournament", "exact"): str(event.tournament_id)})
+    assert isinstance(total, int)
+    assert isinstance(objs, list)
+    assert any(getattr(obj, "id", None) == event.id for obj in objs)
+
+
 async def test_sqlalchemy_orm_get_list_ordering_non_column_is_skipped(event, session_with_type):
     _, session_type = session_with_type
     if session_type != "sqlalchemy":
