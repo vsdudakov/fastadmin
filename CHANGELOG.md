@@ -2,7 +2,7 @@
 
 All notable changes to FastAdmin are documented in this file.
 
-## Unreleased
+## 0.8.2
 
 Bug-fix follow-up to the 0.8.1 audit. No public API changes.
 
