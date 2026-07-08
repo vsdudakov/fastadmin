@@ -340,9 +340,17 @@ class SqlAlchemyMixin:
                     if related_mapper is not None:
                         # Relationship field (e.g. m2m): SQLAlchemy rejects a
                         # scalar comparison against a collection, so match on the
-                        # related row's pk via any()/has() instead.
+                        # related row's pk via any()/has() instead. Only pk
+                        # equality/membership is meaningful here — anything else
+                        # must fail loudly rather than degrade to an equality
+                        # match (the service layer rejects these with a 422).
+                        if condition not in ("exact", "in"):
+                            raise ValueError(f"Filter condition {condition!r} is not supported for relation {field!r}")
                         related_cls = related_mapper.class_
                         related_pk = getattr(related_cls, self.get_model_pk_name(related_cls))
+                        if isinstance(related_pk.expression.type, BIGINT | Integer):
+                            with contextlib.suppress(ValueError, TypeError):
+                                value = [int(x) for x in value] if condition == "in" else int(value)
                         match_expr = related_pk.in_(value) if condition == "in" else related_pk == value
                         if getattr(rel_property, "uselist", True):
                             q.append(model_field.any(match_expr))

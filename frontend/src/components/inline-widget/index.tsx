@@ -30,7 +30,6 @@ import {
 import { handleError } from "@/helpers/forms";
 import { getTitleFromModel } from "@/helpers/title";
 import {
-  getChangeWidgetTypes,
   transformDataFromServer,
   transformDataToServer,
   transformFiltersToServer,
@@ -152,10 +151,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
   const inlineChangeInitialValues = useMemo(
     () =>
       initialChangeValues != null
-        ? transformDataFromServer(
-            initialChangeValues,
-            getChangeWidgetTypes(modelConfiguration),
-          )
+        ? transformDataFromServer(initialChangeValues, modelConfiguration)
         : undefined,
     [initialChangeValues, modelConfiguration],
   );

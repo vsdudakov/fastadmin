@@ -28,7 +28,6 @@ import { getConfigurationModel } from "@/helpers/configuration";
 import { handleError } from "@/helpers/forms";
 import { getTitleFromModel } from "@/helpers/title";
 import {
-  getChangeWidgetTypes,
   transformDataFromServer,
   transformDataToServer,
 } from "@/helpers/transform";
@@ -62,10 +61,7 @@ export const Change: React.FC = () => {
   const initialValues = useMemo(
     () =>
       initialChangeValues != null
-        ? transformDataFromServer(
-            initialChangeValues,
-            getChangeWidgetTypes(modelConfiguration),
-          )
+        ? transformDataFromServer(initialChangeValues, modelConfiguration)
         : undefined,
     [initialChangeValues, modelConfiguration],
   );

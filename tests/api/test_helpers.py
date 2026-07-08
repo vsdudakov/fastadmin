@@ -102,12 +102,16 @@ async def test_sanitize_filter_key():
 
 
 async def test_sanitize_filter_value_type_aware():
-    # Text fields keep the literal "true"/"false"/"null" strings.
+    # Text fields keep the literal "true"/"false"/"null" strings for substring
+    # lookups; only "null" on an exact lookup stays coercible so IS NULL
+    # remains expressible on text columns.
     text_field = _make_field("title")  # WidgetType.Input
-    assert sanitize_filter_value("null", text_field) == "null"
-    assert sanitize_filter_value("true", text_field) == "true"
-    assert sanitize_filter_value("false", text_field) == "false"
-    assert sanitize_filter_value(["null", "true"], text_field) == ["null", "true"]
+    assert sanitize_filter_value("null", text_field, "icontains") == "null"
+    assert sanitize_filter_value("null", text_field, "contains") == "null"
+    assert sanitize_filter_value("null", text_field, "exact") is None
+    assert sanitize_filter_value("true", text_field, "exact") == "true"
+    assert sanitize_filter_value("false", text_field, "exact") == "false"
+    assert sanitize_filter_value(["null", "true"], text_field, "in") == ["null", "true"]
 
     # Non-text fields still coerce.
     bool_field = ModelFieldWidgetSchema(
@@ -130,10 +134,11 @@ async def test_build_query_filters():
         _make_field("title"),
         _make_field("tournament", filter_widget_props={"parentModel": "Tournament"}),
     ]
-    filters = {"title__exact": "null", "tournament": "5", "search": "x"}
+    filters = {"title__exact": "null", "title__icontains": "null", "tournament": "5", "search": "x"}
     result = build_query_filters(filters, fields, exclude=("search",))
-    # Text field: the literal "null" is preserved, not coerced to None.
-    assert result[("title", "exact")] == "null"
+    # Text field: exact "null" expresses IS NULL, substring lookups keep the literal.
+    assert result[("title", "exact")] is None
+    assert result[("title", "icontains")] == "null"
     # parentModel field gets the _id suffix.
     assert result[("tournament_id", "exact")] == "5"
     # Excluded keys are dropped.

@@ -33,11 +33,19 @@ app.register_blueprint(api_router)
 @app.errorhandler(Exception)
 def exception_handler(exc):
     if isinstance(exc, HTTPException):
+        if exc.response is not None:
+            # abort(Response(...)) attached a fully-formed response; pass it
+            # through untouched instead of replacing it with a generic error.
+            return exc
         # Return API errors as JSON {"detail": ...} with the proper HTTP status
         # so the shared React frontend can read the message (matching the Django
         # and FastAPI integrations), instead of werkzeug's default HTML page.
-        return {"detail": exc.description}, exc.code or 500
-    # Unhandled server error: log it server-side but never leak internals to the
-    # client, and return a real HTTP 500 (a bare dict would be sent as HTTP 200).
-    logger.error("Unhandled admin error: %s", exc)
+        # Keep the exception's headers (Allow, WWW-Authenticate, Retry-After, ...)
+        # apart from its text/html Content-Type, which the JSON body replaces.
+        headers = [(k, v) for k, v in exc.get_headers() if k.lower() != "content-type"]
+        return {"detail": exc.description}, exc.code or 500, headers
+    # Unhandled server error: log it (with traceback — this is the only place it
+    # is captured) but never leak internals to the client, and return a real
+    # HTTP 500 (a bare dict would be sent as HTTP 200).
+    logger.error("Unhandled admin error: %s", exc, exc_info=exc)
     return {"detail": "Internal server error."}, 500

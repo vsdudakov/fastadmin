@@ -28,10 +28,7 @@ import { getFetcher, patchFetcher, postFetcher } from "@/fetchers/fetchers";
 import { getConfigurationModel } from "@/helpers/configuration";
 import { handleError } from "@/helpers/forms";
 import { getTitleFromModel } from "@/helpers/title";
-import {
-  getChangeWidgetTypes,
-  transformDataFromServer,
-} from "@/helpers/transform";
+import { transformDataFromServer } from "@/helpers/transform";
 import { EModelPermission } from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
@@ -90,10 +87,7 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
   const asyncSelectChangeInitialValues = useMemo(
     () =>
       initialChangeValues != null
-        ? transformDataFromServer(
-            initialChangeValues,
-            getChangeWidgetTypes(modelConfiguration),
-          )
+        ? transformDataFromServer(initialChangeValues, modelConfiguration)
         : undefined,
     [initialChangeValues, modelConfiguration],
   );

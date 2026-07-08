@@ -2,6 +2,31 @@
 
 All notable changes to FastAdmin are documented in this file.
 
+## Unreleased
+
+Bug-fix follow-up to the 0.8.1 audit. No public API changes.
+
+- **SQLAlchemy**: relationship (m2m) filter values are coerced to `int` for
+  integer primary keys (previously raised HTTP 500 on strictly typed drivers
+  such as PostgreSQL/asyncpg), and unsupported lookups on relation fields
+  (e.g. `icontains`) are rejected with HTTP 422 instead of silently matching
+  by primary-key equality.
+- **Pony ORM**: the foreign-key filter rewrite no longer corrupts filters on
+  plain columns whose name merely ends with `_id`, and list-view search now
+  runs as a single OR'd WHERE clause instead of materializing every matching
+  row once per search field.
+- **Flask**: `HTTPException`s with an attached response (`abort(Response(...))`)
+  are passed through unchanged, error headers (`Allow`, `WWW-Authenticate`,
+  `Retry-After`, ...) are preserved on JSON error responses, and unhandled
+  errors are logged with their traceback.
+- **Filtering**: `IS NULL` is expressible again on text columns via
+  `field__exact=null` (substring lookups keep the literal string `"null"`).
+- **Frontend**: stop corrupting text fields whose content is the literal word
+  `"true"`/`"false"` on the change form (booleans are now only coerced for
+  boolean widgets), stop shape-based date detection for fields known to have
+  no date widget, and pass the model configuration directly to
+  `transformDataFromServer` so every call site gets the safe behavior.
+
 ## 0.8.1
 
 Bug-fix release from a full-source audit of `main`. No public API changes.
