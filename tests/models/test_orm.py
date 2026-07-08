@@ -1,3 +1,5 @@
+import pytest
+
 from fastadmin.models.helpers import get_admin_model
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 
@@ -460,6 +462,10 @@ async def test_sqlalchemy_orm_get_list_relation_filters(event, session_with_type
     assert isinstance(total, int)
     assert isinstance(objs, list)
     assert any(getattr(obj, "id", None) == event.id for obj in objs)
+
+    # Unsupported lookups must fail loudly instead of degrading to pk equality.
+    with pytest.raises(ValueError, match="not supported for relation"):
+        await admin_model.orm_get_list(filters={("participants", "icontains"): "ann"})
 
 
 async def test_sqlalchemy_orm_get_list_ordering_non_column_is_skipped(event, session_with_type):

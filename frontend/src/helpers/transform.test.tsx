@@ -232,6 +232,30 @@ describe("transform", () => {
         "12:00:00",
       );
     });
+    it("keeps a boolean-looking string as-is for a non-boolean widget", () => {
+      expect(transformValueFromServer("false", EFieldWidgetType.Input)).toBe(
+        "false",
+      );
+      expect(transformValueFromServer("True", EFieldWidgetType.TextArea)).toBe(
+        "True",
+      );
+    });
+    it("coerces boolean strings for boolean widgets", () => {
+      expect(transformValueFromServer("false", EFieldWidgetType.Switch)).toBe(
+        false,
+      );
+      expect(transformValueFromServer("true", EFieldWidgetType.Checkbox)).toBe(
+        true,
+      );
+    });
+    it("keeps real booleans regardless of widget type", () => {
+      expect(transformValueFromServer(true, EFieldWidgetType.Input)).toBe(true);
+      expect(transformValueFromServer(false, null)).toBe(false);
+    });
+    it("skips shape detection when the widget is known to be absent", () => {
+      expect(transformValueFromServer("2024-01-15", null)).toBe("2024-01-15");
+      expect(transformValueFromServer("false", null)).toBe("false");
+    });
   });
 
   describe("transformDataFromServer", () => {
@@ -239,13 +263,39 @@ describe("transform", () => {
       const r = transformDataFromServer({ d: "2024-01-15" });
       expect(r).toHaveProperty("d");
     });
-    it("respects per-field widget types", () => {
+    it("respects per-field widget types from the model configuration", () => {
       const r = transformDataFromServer(
         { at: "2024-01-15", code: "2024-01-15" },
-        { at: EFieldWidgetType.DatePicker, code: EFieldWidgetType.Input },
+        {
+          fields: [
+            {
+              name: "at",
+              change_configuration: {
+                form_widget_type: EFieldWidgetType.DatePicker,
+              },
+            },
+            {
+              name: "code",
+              change_configuration: {
+                form_widget_type: EFieldWidgetType.Input,
+              },
+            },
+          ],
+        } as any,
       );
       expect(dayjs.isDayjs(r.at)).toBe(true);
       expect(r.code).toBe("2024-01-15");
+    });
+    it("does not shape-detect fields without a change widget when a configuration is given", () => {
+      const r = transformDataFromServer(
+        { code: "2024-01-15", flag: "false", unknown: "2024-01-15" },
+        {
+          fields: [{ name: "code", change_configuration: {} }],
+        } as any,
+      );
+      expect(r.code).toBe("2024-01-15");
+      expect(r.flag).toBe("false");
+      expect(r.unknown).toBe("2024-01-15");
     });
   });
 
@@ -262,7 +312,7 @@ describe("transform", () => {
           { name: "code", change_configuration: {} },
         ],
       } as any);
-      expect(map).toEqual({ at: EFieldWidgetType.DatePicker, code: undefined });
+      expect(map).toEqual({ at: EFieldWidgetType.DatePicker, code: null });
     });
     it("returns an empty map when configuration is missing", () => {
       expect(getChangeWidgetTypes()).toEqual({});

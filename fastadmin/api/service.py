@@ -103,10 +103,13 @@ class ApiService:
 
         The filterable field set is ``list_filter`` when the admin defines it,
         otherwise the serialized field set; the lookup suffix must be one of
-        ALLOWED_FILTER_CONDITIONS.
+        ALLOWED_FILTER_CONDITIONS. Relation (m2m) fields only support pk
+        equality/membership, so other lookups are rejected here instead of
+        failing (or silently degrading) inside the ORM adapters.
         """
         list_filter = getattr(admin_model, "list_filter", ())
         allowlist = set(list_filter) if list_filter else fields
+        m2m_fields = {f.name for f in admin_model.get_model_fields_with_widget_types() if f.is_m2m}
         for k in filters:
             if k in exclude_filter_fields:
                 continue
@@ -114,6 +117,8 @@ class ApiService:
             if condition and condition not in ALLOWED_FILTER_CONDITIONS:
                 raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
             if field not in allowlist:
+                raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
+            if field in m2m_fields and condition and condition not in ("exact", "in"):
                 raise AdminApiException(422, detail=f"Filter by {k} is not allowed")
 
     @staticmethod

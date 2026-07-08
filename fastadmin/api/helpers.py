@@ -24,17 +24,26 @@ TEXT_FILTER_WIDGET_TYPES = frozenset(
 def sanitize_filter_value(
     value: str | list,
     field: ModelFieldWidgetSchema | None = None,
+    condition: str = "exact",
 ) -> bool | None | str | list:
     """Sanitize value (string or list for __in filters).
 
     :params value: a value (str or list of str for __in).
     :params field: the field being filtered, used to decide whether the
         "true"/"false"/"null" literals should be coerced (skipped for text fields).
+    :params condition: the filter lookup (exact/in/icontains/...), used to keep
+        IS NULL expressible on text fields.
     :return: A sanitized value.
     """
     if isinstance(value, list):
-        return [sanitize_filter_value(v, field) for v in value]
+        return [sanitize_filter_value(v, field, condition) for v in value]
     if field is not None and field.filter_widget_type in TEXT_FILTER_WIDGET_TYPES:
+        # Text content may legitimately be the words "true"/"false"/"null", so
+        # they are kept literal — except "null" on an exact lookup, which stays
+        # the only way to express IS NULL on a text column (match the literal
+        # word via contains/icontains instead).
+        if value == "null" and condition == "exact":
+            return None
         return value
     match value:
         case "false":
@@ -109,7 +118,8 @@ def build_query_filters(
             continue
         field_name = key.partition("__")[0]
         field = next((f for f in fields if f.name == field_name), None)
-        result[sanitize_filter_key(key, fields)] = sanitize_filter_value(value, field)
+        sanitized_key = sanitize_filter_key(key, fields)
+        result[sanitized_key] = sanitize_filter_value(value, field, sanitized_key[1])
     return result
 
 

@@ -638,6 +638,25 @@ async def test_list_enforces_list_filter_allowlist(monkeypatch):
     assert exc_info.value.status_code == 422
 
 
+async def test_list_rejects_substring_lookup_on_relation_filter(monkeypatch):
+    monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
+    m2m_field = SimpleNamespace(name="participants", is_m2m=True, filter_widget_type=None, filter_widget_props={})
+    admin_model = _list_admin_model(
+        get_fields_for_serialize=lambda: ["participants"],
+        get_model_fields_with_widget_types=lambda **_: [m2m_field],
+    )
+    monkeypatch.setattr("fastadmin.api.service.get_admin_or_admin_inline_model", lambda _model: admin_model)
+
+    # Relation fields only support pk equality/membership; anything else must
+    # be rejected instead of silently degrading to an equality match.
+    with pytest.raises(AdminApiException) as exc_info:
+        await ApiService().list("sid", "Event", filters={"participants__icontains": "ann"})
+    assert exc_info.value.status_code == 422
+
+    await ApiService().list("sid", "Event", filters={"participants__exact": "1"})
+    await ApiService().list("sid", "Event", filters={"participants__in": "1,2"})
+
+
 async def test_add_denied_without_permission(monkeypatch):
     monkeypatch.setattr("fastadmin.api.service.get_user_id_from_session_id", AsyncMock(return_value=1))
     admin_model = SimpleNamespace(

@@ -259,8 +259,16 @@ class PonyORMMixin:
                 field = field_with_condition[0]
                 condition = field_with_condition[1]
                 model_pk_name = self.get_model_pk_name(self.model_cls)
-                if field.endswith(f"_{model_pk_name}"):
-                    field = field.replace(f"_{model_pk_name}", f".{model_pk_name}")
+                # A "<relation>_<pk>" key (added by sanitize_filter_key for fk
+                # fields) is rewritten to the "<relation>.<pk>" path — but only
+                # when the base attribute really is a relation, so a plain
+                # column that merely ends with "_id" is left untouched.
+                pk_suffix = f"_{model_pk_name}"
+                if field.endswith(pk_suffix):
+                    base_name = field[: -len(pk_suffix)]
+                    base_attr = getattr(self.model_cls, base_name, None) if base_name else None
+                    if base_attr is not None and getattr(base_attr, "is_relation", False):
+                        field = f"{base_name}.{model_pk_name}"
                 # Bind the user-supplied value as a local (`fval`) so Pony
                 # resolves it as a query parameter. Only the field path — built
                 # from the admin's validated/allowlisted field names — is
@@ -272,21 +280,16 @@ class PonyORMMixin:
 
         search_fields = list(self.search_fields)
         if search and search_fields:
-            model_pk_name = self.get_model_pk_name(self.model_cls)
-            ids = []
             # Bind the user-supplied search term as a local so Pony resolves it
-            # as a parameter. Only the field path (from the admin's trusted
-            # search_fields config) is interpolated — never the search value.
+            # as a parameter. Only the field paths (from the admin's trusted
+            # search_fields config) are interpolated — never the search value.
+            # All fields are OR-ed into a single filter so the search runs as
+            # one WHERE clause instead of materializing matching rows per field.
             search_term = search.lower()  # noqa: F841 (referenced by Pony filter string)
-            for search_field in search_fields:
-                pony_search_field = search_field.replace("__", ".")
-                qs_ids = qs.filter(f"search_term in m.{pony_search_field}.lower()")
-                objs = list(qs_ids)
-                ids += [getattr(o, model_pk_name) for o in objs]
-            # Bind the collected pks as a local so Pony resolves it as a
-            # parameter; only the trusted pk field path is interpolated.
-            pk_ids = set(ids)  # noqa: F841 (referenced by Pony filter string)
-            qs = qs.filter(f"m.{model_pk_name} in pk_ids")
+            search_expr = " or ".join(
+                f"search_term in m.{search_field.replace('__', '.')}.lower()" for search_field in search_fields
+            )
+            qs = qs.filter(search_expr)
 
         ordering = [sort_by] if sort_by else self.ordering
         if ordering:

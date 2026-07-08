@@ -1,10 +1,7 @@
 import { Checkbox, Tag } from "antd";
 import dayjs from "dayjs";
 import slugify from "slugify";
-import {
-  EFieldWidgetType,
-  type IModelField,
-} from "@/interfaces/configuration";
+import { EFieldWidgetType, type IModelField } from "@/interfaces/configuration";
 
 // Widgets that expect a dayjs value. A server string is only parsed into a
 // dayjs when its field uses one of these; otherwise a plain text field whose
@@ -14,6 +11,14 @@ const DATE_WIDGET_TYPES: EFieldWidgetType[] = [
   EFieldWidgetType.DateTimePicker,
   EFieldWidgetType.TimePicker,
   EFieldWidgetType.RangePicker,
+];
+
+// Widgets that expect a boolean value. The literal strings "true"/"false" are
+// only coerced to booleans for these; otherwise a text field whose content is
+// the word "false" would be corrupted.
+const BOOLEAN_WIDGET_TYPES: EFieldWidgetType[] = [
+  EFieldWidgetType.Switch,
+  EFieldWidgetType.Checkbox,
 ];
 
 export const isTime = (v: string): boolean => {
@@ -136,9 +141,13 @@ export const transformFiltersToServer = (data: any) => {
   return filtersData;
 };
 
+// widgetType semantics: an EFieldWidgetType enables the matching coercions,
+// `null` means "the widget is known to not be a date/boolean one" (no shape
+// coercion at all), and `undefined` means "no widget information available"
+// (legacy shape-based detection for backward compatibility).
 export const transformValueFromServer = (
   value: any,
-  widgetType?: EFieldWidgetType,
+  widgetType?: EFieldWidgetType | null,
 ): any => {
   if (value === null || value === undefined) {
     return value;
@@ -146,13 +155,22 @@ export const transformValueFromServer = (
   if (isArray(value)) {
     return value.map((v: any) => transformValueFromServer(v, widgetType));
   }
-  if (isBoolean(value)) {
-    return value !== "false" && !!value;
+  if (typeof value === "boolean") {
+    return value;
   }
-  // Parse date/time strings into dayjs only for date widgets. When the widget
-  // type is unknown, fall back to shape detection for backward compatibility.
+  const parseByShape = widgetType === undefined;
+  // Coerce the literal strings "true"/"false" only for boolean widgets; a text
+  // field whose content is the word "false" must stay a string.
+  const parseBooleans =
+    parseByShape ||
+    (widgetType != null && BOOLEAN_WIDGET_TYPES.includes(widgetType));
+  if (parseBooleans && isString(value) && isBoolean(value)) {
+    return value.toLowerCase() !== "false";
+  }
+  // Parse date/time strings into dayjs only for date widgets.
   const parseDates =
-    widgetType === undefined || DATE_WIDGET_TYPES.includes(widgetType);
+    parseByShape ||
+    (widgetType != null && DATE_WIDGET_TYPES.includes(widgetType));
   if (parseDates) {
     if (isDate(value)) {
       return dayjs(value);
@@ -170,24 +188,35 @@ export const transformValueFromServer = (
 // Map each field name to the widget type used on the change form, so
 // transformDataFromServer can decide, per field, whether a date-looking string
 // should become a dayjs (real date widget) or stay a string (e.g. a Char field).
-export const getChangeWidgetTypes = (
-  modelConfiguration?: { fields?: IModelField[] },
-): Record<string, EFieldWidgetType | undefined> => {
-  const widgetTypes: Record<string, EFieldWidgetType | undefined> = {};
+// A field without a change widget maps to `null` (known non-date/non-boolean),
+// not `undefined`, so it never falls back to shape-based detection.
+export const getChangeWidgetTypes = (modelConfiguration?: {
+  fields?: IModelField[];
+}): Record<string, EFieldWidgetType | null> => {
+  const widgetTypes: Record<string, EFieldWidgetType | null> = {};
   for (const field of modelConfiguration?.fields || []) {
-    widgetTypes[field.name] = field.change_configuration?.form_widget_type;
+    widgetTypes[field.name] =
+      field.change_configuration?.form_widget_type ?? null;
   }
   return widgetTypes;
 };
 
 export const transformDataFromServer = (
   data: Record<string, unknown>,
-  widgetTypes?: Record<string, EFieldWidgetType | undefined>,
+  modelConfiguration?: { fields?: IModelField[] },
 ) => {
+  const widgetTypes = modelConfiguration
+    ? getChangeWidgetTypes(modelConfiguration)
+    : undefined;
   return Object.fromEntries(
     Object.entries(data).map(([k, v]) => [
       k,
-      transformValueFromServer(v, widgetTypes?.[k]),
+      // With a configuration present, an unknown field is `null` (skip shape
+      // detection); without one, `undefined` keeps the legacy fallback.
+      transformValueFromServer(
+        v,
+        widgetTypes ? (widgetTypes[k] ?? null) : undefined,
+      ),
     ]),
   );
 };

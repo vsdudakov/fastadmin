@@ -2,8 +2,8 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
-from flask import Flask
-from werkzeug.exceptions import HTTPException
+from flask import Flask, Response
+from werkzeug.exceptions import HTTPException, MethodNotAllowed
 
 from fastadmin.api.frameworks.flask.api import (
     change,
@@ -17,6 +17,23 @@ from fastadmin.api.frameworks.flask.app import JSONProvider, exception_handler
 async def test_exception_handler():
     assert exception_handler(Exception()) is not None
     assert exception_handler(HTTPException()) is not None
+
+
+async def test_exception_handler_passes_through_attached_response():
+    """abort(Response(...)) must reach the client untouched, not become a generic error."""
+    exc = HTTPException(response=Response("forbidden", status=403))
+    assert exception_handler(exc) is exc
+
+
+async def test_exception_handler_preserves_error_headers():
+    """Headers like Allow/WWW-Authenticate survive the JSON conversion; the
+    exception's text/html Content-Type does not."""
+    body, code, headers = exception_handler(MethodNotAllowed(valid_methods=["GET"]))
+    assert code == 405
+    header_names = {k.lower() for k, _ in headers}
+    assert "allow" in header_names
+    assert "content-type" not in header_names
+    assert body == {"detail": MethodNotAllowed.description}
 
 
 async def test_json_provider():
