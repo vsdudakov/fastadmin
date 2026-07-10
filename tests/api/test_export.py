@@ -29,6 +29,15 @@ async def test_export_401(event, client):
         assert r.status_code == 401, r.text
 
 
+async def test_export_invalid_format_422(session_id, event, client):
+    assert session_id
+    r = await client.post(
+        f"/api/export/{event.get_model_name()}",
+        json={"format": None},
+    )
+    assert r.status_code == 422, r.text
+
+
 async def test_export_404(session_id, admin_models, event, client):
     assert session_id
     del admin_models[event.__class__]

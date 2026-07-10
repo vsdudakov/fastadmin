@@ -4,6 +4,7 @@ from uuid import uuid4
 import pytest
 
 from fastadmin import ModelAdmin
+from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.schemas import ExportFormat
 from fastadmin.models.base import BaseModelAdmin
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
@@ -600,9 +601,29 @@ def test_deserialize_value_timepicker_fallback_and_datetime():
         filter_widget_type=WidgetType.Input,
         filter_widget_props={},
     )
+    field_date = ModelFieldWidgetSchema(
+        name="d",
+        column_name="d",
+        is_m2m=False,
+        is_pk=False,
+        is_immutable=False,
+        form_widget_type=WidgetType.DatePicker,
+        form_widget_props={},
+        filter_widget_type=WidgetType.Input,
+        filter_widget_props={},
+    )
     base = ModelAdmin(type("Model", (), {}))
     assert base.deserialize_value(field_time, "12:34:56").isoformat() == "12:34:56"
     assert base.deserialize_value(field_dt, "2026-02-19T12:34:56").isoformat() == "2026-02-19T12:34:56"
+    assert base.deserialize_value(field_date, "2026-02-19").isoformat() == "2026-02-19"
+
+    # A malformed Date/DateTime value raises a clean 422 instead of an unhandled 500.
+    with pytest.raises(AdminApiException) as exc_date:
+        base.deserialize_value(field_date, "not-a-date")
+    assert exc_date.value.status_code == 422
+    with pytest.raises(AdminApiException) as exc_dt:
+        base.deserialize_value(field_dt, "not-a-datetime")
+    assert exc_dt.value.status_code == 422
 
 
 async def test_save_model_excludes_password_flow():

@@ -90,3 +90,27 @@ async def test_fastapi_widget_action_admin_exception():
         payload,
         request=request,
     )
+
+
+async def test_fastapi_configuration_admin_exception():
+    """FastAPI configuration endpoint converts AdminApiException to HTTPException."""
+    from fastapi import HTTPException
+
+    from fastadmin.api.exceptions import AdminApiException
+    from fastadmin.api.frameworks.fastapi import api as fastapi_api
+    from fastadmin.settings import settings
+
+    request = MagicMock()
+    request.cookies = {settings.ADMIN_SESSION_ID_KEY: "sid"}
+
+    with (
+        pytest.raises(HTTPException) as exc_info,
+        patch.object(
+            fastapi_api.api_service,
+            "get_configuration",
+            AsyncMock(side_effect=AdminApiException(418, detail="boom")),
+        ),
+    ):
+        await fastapi_api.configuration(request)
+
+    assert exc_info.value.status_code == 418

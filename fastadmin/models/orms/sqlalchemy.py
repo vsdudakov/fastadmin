@@ -549,7 +549,7 @@ class SqlAlchemyMixin:
             values = []
             id_key = self.get_model_pk_name(self.model_cls)
             obj_id = getattr(obj, id_key)
-            if obj_id is None:
+            if not obj_id:
                 return
             obj_field_name = orm_model_field.synchronize_pairs[0][1].key
             rel_field_name = orm_model_field.secondary_synchronize_pairs[0][1].key

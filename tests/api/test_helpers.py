@@ -209,3 +209,18 @@ async def test_get_template(tmp_path):
     template.write_text("Hello {{name}}, count={{count}}")
     out = get_template(template, {"name": "World", "count": 42})
     assert out == "Hello World, count=42"
+
+
+def test_env_int_falls_back_on_blank_or_garbage(monkeypatch):
+    from fastadmin.settings import _env_int
+
+    monkeypatch.delenv("FASTADMIN_TEST_INT", raising=False)
+    assert _env_int("FASTADMIN_TEST_INT", 7) == 7  # unset
+    monkeypatch.setenv("FASTADMIN_TEST_INT", "")
+    assert _env_int("FASTADMIN_TEST_INT", 7) == 7  # blank
+    monkeypatch.setenv("FASTADMIN_TEST_INT", "   ")
+    assert _env_int("FASTADMIN_TEST_INT", 7) == 7  # whitespace
+    monkeypatch.setenv("FASTADMIN_TEST_INT", "not-an-int")
+    assert _env_int("FASTADMIN_TEST_INT", 7) == 7  # non-numeric
+    monkeypatch.setenv("FASTADMIN_TEST_INT", "42")
+    assert _env_int("FASTADMIN_TEST_INT", 7) == 42  # valid

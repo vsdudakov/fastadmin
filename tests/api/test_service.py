@@ -39,6 +39,26 @@ async def test_get_user_id_from_session_id_without_user_id(monkeypatch):
     assert await get_user_id_from_session_id(token) is None
 
 
+async def test_get_user_id_from_session_id_empty_secret(monkeypatch):
+    """An empty ADMIN_SECRET_KEY refuses to validate any token (forgery guard)."""
+    admin_model = SimpleNamespace(get_obj=AsyncMock(return_value={"id": 1}))
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", lambda _model: admin_model)
+    monkeypatch.setattr(settings, "ADMIN_SECRET_KEY", "")
+
+    assert await get_user_id_from_session_id("any-token") is None
+
+
+async def test_sign_in_empty_secret_raises(monkeypatch):
+    """sign_in refuses to issue a token when ADMIN_SECRET_KEY is unset/empty."""
+    admin_model = SimpleNamespace(authenticate=AsyncMock(return_value=1))
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", lambda _model: admin_model)
+    monkeypatch.setattr(settings, "ADMIN_SECRET_KEY", "")
+
+    with pytest.raises(AdminApiException) as exc:
+        await ApiService().sign_in(None, SignInInputSchema(username="u", password="p"))
+    assert exc.value.status_code == 500
+
+
 async def test_sign_in_converts_uuid_to_string(monkeypatch):
     user_id = uuid4()
     admin_model = SimpleNamespace(authenticate=AsyncMock(return_value=user_id))

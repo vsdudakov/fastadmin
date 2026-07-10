@@ -218,3 +218,25 @@ async def test_flask_upload_file_admin_exception():
             await flask_api.upload_file("Event", "file")
         assert exc_info.value.code == 500
         assert "upload failed" in str(exc_info.value.description)
+
+
+async def test_flask_configuration_admin_exception():
+    """Flask configuration endpoint re-raises AdminApiException as HTTPException."""
+    from unittest.mock import AsyncMock, patch
+
+    from fastadmin.api.exceptions import AdminApiException
+    from fastadmin.api.frameworks.flask import api as flask_api
+    from tests.environment.flask_app.dev import app as flask_app
+
+    with (
+        flask_app.test_request_context(path="/api/configuration", method="GET"),
+        patch.object(
+            flask_api.api_service,
+            "get_configuration",
+            AsyncMock(side_effect=AdminApiException(418, detail="boom")),
+        ),
+        pytest.raises(HTTPException) as exc_info,
+    ):
+        await flask_api.configuration()
+
+    assert exc_info.value.code == 418
