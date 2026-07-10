@@ -59,6 +59,11 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
     if not admin_model:
         return None
 
+    # An empty/unset secret makes HS256 signatures trivially forgeable, so refuse
+    # to validate any token rather than accept one signed with a blank key.
+    if not settings.ADMIN_SECRET_KEY:
+        return None
+
     try:
         token_payload = jwt.decode(session_id, settings.ADMIN_SECRET_KEY, algorithms=["HS256"])
     except jwt.PyJWTError:
@@ -72,7 +77,7 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
         return None
 
     user_id = token_payload.get("user_id")
-    if not user_id:
+    if user_id is None:
         return None
 
     if not await admin_model.get_obj(user_id):
@@ -166,6 +171,9 @@ class ApiService:
         if not admin_model:
             raise AdminApiException(401, detail=f"{model} model is not registered.")
 
+        if not settings.ADMIN_SECRET_KEY:
+            raise AdminApiException(500, detail="Server misconfiguration: ADMIN_SECRET_KEY is not set.")
+
         if inspect.iscoroutinefunction(admin_model.authenticate):
             authenticate_fn = admin_model.authenticate
         else:
@@ -174,7 +182,7 @@ class ApiService:
         self._bind_admin_context(admin_model, request=request, user=None)
         user_id = await authenticate_fn(payload.username, payload.password)
 
-        if not user_id or not isinstance(user_id, int | UUID):
+        if isinstance(user_id, bool) or not isinstance(user_id, int | UUID):
             raise AdminApiException(401, detail="Invalid credentials.")
 
         now = datetime.now(UTC)
@@ -449,6 +457,11 @@ class ApiService:
         self._bind_admin_context(admin_model, request=request, user=current_user)
         await self._require_permission(admin_model, "has_export_permission", current_user_id)
 
+        # Reject an unsupported/null format up front: otherwise get_export returns
+        # None and the framework layer wraps None in a StreamingResponse and 500s.
+        if payload.format not in (ExportFormat.CSV, ExportFormat.JSON):
+            raise AdminApiException(422, detail="Unsupported export format.")
+
         # validations
         fields = set(admin_model.get_fields_for_serialize())
 
@@ -528,12 +541,16 @@ class ApiService:
         payload: ActionInputSchema,
         request: Any | None = None,
     ) -> ActionResponseSchema | None:
-        _current_user_id, current_user = await self._get_authenticated_user(session_id)
+        current_user_id, current_user = await self._get_authenticated_user(session_id)
 
         admin_model = get_admin_or_admin_inline_model(model)
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
         self._bind_admin_context(admin_model, request=request, user=current_user)
+        # Actions run bulk mutations over the selected ids, so they must honor the
+        # same change-permission gate as the change/delete endpoints — otherwise a
+        # read-only admin could mutate records through a registered action.
+        await self._require_permission(admin_model, "has_change_permission", current_user_id)
 
         if action not in admin_model.actions:
             raise AdminApiException(422, detail=f"{action} action is not in actions setting.")

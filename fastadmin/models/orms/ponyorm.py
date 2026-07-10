@@ -382,7 +382,7 @@ class PonyORMMixin:
         :params payload: a dict of payload.
         :return: An object.
         """
-        if id:
+        if id is not None:
             obj = self.model_cls.select(**{self.get_model_pk_name(self.model_cls): id}).first()
             if not obj:
                 return None

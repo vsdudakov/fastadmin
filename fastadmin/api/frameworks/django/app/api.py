@@ -70,7 +70,10 @@ async def sign_in(request: HttpRequest) -> JsonResponse:
     if request.method != "POST":
         return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
-        payload = SignInInputSchema(**json.loads(request.body))
+        try:
+            payload = SignInInputSchema(**json.loads(request.body))
+        except (json.JSONDecodeError, TypeError) as e:
+            raise AdminApiException(422, detail="Invalid request body.") from e
         session_id = await api_service.sign_in(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             payload,
@@ -120,12 +123,12 @@ async def me(request: HttpRequest) -> JsonResponse:
     :return: A user object.
     """
     if request.method != "GET":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
         user_id = await get_user_id_from_session_id(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
         )
-        if not user_id:
+        if user_id is None:
             raise AdminApiException(401, "User is not authenticated.")
         obj = await api_service.get(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
@@ -152,7 +155,7 @@ async def list_objs(request: HttpRequest, model: str) -> JsonResponse:
     :return: A list of objects.
     """
     if request.method != "GET":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
         search = request.GET.get("search") or None
         sort_by = request.GET.get("sort_by") or None
@@ -195,9 +198,9 @@ async def get(request: HttpRequest, model: str, id: UUID | int | str) -> JsonRes
     :return: An object.
     """
     if request.method != "GET":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
     if not is_valid_id(id):
-        return JsonResponse({"error": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
+        return JsonResponse({"detail": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
     try:
         obj = await api_service.get(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
@@ -220,7 +223,7 @@ async def add(request: HttpRequest, model: str) -> JsonResponse:
     :return: An object.
     """
     if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
         obj = await api_service.add(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
@@ -242,9 +245,9 @@ async def change_password(request: HttpRequest, id: UUID | int | str) -> JsonRes
     :return: An object.
     """
     if request.method != "PATCH":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
     if not is_valid_id(id):
-        return JsonResponse({"error": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
+        return JsonResponse({"detail": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
     try:
         await api_service.change_password(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
@@ -268,9 +271,9 @@ async def change(request: HttpRequest, model: str, id: UUID | int | str) -> Json
     :return: An object.
     """
     if request.method != "PATCH":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
     if not is_valid_id(id):
-        return JsonResponse({"error": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
+        return JsonResponse({"detail": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
     try:
         obj = await api_service.change(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
@@ -300,11 +303,11 @@ async def upload_file(
     """
 
     if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
         file: UploadedFile = request.FILES.get("file")
         if not file:
-            return JsonResponse({"error": "File not found"}, status=400)
+            return JsonResponse({"detail": "File not found"}, status=400)
         file_name = file.name
         file_content = file.read()
         obj_id = request.GET.get("id") or None
@@ -334,7 +337,7 @@ async def export(request: HttpRequest, model: str) -> JsonResponse | StreamingHt
     :return: A stream of export data.
     """
     if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
     search = request.GET.get("search") or None
     sort_by = request.GET.get("sort_by") or None
     list_filters = parse_list_filters_from_query_params(
@@ -374,9 +377,9 @@ async def delete(
     :return: An id of object.
     """
     if request.method != "DELETE":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
     if not is_valid_id(id):
-        return JsonResponse({"error": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
+        return JsonResponse({"detail": "Invalid id. It must be a UUID, an integer, or a non-empty string."}, status=422)
     try:
         deleted_id = await api_service.delete(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
@@ -404,7 +407,7 @@ async def action(
     :return: action result.
     """
     if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
         payload = ActionInputSchema(**json.loads(request.body))
         response = await api_service.action(
@@ -438,7 +441,7 @@ async def widget_action(
     :return: widget action result.
     """
     if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
         payload = WidgetActionInputSchema(**json.loads(request.body))
         response = await api_service.widget_action(
@@ -448,7 +451,7 @@ async def widget_action(
             payload,
             request=request,
         )
-        return JsonResponse(asdict(response))
+        return JsonResponse(asdict(response) if response is not None else {})
     except AdminApiException as e:
         return JsonResponse({"detail": e.detail}, status=e.status_code)
 
@@ -461,7 +464,7 @@ async def configuration(request: HttpRequest) -> JsonResponse:
     :return: A configuration.
     """
     if request.method != "GET":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
 
     obj = await api_service.get_configuration(
         request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),

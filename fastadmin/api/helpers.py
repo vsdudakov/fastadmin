@@ -88,9 +88,12 @@ def sanitize_filter_key(key: str, fields: list[ModelFieldWidgetSchema]) -> tuple
     :param fields: A list of fields.
     :return: A tuple of sanitized key and condition.
     """
-    if "__" not in key:
-        key += "__exact"
     field_name, _, condition = key.partition("__")
+    # No suffix ("name") or a trailing "__" with an empty condition ("name__")
+    # both mean an exact lookup; without this the empty condition reaches the ORM
+    # as a broken lookup (e.g. Django ``name__``) and 500s the request.
+    if not condition:
+        condition = "exact"
     field: ModelFieldWidgetSchema | None = next((field for field in fields if field.name == field_name), None)
     if field and field.filter_widget_props.get("parentModel") and not field.is_m2m:
         field_name += "_id"

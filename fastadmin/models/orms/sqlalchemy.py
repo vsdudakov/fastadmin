@@ -2,7 +2,7 @@ import contextlib
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import BIGINT, Integer, and_, func, inspect, or_, select
+from sqlalchemy import BIGINT, Integer, String, and_, cast, func, inspect, or_, select
 from sqlalchemy.orm import selectinload
 
 from fastadmin.models.base import InlineModelAdmin, ModelAdmin
@@ -90,7 +90,13 @@ class SqlAlchemyMixin:
 
         :return: A str.
         """
-        return getattrs(orm_model_cls, "__table__.primary_key._autoincrement_column.name", default="id")
+        # _autoincrement_column is None for non-autoincrement PKs (UUID, String,
+        # or explicit autoincrement=False), so fall back to the actual primary-key
+        # column rather than a hardcoded "id" that then AttributeErrors downstream.
+        pk_columns = list(getattrs(orm_model_cls, "__table__.primary_key.columns", default=[]))
+        if pk_columns:
+            return pk_columns[0].name
+        return "id"
 
     def get_model_fields_with_widget_types(
         self,
@@ -141,7 +147,7 @@ class SqlAlchemyMixin:
                 fk_column = next((c for c in mapper.c if c.key == column_name), None)
                 if fk_column is not None:
                     nullable = getattr(fk_column, "nullable", False)
-            required = not nullable and not getattr(orm_model_field, "default", False) and not is_m2m
+            required = not nullable and not getattr(orm_model_field, "default", False) and not is_m2m and not is_pk
             choices = (
                 orm_model_field.type._object_lookup
                 if hasattr(orm_model_field, "type") and hasattr(orm_model_field.type, "_object_lookup")
@@ -358,7 +364,12 @@ class SqlAlchemyMixin:
                             q.append(model_field.has(match_expr))
                         continue
 
-                    if condition != "in" and isinstance(model_field.expression.type, BIGINT | Integer):
+                    # Only numeric comparisons coerce to int; contains/icontains
+                    # stay string substring matches (coercing them would build a
+                    # LIKE against an int and error on Postgres).
+                    if condition in ("exact", "lt", "lte", "gt", "gte") and isinstance(
+                        model_field.expression.type, BIGINT | Integer
+                    ):
                         with contextlib.suppress(ValueError, TypeError):
                             value = int(value)
 
@@ -379,9 +390,9 @@ class SqlAlchemyMixin:
                                     value = [int(x) for x in value]  # ty: ignore[not-iterable]
                             q.append(model_field.in_(value))
                         case "contains":
-                            q.append(model_field.like(f"%{_escape_like(value)}%", escape="\\"))
+                            q.append(cast(model_field, String).like(f"%{_escape_like(value)}%", escape="\\"))
                         case "icontains":
-                            q.append(model_field.ilike(f"%{_escape_like(value)}%", escape="\\"))
+                            q.append(cast(model_field, String).ilike(f"%{_escape_like(value)}%", escape="\\"))
                 qs = qs.where(and_(*q))
 
             search_fields = list(self.search_fields)
@@ -460,7 +471,10 @@ class SqlAlchemyMixin:
 
         sessionmaker = self.get_sessionmaker()
         async with sessionmaker() as session:
-            if id:
+            pk_name = self.get_model_pk_name(self.model_cls)
+            # `is not None` (not truthiness) so a legitimate primary key of 0 still
+            # updates instead of falling through to an insert.
+            if id is not None:
                 obj = await session.get(self.model_cls, id)
                 if not obj:
                     return None
@@ -468,11 +482,17 @@ class SqlAlchemyMixin:
                     setattr(obj, k, v)
                 await session.merge(obj)
                 await session.commit()
+                pk_value = id
             else:
                 obj = self.model_cls(**payload)
                 session.add(obj)
+                # Read the generated pk after flush but before commit: with the
+                # SQLAlchemy default expire_on_commit=True, reading an attribute
+                # after commit triggers a sync refresh that fails in async context.
+                await session.flush()
+                pk_value = getattr(obj, pk_name)
                 await session.commit()
-            return await session.get(self.model_cls, getattr(obj, self.get_model_pk_name(self.model_cls)))
+            return await session.get(self.model_cls, pk_value)
 
     async def orm_delete_obj(self, id: UUID | int | str) -> None:
         """This method is used to delete orm/db model object.
@@ -529,7 +549,7 @@ class SqlAlchemyMixin:
             values = []
             id_key = self.get_model_pk_name(self.model_cls)
             obj_id = getattr(obj, id_key)
-            if not obj_id:
+            if obj_id is None:
                 return
             obj_field_name = orm_model_field.synchronize_pairs[0][1].key
             rel_field_name = orm_model_field.secondary_synchronize_pairs[0][1].key

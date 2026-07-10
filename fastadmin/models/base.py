@@ -12,6 +12,7 @@ from uuid import UUID
 from asgiref.sync import sync_to_async
 
 from fastadmin.api.encoders import apply_custom_encoders
+from fastadmin.api.exceptions import AdminApiException
 from fastadmin.api.schemas import ExportFormat
 from fastadmin.models.schemas import ModelFieldWidgetSchema, WidgetType
 
@@ -367,10 +368,13 @@ class BaseModelAdmin:
         fields_for_serialize = {field.name for field in fields}
         if self.fields:
             fields_for_serialize &= set(self.fields)
-        if self.exclude:
-            fields_for_serialize -= set(self.exclude)
         if self.list_display:
             fields_for_serialize |= set(self.list_display)
+        # exclude must win over list_display: a field the admin hid via exclude
+        # must not be re-added (and serialized) just because it also appears in
+        # list_display, so subtract exclude last.
+        if self.exclude:
+            fields_for_serialize -= set(self.exclude)
         return fields_for_serialize
 
     def get_writable_field_names(self) -> set[str]:
@@ -504,9 +508,15 @@ class BaseModelAdmin:
                 except ValueError:
                     return datetime.time.fromisoformat(value)
             case WidgetType.DatePicker:
-                return datetime.datetime.fromisoformat(value).date()
+                try:
+                    return datetime.datetime.fromisoformat(value).date()
+                except ValueError as e:
+                    raise AdminApiException(422, detail=f"Invalid date value for {field.name}.") from e
             case WidgetType.DateTimePicker:
-                return datetime.datetime.fromisoformat(value)
+                try:
+                    return datetime.datetime.fromisoformat(value)
+                except ValueError as e:
+                    raise AdminApiException(422, detail=f"Invalid datetime value for {field.name}.") from e
 
             case _:
                 return value
@@ -811,7 +821,10 @@ class ModelAdmin(BaseModelAdmin):
             # hashing here overwrites it — the column never keeps a plaintext value.
             pk_name = self.get_model_pk_name(self.model_cls)
             pk = obj[pk_name]
-            password_values = [payload[field] for field in password_fields if field in payload]
+            # Only (re)hash when a non-empty password was submitted. An empty field
+            # on the edit form means "leave the password unchanged"; hashing "" here
+            # would overwrite the stored hash with hash("") and let anyone sign in.
+            password_values = [payload[field] for field in password_fields if payload.get(field)]
             if password_values:
                 await self.change_password(pk, password_values[0])
         return obj
