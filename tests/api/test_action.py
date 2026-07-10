@@ -19,6 +19,23 @@ async def test_action(session_id, admin_models, event, client):
     assert updated_event["is_active"]
 
 
+async def test_action_403_without_change_permission(session_id, admin_models, event, client, monkeypatch):
+    """A user without change permission cannot run an action (has_action_permission delegates to it)."""
+    assert session_id
+    event_admin_model = admin_models[event.__class__]
+    event_admin_model.actions = ("make_is_active",)
+
+    async def _denied(user_id=None):
+        return False
+
+    monkeypatch.setattr(event_admin_model, "has_change_permission", _denied)
+    r = await client.post(
+        f"/api/action/{event.get_model_name()}/make_is_active",
+        json={"ids": [event.id]},
+    )
+    assert r.status_code == 403, r.text
+
+
 async def test_action_405(session_id, event, client):
     assert session_id
     r = await client.get(

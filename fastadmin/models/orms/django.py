@@ -51,11 +51,14 @@ class DjangoORMMixin:
                 is_pk or getattr(orm_model_field, "auto_now", False) or getattr(orm_model_field, "auto_now_add", False)
             ) and field_name not in self.readonly_fields
 
-            has_default = getattr(orm_model_field, "default", False)
-            if hasattr(has_default, "__name__") and has_default.__name__ == "NOT_PROVIDED":
-                has_default = False
+            default = getattr(orm_model_field, "default", None)
+            # Django signals "no default" with the NOT_PROVIDED sentinel; a real
+            # default of 0/False/"" must still count as provided (otherwise the
+            # field is wrongly marked required).
+            is_not_provided = hasattr(default, "__name__") and default.__name__ == "NOT_PROVIDED"
+            has_default = default is not None and not is_not_provided
 
-            required = not getattr(orm_model_field, "null", False) and not has_default and not is_m2m
+            required = not getattr(orm_model_field, "null", False) and not has_default and not is_m2m and not is_pk
             choices = (
                 {item[0]: item[1] for item in orm_model_field.choices}
                 if getattr(orm_model_field, "choices", None)
@@ -77,8 +80,10 @@ class DjangoORMMixin:
             match field_type:
                 case "CharField":
                     if choices is not None:
-                        form_widget_props["options"] = [{"label": k, "value": v} for k, v in choices.items()]
-                        filter_widget_props["options"] = [{"label": k, "value": v} for k, v in choices.items()]
+                        # choices maps db_value -> human_label, so the option label
+                        # is the human label (v) and the stored value is the db key (k).
+                        form_widget_props["options"] = [{"label": v, "value": k} for k, v in choices.items()]
+                        filter_widget_props["options"] = [{"label": v, "value": k} for k, v in choices.items()]
                         if field_name in self.radio_fields:
                             form_widget_type = WidgetType.RadioGroup
                             filter_widget_type = WidgetType.CheckboxGroup
@@ -296,7 +301,7 @@ class DjangoORMMixin:
         :params payload: a dict of payload.
         :return: An object.
         """
-        if id:
+        if id is not None:
             obj = self.model_cls.objects.filter(**{self.get_model_pk_name(self.model_cls): id}).first()
             if not obj:
                 return None
@@ -304,7 +309,7 @@ class DjangoORMMixin:
                 setattr(obj, k, v)
         else:
             obj = self.model_cls(**payload)
-        obj.save(update_fields=payload.keys() if id else None)
+        obj.save(update_fields=payload.keys() if id is not None else None)
         return obj
 
     @sync_to_async

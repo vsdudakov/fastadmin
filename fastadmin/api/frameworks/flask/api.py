@@ -412,7 +412,7 @@ async def widget_action(
             payload,
             request=request,
         )
-        return make_response(asdict(response))
+        return make_response(asdict(response) if response is not None else {})
     except AdminApiException as e:
         http_exception = HTTPException(e.detail)
         http_exception.code = e.status_code
@@ -426,8 +426,13 @@ async def configuration() -> dict:
     :params user_id: an id of user.
     :return: A configuration.
     """
-    obj = await api_service.get_configuration(
-        request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
-        request=request,
-    )
+    try:
+        obj = await api_service.get_configuration(
+            request.cookies.get(settings.ADMIN_SESSION_ID_KEY, None),
+            request=request,
+        )
+    except AdminApiException as e:
+        http_exception = HTTPException(e.detail)
+        http_exception.code = e.status_code
+        raise http_exception from e
     return asdict(obj)

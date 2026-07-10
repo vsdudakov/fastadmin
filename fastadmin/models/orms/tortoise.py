@@ -85,8 +85,11 @@ class TortoiseMixin:
             ) and field_name not in self.readonly_fields
             required = (
                 not getattr(orm_model_field, "null", False)
-                and not getattr(orm_model_field, "default", False)
+                # `is None` (not falsy) so a valid falsy default (0, False, "")
+                # is still recognized as a default and the field is not required.
+                and getattr(orm_model_field, "default", None) is None
                 and not is_m2m
+                and not is_pk
             )
             choices = (
                 orm_model_field.enum_type._member_map_
@@ -147,8 +150,11 @@ class TortoiseMixin:
                     filter_widget_props["format"] = settings.ADMIN_TIME_FORMAT
                     filter_widget_props["showTime"] = True
                 case "CharEnumFieldInstance" | "IntEnumFieldInstance":
-                    form_widget_props["options"] = [{"label": k, "value": v} for k, v in choices.items()]
-                    filter_widget_props["options"] = [{"label": k, "value": v} for k, v in choices.items()]
+                    # choices maps name -> Enum member; emit the member's scalar
+                    # .value (as the Yara adapter does) so the option value is the
+                    # stored value and is JSON-serializable.
+                    form_widget_props["options"] = [{"label": k, "value": v.value} for k, v in choices.items()]
+                    filter_widget_props["options"] = [{"label": k, "value": v.value} for k, v in choices.items()]
                     if field_name in self.radio_fields:
                         form_widget_type = WidgetType.RadioGroup
                         filter_widget_type = WidgetType.CheckboxGroup
@@ -306,7 +312,7 @@ class TortoiseMixin:
         :params payload: a dict of payload.
         :return: An object.
         """
-        if id:
+        if id is not None:
             obj = await self.model_cls.filter(**{self.get_model_pk_name(self.model_cls): id}).first()
             if not obj:
                 return None
@@ -314,7 +320,7 @@ class TortoiseMixin:
                 setattr(obj, k, v)
         else:
             obj = self.model_cls(**payload)
-        await obj.save(update_fields=payload.keys() if id else None)
+        await obj.save(update_fields=payload.keys() if id is not None else None)
         return obj
 
     async def orm_delete_obj(self, id: UUID | int | str) -> None:

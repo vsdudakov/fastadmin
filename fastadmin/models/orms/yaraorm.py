@@ -118,7 +118,9 @@ class YaraOrmMixin:
             ) and field_name not in self.readonly_fields
             required = (
                 not getattr(orm_model_field, "null", False)
-                and not getattr(orm_model_field, "default", None)
+                # `is None` (not falsy) so a valid falsy default (0, False, "")
+                # is still recognized as a default and the field is not required.
+                and getattr(orm_model_field, "default", None) is None
                 and not is_pk
                 and not is_m2m
             )
@@ -288,7 +290,7 @@ class YaraOrmMixin:
         :params payload: a dict of payload.
         :return: An object.
         """
-        if id:
+        if id is not None:
             obj = await self.model_cls.filter(**{self.get_model_pk_name(self.model_cls): id}).first()
             if not obj:
                 return None
@@ -296,7 +298,7 @@ class YaraOrmMixin:
                 setattr(obj, k, v)
         else:
             obj = self.model_cls(**payload)
-        await obj.save(update_fields=list(payload.keys()) if id else None)
+        await obj.save(update_fields=list(payload.keys()) if id is not None else None)
         return obj
 
     async def orm_delete_obj(self, id: UUID | int | str) -> None:

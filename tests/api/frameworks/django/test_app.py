@@ -180,3 +180,15 @@ async def test_django_upload_file_success():
         id=None,
         request=request,
     )
+
+
+async def test_django_sign_in_invalid_body_422():
+    """sign_in returns 422 (not 500) when the request body is not valid JSON."""
+    from fastadmin.api.frameworks.django.app.api import sign_in
+
+    request = MagicMock()
+    request.method = "POST"
+    request.body = b"{"  # malformed JSON
+
+    response = await sign_in(request)
+    assert response.status_code == 422

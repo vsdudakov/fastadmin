@@ -4,6 +4,21 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parent
 
 
+def _env_int(name: str, default: int) -> int:
+    """Read an int env var, falling back to the default when it is unset, blank, or non-numeric.
+
+    ``int(os.getenv(...))`` crashes the whole package at import time on an empty
+    (``NAME=``) or garbage value, so parse defensively instead.
+    """
+    raw = os.getenv(name)
+    if raw is None or raw.strip() == "":
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
 class Settings:
     """Settings"""
 
@@ -29,7 +44,7 @@ class Settings:
     ADMIN_SESSION_ID_KEY: str = os.getenv("ADMIN_SESSION_ID_KEY", "admin_session_id")
 
     # This value is the expired_at period (in sec) for session id.
-    ADMIN_SESSION_EXPIRED_AT: int = int(os.getenv("ADMIN_SESSION_EXPIRED_AT", 144000))  # in sec
+    ADMIN_SESSION_EXPIRED_AT: int = _env_int("ADMIN_SESSION_EXPIRED_AT", 144000)  # in sec
 
     # Set the Secure flag on the session cookie so it is only sent over HTTPS.
     # Enabled by default; set ADMIN_SESSION_COOKIE_SECURE=false for local HTTP dev.
@@ -41,7 +56,7 @@ class Settings:
 
     # Hard upper bound on the number of rows a single list/export request may
     # return. Caps memory/CPU use from a crafted limit=100000000 request.
-    ADMIN_QUERY_MAX_LIMIT: int = int(os.getenv("ADMIN_QUERY_MAX_LIMIT", 1000))
+    ADMIN_QUERY_MAX_LIMIT: int = _env_int("ADMIN_QUERY_MAX_LIMIT", 1000)
 
     # This value is the date format for JS widgets.
     ADMIN_DATE_FORMAT: str = os.getenv("ADMIN_DATE_FORMAT", "YYYY-MM-DD")
