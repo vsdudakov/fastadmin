@@ -2,6 +2,45 @@
 
 All notable changes to FastAdmin are documented in this file.
 
+## 0.8.3
+
+Correctness and security fixes from a full-codebase review. The only public API
+addition is the backward-compatible `has_action_permission` model-admin hook.
+
+### Security
+
+- **Actions**: the `action` endpoint now enforces permissions server-side via a
+  new `has_action_permission` hook (defaults to `has_change_permission`), so a
+  read-only admin can no longer run a registered bulk action. Override the hook
+  to allow a read-only user to run a specific non-mutating action.
+- **Passwords**: editing a user with an empty password field no longer
+  overwrites the stored hash with a hash of the empty string.
+- **JWT**: signing and verifying are refused when `ADMIN_SECRET_KEY` is unset or
+  empty, closing an empty-secret token-forgery path and returning a clear
+  configuration error instead of an HTTP 500.
+
+### Backend
+
+- **All ORMs**: a legitimate primary key / user id of `0` no longer misroutes a
+  save (update vs insert) or is rejected as unauthenticated.
+- **SQLAlchemy**: `get_model_pk_name` resolves non-autoincrement primary keys
+  (UUID/string) instead of falling back to `"id"`; `contains`/`icontains`
+  filters cast to text so they work on integer columns; the primary key is
+  excluded from `required`; and the generated primary key is read before commit
+  so create/update is safe under the default `expire_on_commit=True`.
+- **Tortoise / Django / Yara**: a falsy database default (`0`/`False`/`""`) no
+  longer marks a field as required, and the primary key is excluded from
+  `required`. Tortoise enum options now emit the scalar value, and Django choice
+  options no longer swap the stored value with the human-readable label.
+- **Serialization**: a field listed in both `exclude` and `list_display` now
+  stays excluded from API responses.
+- **Validation**: malformed date/datetime values, empty-condition filters
+  (`field__`), unsupported or null export formats, and malformed request bodies
+  on the Django integration now return HTTP 422 instead of an unhandled 500.
+- **Settings**: `ADMIN_QUERY_MAX_LIMIT` and `ADMIN_SESSION_EXPIRED_AT` fall back
+  to their defaults on a blank or non-numeric value instead of crashing the
+  package at import.
+
 ## 0.8.2
 
 Bug-fix follow-up to the 0.8.1 audit. No public API changes.
