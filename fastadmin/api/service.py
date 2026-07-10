@@ -488,12 +488,11 @@ class ApiService:
                 if not is_allowed_field_or_path(ordering_field.strip("-"), fields):
                     raise AdminApiException(422, detail=f"Sort by {ordering_field} is not allowed")
 
-        content_type = "text/plain"
-        file_name = f"{model}.txt"
+        # payload.format is guaranteed to be CSV or JSON by the guard above.
         if payload.format == ExportFormat.CSV:
             content_type = "text/csv"
             file_name = f"{model}.csv"
-        elif payload.format == ExportFormat.JSON:
+        else:
             content_type = "text/plain"
             file_name = f"{model}.json"
         return (
@@ -547,10 +546,10 @@ class ApiService:
         if not admin_model:
             raise AdminApiException(404, detail=f"{model} model is not registered.")
         self._bind_admin_context(admin_model, request=request, user=current_user)
-        # Actions run bulk mutations over the selected ids, so they must honor the
-        # same change-permission gate as the change/delete endpoints — otherwise a
-        # read-only admin could mutate records through a registered action.
-        await self._require_permission(admin_model, "has_change_permission", current_user_id)
+        # Actions run bulk mutations over the selected ids, so they must be gated
+        # server-side — otherwise a read-only admin could mutate records through a
+        # registered action. has_action_permission defaults to has_change_permission.
+        await self._require_permission(admin_model, "has_action_permission", current_user_id)
 
         if action not in admin_model.actions:
             raise AdminApiException(422, detail=f"{action} action is not in actions setting.")

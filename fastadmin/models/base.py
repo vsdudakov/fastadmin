@@ -736,6 +736,18 @@ class BaseModelAdmin:
         """
         return True
 
+    async def has_action_permission(self, user_id: UUID | int | None = None) -> bool:
+        """This method is used to check if user has permission to run an action.
+
+        Defaults to the change permission because actions run bulk mutations over
+        the selected ids; override it to let a read-only user run a non-mutating
+        action independently of the change permission.
+
+        :param user_id: The user id.
+        :return: A boolean value.
+        """
+        return await self.has_change_permission(user_id=user_id)
+
 
 class InlineModelAdmin(BaseModelAdmin):
     """This class is used to create admin inline model class."""

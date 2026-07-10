@@ -3,6 +3,7 @@ import logging
 from dataclasses import asdict
 from datetime import datetime, time
 from functools import wraps
+from typing import Any
 from uuid import UUID
 
 from django.core.files.uploadedfile import UploadedFile
@@ -59,6 +60,20 @@ def csrf_exempt(view_func):
     return wraps(view_func)(wrapped_view)
 
 
+def _load_json_body(request: HttpRequest, schema: type | None = None) -> Any:
+    """Parse the JSON request body, returning a clean 422 (not a 500) on bad input.
+
+    Unlike FastAPI/Flask, the Django views parse the body by hand, so malformed
+    JSON or (when ``schema`` is given) a missing/extra field would otherwise
+    surface as an unhandled 500. Raising AdminApiException keeps it a 422.
+    """
+    try:
+        data = json.loads(request.body)
+        return schema(**data) if schema is not None else data
+    except (json.JSONDecodeError, TypeError) as e:
+        raise AdminApiException(422, detail="Invalid request body.") from e
+
+
 @csrf_exempt
 async def sign_in(request: HttpRequest) -> JsonResponse:
     """This method is used to sign in.
@@ -70,10 +85,7 @@ async def sign_in(request: HttpRequest) -> JsonResponse:
     if request.method != "POST":
         return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
-        try:
-            payload = SignInInputSchema(**json.loads(request.body))
-        except (json.JSONDecodeError, TypeError) as e:
-            raise AdminApiException(422, detail="Invalid request body.") from e
+        payload = _load_json_body(request, SignInInputSchema)
         session_id = await api_service.sign_in(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             payload,
@@ -228,7 +240,7 @@ async def add(request: HttpRequest, model: str) -> JsonResponse:
         obj = await api_service.add(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
-            json.loads(request.body),
+            _load_json_body(request),
             request=request,
         )
         return JsonResponse(obj)
@@ -252,7 +264,7 @@ async def change_password(request: HttpRequest, id: UUID | int | str) -> JsonRes
         await api_service.change_password(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             id,
-            json.loads(request.body),
+            _load_json_body(request),
             request=request,
         )
         return JsonResponse(id, safe=False)
@@ -279,7 +291,7 @@ async def change(request: HttpRequest, model: str, id: UUID | int | str) -> Json
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
             id,
-            json.loads(request.body),
+            _load_json_body(request),
             request=request,
         )
         return JsonResponse(obj)
@@ -346,7 +358,7 @@ async def export(request: HttpRequest, model: str) -> JsonResponse | StreamingHt
         exclude={"search", "sort_by", "offset", "limit"},
     )
     try:
-        payload = ExportInputSchema(**json.loads(request.body))
+        payload = _load_json_body(request, ExportInputSchema)
         file_name, content_type, stream = await api_service.export(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
@@ -409,7 +421,7 @@ async def action(
     if request.method != "POST":
         return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
-        payload = ActionInputSchema(**json.loads(request.body))
+        payload = _load_json_body(request, ActionInputSchema)
         response = await api_service.action(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
@@ -443,7 +455,7 @@ async def widget_action(
     if request.method != "POST":
         return JsonResponse({"detail": "Method not allowed"}, status=405)
     try:
-        payload = WidgetActionInputSchema(**json.loads(request.body))
+        payload = _load_json_body(request, WidgetActionInputSchema)
         response = await api_service.widget_action(
             request.COOKIES.get(settings.ADMIN_SESSION_ID_KEY, None),
             model,
