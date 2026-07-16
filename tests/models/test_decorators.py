@@ -63,6 +63,18 @@ def test_action_decorator_sets_metadata():
 
     assert getattr(do_something, "is_action", False) is True
     assert getattr(do_something, "short_description", "") == "Do something"
+    assert do_something.requires_selection is True
+
+
+def test_action_decorator_requires_selection_false():
+    """@action(requires_selection=False) marks the action as runnable without selected rows."""
+
+    @action(description="Delete all", requires_selection=False)
+    async def delete_all(objs):
+        return None
+
+    assert delete_all.is_action is True
+    assert delete_all.requires_selection is False
 
 
 def test_widget_action_decorator_defaults():

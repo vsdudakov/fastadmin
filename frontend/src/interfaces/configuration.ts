@@ -53,6 +53,7 @@ export enum EActionResponseType {
 export interface IModelAction {
   name: string;
   description?: string;
+  requires_selection?: boolean;
 }
 
 export interface IWidgetActionChartProps {
@@ -103,6 +104,7 @@ export interface IListConfigurationField {
   width?: string;
   is_link?: boolean;
   empty_value_display: string;
+  label?: string;
   filter_widget_type?: EFieldWidgetType;
 
   filter_widget_props?: any;

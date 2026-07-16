@@ -45,7 +45,8 @@ export const useTableColumns = (
       )
       .map((field: IModelField) => {
         return {
-          title: getTitleFromFieldName(field.name),
+          title:
+            field.list_configuration?.label || getTitleFromFieldName(field.name),
           dataIndex: field.name,
           key: field.name,
           sorter: field.list_configuration?.sorter,

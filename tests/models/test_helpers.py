@@ -6,7 +6,7 @@ from typing import ClassVar
 
 import pytest
 
-from fastadmin import ModelAdmin, display
+from fastadmin import ModelAdmin, action, display
 from fastadmin.models.decorators import widget_action
 from fastadmin.models.helpers import (
     generate_models_schema,
@@ -67,6 +67,31 @@ async def test_admin_model_list_configuration_ordering(tournament, base_model_ad
     assert list_display == TournamentModelAdmin.list_display
 
 
+async def test_admin_model_list_configuration_labels_and_action_selection(tournament, base_model_admin):
+    Tournament = tournament.__class__
+
+    class TournamentModelAdmin(base_model_admin):
+        list_display = ("name",)
+        list_display_labels: ClassVar[dict[str, str]] = {"name": "Название"}
+        actions = ("delete_all",)
+
+        @action(description="Delete all", requires_selection=False)
+        async def delete_all(self, ids: list) -> None:
+            return None
+
+    model_schema = await generate_models_schema({Tournament: TournamentModelAdmin(Tournament)})
+
+    assert model_schema
+    name_field = next(f for f in model_schema[0].fields if f.name == "name")
+    assert name_field.list_configuration.label == "Название"
+
+    other_fields = [f for f in model_schema[0].fields if f.name != "name" and f.list_configuration]
+    assert all(f.list_configuration.label is None for f in other_fields)
+
+    delete_all_action = next(a for a in model_schema[0].actions if a.name == "delete_all")
+    assert delete_all_action.requires_selection is False
+
+
 async def test_register_admin_model_class_with_sessionmaker():
     class AdminModelClass(ModelAdmin):
         pass
@@ -112,6 +137,7 @@ async def test_generate_models_schema_skips_display_not_in_columns():
         list_display_links = ()
         empty_value_display = "-"
         list_display_widths: ClassVar[dict[str, str]] = {}
+        list_display_labels: ClassVar[dict[str, str]] = {}
         actions_on_top = False
         actions_on_bottom = True
         actions_selection_counter = True
@@ -188,6 +214,7 @@ async def test_generate_models_schema_display_sorter_not_supported():
         list_display_links = ()
         empty_value_display = "-"
         list_display_widths: ClassVar[dict[str, str]] = {}
+        list_display_labels: ClassVar[dict[str, str]] = {}
         actions_on_top = False
         actions_on_bottom = True
         actions_selection_counter = True
@@ -265,6 +292,7 @@ async def test_generate_models_schema_inline_fk_name_error():
         list_display_links = ()
         empty_value_display = "-"
         list_display_widths: ClassVar[dict[str, str]] = {}
+        list_display_labels: ClassVar[dict[str, str]] = {}
         actions_on_top = False
         actions_on_bottom = True
         actions_selection_counter = True
@@ -341,6 +369,7 @@ async def test_generate_models_schema_includes_widget_actions():
         list_display_links = ()
         empty_value_display = "-"
         list_display_widths: ClassVar[dict[str, str]] = {}
+        list_display_labels: ClassVar[dict[str, str]] = {}
         actions_on_top = False
         actions_on_bottom = True
         actions_selection_counter = True
@@ -426,6 +455,7 @@ async def test_generate_models_schema_skips_invalid_widget_actions():
         list_display_links = ()
         empty_value_display = "-"
         list_display_widths: ClassVar[dict[str, str]] = {}
+        list_display_labels: ClassVar[dict[str, str]] = {}
         actions_on_top = False
         actions_on_bottom = True
         actions_selection_counter = True

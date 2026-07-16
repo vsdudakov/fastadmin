@@ -330,6 +330,74 @@ describe("List container", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/change/user/99");
   });
 
+  it("disables Apply without selection unless action has requires_selection=false", () => {
+    mockUseTableQuery.mockReturnValue({
+      defaultPage: 1,
+      defaultPageSize: 10,
+      page: 1,
+      setPage: mockSetPage,
+      pageSize: 10,
+      setPageSize: mockSetPageSize,
+      search: "",
+      setSearch: mockSetSearch,
+      filters: {},
+      setFilters: mockSetFilters,
+      sortBy: "",
+      action: "bulk",
+      setAction: mockSetAction,
+      selectedRowKeys: [],
+      setSelectedRowKeys: vi.fn(),
+      onTableChange: vi.fn(),
+      resetTable: mockResetTable,
+    });
+
+    const renderList = () =>
+      render(
+        <ConfigurationContext.Provider
+          value={
+            {
+              configuration: {
+                site_name: "Admin",
+                username_field: "username",
+                models: [],
+                dashboard_widgets: [],
+              },
+            } as any
+          }
+        >
+          <List />
+        </ConfigurationContext.Provider>,
+      );
+
+    renderList();
+    expect(
+      (screen.getAllByRole("button", { name: "Apply" })[0] as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    cleanup();
+
+    mockGetConfigurationModel.mockReturnValue({
+      name: "User",
+      permissions: [],
+      actions: [
+        { name: "bulk", description: "Bulk action", requires_selection: false },
+      ],
+      actions_on_top: true,
+      actions_on_bottom: false,
+      fields: [],
+      search_fields: [],
+      preserve_filters: true,
+    });
+
+    renderList();
+    const applyButton = screen.getAllByRole("button", {
+      name: "Apply",
+    })[0] as HTMLButtonElement;
+    expect(applyButton.disabled).toBe(false);
+    fireEvent.click(applyButton);
+    expect(mockMutateAction).toHaveBeenCalledWith({ ids: [] });
+  });
+
   it("handles mutation callbacks and no-model branch", () => {
     const { rerender } = render(
       <ConfigurationContext.Provider

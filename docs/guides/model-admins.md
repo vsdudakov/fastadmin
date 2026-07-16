@@ -15,6 +15,7 @@ attributes are optional and mirror Django Admin where possible.
 | `list_display` | `()` | Fields shown as columns on the list page. Without it, a single `__str__` column is shown. |
 | `list_display_links` | `()` | Which `list_display` fields link to the change page. |
 | `list_display_widths` | `{}` | Column widths per field (`{"id": "100px"}`). |
+| `list_display_labels` | `{}` | Column headers per field (`{"id": "Идентификатор"}`) — use to override or translate the auto-generated titles. |
 | `list_filter` | `()` | Fields that get a filter in the table columns. |
 | `list_per_page` | `10` | Items per paginated page. |
 | `list_max_show_all` | `200` | Max total count for which a "Show all" link is displayed. |
@@ -74,6 +75,17 @@ class StoryAdmin(TortoiseModelAdmin):
 
 An action can return `None`, a `MESSAGE` response, or a `DOWNLOAD_BASE64`
 response (`data` is base64 file content, `file_name` names the download).
+
+By default the Apply button is disabled until at least one row is selected.
+Pass `requires_selection=False` to allow running an action without selecting
+rows — the action then receives an empty `ids` list and should treat it as
+"all objects":
+
+```python
+    @action(description="Delete all stories", requires_selection=False)
+    async def delete_all(self, ids: list) -> None:
+        await Story.all().delete()
+```
 
 ## Display fields
 
