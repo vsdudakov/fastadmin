@@ -130,8 +130,10 @@ class BaseModelAdmin:
     # }
     list_display_widths: dict[str, str] = {}  # noqa: RUF012
 
-    # A dictionary containing the field names and the corresponding column labels (headers)
-    # for the list view. Use it to override or translate the auto-generated column titles.
+    # A dictionary containing the field names and the corresponding labels.
+    # Used as column headers on the list view and as field labels on add/change forms
+    # (unless a form label is set explicitly via formfield_overrides widget props).
+    # Use it to override or translate the auto-generated titles.
     # Example of usage:
     # list_display_labels = {
     #     "id": "Идентификатор",

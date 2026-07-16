@@ -75,7 +75,7 @@ describe("AsyncTransfer", () => {
     expect(
       transferPropsRef.current.filterOption("qqq", { key: "a", value: "b" }),
     ).toBe(false);
-    expect(transferPropsRef.current.listStyle).toEqual({
+    expect(transferPropsRef.current.styles?.section).toEqual({
       width: "100%",
       marginTop: 5,
       marginBottom: 5,
@@ -116,7 +116,9 @@ describe("AsyncTransfer", () => {
       />,
     );
 
-    expect(transferPropsRef.current.listStyle).toEqual({ width: "100%" });
+    expect(transferPropsRef.current.styles?.section).toEqual({
+      width: "100%",
+    });
     expect(transferPropsRef.current.style).toBeUndefined();
   });
 });

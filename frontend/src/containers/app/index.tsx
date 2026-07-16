@@ -11,12 +11,15 @@ import { Index } from "@/containers/index";
 import { List } from "@/containers/list";
 import { SignIn } from "@/containers/sign-in";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { getAntdLocale } from "@/locales";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
+import { LanguageContext } from "@/providers/LanguageProvider";
 import { ThemeContext } from "@/providers/ThemeProvider";
 
 export const App: React.FC = () => {
   const { configuration } = useContext(ConfigurationContext);
   const { mode } = useContext(ThemeContext);
+  const { language } = useContext(LanguageContext);
   const { t: _t } = useTranslation("App");
   const isDark = mode === "dark";
 
@@ -26,6 +29,7 @@ export const App: React.FC = () => {
 
   return (
     <ConfigProvider
+      locale={getAntdLocale(language)}
       theme={{
         token: {
           colorPrimary: configuration.primary_color,
@@ -60,6 +64,9 @@ export const App: React.FC = () => {
           Button: {
             controlHeight: 38,
             fontWeight: 500,
+            borderRadius: 8,
+            borderRadiusLG: 10,
+            borderRadiusSM: 6,
             primaryShadow: "none",
             defaultShadow: "none",
             dangerShadow: "none",
@@ -69,6 +76,9 @@ export const App: React.FC = () => {
           },
           Select: {
             controlHeight: 38,
+          },
+          Dropdown: {
+            borderRadiusLG: 12,
           },
           Menu: {
             itemBorderRadius: 8,
@@ -81,9 +91,16 @@ export const App: React.FC = () => {
             headerColor: isDark
               ? "rgba(255, 255, 255, 0.55)"
               : "rgba(0, 0, 0, 0.55)",
+            rowHoverBg: isDark
+              ? "rgba(255, 255, 255, 0.04)"
+              : "rgba(0, 0, 0, 0.03)",
           },
           Modal: {
             borderRadiusLG: 16,
+          },
+          Segmented: {
+            borderRadius: 9,
+            itemSelectedBg: isDark ? "#3a3a3c" : "#ffffff",
           },
         },
       }}

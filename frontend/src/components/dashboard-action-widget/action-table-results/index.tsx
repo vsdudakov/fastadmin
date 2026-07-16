@@ -102,7 +102,7 @@ export const ActionTableResults: React.FC<ActionTableResultsProps> = ({
                       size="small"
                       allowClear
                       autoFocus
-                      placeholder={`Search ${key}`}
+                      placeholder={_t("Search {{name}}", { name: key })}
                       value={columnSearch[key]}
                       onChange={(event) =>
                         setColumnSearch((prev) => ({
@@ -141,7 +141,7 @@ export const ActionTableResults: React.FC<ActionTableResultsProps> = ({
           render: (value: unknown) => stringifyCellValue(value),
         };
       }),
-    [columnKeys, columnSearch, dataSource, token.colorPrimary],
+    [_t, columnKeys, columnSearch, dataSource, token.colorPrimary],
   );
 
   const searchedDataSource = useMemo(

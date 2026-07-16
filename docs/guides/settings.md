@@ -35,6 +35,7 @@ export ADMIN_SECRET_KEY=secret_key
 | `ADMIN_SITE_HEADER_LOGO` | `/admin/static/images/header-logo.svg` | Logo path in the header. |
 | `ADMIN_SITE_FAVICON` | `/admin/static/images/favicon.png` | Favicon path. |
 | `ADMIN_PRIMARY_COLOR` | `#009485` | Accent color used for buttons, links, menu selection and other controls. |
+| `ADMIN_LANGUAGE` | `en` | Default UI language: `en`, `ru`, `de`, `es`, `fr` or `zh`. Users can switch the language in the admin UI; set to empty to auto-detect from the browser. |
 | `ADMIN_SESSION_ID_KEY` | `admin_session_id` | Cookie key for the session id (HTTP-only). |
 | `ADMIN_SESSION_EXPIRED_AT` | `144000` | Session lifetime in seconds. |
 | `ADMIN_SESSION_COOKIE_SECURE` | `true` | Set the `Secure` flag so the session cookie is only sent over HTTPS. Set to `false` for local HTTP development. |

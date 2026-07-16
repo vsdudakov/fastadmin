@@ -498,7 +498,9 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
       <Modal
         width={600}
         open={openAdd}
-        title={`Add ${getTitleFromModel(modelConfiguration)}`}
+        title={_t("Add {{name}}", {
+          name: getTitleFromModel(modelConfiguration),
+        })}
         onCancel={onCloseAdd}
         footer={null}
       >
@@ -532,7 +534,9 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
       <Modal
         width={600}
         open={!!openChange}
-        title={`Change ${getTitleFromModel(modelConfiguration)} ${openChange}`}
+        title={`${_t("Change {{name}}", {
+          name: getTitleFromModel(modelConfiguration),
+        })} ${openChange}`}
         onCancel={onCloseChange}
         footer={null}
       >

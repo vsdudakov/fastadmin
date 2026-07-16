@@ -229,7 +229,7 @@ export const FormContainer: React.FC<IFormContainer> = ({
       return (
         <Collapse
           size="small"
-          expandIconPosition="end"
+          expandIconPlacement="end"
           activeKey={activeKey}
           onChange={onChange as any}
           items={fieldsets.map((fieldset) => {

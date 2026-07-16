@@ -95,7 +95,7 @@ const renderWidget = (
 ) =>
   render(
     <ConfigProvider>
-      <ThemeContext.Provider value={{ mode, setMode: vi.fn() }}>
+      <ThemeContext.Provider value={{ mode, preference: mode, setPreference: vi.fn() }}>
         <DashboardChartWidget modelName="Order" widgetAction={widgetAction} />
       </ThemeContext.Provider>
     </ConfigProvider>,

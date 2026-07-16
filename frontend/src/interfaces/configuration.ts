@@ -175,6 +175,7 @@ export interface IConfiguration {
   site_header_logo?: string;
   site_favicon?: string;
   primary_color?: string;
+  language?: string | null;
   username_field: string;
   date_format?: string;
   datetime_format?: string;

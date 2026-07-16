@@ -8,6 +8,7 @@ import { I18nextProvider } from "react-i18next";
 import { HashRouter } from "react-router-dom";
 
 import { ConfigurationProvider } from "@/providers/ConfigurationProvider/provider";
+import { LanguageProvider } from "@/providers/LanguageProvider/provider";
 import { SignInUserProvider } from "@/providers/SignInUserProvider/provider";
 import { ThemeContext } from "@/providers/ThemeProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider/provider";
@@ -27,13 +28,16 @@ export const InternalProviders: React.FC<IInternalProviders> = ({
         {({ mode }) => (
           <SignInUserProvider>
             <ConfigurationProvider>
-              <ConfigProvider
-                theme={{
-                  algorithm: mode === "dark" ? darkAlgorithm : defaultAlgorithm,
-                }}
-              >
-                {children}
-              </ConfigProvider>
+              <LanguageProvider>
+                <ConfigProvider
+                  theme={{
+                    algorithm:
+                      mode === "dark" ? darkAlgorithm : defaultAlgorithm,
+                  }}
+                >
+                  {children}
+                </ConfigProvider>
+              </LanguageProvider>
             </ConfigurationProvider>
           </SignInUserProvider>
         )}

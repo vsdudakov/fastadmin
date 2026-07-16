@@ -15,7 +15,7 @@ attributes are optional and mirror Django Admin where possible.
 | `list_display` | `()` | Fields shown as columns on the list page. Without it, a single `__str__` column is shown. |
 | `list_display_links` | `()` | Which `list_display` fields link to the change page. |
 | `list_display_widths` | `{}` | Column widths per field (`{"id": "100px"}`). |
-| `list_display_labels` | `{}` | Column headers per field (`{"id": "Идентификатор"}`) — use to override or translate the auto-generated titles. |
+| `list_display_labels` | `{}` | Field labels (`{"id": "Идентификатор"}`) — used as column headers on the list view and as field labels on add/change forms; use to override or translate the auto-generated titles. |
 | `list_filter` | `()` | Fields that get a filter in the table columns. |
 | `list_per_page` | `10` | Items per paginated page. |
 | `list_max_show_all` | `200` | Max total count for which a "Show all" link is displayed. |

@@ -183,11 +183,9 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
       <Space.Compact style={{ width: "100%" }}>
         {!disableActionButton && (
           <Tooltip
-            title={_t(
-              `Add ${
-                modelConfiguration && getTitleFromModel(modelConfiguration)
-              }`,
-            )}
+            title={_t("Add {{name}}", {
+              name: modelConfiguration && getTitleFromModel(modelConfiguration),
+            })}
           >
             <Button onClick={onOpenAdd}>
               <PlusCircleOutlined />
@@ -196,11 +194,9 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
         )}
         {!disableActionButton && value && !isMultipleMode && (
           <Tooltip
-            title={_t(
-              `Edit ${
-                modelConfiguration && getTitleFromModel(modelConfiguration)
-              }`,
-            )}
+            title={_t("Edit {{name}}", {
+              name: modelConfiguration && getTitleFromModel(modelConfiguration),
+            })}
           >
             <Button onClick={() => onOpenChange(value)}>
               <EditOutlined />
@@ -242,9 +238,9 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
       <Modal
         width={600}
         open={openAdd}
-        title={_t(
-          `Add ${modelConfiguration && getTitleFromModel(modelConfiguration)}`,
-        )}
+        title={_t("Add {{name}}", {
+          name: modelConfiguration && getTitleFromModel(modelConfiguration),
+        })}
         onCancel={onCloseAdd}
         footer={null}
       >
@@ -278,7 +274,9 @@ export const AsyncSelect: React.FC<IAsyncSelect> = ({
       <Modal
         width={600}
         open={!!openChange}
-        title={`Change ${modelConfiguration && getTitleFromModel(modelConfiguration)} ${openChange}`}
+        title={`${_t("Change {{name}}", {
+          name: modelConfiguration && getTitleFromModel(modelConfiguration),
+        })} ${openChange}`}
         onCancel={onCloseChange}
         footer={null}
       >

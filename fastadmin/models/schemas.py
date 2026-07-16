@@ -233,6 +233,7 @@ class ConfigurationSchema:
     site_header_logo: str
     site_favicon: str
     primary_color: str
+    language: str | None
     username_field: str
     date_format: str
     datetime_format: str

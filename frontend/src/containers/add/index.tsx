@@ -62,9 +62,9 @@ export const Add: React.FC = () => {
 
   return (
     <CrudContainer
-      title={`${_t("Add")} ${
-        modelConfiguration && getTitleFromModel(modelConfiguration)
-      }`}
+      title={_t("Add {{name}}", {
+        name: modelConfiguration && getTitleFromModel(modelConfiguration),
+      })}
       breadcrumbs={
         <Breadcrumb
           items={[

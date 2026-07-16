@@ -40,6 +40,10 @@ class Settings:
     # This value is the primary color for FastAdmin.
     ADMIN_PRIMARY_COLOR: str = os.getenv("ADMIN_PRIMARY_COLOR", "#009485")
 
+    # This value is the default UI language for FastAdmin ("en", "ru", "de", "es", "fr", "zh").
+    # Users can switch the language in the admin UI; set to empty to auto-detect from the browser.
+    ADMIN_LANGUAGE: str = os.getenv("ADMIN_LANGUAGE", "en")
+
     # This value is the session id key to store session id in http only cookies.
     ADMIN_SESSION_ID_KEY: str = os.getenv("ADMIN_SESSION_ID_KEY", "admin_session_id")
 

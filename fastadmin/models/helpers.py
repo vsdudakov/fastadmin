@@ -162,6 +162,10 @@ async def generate_models_schema(
                 if form_index is not None:
                     form_widget_type = orm_model_field.form_widget_type
                     form_widget_props = orm_model_field.form_widget_props
+                    field_label = admin_model_obj.list_display_labels.get(field_name)
+                    if field_label and not form_widget_props.get("label"):
+                        form_widget_props = dict(form_widget_props)
+                        form_widget_props["label"] = field_label
                     add_configuration = AddConfigurationFieldSchema(
                         index=form_index,
                         form_widget_type=form_widget_type,

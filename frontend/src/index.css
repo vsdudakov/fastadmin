@@ -64,6 +64,73 @@ h6 {
   outline-offset: 2px;
 }
 
+/* Text selection tinted with the accent color */
+::selection {
+  background: color-mix(
+    in srgb,
+    var(--ant-color-primary, #009485) 24%,
+    transparent
+  );
+}
+
+/* macOS-style overlay scrollbars */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+body[data-theme="dark"] *::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Frosted-glass menus, dropdowns and popovers */
+.ant-dropdown .ant-dropdown-menu,
+.ant-select-dropdown,
+.ant-popover .ant-popover-inner,
+.ant-picker-dropdown .ant-picker-panel-container {
+  background-color: rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: var(--admin-shadow-lg);
+}
+
+body[data-theme="dark"] .ant-dropdown .ant-dropdown-menu,
+body[data-theme="dark"] .ant-select-dropdown,
+body[data-theme="dark"] .ant-popover .ant-popover-inner,
+body[data-theme="dark"] .ant-picker-dropdown .ant-picker-panel-container {
+  background-color: rgba(40, 40, 42, 0.78);
+}
+
+/* Soften the modal backdrop like macOS sheets */
+.ant-modal-root .ant-modal-mask {
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+  backdrop-filter: saturate(180%) blur(8px);
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+body[data-theme="dark"] .ant-modal-root .ant-modal-mask {
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
 /* Smooth transitions for interactive elements */
 a,
 button,

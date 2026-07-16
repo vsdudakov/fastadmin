@@ -92,6 +92,38 @@ async def test_admin_model_list_configuration_labels_and_action_selection(tourna
     assert delete_all_action.requires_selection is False
 
 
+async def test_admin_model_labels_applied_to_form_configurations(tournament, base_model_admin):
+    Tournament = tournament.__class__
+
+    class TournamentModelAdmin(base_model_admin):
+        list_display = ("name",)
+        list_display_labels: ClassVar[dict[str, str]] = {"name": "Название"}
+
+    model_schema = await generate_models_schema({Tournament: TournamentModelAdmin(Tournament)})
+
+    name_field = next(f for f in model_schema[0].fields if f.name == "name")
+    assert name_field.add_configuration.form_widget_props["label"] == "Название"
+    assert name_field.change_configuration.form_widget_props["label"] == "Название"
+
+    other_fields = [f for f in model_schema[0].fields if f.name != "name" and f.add_configuration]
+    assert all("label" not in (f.add_configuration.form_widget_props or {}) for f in other_fields)
+
+
+async def test_admin_model_explicit_form_label_wins_over_list_display_labels(tournament, base_model_admin):
+    Tournament = tournament.__class__
+
+    class TournamentModelAdmin(base_model_admin):
+        list_display = ("name",)
+        list_display_labels: ClassVar[dict[str, str]] = {"name": "Название"}
+        formfield_overrides: ClassVar[dict] = {"name": (WidgetType.Input, {"label": "Custom"})}
+
+    model_schema = await generate_models_schema({Tournament: TournamentModelAdmin(Tournament)})
+
+    name_field = next(f for f in model_schema[0].fields if f.name == "name")
+    assert name_field.add_configuration.form_widget_props["label"] == "Custom"
+    assert name_field.change_configuration.form_widget_props["label"] == "Custom"
+
+
 async def test_register_admin_model_class_with_sessionmaker():
     class AdminModelClass(ModelAdmin):
         pass

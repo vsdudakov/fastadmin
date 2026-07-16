@@ -75,10 +75,10 @@ export const PasswordInput: React.FC<IPasswordInput> = ({
       >
         <Divider />
         <Form form={form} layout="vertical" onFinish={onChangePassword}>
-          <Form.Item name="password" label="Password">
+          <Form.Item name="password" label={_t("Password")}>
             <Input.Password />
           </Form.Item>
-          <Form.Item name="confirm_password" label="Confirm Password">
+          <Form.Item name="confirm_password" label={_t("Confirm Password")}>
             <Input.Password />
           </Form.Item>
           <Divider />

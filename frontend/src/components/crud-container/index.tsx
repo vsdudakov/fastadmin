@@ -1,5 +1,8 @@
 import {
   BarsOutlined,
+  CheckOutlined,
+  DesktopOutlined,
+  GlobalOutlined,
   LinkOutlined,
   LogoutOutlined,
   MoonOutlined,
@@ -34,9 +37,11 @@ import { isSafeUrl } from "@/helpers/url";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import type { IModel } from "@/interfaces/configuration";
+import { resources, type TLanguage } from "@/locales";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
+import { LanguageContext } from "@/providers/LanguageProvider";
 import { SignInUserContext } from "@/providers/SignInUserProvider";
-import { ThemeContext } from "@/providers/ThemeProvider";
+import { ThemeContext, type ThemePreference } from "@/providers/ThemeProvider";
 
 const { Header, Sider } = Layout;
 const { Title } = Typography;
@@ -67,11 +72,12 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
   const { configuration } = useContext(ConfigurationContext);
   const { signedInUser, signedInUserRefetch, signedIn } =
     useContext(SignInUserContext);
-  const { mode, setMode } = useContext(ThemeContext);
+  const { mode, preference, setPreference } = useContext(ThemeContext);
+  const { language, setLanguage } = useContext(LanguageContext);
   const { t: _t } = useTranslation("CrudContainer");
 
   const {
-    token: { colorBgContainer, colorText },
+    token: { colorText },
   } = theme.useToken();
 
   const hairline =
@@ -102,15 +108,17 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
     }
   };
 
-  const toggleThemeMode = () => {
-    setMode(mode === "dark" ? "light" : "dark");
-  };
-
   const onClickRightMenuItem = (item: any) => {
-    switch (item.key) {
-      case "theme":
-        toggleThemeMode();
-        break;
+    const key: string = item.key;
+    if (key.startsWith("theme-")) {
+      setPreference(key.replace("theme-", "") as ThemePreference);
+      return;
+    }
+    if (key.startsWith("language-")) {
+      setLanguage(key.replace("language-", "") as TLanguage);
+      return;
+    }
+    switch (key) {
       case "sign-out":
         mutateSignOut();
         break;
@@ -121,6 +129,36 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
         break;
     }
   };
+
+  const languageNames: Record<TLanguage, string> = {
+    en: "English",
+    ru: "Русский",
+    de: "Deutsch",
+    es: "Español",
+    fr: "Français",
+    zh: "中文",
+  };
+
+  const themeMenuItems = (
+    [
+      ["light", <SunOutlined key="light" />, _t("Light mode")],
+      ["dark", <MoonOutlined key="dark" />, _t("Dark mode")],
+      ["system", <DesktopOutlined key="system" />, _t("System")],
+    ] as [ThemePreference, React.ReactNode, string][]
+  ).map(([key, icon, label]) => ({
+    key: `theme-${key}`,
+    icon,
+    label,
+    extra: preference === key ? <CheckOutlined /> : undefined,
+  }));
+
+  const languageMenuItems = (
+    Object.keys(resources) as TLanguage[]
+  ).map((key) => ({
+    key: `language-${key}`,
+    label: languageNames[key],
+    extra: language === key ? <CheckOutlined /> : undefined,
+  }));
 
   const hasSections = configuration.models.some(
     (m: IModel) => m.menu_section && m.menu_section.trim().length > 0,
@@ -342,10 +380,15 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                     },
                     {
                       key: "theme",
-                      icon:
-                        mode === "dark" ? <SunOutlined /> : <MoonOutlined />,
-                      label:
-                        mode === "dark" ? _t("Light mode") : _t("Dark mode"),
+                      icon: mode === "dark" ? <MoonOutlined /> : <SunOutlined />,
+                      label: _t("Theme"),
+                      children: themeMenuItems,
+                    },
+                    {
+                      key: "language",
+                      icon: <GlobalOutlined />,
+                      label: _t("Language"),
+                      children: languageMenuItems,
                     },
                     {
                       type: "divider",
@@ -368,7 +411,8 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
           <Sider
             width={260}
             style={{
-              background: colorBgContainer,
+              // macOS-style sidebar: blends with the window background
+              background: "transparent",
               borderRadius: 0,
               borderRight: `1px solid ${hairline}`,
             }}
@@ -398,6 +442,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
               defaultSelectedKeys={[model || "dashboard"]}
               defaultOpenKeys={autoOpenSectionKeys}
               style={{
+                background: "transparent",
                 borderRight: 0,
                 padding: "0 12px 24px",
                 height: "calc(100vh - 56px - 72px)",

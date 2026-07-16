@@ -74,11 +74,12 @@ export const AsyncTransfer: React.FC<IAsyncTransfer> = ({
       render={render}
       onChange={onChange}
       targetKeys={value}
-      listStyle={
-        layout === "vertical" || isMobile
-          ? { width: "100%", marginTop: 5, marginBottom: 5 }
-          : { width: "100%" }
-      }
+      styles={{
+        section:
+          layout === "vertical" || isMobile
+            ? { width: "100%", marginTop: 5, marginBottom: 5 }
+            : { width: "100%" },
+      }}
       style={
         layout === "vertical" || isMobile ? { display: "block" } : undefined
       }

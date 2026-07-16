@@ -171,9 +171,9 @@ export const Change: React.FC = () => {
 
   return (
     <CrudContainer
-      title={`${_t("Change")} ${
-        modelConfiguration && getTitleFromModel(modelConfiguration)
-      } ${id}`}
+      title={`${_t("Change {{name}}", {
+        name: modelConfiguration && getTitleFromModel(modelConfiguration),
+      })} ${id}`}
       breadcrumbs={
         <Breadcrumb
           items={[
