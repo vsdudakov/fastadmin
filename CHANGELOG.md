@@ -2,7 +2,7 @@
 
 All notable changes to FastAdmin are documented in this file.
 
-## Unreleased
+## 0.9.0
 
 ### Features
 
