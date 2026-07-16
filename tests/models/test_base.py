@@ -687,6 +687,86 @@ async def test_save_model_excludes_password_flow():
     assert admin.changed == (42, "raw")
 
 
+async def test_save_model_skips_rehash_of_echoed_password_hash():
+    """On edit, a password value echoing the stored hash is dropped, not re-hashed."""
+
+    class DummyAdmin(ModelAdmin):
+        stored_obj = None
+        changed = None
+        saved_payload = None
+
+        @staticmethod
+        def get_model_pk_name(_orm_model_cls):
+            return "id"
+
+        def get_model_fields_with_widget_types(self, with_m2m=None):
+            if with_m2m:
+                return []
+            return [
+                ModelFieldWidgetSchema(
+                    name="password",
+                    column_name="password",
+                    is_m2m=False,
+                    is_pk=False,
+                    is_immutable=False,
+                    form_widget_type=WidgetType.PasswordInput,
+                    form_widget_props={},
+                    filter_widget_type=WidgetType.Input,
+                    filter_widget_props={},
+                ),
+            ]
+
+        async def orm_save_obj(self, _id, payload):
+            self.saved_payload = payload
+            return {"id": 42, **payload}
+
+        async def orm_get_obj(self, _id):
+            return self.stored_obj
+
+        async def orm_get_list(self, **kwargs):
+            return [], 0
+
+        async def orm_delete_obj(self, _id):
+            return None
+
+        async def orm_get_m2m_ids(self, _obj, _field):
+            return []
+
+        async def orm_save_m2m_ids(self, _obj, _field, _ids):
+            return None
+
+        async def change_password(self, id, password):
+            self.changed = (id, password)
+
+    async def passthrough(obj):
+        return obj
+
+    def make_admin(stored_obj):
+        admin = DummyAdmin(type("Model", (), {}))
+        admin._serialize_obj_after_save = passthrough  # type: ignore[method-assign]
+        admin.stored_obj = stored_obj
+        return admin
+
+    # The form echoes the stored hash back: it is dropped and never re-hashed.
+    admin = make_admin(type("Obj", (), {"password": "stored-hash"})())
+    result = await admin.save_model(42, {"password": "stored-hash"})
+    assert result == {"id": 42}
+    assert "password" not in admin.saved_payload
+    assert admin.changed is None
+
+    # A genuinely new password on edit is still hashed via change_password.
+    admin = make_admin(type("Obj", (), {"password": "stored-hash"})())
+    result = await admin.save_model(42, {"password": "new-secret"})
+    assert result is not None
+    assert admin.changed == (42, "new-secret")
+
+    # If the object cannot be loaded the payload passes through unchanged.
+    admin = make_admin(None)
+    result = await admin.save_model(42, {"password": "stored-hash"})
+    assert result is not None
+    assert admin.changed == (42, "stored-hash")
+
+
 async def test_get_export_json_uses_custom_encoder():
     class ExportAdmin(BaseModelAdmin):
         @staticmethod

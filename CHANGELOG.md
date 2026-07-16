@@ -2,6 +2,19 @@
 
 All notable changes to FastAdmin are documented in this file.
 
+## 0.9.1
+
+### Security
+
+- **Passwords**: saving a user from the change form no longer destroys the
+  password by re-hashing the stored hash. The change form displayed the current
+  hash in the read-only password field and echoed it back on Save, and the
+  save hook hashed it again. The frontend now excludes `PasswordInput` fields
+  from the change payload, and the backend additionally drops a submitted
+  password value that matches the stored one, so third-party clients that echo
+  the hash are also safe. Passwords are changed only via the change-password
+  endpoint / modal.
+
 ## 0.9.0
 
 ### Features

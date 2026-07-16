@@ -833,9 +833,24 @@ class ModelAdmin(BaseModelAdmin):
         :params payload: a payload from request.
         :return: A saved object or None.
         """
-        obj = await super().save_model(id, payload)
         fields = self.get_model_fields_with_widget_types(with_m2m=False)
         password_fields = [field.name for field in fields if field.form_widget_type == WidgetType.PasswordInput]
+        if id is not None and password_fields:
+            # The change form renders password fields read-only (real changes go
+            # through the change-password endpoint) but may still echo the stored,
+            # already-hashed value back on Save. Re-hashing that echo would destroy
+            # the password, so drop any submitted value equal to the stored one.
+            current_obj = await self.orm_get_obj(id)
+            if current_obj is not None:
+                column_names = {field.name: field.column_name for field in fields}
+                echoed = {
+                    name
+                    for name in password_fields
+                    if name in payload and payload[name] == getattr(current_obj, column_names[name], None)
+                }
+                if echoed:
+                    payload = {k: v for k, v in payload.items() if k not in echoed}
+        obj = await super().save_model(id, payload)
         if obj and password_fields:
             # Hash the submitted password via change_password on both create and
             # edit. On edit the raw value was written by the base save_model, so

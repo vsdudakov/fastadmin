@@ -3,7 +3,10 @@ import type React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Change } from "@/containers/change";
-import { EModelPermission } from "@/interfaces/configuration";
+import {
+  EFieldWidgetType,
+  EModelPermission,
+} from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 const {
@@ -140,6 +143,14 @@ vi.mock("@/components/form-container", () => ({
     <div>
       <button type="button" onClick={() => onFinish?.({ name: "Alice" })}>
         trigger-form-finish
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onFinish?.({ name: "Alice", password_hash: "stored-hash" })
+        }
+      >
+        trigger-form-finish-password
       </button>
       {children}
     </div>
@@ -445,5 +456,59 @@ describe("Change container", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "confirm-delete" }));
     expect(mutateDelete).toHaveBeenCalled();
+  });
+
+  it("strips password widget fields from the change payload", () => {
+    const mutateChange = vi.fn();
+    let mutationCall = 0;
+    mockUseMutation.mockImplementation(() => {
+      const idx = mutationCall % 3;
+      mutationCall += 1;
+      if (idx === 1) {
+        return { mutate: mutateChange, isPending: false, isError: false };
+      }
+      return { mutate: vi.fn(), isPending: false, isError: false };
+    });
+    mockGetConfigurationModel.mockReturnValue({
+      name: "User",
+      permissions: [EModelPermission.Change],
+      actions: [],
+      fields: [
+        {
+          name: "password_hash",
+          change_configuration: {
+            form_widget_type: EFieldWidgetType.PasswordInput,
+          },
+        },
+      ],
+      save_as: false,
+      save_as_continue: false,
+    });
+
+    render(
+      <ConfigurationContext.Provider
+        value={
+          {
+            configuration: {
+              site_name: "Admin",
+              username_field: "username",
+              models: [],
+              dashboard_widgets: [],
+            },
+          } as any
+        }
+      >
+        <Change />
+      </ConfigurationContext.Provider>,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "trigger-form-finish-password" }),
+    );
+    expect(mockTransformDataToServer).toHaveBeenCalledWith({ name: "Alice" });
+    expect(mutateChange).toHaveBeenCalledWith({
+      name: "Alice",
+      transformed: true,
+    });
   });
 });

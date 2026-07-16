@@ -32,7 +32,10 @@ import {
   transformDataToServer,
 } from "@/helpers/transform";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { EModelPermission } from "@/interfaces/configuration";
+import {
+  EFieldWidgetType,
+  EModelPermission,
+} from "@/interfaces/configuration";
 import { ConfigurationContext } from "@/providers/ConfigurationProvider";
 
 export const Change: React.FC = () => {
@@ -125,12 +128,24 @@ export const Change: React.FC = () => {
   });
 
   const onFinish = (payload: any) => {
+    // Password fields are read-only on the change form (changes go through the
+    // change-password modal); echoing the stored hash back on Save would make
+    // the backend re-hash it and destroy the password.
+    const data = { ...payload };
+    for (const field of modelConfiguration?.fields || []) {
+      if (
+        field.change_configuration?.form_widget_type ===
+        EFieldWidgetType.PasswordInput
+      ) {
+        delete data[field.name];
+      }
+    }
     const saveAsNew = form.getFieldValue("save_as_new");
     if (saveAsNew) {
-      mutateAdd(transformDataToServer(payload));
+      mutateAdd(transformDataToServer(data));
       return;
     }
-    mutate(transformDataToServer(payload));
+    mutate(transformDataToServer(data));
   };
 
   const onConfirmDelete = () => mutateDelete();
