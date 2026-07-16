@@ -130,6 +130,15 @@ class BaseModelAdmin:
     # }
     list_display_widths: dict[str, str] = {}  # noqa: RUF012
 
+    # A dictionary containing the field names and the corresponding column labels (headers)
+    # for the list view. Use it to override or translate the auto-generated column titles.
+    # Example of usage:
+    # list_display_labels = {
+    #     "id": "Идентификатор",
+    #     "created_at": "Создано",
+    # }
+    list_display_labels: dict[str, str] = {}  # noqa: RUF012
+
     # Set list_filter to activate filters in the tabel columns of the list page of the admin.
     # Example of usage: list_filter = ("is_superuser", "is_active", "created_at")
     list_filter: Sequence[str] = ()

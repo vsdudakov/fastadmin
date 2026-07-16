@@ -54,6 +54,58 @@ describe("useTableColumns", () => {
     expect(result.current[0].title).toBe("Actions");
   });
 
+  it("uses list_configuration.label as column title and keeps sorting/filtering intact", () => {
+    const modelConfiguration = {
+      name: "User",
+      permissions: [],
+      actions: [],
+      fields: [
+        {
+          name: "created_at",
+          list_configuration: {
+            index: 1,
+            sorter: true,
+            empty_value_display: "-",
+            label: "Создано",
+            filter_widget_type: EFieldWidgetType.DatePicker,
+          },
+        },
+        {
+          name: "name",
+          list_configuration: {
+            index: 2,
+            sorter: true,
+            empty_value_display: "-",
+          },
+        },
+      ],
+    };
+
+    const { result } = renderHook(() =>
+      useTableColumns(
+        modelConfiguration as any,
+        undefined,
+        () => "",
+        vi.fn(),
+        vi.fn(),
+        vi.fn(),
+        vi.fn(),
+      ),
+    );
+
+    const labeledColumn = result.current[0];
+    expect(labeledColumn.title).toBe("Создано");
+    // label affects only the header: data binding, sorting and filtering stay on the field name
+    expect(labeledColumn.key).toBe("created_at");
+    expect(labeledColumn.dataIndex).toBe("created_at");
+    expect(labeledColumn.sorter).toBe(true);
+    expect(labeledColumn.filterDropdown).toBeDefined();
+
+    const fallbackColumn = result.current[1];
+    expect(fallbackColumn.title).toBe("Name");
+    expect(fallbackColumn.sorter).toBe(true);
+  });
+
   it("applies and resets filter from filterDropdown", () => {
     const getFilterValue = vi.fn((name: string) =>
       name === "name" ? "abc" : "",

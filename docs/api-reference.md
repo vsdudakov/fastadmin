@@ -71,7 +71,7 @@ Overridable hooks (shared by model and inline admins):
 | Export | Description |
 | --- | --- |
 | `@register(*models, **kwargs)` | Register a `ModelAdmin` subclass for the given model(s). For SQLAlchemy pass `sqlalchemy_sessionmaker=...`. |
-| `@action(description=None)` | Mark an admin method as a bulk action (list it in `actions`). |
+| `@action(description=None, requires_selection=True)` | Mark an admin method as a bulk action (list it in `actions`). With `requires_selection=False` the action can be applied without selecting rows and receives an empty `ids` list. |
 | `@display(sorter=False)` | Mark an admin method as a computed list column (include it in `list_display`). |
 | `@widget_action(...)` | Mark an admin method as a dashboard widget (list it in `widget_actions`). See [Dashboard widgets](guides/dashboard-widgets.md). |
 
@@ -94,7 +94,7 @@ Overridable hooks (shared by model and inline admins):
 
 | Export | Description |
 | --- | --- |
-| `ActionInputSchema` | Input to `@action` handlers: `ids` of the selected objects. |
+| `ActionInputSchema` | Input to `@action` handlers: `ids` of the selected objects (empty for actions with `requires_selection=False`). |
 | `ActionResponseSchema` | Action result: `type` (`ActionResponseType`), `data`, optional `file_name`. |
 | `WidgetActionInputSchema` | Input to `@widget_action` handlers: `query` — a list of `WidgetActionQuerySchema`. |
 | `WidgetActionQuerySchema` | One filter/argument value: `field_name`, `widget_type`, `value`. |

@@ -113,6 +113,7 @@ class ModelAction:
 
     name: str
     description: str | None
+    requires_selection: bool = True
 
 
 @dataclass
@@ -143,6 +144,7 @@ class ListConfigurationFieldSchema:
     empty_value_display: str
     filter_widget_type: WidgetType | None
     filter_widget_props: dict | None
+    label: str | None = None
 
 
 @dataclass

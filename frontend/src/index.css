@@ -1,17 +1,22 @@
-/* Design tokens & base styles – best UX practices */
+/* Design tokens & base styles – Apple-like design language */
 :root {
   --admin-spacing-xs: 4px;
   --admin-spacing-sm: 8px;
   --admin-spacing-md: 16px;
   --admin-spacing-lg: 24px;
   --admin-spacing-xl: 32px;
-  --admin-radius-sm: 6px;
-  --admin-radius-md: 8px;
-  --admin-radius-lg: 12px;
-  --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --admin-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --admin-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
-  --admin-transition: 0.2s ease;
+  --admin-radius-sm: 8px;
+  --admin-radius-md: 12px;
+  --admin-radius-lg: 16px;
+  --admin-hairline: rgba(0, 0, 0, 0.08);
+  --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --admin-shadow-md: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
+  --admin-shadow-lg: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 48px rgba(0, 0, 0, 0.1);
+  --admin-transition: 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+body[data-theme="dark"] {
+  --admin-hairline: rgba(255, 255, 255, 0.08);
 }
 
 *,
@@ -32,15 +37,25 @@ body {
     Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5715;
+  letter-spacing: -0.01em;
   color: rgba(0, 0, 0, 0.88);
-  background-color: #f5f5f5;
+  background-color: #f5f5f7;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body[data-theme="dark"] {
   color: rgba(255, 255, 255, 0.88);
-  background-color: #000000;
+  background-color: #161617;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.02em;
 }
 
 /* Accessible focus – visible outline for keyboard users */
@@ -69,25 +84,11 @@ code {
   font-size: 0.9em;
 }
 
-/* Table row selection – subtle and accessible */
-.table-row-selected {
-  background-color: rgba(22, 119, 255, 0.06) !important;
-}
-
-.table-row-selected:hover {
-  background-color: rgba(22, 119, 255, 0.1) !important;
-}
-
-.user-menu-username.ant-menu-item-disabled {
-  opacity: 1 !important;
-  color: #ffffff !important;
-  cursor: default;
-}
-
 /* Content area cards – consistent elevation */
 .ant-card {
-  border-radius: var(--admin-radius-md);
+  border-radius: var(--admin-radius-lg);
   box-shadow: var(--admin-shadow-sm);
+  transition: box-shadow var(--admin-transition);
 }
 
 .ant-card:hover {
@@ -114,7 +115,7 @@ code {
 .ql-snow .ql-toolbar .ql-picker-item:hover,
 .ql-snow .ql-toolbar .ql-picker-item.ql-selected,
 .ql-snow .ql-toolbar .ql-picker-item.ql-selected {
-  color: #009485 !important;
+  color: var(--ant-color-primary, #009485) !important;
 }
 
 .ql-snow.ql-toolbar button:hover .ql-stroke,
@@ -145,11 +146,11 @@ code {
 .ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke-miter,
 .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter,
 .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter {
-  stroke: #009485 !important;
+  stroke: var(--ant-color-primary, #009485) !important;
 }
 
 .ql-snow a {
-  color: #009485 !important;
+  color: var(--ant-color-primary, #009485) !important;
 }
 
 .ql-toolbar {

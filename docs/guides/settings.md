@@ -34,7 +34,7 @@ export ADMIN_SECRET_KEY=secret_key
 | `ADMIN_SITE_SIGN_IN_LOGO` | `/admin/static/images/sign-in-logo.svg` | Logo path on the sign-in page. |
 | `ADMIN_SITE_HEADER_LOGO` | `/admin/static/images/header-logo.svg` | Logo path in the header. |
 | `ADMIN_SITE_FAVICON` | `/admin/static/images/favicon.png` | Favicon path. |
-| `ADMIN_PRIMARY_COLOR` | `#009485` | Primary UI color. |
+| `ADMIN_PRIMARY_COLOR` | `#009485` | Accent color used for buttons, links, menu selection and other controls. |
 | `ADMIN_SESSION_ID_KEY` | `admin_session_id` | Cookie key for the session id (HTTP-only). |
 | `ADMIN_SESSION_EXPIRED_AT` | `144000` | Session lifetime in seconds. |
 | `ADMIN_SESSION_COOKIE_SECURE` | `true` | Set the `Secure` flag so the session cookie is only sent over HTTPS. Set to `false` for local HTTP development. |

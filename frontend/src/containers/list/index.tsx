@@ -141,6 +141,14 @@ export const List: React.FC = () => {
     [mutateAction, selectedRowKeys],
   );
 
+  const selectedAction = (modelConfiguration?.actions || []).find(
+    (a: IModelAction) => a.name === action,
+  );
+  const applyActionDisabled =
+    !action ||
+    (selectedAction?.requires_selection !== false &&
+      selectedRowKeys.length === 0);
+
   const onAdd = useCallback(() => navigate(`/add/${model}`), [model, navigate]);
 
   const dateTimeFormat = configuration?.datetime_format;
@@ -259,7 +267,7 @@ export const List: React.FC = () => {
                   )}
                 </Select>
                 <Button
-                  disabled={!action || selectedRowKeys.length === 0}
+                  disabled={applyActionDisabled}
                   style={{ marginLeft: 5 }}
                   loading={isLoadingAction}
                   onClick={onApplyAction}
@@ -321,7 +329,7 @@ export const List: React.FC = () => {
               ))}
             </Select>
             <Button
-              disabled={!action || selectedRowKeys.length === 0}
+              disabled={applyActionDisabled}
               style={{ marginLeft: 5 }}
               loading={isLoadingAction}
               onClick={onApplyAction}

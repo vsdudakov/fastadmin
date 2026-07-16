@@ -30,6 +30,7 @@ def action(
     function=None,
     *,
     description: str | None = None,
+    requires_selection: bool = True,
 ):
     """Conveniently add attributes to an action function:
 
@@ -42,12 +43,15 @@ def action(
 
     :param function: A function to decorate.
     :param description: A string value to set the function's short_description
+    :param requires_selection: If False, the action can be applied without selecting rows
+        (the action function receives an empty ids list in that case).
     """
 
     def decorator(func):
         wrapped = _wrap_callable(func)
 
         wrapped.is_action = True
+        wrapped.requires_selection = requires_selection
         if description is not None:
             wrapped.short_description = description
         return wrapped

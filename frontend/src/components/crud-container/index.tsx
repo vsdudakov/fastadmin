@@ -71,8 +71,11 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
   const { t: _t } = useTranslation("CrudContainer");
 
   const {
-    token: { colorBgContainer, colorPrimary },
+    token: { colorBgContainer, colorText },
   } = theme.useToken();
+
+  const hairline =
+    mode === "dark" ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)";
 
   useEffect(() => {
     if (!signedIn) {
@@ -218,11 +221,19 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
     <Layout style={{ minHeight: "100vh" }}>
       <Header
         style={{
-          background: colorPrimary,
+          background:
+            mode === "dark"
+              ? "rgba(22, 22, 23, 0.8)"
+              : "rgba(255, 255, 255, 0.72)",
+          backdropFilter: "saturate(180%) blur(20px)",
+          WebkitBackdropFilter: "saturate(180%) blur(20px)",
+          borderBottom: `1px solid ${hairline}`,
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
           paddingInline: isMobile ? 0 : 20,
           height: isMobile ? 48 : 56,
           lineHeight: isMobile ? "48px" : "56px",
-          boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
         }}
       >
         <Row
@@ -254,7 +265,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                       icon: (
                         <BarsOutlined
                           style={{
-                            color: mode === "dark" ? "white" : colorBgContainer,
+                            color: colorText,
                           }}
                         />
                       ),
@@ -285,7 +296,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                 />
                 <span
                   style={{
-                    color: mode === "dark" ? "white" : colorBgContainer,
+                    color: colorText,
                     fontSize: 18,
                     fontWeight: 600,
                     letterSpacing: "-0.01em",
@@ -314,7 +325,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                   icon: (
                     <SettingOutlined
                       style={{
-                        color: mode === "dark" ? "white" : colorBgContainer,
+                        color: colorText,
                       }}
                     />
                   ),
@@ -359,7 +370,7 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
             style={{
               background: colorBgContainer,
               borderRadius: 0,
-              boxShadow: "1px 0 0 rgba(0, 0, 0, 0.06)",
+              borderRight: `1px solid ${hairline}`,
             }}
           >
             <div style={{ padding: 16 }}>
@@ -368,10 +379,16 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
                 onChange={onSearch}
                 placeholder={_t("Search By Menu") as string}
                 prefix={
-                  <SearchOutlined style={{ color: "rgba(0,0,0,0.25)" }} />
+                  <SearchOutlined
+                    style={{
+                      color:
+                        mode === "dark"
+                          ? "rgba(255, 255, 255, 0.3)"
+                          : "rgba(0, 0, 0, 0.25)",
+                    }}
+                  />
                 }
                 allowClear
-                style={{ borderRadius: 6 }}
               />
             </div>
             <Menu
@@ -420,7 +437,14 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
             title={
               <Row justify="space-between" align="middle">
                 <Col>
-                  <Title style={{ margin: 0 }} level={5}>
+                  <Title
+                    style={{
+                      margin: 0,
+                      fontWeight: 600,
+                      letterSpacing: "-0.02em",
+                    }}
+                    level={5}
+                  >
                     {title}
                   </Title>
                 </Col>
@@ -429,10 +453,11 @@ export const CrudContainer: React.FC<ICrudContainer> = ({
             }
             style={{
               marginTop: isMobile ? 4 : 0,
-              borderRadius: isMobile ? 6 : 8,
+              borderRadius: isMobile ? 12 : 16,
+              border: `1px solid ${hairline}`,
               boxShadow: isMobile
-                ? "0 1px 3px rgba(0, 0, 0, 0.05)"
-                : "0 1px 4px rgba(0, 0, 0, 0.06)",
+                ? "0 1px 2px rgba(0, 0, 0, 0.03)"
+                : "0 1px 2px rgba(0, 0, 0, 0.03), 0 8px 24px rgba(0, 0, 0, 0.04)",
             }}
           >
             <Skeleton loading={isLoading} active={true}>

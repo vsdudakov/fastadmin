@@ -152,6 +152,7 @@ async def generate_models_schema(
                     filter_widget_type=filter_widget_type,
                     filter_widget_props=filter_widget_props,
                     width=admin_model_obj.list_display_widths.get(field_name, None),
+                    label=admin_model_obj.list_display_labels.get(field_name, None),
                 )
 
             add_configuration = None
@@ -206,6 +207,7 @@ async def generate_models_schema(
                         filter_widget_type=None,
                         filter_widget_props=None,
                         width=admin_model_obj.list_display_widths.get(field_name, None),
+                        label=admin_model_obj.list_display_labels.get(field_name, None),
                     ),
                     add_configuration=None,
                     change_configuration=None,
@@ -231,6 +233,7 @@ async def generate_models_schema(
                 ModelAction(
                     name=action,
                     description=getattr(action_function, "short_description", None),
+                    requires_selection=getattr(action_function, "requires_selection", True),
                 ),
             )
 

@@ -244,6 +244,14 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
     [mutateAction, selectedRowKeys],
   );
 
+  const selectedAction = (modelConfiguration?.actions || []).find(
+    (a: IModelAction) => a.name === action,
+  );
+  const applyActionDisabled =
+    !action ||
+    (selectedAction?.requires_selection !== false &&
+      selectedRowKeys.length === 0);
+
   const dateTimeFormat = configuration?.datetime_format;
   const columns = useTableColumns(
     modelConfiguration,
@@ -329,7 +337,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
                 ))}
               </Select>
               <Button
-                disabled={!action || selectedRowKeys.length === 0}
+                disabled={applyActionDisabled}
                 style={{ marginLeft: 5 }}
                 loading={isLoadingAction}
                 onClick={onApplyAction}
@@ -375,7 +383,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
       _t,
       action,
       setAction,
-      selectedRowKeys.length,
+      applyActionDisabled,
       isLoadingAction,
       onApplyAction,
       setSearch,
@@ -415,7 +423,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
                         )}
                       </Select>
                       <Button
-                        disabled={!action || selectedRowKeys.length === 0}
+                        disabled={applyActionDisabled}
                         style={{ marginLeft: 5 }}
                         loading={isLoadingAction}
                         onClick={onApplyAction}
@@ -437,7 +445,7 @@ export const InlineWidget: React.FC<IInlineWidget> = ({
     action,
     isLoadingAction,
     onApplyAction,
-    selectedRowKeys.length,
+    applyActionDisabled,
     setAction,
   ]);
 
