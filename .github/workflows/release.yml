@@ -14,6 +14,9 @@ permissions:
 
 jobs:
   publish:
+    permissions:
+      id-token: write   # PyPI trusted publishing (OIDC), no stored token
+      contents: read
     name: Build and publish to PyPI
     runs-on: ubuntu-latest
     steps:
@@ -27,6 +30,5 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist
-          password: ${{ secrets.PYPI_TOKEN }}
           # Don't fail a re-run/re-tag when a version is already on PyPI.
           skip-existing: true
