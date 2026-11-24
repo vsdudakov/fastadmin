@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 from io import StringIO
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import jwt
 import pytest
@@ -15,6 +15,7 @@ from fastadmin.api.schemas import (
 )
 from fastadmin.api.service import ApiService, get_user_id_from_session_id
 from fastadmin.models.decorators import action, widget_action
+from fastadmin.models.helpers import get_admin_model
 from fastadmin.models.schemas import (
     ActionInputSchema,
     ActionResponseSchema,
@@ -67,6 +68,91 @@ async def test_sign_in_converts_uuid_to_string(monkeypatch):
     token = await ApiService().sign_in(None, SignInInputSchema(username="u", password="p"))
     payload = jwt.decode(token, settings.ADMIN_SECRET_KEY, algorithms=["HS256"])
     assert payload["user_id"] == str(user_id)
+
+
+async def test_get_user_id_from_session_id_returns_uuid_for_uuid_user(monkeypatch):
+    """A UUID user id round-trips through the JWT as a UUID, not as its string form."""
+    user_id = uuid4()
+    admin_model = SimpleNamespace(
+        authenticate=AsyncMock(return_value=user_id), get_obj=AsyncMock(return_value={"id": 1})
+    )
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", lambda _model: admin_model)
+
+    token = await ApiService().sign_in(None, SignInInputSchema(username="u", password="p"))
+
+    assert await get_user_id_from_session_id(token) == user_id
+    admin_model.get_obj.assert_awaited_once_with(user_id)
+
+
+async def test_get_user_id_from_session_id_keeps_int_user_id(monkeypatch):
+    admin_model = SimpleNamespace(authenticate=AsyncMock(return_value=7), get_obj=AsyncMock(return_value={"id": 1}))
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", lambda _model: admin_model)
+
+    token = await ApiService().sign_in(None, SignInInputSchema(username="u", password="p"))
+
+    assert await get_user_id_from_session_id(token) == 7
+
+
+async def test_get_user_id_from_session_id_rejects_malformed_user_id(monkeypatch):
+    admin_model = SimpleNamespace(get_obj=AsyncMock(return_value={"id": 1}))
+    monkeypatch.setattr("fastadmin.api.service.get_admin_model", lambda _model: admin_model)
+
+    token = jwt.encode(
+        {"user_id": "not-a-uuid", "session_expired_at": (datetime.now(UTC) + timedelta(minutes=5)).isoformat()},
+        settings.ADMIN_SECRET_KEY,
+        algorithm="HS256",
+    )
+
+    assert await get_user_id_from_session_id(token) is None
+    admin_model.get_obj.assert_not_awaited()
+
+
+async def test_get_user_id_from_session_id_sqlalchemy_uuid_primary_key(monkeypatch):
+    """A SQLAlchemy model with a UUID primary key can load the signed-in user (#144)."""
+    from sqlalchemy import Uuid
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+    from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+    from fastadmin import SqlAlchemyModelAdmin
+    from fastadmin.models.helpers import register_admin_model_class, unregister_admin_model_class
+
+    class Base(DeclarativeBase):
+        pass
+
+    class UuidUser(Base):
+        __tablename__ = "uuid_users"
+
+        id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+        username: Mapped[str] = mapped_column()
+
+    class UuidUserAdmin(SqlAlchemyModelAdmin):
+        list_display = ("id", "username")
+
+        async def authenticate(self, username, password):
+            return None
+
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+    sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    register_admin_model_class(UuidUserAdmin, [UuidUser])
+    try:
+        admin_model = get_admin_model(UuidUser)
+        admin_model.set_sessionmaker(sessionmaker)
+        user = UuidUser(username="admin")
+        async with sessionmaker() as session:
+            session.add(user)
+            await session.commit()
+
+        monkeypatch.setattr(settings, "ADMIN_USER_MODEL", "UuidUser")
+        monkeypatch.setattr(admin_model, "authenticate", AsyncMock(return_value=user.id))
+        token = await ApiService().sign_in(None, SignInInputSchema(username="admin", password="x"))
+
+        assert await get_user_id_from_session_id(token) == user.id
+    finally:
+        unregister_admin_model_class([UuidUser])
+        await engine.dispose()
 
 
 async def test_widget_action_with_sync_handler(monkeypatch):
