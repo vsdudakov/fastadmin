@@ -80,6 +80,14 @@ async def get_user_id_from_session_id(session_id: str | None) -> UUID | int | No
     if user_id is None:
         return None
 
+    # sign_in stores a UUID user id as a string, so turn it back into a UUID.
+    # ORMs such as SQLAlchemy cannot look up a UUID primary key by its string form.
+    if isinstance(user_id, str):
+        try:
+            user_id = UUID(user_id)
+        except ValueError:
+            return None
+
     if not await admin_model.get_obj(user_id):
         return None
 
